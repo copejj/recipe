@@ -1,0 +1,91 @@
+on:
+    release:
+        types: [published]
+    workflow_dispatch: 
+        inputs:
+            test_tag:
+                description: 'Tag to use for testing (e.g. v1.0.0-test)'
+                required: false
+                default: 'testing'
+
+jobs:
+    deploy-to-production:
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Execute Remote Deployment
+                uses: appleboy/ssh-action@v1.2.0
+                with:
+                    host: ${{ vars.PROD_HOST }}
+                    port: ${{ secrets.SSH_PRIVATE_PORT }}
+                    username: ${{ secrets.SSH_PRIVATE_USERNAME }}
+                    key: ${{ secrets.SSH_PRIVATE_KEY }}
+                    envs: TAG_NAME,DB_URL,DB_USER,DB_PASS,API_BASE_URL,ENVIRONMENT,SERVER_CONTEXT_PATH
+
+                    script: |
+                        CURRENT_STEP="INITIALIZATION"
+                        # 1. [Step 1/6] Initialization and Output
+                        echo "--- Starting Deployment for $TAG_NAME ---"
+                        cd ${{ vars.PROD_APP_PATH }}
+
+                        CURRENT_STEP="SOURCE_CHECKOUT"
+                        # 2. Sync Code
+                        echo "[Step 2/6] Fetching code for tag: $TAG_NAME"
+                        git fetch --tags --all
+                        # git checkout "$TAG_NAME"
+                        git checkout -B "release-$TAG_NAME" "$TAG_NAME"
+
+                        CURRENT_STEP="BUILD"
+                        # 3. Configuration & Build
+                        echo "[Step 3/6] Configuring application properties and building..."
+                        sed -i "s|<db_url>|$DB_URL|g" src/main/resources/application.properties
+                        sed -i "s|<db_user>|$DB_USER|g" src/main/resources/application.properties
+                        sed -i "s|<db_pass>|$DB_PASS|g" src/main/resources/application.properties
+                        sed -i "s|<api_base_url>|$API_BASE_URL|g" src/main/resources/application.properties
+                        sed -i "s|<environment>|${ENVIRONMENT:-DEV}|g" src/main/resources/application.properties
+                        sed -i "s|<server_context_path>|$SERVER_CONTEXT_PATH|g" src/main/resources/application.properties
+                        mvn clean package -DskipTests
+
+                        CURRENT_STEP="DEPLOYMENT"
+                        # 4. Deploy to Tomcat (Parallel Deployment)
+                        echo "[Step 4/6] Deploying versioned WAR..."
+                        VERSION_NAME="${{ vars.PROD_DEPLOY_NAME }}##${TAG_NAME}.war"
+                        BUILD_WAR="${{ vars.PROD_APP_PATH }}/target/${{ vars.PROD_APP_NAME }}.war"
+
+                        # Copy to webapps. Tomcat keeps the old version running for existing users!
+                        cp "$BUILD_WAR" "${{ vars.PROD_DEPLOY_PATH }}/$VERSION_NAME"
+
+                        CURRENT_STEP="DEPLOYMENT_VERIFICATION"
+                        # 5. Verification Loop
+                        echo "[Step 5/6] Monitoring health check for new version..."
+                        for i in {1..20}; do
+                            # Added --retry and --retry-connrefused to handle the "startup" lag
+                            RESPONSE=$(curl -4 -sL --connect-timeout 5 http://localhost:8080/actuator/health || echo "offline")
+                            
+                            if [[ "$RESPONSE" == *'"status":"UP"'* ]]; then
+                                echo "Successfully deployed $TAG_NAME - New version is UP!"
+                                break
+                            fi
+                            
+                            if [ $i -eq 20 ]; then
+                                echo "!!! Health check timed out !!!"
+                                exit 1
+                            fi
+                            echo "Waiting for Spring Boot to initialize... (Attempt $i/20)"
+                            sleep 10
+                        done
+
+                        CURRENT_STEP="FINAL_CLEANUP"
+                        # 6. Final Cleanup
+                        echo "[Step 6/6] Cleaning up environment..."
+                        git checkout .
+                        mvn clean
+
+                        echo "--- Deployment of $TAG_NAME completed successfully! ---"
+                env:
+                    TAG_NAME: ${{ github.event.inputs.test_tag || github.event.release.tag_name }}
+                    DB_URL: ${{ secrets.DB_URL }}
+                    DB_USER: ${{ secrets.DB_USER }}
+                    DB_PASS: ${{ secrets.DB_PASS }}
+                    API_BASE_URL: ${{ vars.API_BASE_URL }}
+                    ENVIRONMENT: ${{ vars.ENVIRONMENT }}
+                    SERVER_CONTEXT_PATH: ${{ vars.SERVER_CONTEXT_PATH }}
