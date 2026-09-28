@@ -12,7 +12,7 @@
 	<artifactId>recipe</artifactId>
 	<packaging>war</packaging>
 	<name>Braindribbling Recipes</name>
-	<description>A basic recipe mobile friendly tool</description>
+	<description>A basic mobile friendly recipe tool</description>
 	<url/>
 	<licenses>
 		<license/>
