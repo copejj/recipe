@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Recipe Dashboard</title>
+</head>
+<body>
+    <h1>Recipe Management Dashboard</h1>
+    <p>Welcome to ://braindribbler.com!</p>
+    
+    <hr/>
+    
+    <!-- This renders data dynamically from the Java Model object -->
+    <div style="border: 1px solid #ccc; padding: 15px; width: 300px;">
+        <h3 th:text="${recipe.title}">Recipe Title</h3>
+        <p th:text="${recipe.instructions}">Recipe Instructions go here.</p>
+    </div>
+</body>
+</html>
+
