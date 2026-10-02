@@ -19,35 +19,87 @@ jobs:
                     port: ${{ secrets.SSH_PRIVATE_PORT }}
                     username: ${{ secrets.SSH_PRIVATE_USERNAME }}
                     key: ${{ secrets.SSH_PRIVATE_KEY }}
-                    envs: TAG_NAME,DB_URL,DB_USER,DB_PASS,API_BASE_URL,ENVIRONMENT,SERVER_CONTEXT_PATH
+                    # IMPORTANT: All variables used in the script must be listed here
+                    envs: DB_NAME,DB_USER,DB_PASS,DB_HOST,TAG_NAME
 
                     script: |
                         CURRENT_STEP="INITIALIZATION"
-                        # 1. [Step 1/6] Initialization and Output
-                        echo "--- Starting Deployment for $TAG_NAME ---"
+                        # 1. Initialization and Output
+                        echo "[Step 1/8] --- Starting Deployment for $TAG_NAME ---"
                         cd ${{ vars.PROD_APP_PATH }}
+                        export PGPASSWORD="$DB_PASS"
+                        
+                        # Specific args for psql vs pg_dump
+                        PSQL_ARGS="-h $DB_HOST -U $DB_USER -d $DB_NAME -t --set ON_ERROR_STOP=1"
+                        DUMP_ARGS="-h $DB_HOST -U $DB_USER -d $DB_NAME --no-subscriptions --no-publications -x -O"
+                        
+                        BACKUP_FILE="/tmp/pre_deploy_backup_$(date +%F_%H%M%S).sql"
+
+                        # Define cleanup_on_failure
+                        cleanup_on_failure() {
+                            EXIT_CODE=$?
+                            if [ $EXIT_CODE -ne 0 ]; then
+                                echo "!!! ERROR DETECTED in Step: $CURRENT_STEP (Exit Code: $EXIT_CODE) !!!"
+                                
+                                # ONLY rollback DB if the failure happened during Step 4 (Migrations)
+                                if [ "$CURRENT_STEP" == "DATABASE_MIGRATION" ] && [ -f "$BACKUP_FILE" ]; then
+                                    echo "Rolling back database to $BACKUP_FILE..."
+                                    psql $PSQL_ARGS -c "DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public; ALTER SCHEMA public OWNER TO $DB_USER; GRANT ALL ON SCHEMA public TO public;"
+                                    psql $PSQL_ARGS -f "$BACKUP_FILE"
+                                fi
+                                
+                                git checkout .
+                                rm -f "$BACKUP_FILE"
+                                exit $EXIT_CODE
+                            fi
+                        }
+                        trap cleanup_on_failure ERR
+
+                        CURRENT_STEP="DATABASE_BACKUP"
+                        # 2. Database Backup
+                        echo "[Step 2/8] Creating pre-deployment database backup..."
+                        pg_dump $DUMP_ARGS -f "$BACKUP_FILE" || true
+                        echo "Backup saved to $BACKUP_FILE"
 
                         CURRENT_STEP="SOURCE_CHECKOUT"
-                        # 2. Sync Code
-                        echo "[Step 2/6] Fetching code for tag: $TAG_NAME"
+                        # 3. Sync Code
+                        echo "[Step 3/8] Fetching code for tag: $TAG_NAME"
                         git fetch --tags --all
                         # git checkout "$TAG_NAME"
                         git checkout -B "release-$TAG_NAME" "$TAG_NAME"
 
+                        CURRENT_STEP="DATABASE_MIGRATION"
+                        # 4. Database Migrations (The "No-Backslash" version)
+                        echo "[Step 4/8] Running database migrations..."
+                        psql $PSQL_ARGS -c "BEGIN;" -f sql/init_schema.sql -c "COMMIT;"
+
+                        FILES=$(find sql/migrations -regextype posix-extended -regex ".*/[0-9]{8}_[0-9]+.*\.sql" | sort)
+                        for FILE in $FILES; do
+                            FILENAME=$(basename "$FILE")
+                            ALREADY_RUN=$(psql $PSQL_ARGS -A -c "SELECT 1 FROM schema_migrations WHERE filename='$FILENAME' AND status='completed';")
+                            if [ "$ALREADY_RUN" == "1" ]; then continue; fi
+
+                            echo "Executing migration: $FILENAME"
+                            
+                             # 1. Mark as pending before execution
+                            psql $PSQL_ARGS -c "INSERT INTO schema_migrations (filename, status) VALUES ('$FILENAME', 'pending') ON CONFLICT (filename) DO UPDATE SET status='pending', started_at=NOW(), ended_at=NULL;"
+
+                            # 2. Execute the migration file directly and safely via the -f flag
+                            psql $PSQL_ARGS -f "$FILE"
+
+                            # 3. Mark as completed upon success
+                            psql $PSQL_ARGS -c "UPDATE schema_migrations SET ended_at=NOW(), status='completed' WHERE filename='$FILENAME';"
+
+                        done
+
                         CURRENT_STEP="BUILD"
-                        # 3. Configuration & Build
-                        echo "[Step 3/6] Configuring application properties and building..."
-                        sed -i "s|<db_url>|$DB_URL|g" src/main/resources/application.properties
-                        sed -i "s|<db_user>|$DB_USER|g" src/main/resources/application.properties
-                        sed -i "s|<db_pass>|$DB_PASS|g" src/main/resources/application.properties
-                        sed -i "s|<api_base_url>|$API_BASE_URL|g" src/main/resources/application.properties
-                        sed -i "s|<environment>|${ENVIRONMENT:-DEV}|g" src/main/resources/application.properties
-                        sed -i "s|<server_context_path>|$SERVER_CONTEXT_PATH|g" src/main/resources/application.properties
+                        # 5. Build
+                        echo "[Step 5/8] Building WAR file"
                         mvn clean package -DskipTests
 
                         CURRENT_STEP="DEPLOYMENT"
-                        # 4. Deploy to Tomcat (Parallel Deployment)
-                        echo "[Step 4/6] Deploying versioned WAR..."
+                        # 6. Deploy to Tomcat (Parallel Deployment)
+                        echo "[Step 6/8] Deploying versioned WAR..."
                         VERSION_NAME="${{ vars.PROD_DEPLOY_NAME }}##${TAG_NAME}.war"
                         BUILD_WAR="${{ vars.PROD_APP_PATH }}/target/${{ vars.PROD_APP_NAME }}.war"
 
@@ -55,8 +107,8 @@ jobs:
                         cp "$BUILD_WAR" "${{ vars.PROD_DEPLOY_PATH }}/$VERSION_NAME"
 
                         CURRENT_STEP="DEPLOYMENT_VERIFICATION"
-                        # 5. Verification Loop
-                        echo "[Step 5/6] Monitoring health check for new version..."
+                        # 7. Verification Loop
+                        echo "[Step 7/8] Monitoring health check for new version..."
                         for i in {1..20}; do
                             # Added --retry and --retry-connrefused to handle the "startup" lag
                             RESPONSE=$(curl -4 -sL --connect-timeout 5 http://localhost:8080/actuator/health || echo "offline")
@@ -75,17 +127,16 @@ jobs:
                         done
 
                         CURRENT_STEP="FINAL_CLEANUP"
-                        # 6. Final Cleanup
-                        echo "[Step 6/6] Cleaning up environment..."
+                        # 8. Final Cleanup
+                        echo "[Step 8/8] Cleaning up environment..."
                         git checkout .
                         mvn clean
+                        rm "$BACKUP_FILE"
 
                         echo "--- Deployment of $TAG_NAME completed successfully! ---"
                 env:
-                    TAG_NAME: ${{ github.event.inputs.test_tag || github.event.release.tag_name }}
-                    DB_URL: ${{ secrets.DB_URL }}
+                    DB_NAME: ${{ secrets.DB_NAME }}
                     DB_USER: ${{ secrets.DB_USER }}
                     DB_PASS: ${{ secrets.DB_PASS }}
-                    API_BASE_URL: ${{ vars.API_BASE_URL }}
-                    ENVIRONMENT: ${{ vars.ENVIRONMENT }}
-                    SERVER_CONTEXT_PATH: ${{ vars.SERVER_CONTEXT_PATH }}
+                    DB_HOST: ${{ secrets.DB_HOST }}
+                    TAG_NAME: ${{ github.event.inputs.test_tag || github.event.release.tag_name }}
