@@ -2,37 +2,54 @@ package com.braindribbler.recipe.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository; // Import the repository wrapper
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new Argon2PasswordEncoder(16, 32, 1, 16384, 2);
-    }
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            PasswordEncoder passwordEncoder,
+            UserDetailsService userDetailsService) throws Exception {
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder);
+
         http
+                // 1. REFACTOR: Force a cookie-based CSRF storage format to fix the 403
+                // Forbidden error permanently
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                .authenticationProvider(authProvider)
                 .authorizeHttpRequests(auth -> auth
-                        // CRITICAL: Permit /error so 404s/500s do not trigger a login redirect loop
+                        .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.FORWARD).permitAll()
+
+                        // Public endpoints and assets
                         .requestMatchers("/error").permitAll()
-                        // Permit static assets and our test pages
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
-                        .requestMatchers("/", "/test-home", "/test-target", "/recipes/search").permitAll()
+                        .requestMatchers("/", "/test-home", "/test-target", "/recipes/search", "/register", "/login")
+                        .permitAll()
+
                         .anyRequest().authenticated())
                 .formLogin(form -> form
-                        // Spring Security's default processing endpoint
-                        .permitAll()
-                        .defaultSuccessUrl("/test-home", true))
+                        .loginPage("/login")
+                        .loginProcessingUrl("/login")
+                        .defaultSuccessUrl("/test-home", true)
+                        .permitAll())
                 .logout(logout -> logout
-                        .logoutSuccessUrl("/test-home")
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout")
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .deleteCookies("RECIPE_JSESSIONID", "JSESSIONID", "XSRF-TOKEN")
                         .permitAll());
 
         return http.build();

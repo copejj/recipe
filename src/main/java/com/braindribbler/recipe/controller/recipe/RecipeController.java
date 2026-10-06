@@ -1,4 +1,4 @@
-package com.braindribbler.recipe.controller;
+package com.braindribbler.recipe.controller.recipe;
 
 import com.braindribbler.recipe.model.Recipe;
 import org.springframework.stereotype.Controller;
@@ -12,10 +12,9 @@ public class RecipeController {
     public String getDashboard(Model model) {
         // Creating a mock Model object to test data passing
         Recipe sampleRecipe = new Recipe("Chocolate Chip Cookies", "Mix, bake, and enjoy!");
-        
+
         // Passing the object to the Thymeleaf View layer
         model.addAttribute("recipe", sampleRecipe);
         return "index";
     }
 }
-

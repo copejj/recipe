@@ -5,7 +5,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
-import java.util.List;
+import java.util.stream.Collectors;
 
 public class RecipeUserDetails implements UserDetails {
 
@@ -17,8 +17,9 @@ public class RecipeUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Fallback role assignment matching your transient defaults
-        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        return userAuth.getUser().getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getRoleName())) // e.g., "ROLE_SUPER_ADMIN"
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -29,7 +30,7 @@ public class RecipeUserDetails implements UserDetails {
     @Override
     public String getUsername() {
         return userAuth.getEmail();
-    } // Uses email as the formal login username credential
+    }
 
     public com.braindribbler.recipe.domain.auth.User getUserProfile() {
         return userAuth.getUser();

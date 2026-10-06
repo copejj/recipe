@@ -37,7 +37,7 @@ public class User {
     @JoinColumn(name = "profile_visibility_id", nullable = false)
     private ProfileVisibility profileVisibility;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER) // Changed LAZY to EAGER
     private UserAuth userAuth;
 
     // Added: Maps to your physical user_roles join table using user_id
