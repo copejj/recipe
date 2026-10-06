@@ -11,7 +11,7 @@ public class BaseType {
     @Column(name = "base_type_id")
     private Integer baseTypeId;
 
-    @Column(name = "type_name", nullable = false, unique = true)
+    @Column(name = "type_name", nullable = false, unique = true, columnDefinition = "text")
     private String typeName;
 
     @Column(name = "description", columnDefinition = "text")

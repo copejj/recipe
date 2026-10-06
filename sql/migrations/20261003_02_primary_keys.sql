@@ -1,3 +1,4 @@
+BEGIN;
 -- Step A: Drop the existing composite primary key
 ALTER TABLE public.user_roles 
     DROP CONSTRAINT user_roles_pkey;
@@ -26,3 +27,4 @@ ALTER TABLE public.recipe_step_ingredient
 -- Step C: Set the new column as the official Primary Key
 ALTER TABLE public.recipe_step_ingredient 
     ADD CONSTRAINT recipe_step_ingredient_pkey PRIMARY KEY (recipe_step_ingredient_id);
+Commit;

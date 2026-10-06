@@ -1,5 +1,4 @@
 package com.braindribbler.recipe.domain.recipe;
-package com.braindribbler.recipe.domain.recipe;
 
 import com.braindribbler.recipe.domain.auth.User;
 import jakarta.persistence.*;
@@ -15,7 +14,7 @@ public class Recipe {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "recipe_id")
-    private Long recipeId;
+    private Integer recipeId;
 
     @Column(name = "public_id", nullable = false, unique = true, updatable = false)
     private UUID publicId = UUID.randomUUID();
@@ -49,11 +48,11 @@ public class Recipe {
     public Recipe() {
     }
 
-    public Long getRecipeId() {
+    public Integer getRecipeId() {
         return recipeId;
     }
 
-    public void setRecipeId(Long recipeId) {
+    public void setRecipeId(Integer recipeId) {
         this.recipeId = recipeId;
     }
 

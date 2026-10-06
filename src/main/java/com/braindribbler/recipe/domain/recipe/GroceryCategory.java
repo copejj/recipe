@@ -11,7 +11,7 @@ public class GroceryCategory {
     @Column(name = "grocery_category_id")
     private Integer groceryCategoryId;
 
-    @Column(name = "category_name", nullable = false, unique = true)
+    @Column(name = "category_name", nullable = false, unique = true, columnDefinition = "text")
     private String categoryName;
 
     public GroceryCategory() {

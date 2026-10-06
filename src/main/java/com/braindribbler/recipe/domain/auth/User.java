@@ -2,6 +2,8 @@ package com.braindribbler.recipe.domain.auth;
 
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -11,18 +13,18 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    private Long userId;
+    private Integer userId;
 
     @Column(name = "public_id", nullable = false, unique = true, updatable = false)
     private UUID publicId = UUID.randomUUID();
 
-    @Column(name = "first_name", nullable = false)
+    @Column(name = "first_name", nullable = false, columnDefinition = "text")
     private String firstName;
 
-    @Column(name = "last_name", nullable = false)
+    @Column(name = "last_name", nullable = false, columnDefinition = "text")
     private String lastName;
 
-    @Column(name = "display_name")
+    @Column(name = "display_name", nullable = false, columnDefinition = "text")
     private String displayName;
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -38,14 +40,19 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private UserAuth userAuth;
 
+    // Added: Maps to your physical user_roles join table using user_id
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "user_roles", schema = "public", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles = new HashSet<>();
+
     public User() {
     }
 
-    public Long getUserId() {
+    public Integer getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(Integer userId) {
         this.userId = userId;
     }
 
@@ -111,5 +118,18 @@ public class User {
 
     public void setUserAuth(UserAuth userAuth) {
         this.userAuth = userAuth;
+    }
+
+    // Added: Getters, Setters, and helper utility method for user roles
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+
+    public void addRole(Role role) {
+        this.roles.add(role);
     }
 }

@@ -10,7 +10,7 @@ public class LoginHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "login_history_id")
-    private Long loginHistoryId;
+    private Integer loginHistoryId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_auth_id", nullable = false)
@@ -19,26 +19,26 @@ public class LoginHistory {
     @Column(name = "login_at", nullable = false, updatable = false)
     private OffsetDateTime loginAt = OffsetDateTime.now();
 
-    @Column(name = "ip_address", nullable = false)
+    @Column(name = "ip_address", nullable = false, columnDefinition = "text")
     private String ipAddress;
 
-    @Column(name = "user_agent")
+    @Column(name = "user_agent", columnDefinition = "text")
     private String userAgent;
 
     @Column(name = "is_successful", nullable = false)
     private Boolean isSuccessful = true;
 
-    @Column(name = "failure_reason")
+    @Column(name = "failure_reason", columnDefinition = "text")
     private String failureReason;
 
     public LoginHistory() {
     }
 
-    public Long getLoginHistoryId() {
+    public Integer getLoginHistoryId() {
         return loginHistoryId;
     }
 
-    public void setLoginHistoryId(Long loginHistoryId) {
+    public void setLoginHistoryId(Integer loginHistoryId) {
         this.loginHistoryId = loginHistoryId;
     }
 

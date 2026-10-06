@@ -11,7 +11,7 @@ public class AccessLevel {
     @Column(name = "access_level_id")
     private Integer accessLevelId;
 
-    @Column(name = "access_name", nullable = false, unique = true)
+    @Column(name = "access_name", nullable = false, unique = true, columnDefinition = "text")
     private String accessName;
 
     @Column(name = "description", columnDefinition = "text")

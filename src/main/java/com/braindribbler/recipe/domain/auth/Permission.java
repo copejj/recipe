@@ -11,12 +11,12 @@ public class Permission {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "permission_id")
-    private Long permissionId;
+    private Integer permissionId;
 
-    @Column(name = "permission_name", nullable = false, unique = true)
+    @Column(name = "permission_name", nullable = false, unique = true, columnDefinition = "text")
     private String permissionName;
 
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "text")
     private String description;
 
     @ManyToMany(mappedBy = "permissions", fetch = FetchType.LAZY)
@@ -25,11 +25,11 @@ public class Permission {
     public Permission() {
     }
 
-    public Long getPermissionId() {
+    public Integer getPermissionId() {
         return permissionId;
     }
 
-    public void setPermissionId(Long permissionId) {
+    public void setPermissionId(Integer permissionId) {
         this.permissionId = permissionId;
     }
 

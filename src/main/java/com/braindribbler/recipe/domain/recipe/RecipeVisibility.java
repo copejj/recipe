@@ -11,7 +11,7 @@ public class RecipeVisibility {
     @Column(name = "recipe_visibility_id")
     private Integer recipeVisibilityId;
 
-    @Column(name = "visibility_name", nullable = false, unique = true)
+    @Column(name = "visibility_name", nullable = false, unique = true, columnDefinition = "text")
     private String visibilityName;
 
     @Column(name = "description", columnDefinition = "text")

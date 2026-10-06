@@ -19,7 +19,7 @@ public class RecipeStepIngredient {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "recipe_step_ingredient_id")
-    private Long recipeStepIngredientId;
+    private Integer recipeStepIngredientId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recipe_step_id", nullable = false)
@@ -46,11 +46,11 @@ public class RecipeStepIngredient {
     public RecipeStepIngredient() {
     }
 
-    public Long getRecipeStepIngredientId() {
+    public Integer getRecipeStepIngredientId() {
         return recipeStepIngredientId;
     }
 
-    public void setRecipeStepIngredientId(Long recipeStepIngredientId) {
+    public void setRecipeStepIngredientId(Integer recipeStepIngredientId) {
         this.recipeStepIngredientId = recipeStepIngredientId;
     }
 

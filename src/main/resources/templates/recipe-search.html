@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" lang="en">
+
+<head th:replace="~{fragments/layout :: html_head('Search Recipes')}"></head>
+
+<body>
+
+    <div th:replace="~{fragments/layout :: header}"></div>
+
+    <main class="content">
+        <h2>Search Recipes</h2>
+        <p>This is a stand-in page for your upcoming recipe query engine.</p>
+
+        <div style="margin: 20px 0; display: flex; gap: 10px;">
+            <input type="text" placeholder="Search by ingredient, title, or type..."
+                style="padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 4px;" disabled />
+            <button class="btn" style="border: none; cursor: not-allowed;" disabled>Search</button>
+        </div>
+
+        <a th:href="@{/test-home}">← Back to Home</a>
+    </main>
+
+    <div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+
+</html>

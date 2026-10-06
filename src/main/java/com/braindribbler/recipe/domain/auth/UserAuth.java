@@ -1,6 +1,8 @@
 package com.braindribbler.recipe.domain.auth;
 
 import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,6 +11,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
@@ -19,12 +23,12 @@ public class UserAuth {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "users_auth_id")
-    private Long usersAuthId;
+    private Integer usersAuthId;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, columnDefinition = "text")
     private String email;
 
-    @Column(name = "password_hash", nullable = false)
+    @Column(name = "password_hash", nullable = false, columnDefinition = "text")
     private String password;
 
     @Column(name = "password_changed_at", nullable = false)
@@ -43,11 +47,11 @@ public class UserAuth {
     public UserAuth() {
     }
 
-    public Long getUsersAuthId() {
+    public Integer getUsersAuthId() {
         return usersAuthId;
     }
 
-    public void setUsersAuthId(Long usersAuthId) {
+    public void setUsersAuthId(Integer usersAuthId) {
         this.usersAuthId = usersAuthId;
     }
 

@@ -10,12 +10,12 @@ public class Measurement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "measurement_id")
-    private Long measurementId;
+    private Integer measurementId;
 
-    @Column(name = "unit_name", nullable = false, unique = true)
+    @Column(name = "unit_name", nullable = false, unique = true, columnDefinition = "text")
     private String unitName;
 
-    @Column(name = "abbreviation")
+    @Column(name = "abbreviation", unique = true, columnDefinition = "text")
     private String abbreviation;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -31,11 +31,11 @@ public class Measurement {
     public Measurement() {
     }
 
-    public Long getMeasurementId() {
+    public Integer getMeasurementId() {
         return measurementId;
     }
 
-    public void setMeasurementId(Long measurementId) {
+    public void setMeasurementId(Integer measurementId) {
         this.measurementId = measurementId;
     }
 

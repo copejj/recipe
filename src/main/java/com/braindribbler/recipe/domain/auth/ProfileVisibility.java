@@ -11,7 +11,7 @@ public class ProfileVisibility {
     @Column(name = "profile_visibility_id")
     private Integer profileVisibilityId;
 
-    @Column(name = "visibility_name", nullable = false, unique = true)
+    @Column(name = "visibility_name", nullable = false, unique = true, columnDefinition = "text")
     private String visibilityName;
 
     @Column(name = "description", columnDefinition = "text")
