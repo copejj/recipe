@@ -10,7 +10,9 @@
 <body>
     <header th:fragment="header"
         style="display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background-color: #333; color: #fff;">
-        <h3 style="margin: 0;">Braindribbler Recipes</h3>
+        <h3 style="margin: 0;">
+            <a th:href="@{/}" style="color: #fff; text-decoration: none;">Braindribbler Recipes</a>
+        </h3>
 
         <nav sec:authorize="!isAuthenticated()" style="display: flex; gap: 20px; align-items: center;">
             <a th:href="@{/}" style="color: #fff; text-decoration: none;">Home</a>
