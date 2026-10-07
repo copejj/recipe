@@ -15,7 +15,7 @@
         <h2 style="margin-top: 0; margin-bottom: 25px; color: #333; text-align: center;">Create Account</h2>
 
         <!-- Form Binding connected to your RegistrationDto backend model -->
-        <form th:action="@{/register}" th:object="${registrationDto}" method="post">
+        <form th:action="@{~/register}" th:object="${registrationDto}" method="post">
 
             <!-- Field 1: Email Address -->
             <div style="margin-bottom: 18px;">
@@ -82,7 +82,7 @@
 
         <!-- Secondary Workflow Link Options -->
         <p style="margin-top: 25px; margin-bottom: 0; text-align: center; font-size: 0.9em; color: #666;">
-            Already have an account? <a th:href="@{/login}"
+            Already have an account? <a th:href="@{~/login}"
                 style="color: #007bff; text-decoration: none; font-weight: bold;">Sign in here</a>
         </p>
 
