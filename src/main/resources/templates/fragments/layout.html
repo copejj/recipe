@@ -13,15 +13,21 @@
         <h3 style="margin: 0;">Braindribbler Recipes</h3>
 
         <nav style="display: flex; gap: 20px; align-items: center;">
-            <!-- Cleaned context relative URL bindings -->
-            <a th:href="@{/home}" style="color: #fff; text-decoration: none;">Home</a>
+
+            <!-- Public Menu Items (Always visible) -->
+            <a th:href="@{/}" style="color: #fff; text-decoration: none;">Welcome</a>
             <a th:href="@{/recipes/search}" style="color: #fff; text-decoration: none;">Search</a>
 
-            <!-- Displays only to unauthenticated browser sessions -->
+            <!-- Private Menu Items (Visible only when logged in) -->
+            <th:block sec:authorize="isAuthenticated()">
+                <a th:href="@{/home}" style="color: #fff; text-decoration: none;">Dashboard</a>
+            </th:block>
+
+            <!-- Sign In Button (Visible only when logged out) -->
             <a sec:authorize="!isAuthenticated()" th:href="@{/login}"
                 style="color: #ffc107; text-decoration: none; font-weight: bold;">Sign In</a>
 
-            <!-- Secure HTTP POST Logout form, visible only if authenticated -->
+            <!-- Sign Out Button (Visible only when logged in) -->
             <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post"
                 style="margin: 0; display: inline;">
                 <button type="submit"
@@ -29,12 +35,18 @@
                     Sign Out
                 </button>
             </form>
+
         </nav>
     </header>
 
     <footer th:fragment="footer"
         style="text-align: center; padding: 20px; color: #777; font-size: 0.9em; margin-top: 40px;">
         <p>&copy; 2026 Braindribbler Recipes. All rights reserved.</p>
+
+        <!-- Render git metadata only if gitProperties is actively populated -->
+        <p th:if="${showGitInfo}" style="font-size: 0.8em; color: #aaa; margin-top: 5px;">
+            Version: <span th:text="${gitBranch}">main</span> (<span th:text="${gitHash}">abcdefg</span>)
+        </p>
     </footer>
 </body>
 
