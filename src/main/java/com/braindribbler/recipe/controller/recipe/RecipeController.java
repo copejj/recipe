@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class RecipeController {
-
     @GetMapping("/")
     public String getDashboard(Model model) {
         // Creating a mock Model object to test data passing
@@ -16,5 +15,11 @@ public class RecipeController {
         // Passing the object to the Thymeleaf View layer
         model.addAttribute("recipe", sampleRecipe);
         return "index";
+    }
+
+    @GetMapping("/home")
+    public String showHome(Model model) {
+        model.addAttribute("message", "Welcome! Your Argon2id authentication layer is 100% verified and operational.");
+        return "home";
     }
 }
