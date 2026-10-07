@@ -17,9 +17,15 @@ public class RecipeController {
         return "index";
     }
 
-    @GetMapping("/home")
+    @GetMapping("/dashboard")
     public String showHome(Model model) {
         model.addAttribute("message", "Welcome! Your Argon2id authentication layer is 100% verified and operational.");
-        return "home";
+        return "recipes/dashboard";
+    }
+
+    @GetMapping("/search")
+    public String showSearch(Model model) {
+        model.addAttribute("message", "Search for your favorite recipes here!");
+        return "recipes/search";
     }
 }

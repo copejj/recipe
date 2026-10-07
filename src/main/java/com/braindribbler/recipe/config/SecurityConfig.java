@@ -35,14 +35,14 @@ public class SecurityConfig {
                                                 .requestMatchers("/error").permitAll()
                                                 .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**")
                                                 .permitAll()
-                                                .requestMatchers("/", "/recipes/search", "/register", "/login")
+                                                .requestMatchers("/", "/search", "/register", "/login")
                                                 .permitAll()
 
                                                 .anyRequest().authenticated())
                                 .formLogin(form -> form
                                                 .loginPage("/login")
                                                 .loginProcessingUrl("/login")
-                                                .defaultSuccessUrl("/home", true)
+                                                .defaultSuccessUrl("/dashboard", true)
                                                 .permitAll())
                                 .logout(logout -> logout
                                                 .logoutUrl("/logout")
