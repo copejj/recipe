@@ -34,7 +34,7 @@
 
         <!-- Form Component Core Loop -->
         <!-- Inside templates/login.html -->
-        <form th:action="@{~/login}" method="post">
+        <form th:action="@{/login}" method="post">
 
             <!-- ADD THIS LINE BACK: Explicitly passes the security token to stop the 403 error -->
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
@@ -65,7 +65,7 @@
 
         <!-- Secondary Workflow Context Options -->
         <p style="margin-top: 20px; margin-bottom: 0; text-align: center; font-size: 0.9em; color: #666;">
-            Don't have an account? <a th:href="@{~/register}"
+            Don't have an account? <a th:href="@{/register}"
                 style="color: #007bff; text-decoration: none; font-weight: bold;">Register here</a>
         </p>
 
