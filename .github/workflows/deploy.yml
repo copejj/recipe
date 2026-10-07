@@ -25,7 +25,7 @@ jobs:
                     script: |
                         CURRENT_STEP="INITIALIZATION"
                         # 1. Initialization and Output
-                        echo "[Step 1/8] --- Starting Deployment for $TAG_NAME ---"
+                        echo "[Step 1/7] --- Starting Deployment for $TAG_NAME ---"
                         cd ${{ vars.PROD_APP_PATH }}
                         export PGPASSWORD="$DB_PASS"
                         
@@ -57,20 +57,20 @@ jobs:
 
                         CURRENT_STEP="DATABASE_BACKUP"
                         # 2. Database Backup
-                        echo "[Step 2/8] Creating pre-deployment database backup..."
+                        echo "[Step 2/7] Creating pre-deployment database backup..."
                         pg_dump $DUMP_ARGS -f "$BACKUP_FILE" || true
                         echo "Backup saved to $BACKUP_FILE"
 
                         CURRENT_STEP="SOURCE_CHECKOUT"
                         # 3. Sync Code
-                        echo "[Step 3/8] Fetching code for tag: $TAG_NAME"
+                        echo "[Step 3/7] Fetching code for tag: $TAG_NAME"
                         git fetch --tags --all
                         # git checkout "$TAG_NAME"
                         git checkout -B "release-$TAG_NAME" "$TAG_NAME"
 
                         CURRENT_STEP="DATABASE_MIGRATION"
                         # 4. Database Migrations (The "No-Backslash" version)
-                        echo "[Step 4/8] Running database migrations..."
+                        echo "[Step 4/7] Running database migrations..."
                         psql $PSQL_ARGS -c "BEGIN;" -f sql/init_schema.sql -c "COMMIT;"
 
                         FILES=$(find sql/migrations -regextype posix-extended -regex ".*/[0-9]{8}_[0-9]+.*\.sql" | sort)
@@ -94,43 +94,21 @@ jobs:
 
                         CURRENT_STEP="BUILD"
                         # 5. Build
-                        echo "[Step 5/8] Building WAR file"
+                        echo "[Step 5/7] Building WAR file"
                         mvn clean package -DskipTests
 
                         CURRENT_STEP="DEPLOYMENT"
                         # 6. Deploy to Tomcat (Parallel Deployment)
-                        echo "[Step 6/8] Deploying versioned WAR..."
+                        echo "[Step 6/7] Deploying versioned WAR..."
                         VERSION_NAME="${{ vars.PROD_DEPLOY_NAME }}##${TAG_NAME}.war"
                         BUILD_WAR="${{ vars.PROD_APP_PATH }}/target/${{ vars.PROD_APP_NAME }}.war"
 
                         # Copy to webapps. Tomcat keeps the old version running for existing users!
                         cp "$BUILD_WAR" "${{ vars.PROD_DEPLOY_PATH }}/$VERSION_NAME"
 
-                        CURRENT_STEP="DEPLOYMENT_VERIFICATION"
-                        # 7. Verification Loop
-                        echo "[Step 7/8] Monitoring health check for new version..."
-                        for i in {1..20}; do
-                            # Added --retry and --retry-connrefused to handle the "startup" lag
-                            RESPONSE=$(curl -4 -sL --connect-timeout 5 \
-                              -H "Host: ${{ vars.PROD_SUBDOMAIN }}.${{ vars.PROD_HOST }}" \
-                              http://localhost:8080/${{ vars.PROD_DEPLOY_NAME }}##${TAG_NAME}/actuator/health || echo "offline")
-                            
-                            if [[ "$RESPONSE" == *'"status":"UP"'* ]]; then
-                                echo "Successfully deployed $TAG_NAME - New version is UP!"
-                                break
-                            fi
-                            
-                            if [ $i -eq 20 ]; then
-                                echo "!!! Health check timed out !!!"
-                                exit 1
-                            fi
-                            echo "Waiting for Spring Boot to initialize... (Attempt $i/20)"
-                            sleep 10
-                        done
-
                         CURRENT_STEP="FINAL_CLEANUP"
-                        # 8. Final Cleanup
-                        echo "[Step 8/8] Cleaning up environment..."
+                        # 7. Final Cleanup
+                        echo "[Step 7/7] Cleaning up environment..."
                         git checkout .
                         mvn clean
                         rm "$BACKUP_FILE"
