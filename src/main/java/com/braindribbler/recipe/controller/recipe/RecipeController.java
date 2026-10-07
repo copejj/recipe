@@ -26,6 +26,6 @@ public class RecipeController {
     @GetMapping("/search")
     public String showSearch(Model model) {
         model.addAttribute("message", "Search for your favorite recipes here!");
-        return "recipe/search";
+        return "recipes/search";
     }
 }
