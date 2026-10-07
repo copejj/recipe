@@ -112,6 +112,9 @@ jobs:
                         for i in {1..20}; do
                             # Added --retry and --retry-connrefused to handle the "startup" lag
                             RESPONSE=$(curl -4 -sL --connect-timeout 5 http://localhost:8080/actuator/health || echo "offline")
+                            RESPONSE=$(curl -4 -sL --connect-timeout 5 \
+                              -H "Host: ${{ vars.PROD_SUBDOMAIN }}.${{ vars.PROD_HOST }}" \
+                              http://localhost:8080/ROOT##${TAG_NAME}/actuator/health || echo "offline")
                             
                             if [[ "$RESPONSE" == *'"status":"UP"'* ]]; then
                                 echo "Successfully deployed $TAG_NAME - New version is UP!"
