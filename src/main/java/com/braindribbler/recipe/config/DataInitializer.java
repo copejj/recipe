@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import com.braindribbler.recipe.domain.auth.ProfileVisibility;
 import com.braindribbler.recipe.domain.auth.Role;
 import com.braindribbler.recipe.repository.auth.ProfileVisibilityRepository;
 import com.braindribbler.recipe.repository.auth.RoleRepository; // Added
@@ -17,7 +16,6 @@ import java.util.Set;
 public class DataInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
-    private final ProfileVisibilityRepository profileVisibilityRepository;
     private final UserRegistrationService userRegistrationService;
     private final RoleRepository roleRepository; // 1. Added repository field
 
@@ -27,7 +25,6 @@ public class DataInitializer implements CommandLineRunner {
             UserRegistrationService userRegistrationService,
             RoleRepository roleRepository) {
         this.userRepository = userRepository;
-        this.profileVisibilityRepository = profileVisibilityRepository;
         this.userRegistrationService = userRegistrationService;
         this.roleRepository = roleRepository;
     }
@@ -45,15 +42,6 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // Ensure public profile visibility status exists
-        if (profileVisibilityRepository.findByVisibilityName("PUBLIC").isEmpty()) {
-            ProfileVisibility visibility = new ProfileVisibility();
-            visibility.setVisibilityName("PUBLIC");
-            visibility.setDescription("Publicly viewable profile data");
-            profileVisibilityRepository.save(visibility);
-        }
-
-        // Seed account if empty
         if (userRepository.count() == 0) {
             if (isAnyFieldNullOrBlank()) {
                 System.out.println("Database is empty, but seeding was skipped due to missing config keys.");

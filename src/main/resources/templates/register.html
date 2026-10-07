@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" lang="en">
+
+<head th:replace="~{fragments/layout :: html_head('Register - Braindribbler')}"></head>
+
+<body>
+
+    <!-- Shared Header Fragment -->
+    <div th:replace="~{fragments/layout :: header}"></div>
+
+    <!-- Main Centralized Registration Card -->
+    <main class="content"
+        style="max-width: 420px; margin: 50px auto; padding: 30px; border: 1px solid #ddd; border-radius: 8px; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+
+        <h2 style="margin-top: 0; margin-bottom: 25px; color: #333; text-align: center;">Create Account</h2>
+
+        <!-- Form Binding connected to your RegistrationDto backend model -->
+        <form th:action="@{/register}" th:object="${registrationDto}" method="post">
+
+            <!-- Field 1: Email Address -->
+            <div style="margin-bottom: 18px;">
+                <label for="email"
+                    style="display: block; margin-bottom: 6px; font-weight: bold; color: #555; font-size: 0.9em;">Email
+                    Address</label>
+                <input type="email" id="email" th:field="*{email}" required placeholder="chef@braindribbler.com"
+                    style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 1em;" />
+                <!-- Field-Specific Backend Error Message (e.g. Duplicate Email, Invalid Format) -->
+                <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}"
+                    style="color: #dc3545; font-size: 0.85em; margin-top: 5px; font-weight: bold;"></div>
+            </div>
+
+            <!-- Field 2: Password -->
+            <div style="margin-bottom: 18px;">
+                <label for="password"
+                    style="display: block; margin-bottom: 6px; font-weight: bold; color: #555; font-size: 0.9em;">Password</label>
+                <input type="password" id="password" th:field="*{password}" required placeholder="••••••••"
+                    style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 1em;" />
+                <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}"
+                    style="color: #dc3545; font-size: 0.85em; margin-top: 5px; font-weight: bold;"></div>
+            </div>
+
+            <!-- Field 3: First Name -->
+            <div style="margin-bottom: 18px;">
+                <label for="firstName"
+                    style="display: block; margin-bottom: 6px; font-weight: bold; color: #555; font-size: 0.9em;">First
+                    Name</label>
+                <input type="text" id="firstName" th:field="*{firstName}" required placeholder="Jane"
+                    style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 1em;" />
+                <div th:if="${#fields.hasErrors('firstName')}" th:fields="*{firstName}" th:errors="*{firstName}"
+                    style="color: #dc3545; font-size: 0.85em; margin-top: 5px; font-weight: bold;"></div>
+            </div>
+
+            <!-- Field 4: Last Name -->
+            <div style="margin-bottom: 18px;">
+                <label for="lastName"
+                    style="display: block; margin-bottom: 6px; font-weight: bold; color: #555; font-size: 0.9em;">Last
+                    Name</label>
+                <input type="text" id="lastName" th:field="*{lastName}" required placeholder="Doe"
+                    style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 1em;" />
+                <div th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}"
+                    style="color: #dc3545; font-size: 0.85em; margin-top: 5px; font-weight: bold;"></div>
+            </div>
+
+            <!-- Field 5: Display Name -->
+            <div style="margin-bottom: 24px;">
+                <label for="displayName"
+                    style="display: block; margin-bottom: 6px; font-weight: bold; color: #555; font-size: 0.9em;">Display
+                    Name</label>
+                <input type="text" id="displayName" th:field="*{displayName}" required placeholder="SousChefJane"
+                    style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 1em;" />
+                <div th:if="${#fields.hasErrors('displayName')}" th:errors="*{displayName}"
+                    style="color: #dc3545; font-size: 0.85em; margin-top: 5px; font-weight: bold;"></div>
+            </div>
+
+            <!-- Execution Processing Control -->
+            <button type="submit" class="btn"
+                style="width: 100%; padding: 12px; font-size: 1em; border: none; font-weight: bold; cursor: pointer; transition: background 0.2s;">
+                Sign Up
+            </button>
+
+        </form>
+
+        <!-- Secondary Workflow Link Options -->
+        <p style="margin-top: 25px; margin-bottom: 0; text-align: center; font-size: 0.9em; color: #666;">
+            Already have an account? <a th:href="@{/login}"
+                style="color: #007bff; text-decoration: none; font-weight: bold;">Sign in here</a>
+        </p>
+
+    </main>
+
+    <!-- Shared Footer Fragment -->
+    <div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+
+</html>

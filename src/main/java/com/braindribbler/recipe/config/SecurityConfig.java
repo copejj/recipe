@@ -14,44 +14,43 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository; // Impor
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http,
-            PasswordEncoder passwordEncoder,
-            UserDetailsService userDetailsService) throws Exception {
+        @Bean
+        public SecurityFilterChain securityFilterChain(
+                        HttpSecurity http,
+                        PasswordEncoder passwordEncoder,
+                        UserDetailsService userDetailsService) throws Exception {
 
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder);
+                DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
+                authProvider.setPasswordEncoder(passwordEncoder);
 
-        http
-                // 1. REFACTOR: Force a cookie-based CSRF storage format to fix the 403
-                // Forbidden error permanently
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
-                .authenticationProvider(authProvider)
-                .authorizeHttpRequests(auth -> auth
-                        .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.FORWARD).permitAll()
+                http
+                                .csrf(csrf -> csrf
+                                                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                                .authenticationProvider(authProvider)
+                                .authorizeHttpRequests(auth -> auth
+                                                .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.FORWARD)
+                                                .permitAll()
 
-                        // Public endpoints and assets
-                        .requestMatchers("/error").permitAll()
-                        .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
-                        .requestMatchers("/", "/test-home", "/test-target", "/recipes/search", "/register", "/login")
-                        .permitAll()
+                                                // Public endpoints and assets
+                                                .requestMatchers("/error").permitAll()
+                                                .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**")
+                                                .permitAll()
+                                                .requestMatchers("/", "/home", "/recipes/search", "/register", "/login")
+                                                .permitAll()
 
-                        .anyRequest().authenticated())
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .loginProcessingUrl("/login")
-                        .defaultSuccessUrl("/test-home", true)
-                        .permitAll())
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout")
-                        .invalidateHttpSession(true)
-                        .clearAuthentication(true)
-                        .deleteCookies("RECIPE_JSESSIONID", "JSESSIONID", "XSRF-TOKEN")
-                        .permitAll());
-
-        return http.build();
-    }
+                                                .anyRequest().authenticated())
+                                .formLogin(form -> form
+                                                .loginPage("/login")
+                                                .loginProcessingUrl("/login")
+                                                .defaultSuccessUrl("/home", true)
+                                                .permitAll())
+                                .logout(logout -> logout
+                                                .logoutUrl("/logout")
+                                                .logoutSuccessUrl("/login?logout")
+                                                .invalidateHttpSession(true)
+                                                .clearAuthentication(true)
+                                                .deleteCookies("RECIPE_JSESSIONID", "JSESSIONID", "XSRF-TOKEN")
+                                                .permitAll());
+                return http.build();
+        }
 }
