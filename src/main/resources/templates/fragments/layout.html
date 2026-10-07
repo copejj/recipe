@@ -25,12 +25,18 @@
                     Sign Out
                 </button>
             </form>
+
         </nav>
     </header>
 
     <footer th:fragment="footer"
         style="text-align: center; padding: 20px; color: #777; font-size: 0.9em; margin-top: 40px;">
         <p>&copy; 2026 Braindribbler Recipes. All rights reserved.</p>
+
+        <!-- Render git metadata only if gitProperties is actively populated -->
+        <p th:if="${showGitInfo}" style="font-size: 0.8em; color: #aaa; margin-top: 5px;">
+            Version: <span th:text="${gitBranch}">main</span> (<span th:text="${gitHash}">abcdefg</span>)
+        </p>
     </footer>
 </body>
 

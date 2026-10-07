@@ -35,7 +35,7 @@ public class SecurityConfig {
                                                 .requestMatchers("/error").permitAll()
                                                 .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**")
                                                 .permitAll()
-                                                .requestMatchers("/", "/home", "/recipes/search", "/register", "/login")
+                                                .requestMatchers("/", "/recipes/search", "/register", "/login")
                                                 .permitAll()
 
                                                 .anyRequest().authenticated())
