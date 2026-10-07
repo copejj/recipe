@@ -13,10 +13,10 @@
         <h3 style="margin: 0;">Braindribbler Recipes</h3>
 
         <nav style="display: flex; gap: 20px; align-items: center;">
-            <a th:href="@{/test-home}" style="color: #fff; text-decoration: none;">Home</a>
-            <a th:href="@{/recipes/search}" style="color: #fff; text-decoration: none;">Search</a>
+            <a th:href="@{~/home}" style="color: #fff; text-decoration: none;">Home</a>
+            <a th:href="@{~/recipes/search}" style="color: #fff; text-decoration: none;">Search</a>
 
-            <form th:action="@{/logout}" method="post" style="margin: 0; display: inline;">
+            <form th:action="@{~/logout}" method="post" style="margin: 0; display: inline;">
                 <button type="submit"
                     style="background: none; border: none; color: #ffc107; text-decoration: underline; font-weight: bold; cursor: pointer; font-size: 1em; padding: 0;">
                     Sign Out

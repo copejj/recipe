@@ -26,10 +26,10 @@
             </ul>
 
             <div style="margin-top: 30px; display: flex; gap: 15px; align-items: center;">
-                <a th:href="@{/recipes/search}" class="btn">Go to Recipe Search</a>
+                <a th:href="@{~/recipes/search}" class="btn">Go to Recipe Search</a>
 
                 <!-- Secure Logout Mechanism -->
-                <form th:action="@{/logout}" method="post" style="margin: 0;">
+                <form th:action="@{~/logout}" method="post" style="margin: 0;">
                     <button type="submit"
                         style="background: none; border: none; color: #dc3545; text-decoration: underline; cursor: pointer; font-size: 1em;">
                         Sign Out Safely
