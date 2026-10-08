@@ -2,13 +2,19 @@ package com.braindribbler.recipe.controller.auth;
 
 import com.braindribbler.recipe.dto.auth.RegistrationDto;
 import com.braindribbler.recipe.service.auth.UserRegistrationService;
+
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+
+import java.util.UUID;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class AuthController {
@@ -63,6 +69,22 @@ public class AuthController {
             // form fields
             result.rejectValue("email", "error.registrationDto", e.getMessage());
             return "register";
+        }
+    }
+
+    @GetMapping("/verify")
+    public String verifyUserAccount(@RequestParam("token") UUID token, Model model) {
+        try {
+            // Delegate verification transaction logic to your service layer
+            userRegistrationService.verifyUserToken(token);
+
+            // Redirect to login with a dedicated verification success query parameter flag
+            return "redirect:/login?verified";
+
+        } catch (IllegalArgumentException e) {
+            // Catch invalid or expired token issues and pass the error message to the model
+            model.addAttribute("verificationError", e.getMessage());
+            return "verification-failed"; // Points to templates/verification-failed.html
         }
     }
 }

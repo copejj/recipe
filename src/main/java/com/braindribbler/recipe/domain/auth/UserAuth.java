@@ -1,8 +1,7 @@
 package com.braindribbler.recipe.domain.auth;
 
 import java.time.OffsetDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,8 +10,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
@@ -36,6 +33,12 @@ public class UserAuth {
 
     @Column(name = "last_login")
     private OffsetDateTime lastLogin;
+
+    @Column(name = "verification_token", columnDefinition = "uuid")
+    private java.util.UUID verificationToken;
+
+    @Column(name = "is_verified", nullable = false)
+    private boolean isVerified = false;
 
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt = OffsetDateTime.now();
@@ -101,5 +104,21 @@ public class UserAuth {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public boolean isVerified() {
+        return isVerified;
+    }
+
+    public void setVerified(boolean isVerified) {
+        this.isVerified = isVerified;
+    }
+
+    public UUID getVerificationToken() {
+        return verificationToken;
+    }
+
+    public void setVerificationToken(UUID verificationToken) {
+        this.verificationToken = verificationToken;
     }
 }

@@ -5,8 +5,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface UserAuthRepository extends JpaRepository<UserAuth, Integer> {
+
+    Optional<UserAuth> findByVerificationToken(UUID verificationToken);
 
     @Query("SELECT ua FROM UserAuth ua " +
             "JOIN FETCH ua.user u " +
