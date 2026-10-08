@@ -1,5 +1,6 @@
 package com.braindribbler.recipe.security;
 
+import com.braindribbler.recipe.domain.auth.User;
 import com.braindribbler.recipe.domain.auth.UserAuth;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -32,7 +33,12 @@ public class RecipeUserDetails implements UserDetails {
         return userAuth.getEmail();
     }
 
-    public com.braindribbler.recipe.domain.auth.User getUserProfile() {
+    public User getUserProfile() {
         return userAuth.getUser();
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return this.userAuth.isVerified();
     }
 }

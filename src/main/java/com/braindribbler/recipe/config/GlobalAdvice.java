@@ -1,6 +1,5 @@
 package com.braindribbler.recipe.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.GitProperties;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -9,8 +8,11 @@ import org.springframework.ui.Model;
 @ControllerAdvice
 public class GlobalAdvice {
 
-    @Autowired(required = false)
-    private GitProperties gitProperties;
+    private final GitProperties gitProperties;
+
+    GlobalAdvice(GitProperties gitProperties) {
+        this.gitProperties = gitProperties;
+    }
 
     @ModelAttribute
     public void addBuildVersionToModel(Model model) {

@@ -1,14 +1,21 @@
 package com.braindribbler.recipe.controller.auth;
 
+import com.braindribbler.recipe.domain.auth.User;
 import com.braindribbler.recipe.dto.auth.RegistrationDto;
 import com.braindribbler.recipe.service.auth.UserRegistrationService;
+
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+
+import java.util.UUID;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class AuthController {
@@ -46,7 +53,7 @@ public class AuthController {
 
         try {
             // 2. Map DTO input strings directly to your core service transaction layer
-            userRegistrationService.registerNewUser(
+            User newUser = userRegistrationService.registerNewUser(
                     registrationDto.getEmail(),
                     registrationDto.getPassword(),
                     registrationDto.getFirstName(),
@@ -54,6 +61,8 @@ public class AuthController {
                     registrationDto.getDisplayName(),
                     null // Passing null defaults standard signups to ROLE_USER inside the service layer
             );
+
+            userRegistrationService.sendVerificationEmail(newUser);
 
             // 3. Redirect back to login with a URL success flag
             return "redirect:/login?success";
@@ -63,6 +72,22 @@ public class AuthController {
             // form fields
             result.rejectValue("email", "error.registrationDto", e.getMessage());
             return "register";
+        }
+    }
+
+    @GetMapping("/verify")
+    public String verifyUserAccount(@RequestParam("token") UUID token, Model model) {
+        try {
+            // Delegate verification transaction logic to your service layer
+            userRegistrationService.verifyUserToken(token);
+
+            // Redirect to login with a dedicated verification success query parameter flag
+            return "redirect:/login?verified";
+
+        } catch (IllegalArgumentException e) {
+            // Catch invalid or expired token issues and pass the error message to the model
+            model.addAttribute("verificationError", e.getMessage());
+            return "verification-failed"; // Points to templates/verification-failed.html
         }
     }
 }

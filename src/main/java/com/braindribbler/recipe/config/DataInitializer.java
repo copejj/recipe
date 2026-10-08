@@ -5,8 +5,11 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import com.braindribbler.recipe.domain.auth.Role;
+import com.braindribbler.recipe.domain.auth.User;
+import com.braindribbler.recipe.domain.auth.UserAuth;
 import com.braindribbler.recipe.repository.auth.ProfileVisibilityRepository;
 import com.braindribbler.recipe.repository.auth.RoleRepository; // Added
+import com.braindribbler.recipe.repository.auth.UserAuthRepository;
 import com.braindribbler.recipe.repository.auth.UserRepository;
 import com.braindribbler.recipe.service.auth.UserRegistrationService;
 
@@ -16,15 +19,18 @@ import java.util.Set;
 public class DataInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
+    private final UserAuthRepository userAuthRepository;
     private final UserRegistrationService userRegistrationService;
     private final RoleRepository roleRepository; // 1. Added repository field
 
     // 2. Added RoleRepository as a parameter to inject it here
     public DataInitializer(UserRepository userRepository,
+            UserAuthRepository userAuthRepository,
             ProfileVisibilityRepository profileVisibilityRepository,
             UserRegistrationService userRegistrationService,
             RoleRepository roleRepository) {
         this.userRepository = userRepository;
+        this.userAuthRepository = userAuthRepository;
         this.userRegistrationService = userRegistrationService;
         this.roleRepository = roleRepository;
     }
@@ -53,13 +59,21 @@ public class DataInitializer implements CommandLineRunner {
             Role adminRole = roleRepository.findByRoleName("ROLE_SUPER_ADMIN")
                     .orElseThrow(() -> new IllegalStateException("Required ROLE_SUPER_ADMIN role not found."));
 
-            userRegistrationService.registerNewUser(
+            User adminUser = userRegistrationService.registerNewUser(
                     adminEmail,
                     adminPassword,
                     adminFirstName,
                     adminLastName,
                     adminDisplayName,
                     Set.of(adminRole));
+
+            if (adminUser != null && adminUser.getUserAuth() != null) {
+                UserAuth adminAuth = adminUser.getUserAuth();
+                adminAuth.setVerified(true);
+                adminAuth.setVerificationToken(null);
+                userAuthRepository.save(adminAuth);
+                System.out.println("Super Admin verification state explicitly forced to ACTIVE.");
+            }
 
             System.out.println("Super Admin '" + adminEmail + "' successfully seeded with Argon2id!");
         }

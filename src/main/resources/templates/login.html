@@ -10,9 +10,18 @@
         <h1 class="page-title" style="text-align: center;">Sign In</h1>
         <p class="page-subtitle" style="text-align: center; margin-bottom: 20px;">Access your chef portal</p>
 
+        <!-- Existing error alert (Will trigger if password is wrong or user doesn't exist) -->
         <div th:if="${param.error}" class="alert alert--danger">Invalid email address or password.</div>
+        <!-- Triggers if the user exists but hasn't activated their account yet -->
+        <div th:if="${param.unverified}" class="alert alert--danger">Your account is not verified yet. Please check your
+            email for the verification link.</div>
         <div th:if="${param.logout}" class="alert alert--success">You have been successfully logged out.</div>
-        <div th:if="${param.success}" class="alert alert--info">Account created successfully! Please sign in.</div>
+        <!-- Changed the text slightly to remind them to look for the confirmation link -->
+        <div th:if="${param.success}" class="alert alert--info">Account created successfully! Please check your email to
+            verify your account.</div>
+        <!-- Confirms that clicking the email link successfully toggled their DB state -->
+        <div th:if="${param.verified}" class="alert alert--success">Your account has been successfully verified! You can
+            now sign in below.</div>
 
         <form th:action="@{/login}" method="post">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
