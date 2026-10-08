@@ -1,122 +1,122 @@
+name: Production Deployment
+
 on:
-    release:
-        types: [published]
-    workflow_dispatch: 
-        inputs:
-            test_tag:
-                description: 'Tag to use for testing (e.g. v1.0.0-test)'
-                required: false
-                default: 'testing'
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      test_tag:
+        description: 'Tag to use for testing (e.g. v1.0.0-test)'
+        required: false
+        default: 'testing'
 
 jobs:
-    deploy-to-production:
-        runs-on: ubuntu-latest
-        steps:
-            -   name: Execute Remote Deployment
-                uses: appleboy/ssh-action@v1.2.0
-                with:
-                    host: ${{ vars.PROD_HOST }}
-                    port: ${{ secrets.SSH_PRIVATE_PORT }}
-                    username: ${{ secrets.SSH_PRIVATE_USERNAME }}
-                    key: ${{ secrets.SSH_PRIVATE_KEY }}
-                    # IMPORTANT: All variables used in the script must be listed here
-                    envs: DB_NAME,DB_USER,DB_PASS,DB_HOST,TAG_NAME
+  deploy-to-production:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Execute Remote Deployment
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ vars.PROD_HOST }}
+          port: ${{ secrets.SSH_PRIVATE_PORT }}
+          username: ${{ secrets.SSH_PRIVATE_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: DB_NAME,DB_USER,DB_PASS,DB_HOST,TAG_NAME
+          script: |
+            CURRENT_STEP="INITIALIZATION"
+            echo "[Step 1/7] --- Starting Deployment for $TAG_NAME ---"
+            cd ${{ vars.PROD_APP_PATH }}
+            export PGPASSWORD="$DB_PASS"
+            
+            PSQL_ARGS="-h $DB_HOST -U $DB_USER -d $DB_NAME -t --set ON_ERROR_STOP=1"
+            DUMP_ARGS="-h $DB_HOST -U $DB_USER -d $DB_NAME --no-subscriptions --no-publications -x -O"
+            
+            cleanup_on_failure() {
+              EXIT_CODE=$?
+              if [ $EXIT_CODE -ne 0 ]; then
+                echo "!!! ERROR DETECTED in Step: $CURRENT_STEP (Exit Code: $EXIT_CODE) !!!"
+                
+                # Discard staging shadow schema immediately on failure
+                # Live production remains completely untouched
+                if [ "$CURRENT_STEP" == "DATABASE_MIGRATION" ]; then
+                  echo "Cleaning up staging shadow schema due to failure..."
+                  psql $PSQL_ARGS -c "DROP SCHEMA IF EXISTS public_shadow CASCADE;"
+                fi
+                
+                git checkout .
+                exit $EXIT_CODE
+              fi
+            }
+            trap cleanup_on_failure ERR
 
-                    script: |
-                        CURRENT_STEP="INITIALIZATION"
-                        # 1. Initialization and Output
-                        echo "[Step 1/7] --- Starting Deployment for $TAG_NAME ---"
-                        cd ${{ vars.PROD_APP_PATH }}
-                        export PGPASSWORD="$DB_PASS"
-                        
-                        # Specific args for psql vs pg_dump
-                        PSQL_ARGS="-h $DB_HOST -U $DB_USER -d $DB_NAME -t --set ON_ERROR_STOP=1"
-                        DUMP_ARGS="-h $DB_HOST -U $DB_USER -d $DB_NAME --no-subscriptions --no-publications -x -O"
-                        
-                        BACKUP_FILE="/tmp/pre_deploy_backup_$(date +%F_%H%M%S).sql"
+            CURRENT_STEP="DATABASE_BACKUP"
+            echo "[Step 2/7] Preparing isolated shadow schema..."
+            # Purge older failed run schemas and initialize a clean scratchpad
+            psql $PSQL_ARGS -c "DROP SCHEMA IF EXISTS public_shadow CASCADE; CREATE SCHEMA public_shadow; ALTER SCHEMA public_shadow OWNER TO $DB_USER;"
+            
+            # Extract structure and map it cleanly to the shadow namespace
+            pg_dump $DUMP_ARGS --schema-only -n public -f /tmp/live_structure.sql
+            sed "s/\bpublic\b/public_shadow/g" /tmp/live_structure.sql > /tmp/shadow_structure.sql
+            psql $PSQL_ARGS -f /tmp/shadow_structure.sql
+            rm -f /tmp/live_structure.sql /tmp/shadow_structure.sql
 
-                        # Define cleanup_on_failure
-                        cleanup_on_failure() {
-                            EXIT_CODE=$?
-                            if [ $EXIT_CODE -ne 0 ]; then
-                                echo "!!! ERROR DETECTED in Step: $CURRENT_STEP (Exit Code: $EXIT_CODE) !!!"
-                                
-                                # ONLY rollback DB if the failure happened during Step 4 (Migrations)
-                                if [ "$CURRENT_STEP" == "DATABASE_MIGRATION" ] && [ -f "$BACKUP_FILE" ]; then
-                                    echo "Rolling back database to $BACKUP_FILE..."
-                                    psql $PSQL_ARGS -c "DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public; ALTER SCHEMA public OWNER TO $DB_USER; GRANT ALL ON SCHEMA public TO public;"
-                                    psql $PSQL_ARGS -f "$BACKUP_FILE"
-                                fi
-                                
-                                git checkout .
-                                rm -f "$BACKUP_FILE"
-                                exit $EXIT_CODE
-                            fi
-                        }
-                        trap cleanup_on_failure ERR
+            CURRENT_STEP="SOURCE_CHECKOUT"
+            echo "[Step 3/7] Fetching code for tag: $TAG_NAME"
+            git fetch --tags --all
+            git checkout -B "release-$TAG_NAME" "$TAG_NAME"
 
-                        CURRENT_STEP="DATABASE_BACKUP"
-                        # 2. Database Backup
-                        echo "[Step 2/7] Creating pre-deployment database backup..."
-                        pg_dump $DUMP_ARGS -f "$BACKUP_FILE" || true
-                        echo "Backup saved to $BACKUP_FILE"
+            CURRENT_STEP="DATABASE_MIGRATION"
+            echo "[Step 4/7] Running database migrations against shadow schema..."
+            
+            # Orient subsequent loops explicitly to the staging namespace context
+            SHADOW_PSQL="$PSQL_ARGS --set search_path=public_shadow"
 
-                        CURRENT_STEP="SOURCE_CHECKOUT"
-                        # 3. Sync Code
-                        echo "[Step 3/7] Fetching code for tag: $TAG_NAME"
-                        git fetch --tags --all
-                        # git checkout "$TAG_NAME"
-                        git checkout -B "release-$TAG_NAME" "$TAG_NAME"
+            # Dynamically fix the init schema file as well if it contains public. references
+            sed "s/\bpublic\./public_shadow\./g; s/\bpublic\b/public_shadow/g" sql/init_schema.sql > /tmp/fixed_init_schema.sql
+            $SHADOW_PSQL -c "BEGIN;" -f /tmp/fixed_init_schema.sql -c "COMMIT;"
+            rm -f /tmp/fixed_init_schema.sql
 
-                        CURRENT_STEP="DATABASE_MIGRATION"
-                        # 4. Database Migrations (The "No-Backslash" version)
-                        echo "[Step 4/7] Running database migrations..."
-                        psql $PSQL_ARGS -c "BEGIN;" -f sql/init_schema.sql -c "COMMIT;"
+            FILES=$(find sql/migrations -regextype posix-extended -regex ".*/[0-9]{8}_[0-9]+.*\.sql" | sort)
+            for FILE in $FILES; do
+              FILENAME=$(basename "$FILE")
+              
+              ALREADY_RUN=$($SHADOW_PSQL -A -c "SELECT 1 FROM schema_migrations WHERE filename='$FILENAME' AND status='completed';")
+              if [ "$ALREADY_RUN" == "1" ]; then continue; fi
+              
+              echo "Executing migration on shadow: $FILENAME"
+              $SHADOW_PSQL -c "INSERT INTO schema_migrations (filename, status) VALUES ('$FILENAME', 'pending') ON CONFLICT (filename) DO UPDATE SET status='pending', started_at=NOW(), ended_at=NULL;"
+              
+              # AUTOMATIC REWRITE: Safely rewrite hardcoded paths for isolation
+              sed "s/\bpublic\./public_shadow\./g; s/\bpublic\b/public_shadow/g" "$FILE" > /tmp/temp_migration.sql
+              
+              $SHADOW_PSQL -f /tmp/temp_migration.sql
+              rm -f /tmp/temp_migration.sql
+              
+              $SHADOW_PSQL -c "UPDATE schema_migrations SET ended_at=NOW(), status='completed' WHERE filename='$FILENAME';"
+            done
 
-                        FILES=$(find sql/migrations -regextype posix-extended -regex ".*/[0-9]{8}_[0-9]+.*\.sql" | sort)
-                        for FILE in $FILES; do
-                            FILENAME=$(basename "$FILE")
-                            ALREADY_RUN=$(psql $PSQL_ARGS -A -c "SELECT 1 FROM schema_migrations WHERE filename='$FILENAME' AND status='completed';")
-                            if [ "$ALREADY_RUN" == "1" ]; then continue; fi
+            # ATOMIC SWAP: Runs instantly. Safely slides staging to live.
+            echo "Migrations successful! Performing instant atomic schema swap..."
+            psql $PSQL_ARGS -c "
+              BEGIN;
+                ALTER SCHEMA public RENAME TO public_old;
+                ALTER SCHEMA public_shadow RENAME TO public;
+                DROP SCHEMA public_old CASCADE;
+              COMMIT;
+            "
 
-                            echo "Executing migration: $FILENAME"
-                            
-                             # 1. Mark as pending before execution
-                            psql $PSQL_ARGS -c "INSERT INTO schema_migrations (filename, status) VALUES ('$FILENAME', 'pending') ON CONFLICT (filename) DO UPDATE SET status='pending', started_at=NOW(), ended_at=NULL;"
+            CURRENT_STEP="BUILD"
+            echo "[Step 5/7] Building WAR file"
+            mvn clean package -DskipTests
 
-                            # 2. Execute the migration file directly and safely via the -f flag
-                            psql $PSQL_ARGS -f "$FILE"
+            CURRENT_STEP="DEPLOYMENT"
+            echo "[Step 6/7] Deploying versioned WAR..."
+            VERSION_NAME="${{ vars.PROD_DEPLOY_NAME }}##${TAG_NAME}.war"
+            BUILD_WAR="${{ vars.PROD_APP_PATH }}/target/${{ vars.PROD_APP_NAME }}.war"
+            cp "$BUILD_WAR" "${{ vars.PROD_DEPLOY_PATH }}/$VERSION_NAME"
 
-                            # 3. Mark as completed upon success
-                            psql $PSQL_ARGS -c "UPDATE schema_migrations SET ended_at=NOW(), status='completed' WHERE filename='$FILENAME';"
-
-                        done
-
-                        CURRENT_STEP="BUILD"
-                        # 5. Build
-                        echo "[Step 5/7] Building WAR file"
-                        mvn clean package -DskipTests
-
-                        CURRENT_STEP="DEPLOYMENT"
-                        # 6. Deploy to Tomcat (Parallel Deployment)
-                        echo "[Step 6/7] Deploying versioned WAR..."
-                        VERSION_NAME="${{ vars.PROD_DEPLOY_NAME }}##${TAG_NAME}.war"
-                        BUILD_WAR="${{ vars.PROD_APP_PATH }}/target/${{ vars.PROD_APP_NAME }}.war"
-
-                        # Copy to webapps. Tomcat keeps the old version running for existing users!
-                        cp "$BUILD_WAR" "${{ vars.PROD_DEPLOY_PATH }}/$VERSION_NAME"
-
-                        CURRENT_STEP="FINAL_CLEANUP"
-                        # 7. Final Cleanup
-                        echo "[Step 7/7] Cleaning up environment..."
-                        git checkout .
-                        mvn clean
-                        rm "$BACKUP_FILE"
-
-                        echo "--- Deployment of $TAG_NAME completed successfully! ---"
-                env:
-                    DB_NAME: ${{ secrets.DB_NAME }}
-                    DB_USER: ${{ secrets.DB_USER }}
-                    DB_PASS: ${{ secrets.DB_PASS }}
-                    DB_HOST: ${{ secrets.DB_HOST }}
-                    TAG_NAME: ${{ github.event.inputs.test_tag || github.event.release.tag_name }}
+            CURRENT_STEP="FINAL_CLEANUP"
+            echo "[Step 7/7] Cleaning up environment..."
+            git checkout .
+            mvn clean
+            echo "--- Deployment of $TAG_NAME completed successfully! ---"
