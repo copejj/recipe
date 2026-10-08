@@ -15,6 +15,10 @@ public interface LoginHistoryRepository extends JpaRepository<LoginHistory, Inte
     @Query("SELECT COUNT(lh) FROM LoginHistory lh " +
             "WHERE lh.ipAddress = :ip " +
             "AND lh.isSuccessful = false " +
-            "AND lh.loginAt > :sinceTime")
+            "AND lh.loginAt > :sinceTime " +
+            "AND NOT EXISTS (SELECT io FROM IpOverride io " +
+            "                WHERE io.ipAddress = :ip " +
+            "                AND io.overrideUntil > CURRENT_TIMESTAMP)")
     long countRecentIpFailures(@Param("ip") String ip, @Param("sinceTime") OffsetDateTime sinceTime);
+
 }

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" lang="en">
+
+<head th:replace="~{fragments/layout :: html_head('Error - Braindribbler')}"></head>
+
+<body>
+
+    <!-- Shared Navigation Header Fragment -->
+    <div th:replace="~{fragments/layout :: header}"></div>
+
+    <!-- Main Centralized Error Display Card -->
+    <main class="page-card auth-layout" style="text-align: center; margin-top: 80px; margin-bottom: 80px;">
+
+        <!-- Large Error Visual Indicator -->
+        <div style="font-size: 4rem; font-weight: 800; color: #dc3545; margin-bottom: 10px;" th:text="${errorCode}">
+            500
+        </div>
+
+        <h1 class="page-title" th:text="${errorTitle}">Unexpected Error</h1>
+        <p class="page-subtitle" style="margin-bottom: 30px;" th:text="${errorMessage}">
+            An error occurred while processing your request.
+        </p>
+
+        <!-- Dynamic Action Navigation Buttons -->
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <a th:href="@{/}" class="btn btn--primary" style="width: auto; padding: 10px 24px;">Go Home</a>
+        </div>
+
+    </main>
+
+    <!-- Shared Footer Fragment -->
+    <div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+
+</html>
