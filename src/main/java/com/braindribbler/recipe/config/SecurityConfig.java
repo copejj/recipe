@@ -49,12 +49,17 @@ public class SecurityConfig {
                                                 .defaultSuccessUrl("/dashboard", true)
                                                 .failureHandler((request, response, exception) -> {
 
-                                                        if (exception instanceof LockedException) {
+                                                        Throwable cause = (exception.getCause() != null)
+                                                                        ? exception.getCause()
+                                                                        : exception;
+
+                                                        String errorMessage = cause.getMessage();
+
+                                                        if (cause instanceof LockedException) {
                                                                 response.sendRedirect("/login?iplocked");
-                                                        } else if (exception instanceof DisabledException) {
-                                                                if (exception.getMessage() != null && exception
-                                                                                .getMessage()
-                                                                                .contains("administratively disabled")) {
+                                                        } else if (cause instanceof DisabledException) {
+                                                                if (errorMessage != null && errorMessage.contains(
+                                                                                "administratively disabled")) {
                                                                         response.sendRedirect("/login?banned");
                                                                 } else {
                                                                         response.sendRedirect("/login?unverified");
