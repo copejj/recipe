@@ -62,14 +62,14 @@ jobs:
             CURRENT_STEP="DATABASE_BACKUP"
             echo "[Step 2/7] Cleaning up older historical backups & preparing isolated shadow schema..."
             
-            # CRUCIAL MODIFICATION: Clean up the lingering 'public_old' and 'public_shadow' from previous cycles here
+            # Clean up lingering 'public_old' and 'public_shadow' from previous cycles here
             psql $PSQL_ARGS -c "DROP SCHEMA IF EXISTS public_old CASCADE; DROP SCHEMA IF EXISTS public_shadow CASCADE;"
             
             # Dump the current live schema WITH ALL PRODUCTION DATA
             pg_dump $DUMP_ARGS -n public -f /tmp/live_full_snapshot.sql
             
             # Re-map the namespaces to target the isolated staging partition
-            sed "s/\bpublic\b/public_shadow/g" /tmp/live_full_snapshot.sql > /tmp/shadow_full_snapshot.sql
+            sed -E "s/\bpublic\.([a-zA-Z0-9_]+)/public_shadow.\1/g; s/\bpublic\b/public_shadow/g" /tmp/live_full_snapshot.sql > /tmp/shadow_full_snapshot.sql
             psql $PSQL_ARGS -f /tmp/shadow_full_snapshot.sql
             
             psql $PSQL_ARGS -c "ALTER SCHEMA public_shadow OWNER TO $DB_USER;"
@@ -83,30 +83,36 @@ jobs:
             CURRENT_STEP="DATABASE_MIGRATION"
             echo "[Step 4/7] Running database migrations against shadow schema..."
             
-            SEARCH_PATH_ARG="--set search_path=public_shadow"
+            # Explicitly force the connection session path context to public_shadow for un-prefixed fallback
+            SHADOW_ARGS="$PSQL_ARGS --set search_path=public_shadow"
 
-            sed "s/\bpublic\./public_shadow\./g; s/\bpublic\b/public_shadow/g" sql/init_schema.sql > /tmp/fixed_init_schema.sql
-            psql $PSQL_ARGS $SEARCH_PATH_ARG -c "BEGIN;" -f /tmp/fixed_init_schema.sql -c "COMMIT;"
+            # Cleanly fix and run the init schema file
+            sed -E "s/\bpublic\.([a-zA-Z0-9_]+)/public_shadow.\1/g; s/\bpublic\b/public_shadow/g" sql/init_schema.sql > /tmp/fixed_init_schema.sql
+            $SHADOW_ARGS -c "BEGIN;" -f /tmp/fixed_init_schema.sql -c "COMMIT;"
             rm -f /tmp/fixed_init_schema.sql
 
             FILES=$($FIND_BIN sql/migrations -regextype posix-extended -regex ".*/[0-9]{8}_[0-9]+.*\.sql" | sort)
             for FILE in $FILES; do
               FILENAME=$(basename "$FILE")
               
-              ALREADY_RUN=$(psql $PSQL_ARGS $SEARCH_PATH_ARG -A -c "SELECT 1 FROM schema_migrations WHERE filename='$FILENAME' AND status='completed';")
+              # Explicitly target public_shadow context for the schema tracking queries
+              ALREADY_RUN=$(psql $PSQL_ARGS -A -c "SELECT 1 FROM public_shadow.schema_migrations WHERE filename='$FILENAME' AND status='completed';")
               if [ "$ALREADY_RUN" == "1" ]; then continue; fi
               
               echo "Executing migration on shadow data: $FILENAME"
-              psql $PSQL_ARGS $SEARCH_PATH_ARG -c "INSERT INTO schema_migrations (filename, status) VALUES ('$FILENAME', 'pending') ON CONFLICT (filename) DO UPDATE SET status='pending', started_at=NOW(), ended_at=NULL;"
               
-              sed "s/\bpublic\./public_shadow\./g; s/\bpublic\b/public_shadow/g" "$FILE" > /tmp/temp_migration.sql
-              psql $PSQL_ARGS $SEARCH_PATH_ARG -f /tmp/temp_migration.sql
+              psql $PSQL_ARGS -c "INSERT INTO public_shadow.schema_migrations (filename, status) VALUES ('$FILENAME', 'pending') ON CONFLICT (filename) DO UPDATE SET status='pending', started_at=NOW(), ended_at=NULL;"
+              
+              # Bulletproof regex rewrite to catch ALL "public.table_name" variations seamlessly
+              sed -E "s/\bpublic\.([a-zA-Z0-9_]+)/public_shadow.\1/g; s/\bpublic\b/public_shadow/g" "$FILE" > /tmp/temp_migration.sql
+              
+              $SHADOW_ARGS -f /tmp/temp_migration.sql
               rm -f /tmp/temp_migration.sql
               
-              psql $PSQL_ARGS $SEARCH_PATH_ARG -c "UPDATE schema_migrations SET ended_at=NOW(), status='completed' WHERE filename='$FILENAME';"
+              psql $PSQL_ARGS -c "UPDATE public_shadow.schema_migrations SET ended_at=NOW(), status='completed' WHERE filename='$FILENAME';"
             done
 
-            # ATOMIC SWAP: We preserve public_old instead of dropping it!
+            # ATOMIC SWAP: We preserve public_old instead of dropping it
             echo "Migrations successful! Performing instant atomic schema swap (preserving backup)..."
             psql $PSQL_ARGS -c "
               BEGIN;
