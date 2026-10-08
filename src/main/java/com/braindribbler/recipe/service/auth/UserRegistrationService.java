@@ -75,17 +75,20 @@ public class UserRegistrationService {
 
         User savedUser = userRepository.save(user);
 
-        // 4. TRIGGER ASYNCHRONOUS TRANSACTIONAL EMAIL DISPATCH VIA MAILGUN
-        // When deploying to your live Linux server, swap 'localhost:8080' to
-        // '://braindribbler.com'
-        String verificationLink = appApiHost + "/verify?token=" + token;
+        return savedUser;
+    }
+
+    public void sendVerificationEmail(User user) {
+        UserAuth auth = user.getUserAuth();
+        String verificationLink = appApiHost + "/verify?token=" + auth.getVerificationToken();
 
         String emailSubject = "Verify your Braindribbler Recipe Account";
-        String emailBody = "Hi " + firstName + ",\n\n" +
+        String emailBody = "Hi " + user.getFirstName() + ",\n\n" +
                 "Thanks for joining Braindribbler Recipes! Please click the link below to verify your account:\n" +
                 verificationLink + "\n\n" +
                 "Happy Cooking!";
 
+        String email = auth.getEmail();
         try {
             mailgunEmailService.sendEmail(email, emailSubject, emailBody);
         } catch (Exception e) {
@@ -94,8 +97,6 @@ public class UserRegistrationService {
             System.err.println(
                     "CRITICAL: Failed to dispatch verification email to " + email + ". Error: " + e.getMessage());
         }
-
-        return savedUser;
     }
 
     @Transactional

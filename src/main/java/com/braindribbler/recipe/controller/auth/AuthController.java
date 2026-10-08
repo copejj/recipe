@@ -1,5 +1,6 @@
 package com.braindribbler.recipe.controller.auth;
 
+import com.braindribbler.recipe.domain.auth.User;
 import com.braindribbler.recipe.dto.auth.RegistrationDto;
 import com.braindribbler.recipe.service.auth.UserRegistrationService;
 
@@ -52,7 +53,7 @@ public class AuthController {
 
         try {
             // 2. Map DTO input strings directly to your core service transaction layer
-            userRegistrationService.registerNewUser(
+            User newUser = userRegistrationService.registerNewUser(
                     registrationDto.getEmail(),
                     registrationDto.getPassword(),
                     registrationDto.getFirstName(),
@@ -60,6 +61,8 @@ public class AuthController {
                     registrationDto.getDisplayName(),
                     null // Passing null defaults standard signups to ROLE_USER inside the service layer
             );
+
+            userRegistrationService.sendVerificationEmail(newUser);
 
             // 3. Redirect back to login with a URL success flag
             return "redirect:/login?success";
