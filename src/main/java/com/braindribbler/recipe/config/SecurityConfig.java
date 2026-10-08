@@ -2,6 +2,9 @@ package com.braindribbler.recipe.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -39,24 +42,25 @@ public class SecurityConfig {
                                                 .permitAll()
 
                                                 .anyRequest().authenticated())
+                                // Open SecurityConfig.java and update your formLogin failureHandler block:
                                 .formLogin(form -> form
                                                 .loginPage("/login")
                                                 .loginProcessingUrl("/login")
                                                 .defaultSuccessUrl("/dashboard", true)
                                                 .failureHandler((request, response, exception) -> {
-                                                        String errorMessage = exception.getMessage();
+                                                        Throwable cause = (exception.getCause() != null)
+                                                                        ? exception.getCause()
+                                                                        : exception;
 
-                                                        if (exception instanceof org.springframework.security.authentication.DisabledException) {
-                                                                // Check if it's our admin ban or an unverified
-                                                                // registration account flag
-                                                                if (errorMessage != null && errorMessage.contains(
-                                                                                "administratively disabled")) {
+                                                        if (cause instanceof org.springframework.security.authentication.LockedException) {
+                                                                response.sendRedirect("/login?iplocked");
+                                                        } else if (cause instanceof org.springframework.security.authentication.DisabledException) {
+                                                                if (cause.getMessage() != null && cause.getMessage()
+                                                                                .contains("administratively disabled")) {
                                                                         response.sendRedirect("/login?banned");
                                                                 } else {
                                                                         response.sendRedirect("/login?unverified");
                                                                 }
-                                                        } else if (exception instanceof org.springframework.security.authentication.LockedException) {
-                                                                response.sendRedirect("/login?iplocked");
                                                         } else {
                                                                 response.sendRedirect("/login?error");
                                                         }

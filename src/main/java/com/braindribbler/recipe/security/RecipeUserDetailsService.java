@@ -4,6 +4,8 @@ import com.braindribbler.recipe.domain.auth.UserAuth;
 import com.braindribbler.recipe.repository.auth.LoginHistoryRepository;
 import com.braindribbler.recipe.repository.auth.UserAuthRepository;
 import jakarta.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,6 +21,12 @@ public class RecipeUserDetailsService implements UserDetailsService {
     private final LoginHistoryRepository loginHistoryRepository;
     private final HttpServletRequest request;
 
+    @Value("${app.security.ip-max-failures:20}")
+    private int maxIpFailures;
+
+    @Value("${app.security.ip-lock-hours:24}")
+    private int ipLockHours;
+
     public RecipeUserDetailsService(UserAuthRepository userAuthRepository,
             LoginHistoryRepository loginHistoryRepository,
             HttpServletRequest request) {
@@ -31,24 +39,20 @@ public class RecipeUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         String clientIp = getClientIpAddress();
 
-        // 1. HARDENED IP LOCKOUT: Block the IP for 24 hours if it has 20+ total
-        // failures
-        OffsetDateTime oneDayAgo = OffsetDateTime.now().minusDays(1);
-        long ipFailureCount = loginHistoryRepository.countRecentIpFailures(clientIp, oneDayAgo);
+        // 2. REFACTOR TIMELINE HOOK TO USE PROPERTY VALUE
+        OffsetDateTime lockWindowSince = OffsetDateTime.now().minusHours(ipLockHours);
+        long ipFailureCount = loginHistoryRepository.countRecentIpFailures(clientIp, lockWindowSince);
 
-        if (ipFailureCount >= 20) {
-            throw new LockedException(
-                    "Your IP address has been temporarily blocked for 24 hours due to suspicious activity.");
+        // 3. EVALUATE DYNAMIC THRESHOLD LIMIT
+        if (ipFailureCount >= maxIpFailures) {
+            throw new LockedException("Your IP address has been temporarily blocked due to suspicious activity.");
         }
 
-        // 2. FETCH THE USER ACCOUNT
         UserAuth userAuth = userAuthRepository.findByEmail(email)
                 .orElseThrow(
                         () -> new UsernameNotFoundException("No active account discovered matching email: " + email));
 
-        // 3. ADMINISTRATIVE BAN: Check if disabled_at is populated on the User entity
         if (userAuth.getUser() != null && userAuth.getUser().getDisabledAt() != null) {
-            // If the disabled_at timestamp is in the past, block access instantly
             if (userAuth.getUser().getDisabledAt().isBefore(OffsetDateTime.now())) {
                 throw new DisabledException("This account has been administratively disabled.");
             }
@@ -62,6 +66,6 @@ public class RecipeUserDetailsService implements UserDetailsService {
         if (xfHeader == null || xfHeader.isEmpty() || "unknown".equalsIgnoreCase(xfHeader)) {
             return request.getRemoteAddr();
         }
-        return xfHeader.split(",")[0].trim(); // Extract only the first client IP address
+        return xfHeader.split(",")[0].trim();
     }
 }

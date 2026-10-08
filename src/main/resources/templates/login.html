@@ -28,7 +28,7 @@
 
         <!-- Shown if an automated network IP blasts your login routes with bad payloads -->
         <div th:if="${param.iplocked}" class="alert alert--danger">Too many failed connection attempts from your
-            network. Access from this IP has been blocked for 24 hours.</div>
+            network. Access from this IP has been blocked temporarily.</div>
 
         <form th:action="@{/login}" method="post">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
