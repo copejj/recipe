@@ -44,8 +44,19 @@ public class SecurityConfig {
                                                 .loginProcessingUrl("/login")
                                                 .defaultSuccessUrl("/dashboard", true)
                                                 .failureHandler((request, response, exception) -> {
+                                                        String errorMessage = exception.getMessage();
+
                                                         if (exception instanceof org.springframework.security.authentication.DisabledException) {
-                                                                response.sendRedirect("/login?unverified");
+                                                                // Check if it's our admin ban or an unverified
+                                                                // registration account flag
+                                                                if (errorMessage != null && errorMessage.contains(
+                                                                                "administratively disabled")) {
+                                                                        response.sendRedirect("/login?banned");
+                                                                } else {
+                                                                        response.sendRedirect("/login?unverified");
+                                                                }
+                                                        } else if (exception instanceof org.springframework.security.authentication.LockedException) {
+                                                                response.sendRedirect("/login?iplocked");
                                                         } else {
                                                                 response.sendRedirect("/login?error");
                                                         }
