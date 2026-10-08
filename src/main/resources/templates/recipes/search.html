@@ -1,25 +1,31 @@
 <!DOCTYPE html>
 <html xmlns:th="http://thymeleaf.org" lang="en">
 
-<head th:replace="~{fragments/layout :: html_head('Search Recipes')}"></head>
+<head th:replace="~{fragments/layout :: html_head('Search Recipes - Braindribbler')}"></head>
 
 <body>
-
     <div th:replace="~{fragments/layout :: header}"></div>
 
-    <main class="content">
-        <h2>Search Recipes</h2>
-        <p>This is a stand-in page for your upcoming recipe query engine.</p>
+    <main>
+        <div class="page-card">
+            <h1 class="page-title">Search Recipes</h1>
+            <p class="page-subtitle">This is a stand-in page for your upcoming recipe query engine.</p>
 
-        <div style="margin: 20px 0; display: flex; gap: 10px;">
-            <input type="text" placeholder="Search by ingredient, title, or type..."
-                style="padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 4px;" disabled />
-            <button class="btn" style="border: none; cursor: not-allowed;" disabled>Search</button>
+            <form th:action="@{/search}" method="get" style="margin-bottom: 24px;">
+                <div class="search-input-group">
+                    <input type="text" name="query" class="form-input search-control-input"
+                        placeholder="Search by ingredient, title, or type..." disabled />
+                    <button type="submit" class="btn btn--primary search-control-btn" disabled>Search</button>
+                </div>
+            </form>
+
+            <div class="alert alert--info">
+                <strong>Engine Status:</strong> Database query binding logic is currently under development.
+            </div>
         </div>
     </main>
 
     <div th:replace="~{fragments/layout :: footer}"></div>
-
 </body>
 
 </html>

@@ -4,76 +4,35 @@
 <head th:replace="~{fragments/layout :: html_head('Login - Braindribbler')}"></head>
 
 <body>
-
-    <!-- Header Fragment Inclusion -->
     <div th:replace="~{fragments/layout :: header}"></div>
 
-    <!-- Main Centralized Login Card -->
-    <main class="content"
-        style="max-width: 400px; margin: 60px auto; padding: 30px; border: 1px solid #ddd; border-radius: 8px; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+    <main class="page-card auth-layout">
+        <h1 class="page-title" style="text-align: center;">Sign In</h1>
+        <p class="page-subtitle" style="text-align: center; margin-bottom: 20px;">Access your chef portal</p>
 
-        <h2 style="margin-top: 0; margin-bottom: 20px; color: #333; text-align: center;">Sign In</h2>
+        <div th:if="${param.error}" class="alert alert--danger">Invalid email address or password.</div>
+        <div th:if="${param.logout}" class="alert alert--success">You have been successfully logged out.</div>
+        <div th:if="${param.success}" class="alert alert--info">Account created successfully! Please sign in.</div>
 
-        <!-- Condition 1: Authentication Failed Alert -->
-        <div th:if="${param.error}"
-            style="color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 12px; border-radius: 4px; margin-bottom: 20px; font-size: 0.95em;">
-            Invalid email address or password.
-        </div>
-
-        <!-- Condition 2: Logout Confirmed Alert -->
-        <div th:if="${param.logout}"
-            style="color: #155724; background-color: #d4edda; border: 1px solid #c3e6cb; padding: 12px; border-radius: 4px; margin-bottom: 20px; font-size: 0.95em;">
-            You have been successfully logged out.
-        </div>
-
-        <!-- Condition 3: Registration Success Redirect Alert -->
-        <div th:if="${param.success}"
-            style="color: #0c5460; background-color: #d1ecf1; border: 1px solid #bee5eb; padding: 12px; border-radius: 4px; margin-bottom: 20px; font-size: 0.95em;">
-            Account created successfully! Please sign in.
-        </div>
-
-        <!-- Form Component Core Loop -->
-        <!-- Inside templates/login.html -->
         <form th:action="@{/login}" method="post">
-
-            <!-- ADD THIS LINE BACK: Explicitly passes the security token to stop the 403 error -->
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-
-            <div style="margin-bottom: 15px;">
-                <label for="username"
-                    style="display: block; margin-bottom: 6px; font-weight: bold; color: #555; font-size: 0.9em;">Email
-                    Address</label>
-                <input type="email" id="username" name="username" required placeholder="chef@braindribbler.com"
-                    style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 1em;" />
+            <div class="form-group">
+                <label for="username" class="form-label">Email Address</label>
+                <input type="email" id="username" name="username" class="form-input" required
+                    placeholder="recipe@braindribbler.com" />
             </div>
-
-            <!-- Field B: Password Target Data Binder -->
-            <div style="margin-bottom: 24px;">
-                <label for="password"
-                    style="display: block; margin-bottom: 6px; font-weight: bold; color: #555; font-size: 0.9em;">Password</label>
-                <input type="password" id="password" name="password" required placeholder="••••••••"
-                    style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 1em;" />
+            <div class="form-group form-group--last">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" id="password" name="password" class="form-input" required
+                    placeholder="••••••••" />
             </div>
-
-            <!-- Execution Processing Control -->
-            <button type="submit" class="btn"
-                style="width: 100%; padding: 12px; font-size: 1em; border: none; font-weight: bold; cursor: pointer; transition: background 0.2s;">
-                Log In
-            </button>
-
+            <button type="submit" class="btn btn--primary">Log In</button>
         </form>
-
-        <!-- Secondary Workflow Context Options -->
-        <p style="margin-top: 20px; margin-bottom: 0; text-align: center; font-size: 0.9em; color: #666;">
-            Don't have an account? <a th:href="@{/register}"
-                style="color: #007bff; text-decoration: none; font-weight: bold;">Register here</a>
+        <p class="auth-footer-text">Don't have an account? <a th:href="@{/register}" class="auth-link">Register here</a>
         </p>
-
     </main>
 
-    <!-- Footer Fragment Inclusion -->
     <div th:replace="~{fragments/layout :: footer}"></div>
-
 </body>
 
 </html>
