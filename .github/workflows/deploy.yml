@@ -42,6 +42,8 @@ jobs:
               if [ $EXIT_CODE -ne 0 ]; then
                 echo "!!! ERROR DETECTED in Step: $CURRENT_STEP (Exit Code: $EXIT_CODE) !!!"
                 
+                # Discard staging shadow schema immediately on failure
+                # Live production remains completely untouched
                 if [ "$CURRENT_STEP" == "DATABASE_MIGRATION" ]; then
                   echo "Cleaning up staging shadow schema due to failure..."
                   psql $PSQL_ARGS -c "DROP SCHEMA IF EXISTS public_shadow CASCADE;"
@@ -55,11 +57,19 @@ jobs:
 
             CURRENT_STEP="DATABASE_BACKUP"
             echo "[Step 2/7] Preparing isolated shadow schema..."
-            psql $PSQL_ARGS -c "DROP SCHEMA IF EXISTS public_shadow CASCADE; CREATE SCHEMA public_shadow; ALTER SCHEMA public_shadow OWNER TO $DB_USER;"
+            # 1. Drop old shadow schema from previous failed runs. Do NOT recreate it manually.
+            psql $PSQL_ARGS -c "DROP SCHEMA IF EXISTS public_shadow CASCADE;"
             
+            # 2. Extract structural blueprints from public
             pg_dump $DUMP_ARGS --schema-only -n public -f /tmp/live_structure.sql
+            
+            # 3. Rewrite public to public_shadow. The schema creation command inside this file
+            # will now safely build public_shadow from scratch without a duplicate error.
             sed "s/\bpublic\b/public_shadow/g" /tmp/live_structure.sql > /tmp/shadow_structure.sql
             psql $PSQL_ARGS -f /tmp/shadow_structure.sql
+            
+            # 4. Ensure migration user owns the newly generated schema context
+            psql $PSQL_ARGS -c "ALTER SCHEMA public_shadow OWNER TO $DB_USER;"
             rm -f /tmp/live_structure.sql /tmp/shadow_structure.sql
 
             CURRENT_STEP="SOURCE_CHECKOUT"
@@ -70,8 +80,10 @@ jobs:
             CURRENT_STEP="DATABASE_MIGRATION"
             echo "[Step 4/7] Running database migrations against shadow schema..."
             
+            # Orient subsequent loops explicitly to the staging namespace context
             SHADOW_PSQL="$PSQL_ARGS --set search_path=public_shadow"
 
+            # Dynamically fix the init schema file as well if it contains public. references
             sed "s/\bpublic\./public_shadow\./g; s/\bpublic\b/public_shadow/g" sql/init_schema.sql > /tmp/fixed_init_schema.sql
             $SHADOW_PSQL -c "BEGIN;" -f /tmp/fixed_init_schema.sql -c "COMMIT;"
             rm -f /tmp/fixed_init_schema.sql
@@ -86,6 +98,7 @@ jobs:
               echo "Executing migration on shadow: $FILENAME"
               $SHADOW_PSQL -c "INSERT INTO schema_migrations (filename, status) VALUES ('$FILENAME', 'pending') ON CONFLICT (filename) DO UPDATE SET status='pending', started_at=NOW(), ended_at=NULL;"
               
+              # AUTOMATIC REWRITE: Safely rewrite hardcoded paths for isolation
               sed "s/\bpublic\./public_shadow\./g; s/\bpublic\b/public_shadow/g" "$FILE" > /tmp/temp_migration.sql
               
               $SHADOW_PSQL -f /tmp/temp_migration.sql
@@ -94,6 +107,7 @@ jobs:
               $SHADOW_PSQL -c "UPDATE schema_migrations SET ended_at=NOW(), status='completed' WHERE filename='$FILENAME';"
             done
 
+            # ATOMIC SWAP: Runs instantly. Safely slides staging to live.
             echo "Migrations successful! Performing instant atomic schema swap..."
             psql $PSQL_ARGS -c "
               BEGIN;
