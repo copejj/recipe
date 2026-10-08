@@ -5,39 +5,39 @@
 
 <body>
     <div th:replace="~{fragments/layout :: header}"></div>
-    <main class="content">
-        <div
-            style="background: #fff; padding: 30px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-            <h2 style="color: #28a745; margin-top: 0;">Session Fully Authenticated!</h2>
 
-            <p th:text="${message}">Placeholder welcome text.</p>
+    <main>
+        <div class="page-card">
+            <h1 class="page-title" style="color: #28a745;">Session Fully Authenticated</h1>
+            <p th:text="${message}" class="page-subtitle">Placeholder welcome text.</p>
 
-            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
+            <hr class="dashboard-divider" />
 
             <p>Your security infrastructure is fully operational:</p>
-            <ul>
-                <li><strong>Password Engine:</strong> Adaptive Argon2id Verification</li>
-                <li><strong>Identity Storage:</strong> PostgreSQL Database Persistence</li>
-                <li><strong>Layout Engine:</strong> Hierarchical Thymeleaf Fragments</li>
-            </ul>
-
-            <div style="margin-top: 30px; display: flex; gap: 15px; align-items: center;">
-                <a th:href="@{/recipes/search}" class="btn">Go to Recipe Search</a>
-
-                <!-- Secure Logout Mechanism -->
-                <form th:action="@{/logout}" method="post" style="margin: 0;">
-                    <button type="submit"
-                        style="background: none; border: none; color: #dc3545; text-decoration: underline; cursor: pointer; font-size: 1em;">
-                        Sign Out Safely
-                    </button>
-                </form>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-info">
+                        <span class="status-label">Password Engine</span>
+                        <span class="status-value">Argon2id</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-info">
+                        <span class="status-label">Identity Storage</span>
+                        <span class="status-value">PostgreSQL</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-info">
+                        <span class="status-label">Layout Engine</span>
+                        <span class="status-value">Thymeleaf</span>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
 
-    <!-- Shared Footer Fragment -->
     <div th:replace="~{fragments/layout :: footer}"></div>
-
 </body>
 
 </html>

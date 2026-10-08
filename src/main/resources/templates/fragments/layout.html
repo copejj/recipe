@@ -1,46 +1,52 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="en">
+<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org/extras/spring-security" lang="en">
 
 <head th:fragment="html_head(title)">
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title th:text="${title}">Braindribbler Recipes</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
 </head>
 
 <body>
-    <header th:fragment="header"
-        style="display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background-color: #333; color: #fff;">
-        <h3 style="margin: 0;">
-            <a th:href="@{/}" style="color: #fff; text-decoration: none;">Braindribbler Recipes</a>
-        </h3>
 
-        <nav sec:authorize="!isAuthenticated()" style="display: flex; gap: 20px; align-items: center;">
-            <a th:href="@{/}" style="color: #fff; text-decoration: none;">Home</a>
-            <a th:href="@{/search}" style="color: #fff; text-decoration: none;">Search</a>
-            <a th:href="@{/login}" style="color: #ffc107; text-decoration: none; font-weight: bold;">Sign In</a>
-        </nav>
-        <nav sec:authorize="isAuthenticated()" style="display: flex; gap: 20px; align-items: center;">
-            <a th:href="@{/dashboard}" style="color: #fff; text-decoration: none;">Home</a>
-            <a th:href="@{/search}" style="color: #fff; text-decoration: none;">Search</a>
-            <form th:action="@{/logout}" method="post" style="margin: 0; display: inline;">
-                <button type="submit"
-                    style="background: none; border: none; color: #ffc107; text-decoration: underline; font-weight: bold; cursor: pointer; font-size: 1em; padding: 0;">
-                    Sign Out
-                </button>
-            </form>
+    <!-- Unified Header Fragment -->
+    <header th:fragment="header" class="main-header">
+        <div class="header-container">
+            <h3 class="header-logo">
+                <a th:href="@{/}">Braindribbler Recipes</a>
+            </h3>
 
-        </nav>
+            <!-- Navigation: Guest User -->
+            <nav sec:authorize="!isAuthenticated()" class="header-nav">
+                <a th:href="@{/}" class="nav-link">Home</a>
+                <a th:href="@{/search}" class="nav-link">Search</a>
+                <a th:href="@{/login}" class="nav-link nav-link--cta">Sign In</a>
+            </nav>
+
+            <!-- Navigation: Logged-In User -->
+            <nav sec:authorize="isAuthenticated()" class="header-nav">
+                <a th:href="@{/dashboard}" class="nav-link">Home</a>
+                <a th:href="@{/search}" class="nav-link">Search</a>
+                <form th:action="@{/logout}" method="post" class="nav-logout-form">
+                    <button type="submit" class="nav-button nav-button--cta">
+                        Sign Out
+                    </button>
+                </form>
+            </nav>
+        </div>
     </header>
 
-    <footer th:fragment="footer"
-        style="text-align: center; padding: 20px; color: #777; font-size: 0.9em; margin-top: 40px;">
-        <p>&copy; 2026 Braindribbler Recipes. All rights reserved.</p>
-
-        <!-- Render git metadata only if gitProperties is actively populated -->
-        <p th:if="${showGitInfo}" style="font-size: 0.8em; color: #aaa; margin-top: 5px;">
-            Version: <span th:text="${gitBranch}">main</span> (<span th:text="${gitHash}">abcdefg</span>)
-        </p>
+    <!-- Unified Footer Fragment -->
+    <footer th:fragment="footer" class="main-footer">
+        <div class="footer-container">
+            <p>&copy; 2026 Braindribbler Recipes. All rights reserved.</p>
+            <p th:if="${showGitInfo}" class="footer-git-info">
+                Version: <span th:text="${gitBranch}">main</span> (<span th:text="${gitHash}">abcdefg</span>)
+            </p>
+        </div>
     </footer>
+
 </body>
 
 </html>

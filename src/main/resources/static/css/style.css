@@ -1,0 +1,453 @@
+i
+
+/* ==========================================================================
+   1. GLOBAL SYSTEM VARIABLES (THEME CONFIGURATION)
+   ========================================================================== */
+:root {
+    /* Brand Design Palette */
+    --color-primary: #007bff;
+    --color-primary-hover: #0056b3;
+    --color-text-dark: #212529;
+    --color-text-muted: #6c757d;
+    --color-text-label: #495057;
+    --color-border: #dee2e6;
+    --color-border-input: #ced4da;
+    --color-bg-card: #ffffff;
+    --color-bg-body: #f8f9fa;
+
+    /* Global Typography System */
+    --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+    /* Functional Alert System */
+    --alert-danger-text: #721c24;
+    --alert-danger-bg: #f8d7da;
+    --alert-danger-border: #f5c6cb;
+
+    --alert-success-text: #155724;
+    --alert-success-bg: #d4edda;
+    --alert-success-border: #c3e6cb;
+
+    --alert-info-text: #0c5460;
+    --alert-info-bg: #d1ecf1;
+    --alert-info-border: #bee5eb;
+}
+
+/* ==========================================================================
+   2. REUSABLE FOUNDATIONS & STRUCTURAL BASE
+   ========================================================================== */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-family);
+    background-color: var(--color-bg-body);
+    color: var(--color-text-dark);
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Base Typographic Hierarchy */
+h1,
+h2,
+h3 {
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--color-text-dark);
+    margin-top: 0;
+}
+
+p {
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+/* ==========================================================================
+   3. SYSTEM STANDARD APP CONTAINER LAYOUTS
+   ========================================================================== */
+main {
+    flex: 1 0 auto;
+    width: 100%;
+    max-width: 1140px;
+    /* Standard wide screen desktop utility layout */
+    margin: 40px auto;
+    padding: 0 24px;
+}
+
+/* Standardized Page Base Components (Unifies Dashboard, Home, Search views) */
+.page-card {
+    background-color: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 40px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+}
+
+.page-title {
+    font-size: 2rem;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+}
+
+.page-subtitle {
+    font-size: 1.1rem;
+    color: var(--color-text-muted);
+    margin-bottom: 30px;
+}
+
+/* Centralized Small Form Card Layouts (For Login & Registration Only) */
+.auth-layout {
+    max-width: 440px;
+    /* Keeps login tight while respecting main container alignment */
+    margin-top: 60px;
+    margin-bottom: 60px;
+}
+
+/* ==========================================================================
+   4. SHARED FRAGMENTS (HEADER & FOOTER)
+   ========================================================================== */
+.main-header {
+    background-color: #1a1d20;
+    /* Darker off-black for modern, tech-focused depth */
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.header-container {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-logo a {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.header-nav {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: color 0.15s ease;
+}
+
+.nav-link:hover {
+    color: #ffffff;
+}
+
+.nav-link--cta,
+.nav-button--cta {
+    color: #ffc107 !important;
+    font-weight: 600;
+}
+
+.nav-link--cta:hover,
+.nav-button--cta:hover {
+    color: #ffe082 !important;
+}
+
+.nav-logout-form {
+    margin: 0;
+    display: inline;
+}
+
+.nav-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+    padding: 0;
+    transition: color 0.15s ease;
+}
+
+.main-footer {
+    text-align: center;
+    padding: 30px 24px;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    border-top: 1px solid var(--color-border);
+    background-color: var(--color-bg-card);
+    margin-top: auto;
+}
+
+.footer-container {
+    max-width: 1140px;
+    margin: 0 auto;
+}
+
+.footer-git-info {
+    font-size: 0.75rem;
+    color: #a8aeb4;
+    margin-top: 6px;
+}
+
+/* ==========================================================================
+   5. CENTRAL UI COMPONENTS (FORMS, INPUTS & BUTTONS)
+   ========================================================================== */
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group--last {
+    margin-bottom: 28px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: var(--color-text-label);
+    font-size: 0.875rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px 14px;
+    box-sizing: border-box;
+    border: 1px solid var(--color-border-input);
+    border-radius: 6px;
+    font-size: 1rem;
+    font-family: inherit;
+    background-color: #ffffff;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15);
+}
+
+.btn {
+    display: inline-block;
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: center;
+    font-family: inherit;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.btn--primary {
+    background-color: var(--color-primary);
+    color: #ffffff;
+}
+
+.btn--primary:hover {
+    background-color: var(--color-primary-hover);
+}
+
+.btn--primary:active {
+    transform: scale(0.98);
+}
+
+.form-error-msg {
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 6px;
+    font-weight: 600;
+}
+
+/* Explicit CSS States for Native System Disabling */
+.form-input:disabled {
+    background-color: var(--color-bg-body);
+    border-color: var(--color-border);
+    color: #a8aeb4;
+    cursor: not-allowed;
+}
+
+.btn:disabled {
+    background-color: #e9ecef !important;
+    border-color: var(--color-border) !important;
+    color: #adb5bd !important;
+    cursor: not-allowed;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* ==========================================================================
+   6. ATOMIC VIEWS & REUSE BLOCKS
+   ========================================================================== */
+.auth-footer-text {
+    margin-top: 24px;
+    margin-bottom: 0;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+}
+
+.auth-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-link:hover {
+    text-decoration: underline;
+}
+
+/* Homepage Hero Components */
+.hero-search-section {
+    border-top: 1px solid var(--color-border);
+    padding-top: 30px;
+    margin-top: 30px;
+}
+
+.search-prompt {
+    font-weight: 500;
+    margin-bottom: 16px;
+}
+
+.hero-search-form,
+.search-input-group {
+    display: flex;
+    gap: 12px;
+    max-width: 600px;
+}
+
+.hero-search-input,
+.search-control-input {
+    flex: 1;
+}
+
+.hero-search-btn,
+.search-control-btn {
+    width: auto;
+    white-space: nowrap;
+}
+
+/* System Infrastructure Status Grid (Dashboard) */
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background-color: var(--color-bg-body);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.status-item:hover {
+    border-color: #bce5c6;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.status-icon {
+    font-size: 1.75rem;
+}
+
+.status-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.status-label {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text-dark);
+}
+
+.dashboard-divider {
+    border: 0;
+    border-top: 1px solid var(--color-border);
+    margin: 30px 0;
+}
+
+/* ==========================================================================
+   7. GLOBAL NOTIFICATION BANNERS
+   ========================================================================== */
+.alert {
+    padding: 14px 16px;
+    border-radius: 6px;
+    margin-bottom: 24px;
+    font-size: 0.95rem;
+    border: 1px solid transparent;
+}
+
+.alert--danger {
+    color: var(--alert-danger-text);
+    background-color: var(--alert-danger-bg);
+    border-color: var(--alert-danger-border);
+}
+
+.alert--success {
+    color: var(--alert-success-text);
+    background-color: var(--alert-success-bg);
+    border-color: var(--alert-success-border);
+}
+
+.alert--info {
+    color: var(--alert-info-text);
+    background-color: var(--alert-info-bg);
+    border-color: var(--alert-info-border);
+}
+
+/* ==========================================================================
+   8. RESPONSIVE LAYOUT BREAKPOINTS
+   ========================================================================== */
+@media (max-width: 768px) {
+    .header-container {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+    }
+
+    main {
+        margin: 20px auto;
+    }
+
+    .page-card {
+        padding: 24px;
+    }
+
+    .page-title {
+        font-size: 1.65rem;
+    }
+
+    .hero-search-form,
+    .search-input-group {
+        flex-direction: column;
+    }
+
+    .hero-search-btn,
+    .search-control-btn {
+        width: 100%;
+    }
+}
