@@ -1,4 +1,4 @@
-begin:
+begin;
 ALTER TABLE users_auth
 ADD COLUMN is_verified BOOLEAN DEFAULT FALSE,
 ADD COLUMN verification_token UUID DEFAULT NULL;
