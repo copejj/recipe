@@ -35,7 +35,7 @@ public class SecurityConfig {
                                                 .requestMatchers("/error").permitAll()
                                                 .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**")
                                                 .permitAll()
-                                                .requestMatchers("/", "/search", "/register", "/login")
+                                                .requestMatchers("/", "/search", "/register", "/login", "/verify")
                                                 .permitAll()
 
                                                 .anyRequest().authenticated())
@@ -43,6 +43,13 @@ public class SecurityConfig {
                                                 .loginPage("/login")
                                                 .loginProcessingUrl("/login")
                                                 .defaultSuccessUrl("/dashboard", true)
+                                                .failureHandler((request, response, exception) -> {
+                                                        if (exception instanceof org.springframework.security.authentication.DisabledException) {
+                                                                response.sendRedirect("/login?unverified");
+                                                        } else {
+                                                                response.sendRedirect("/login?error");
+                                                        }
+                                                })
                                                 .permitAll())
                                 .logout(logout -> logout
                                                 .logoutUrl("/logout")
