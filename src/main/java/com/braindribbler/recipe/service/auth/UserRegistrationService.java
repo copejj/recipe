@@ -5,6 +5,7 @@ import com.braindribbler.recipe.domain.auth.Role;
 import com.braindribbler.recipe.domain.auth.User;
 import com.braindribbler.recipe.domain.auth.UserAuth;
 import com.braindribbler.recipe.repository.auth.ProfileVisibilityRepository;
+import com.braindribbler.recipe.repository.auth.RoleRepository;
 import com.braindribbler.recipe.repository.auth.UserAuthRepository;
 import com.braindribbler.recipe.repository.auth.UserRepository;
 import com.braindribbler.recipe.service.MailgunEmailService;
@@ -25,6 +26,7 @@ public class UserRegistrationService {
     private final ProfileVisibilityRepository profileVisibilityRepository;
     private final PasswordEncoder passwordEncoder;
     private final MailgunEmailService mailgunEmailService;
+    private final RoleRepository roleRepository;
 
     @Value("${app.api.host}")
     private String appApiHost;
@@ -33,14 +35,17 @@ public class UserRegistrationService {
             UserAuthRepository userAuthRepository,
             ProfileVisibilityRepository profileVisibilityRepository,
             PasswordEncoder passwordEncoder,
-            MailgunEmailService mailgunEmailService) {
+            MailgunEmailService mailgunEmailService,
+            RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.userAuthRepository = userAuthRepository;
         this.profileVisibilityRepository = profileVisibilityRepository;
         this.passwordEncoder = passwordEncoder;
         this.mailgunEmailService = mailgunEmailService;
+        this.roleRepository = roleRepository;
     }
 
+    // Inside com.braindribbler.recipe.service.auth.UserRegistrationService.java
     @Transactional
     public User registerNewUser(String email, String rawPassword, String firstName, String lastName,
             String displayName, Set<Role> assignedRoles) {
@@ -58,24 +63,29 @@ public class UserRegistrationService {
         user.setDisplayName(displayName);
         user.setProfileVisibility(defaultVisibility);
 
+        // 🔑 THE FIX: If no special roles are explicitly passed (like by
+        // DataInitializer),
+        // automatically attach the baseline ROLE_USER from the database!
         if (assignedRoles != null && !assignedRoles.isEmpty()) {
             user.setRoles(assignedRoles);
+        } else {
+            Role defaultRole = roleRepository.findByRoleName("ROLE_USER")
+                    .orElseThrow(() -> new IllegalStateException(
+                            "Required database role configuration 'ROLE_USER' not found."));
+            user.addRole(defaultRole); // Seamlessly drops a record into your user_roles mapping table
         }
 
         UserAuth auth = new UserAuth();
         auth.setEmail(email);
         auth.setPassword(passwordEncoder.encode(rawPassword));
         auth.setUser(user);
-
         auth.setVerified(false);
+
         UUID token = UUID.randomUUID();
         auth.setVerificationToken(token);
-
         user.setUserAuth(auth);
 
-        User savedUser = userRepository.save(user);
-
-        return savedUser;
+        return userRepository.save(user);
     }
 
     public void sendVerificationEmail(User user) {

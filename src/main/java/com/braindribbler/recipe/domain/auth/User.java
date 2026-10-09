@@ -40,12 +40,31 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER) // Changed LAZY to EAGER
     private UserAuth userAuth;
 
-    // Added: Maps to your physical user_roles join table using user_id
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles", schema = "public", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
     public User() {
+    }
+
+    public int getHighestRoleRankValue() {
+        if (this.roles == null || this.roles.isEmpty())
+            return 0;
+        int max = 0;
+        for (Role r : this.roles) {
+            String name = r.getRoleName();
+            int rank = 0;
+            if ("ROLE_SUPER_ADMIN".equals(name))
+                rank = 3;
+            else if ("ROLE_ADMIN".equals(name))
+                rank = 2;
+            else if ("ROLE_MODERATOR".equals(name))
+                rank = 1;
+
+            if (rank > max)
+                max = rank;
+        }
+        return max;
     }
 
     public Integer getUserId() {
@@ -120,7 +139,6 @@ public class User {
         this.userAuth = userAuth;
     }
 
-    // Added: Getters, Setters, and helper utility method for user roles
     public Set<Role> getRoles() {
         return roles;
     }

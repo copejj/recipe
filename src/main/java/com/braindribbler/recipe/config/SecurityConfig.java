@@ -41,7 +41,7 @@ public class SecurityConfig {
                                                 .permitAll()
                                                 .requestMatchers("/", "/search", "/register", "/login", "/verify")
                                                 .permitAll()
-
+                                                .requestMatchers("/admin/users/**").hasAuthority("can_manage_users")
                                                 .anyRequest().authenticated())
                                 .formLogin(form -> form
                                                 .loginPage("/login")
