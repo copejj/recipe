@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" lang="en">
+
+<head>
+    <!-- Shared Layout Fragment (Handles base metadata & layout title) -->
+    <th:block th:replace="~{fragments/layout :: html_head('Login Audit Logs - Braindribbler')}"></th:block>
+</head>
+
+<body>
+
+    <!-- Shared Navigation Header Fragment -->
+    <div th:replace="~{fragments/layout :: header}"></div>
+
+    <main class="page-card page-card--audit-layout">
+        <h1 class="page-title">Login Audit History</h1>
+        <p class="page-subtitle">Real-time telemetry monitoring for connection attempts, network IP whitelists, and
+            intrusion probing records.</p>
+
+        <!-- Whitelist Feedback Success Alert -->
+        <div th:if="${param.override_success}" class="alert alert--success">
+            Network IP target context has been successfully whitelisted for the next 2 hours!
+        </div>
+
+        <div class="table-responsive-wrapper">
+            <table id="auditTable" class="display">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>User ID</th>
+                        <th>Identity (Actual / Attempted)</th>
+                        <th>Network IP Address</th>
+                        <th>Status</th>
+                        <th>Failure Reason</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- CLEAN OBJECT PROPERTY ITERATION -->
+                    <tr th:each="log : ${rawLogs}">
+
+                        <!-- 1. Formatted Timestamp -->
+                        <!-- FIXED: Removed th:data-order to clear the DataTables string-parsing conflict -->
+                        <td th:text="${log.loginAt}">2026-10-09T15:38:00Z</td>
+
+                        <!-- 2. Dedicated User ID Column -->
+                        <td class="audit-user-id audit-font-monospace">
+                            <span th:text="${log.userId != null ? log.userId : '—'}"
+                                th:class="${log.userId == null ? 'audit-user-id--empty' : ''}">—</span>
+                        </td>
+
+
+                        <!-- FIXED: Swapped inline structural spaces out for your clean externalized style.css classes -->
+                        <td>
+                            <div class="audit-identity-actual"
+                                th:text="${log.actualEmail != null ? log.actualEmail : '—'}"> Actual: chef_
+                                actual@braindribbler.com</div>
+                            <div class="audit-identity-attempted"
+                                th:text="${log.attemptedEmail != null ? log.attemptedEmail : '—'}"> Typed:
+                                chef_typo@braindribbler.com</div>
+                        </td>
+
+                        <!-- 4. Network IP Address -->
+                        <td class="audit-font-monospace" th:text="${log.ipAddress}">127.0.0.1</td>
+
+                        <!-- 5. Status Badge -->
+                        <td>
+                            <span th:if="${log.successful}"
+                                class="audit-badge @alert--success audit-badge--success">SUCCESS</span>
+                            <span th:if="${!log.successful}" class="audit-badge audit-badge--failed">FAILED</span>
+                        </td>
+
+                        <!-- 6. Failure Reason Diagnostic -->
+                        <td th:text="${log.failureReason != null ? log.failureReason : '—'}"
+                            th:class="${log.failureReason != null ? 'audit-log-failure audit-log-failure--active' : 'audit-log-failure audit-log-failure--empty'}">
+                            —
+                        </td>
+
+                        <!-- 7. Inline Whitelist Quick Unblock Actions Override -->
+                        <td>
+                            <form th:if="${!log.successful}" th:action="@{/admin/login-history/override}" method="post"
+                                class="audit-action-form">
+                                <input type="hidden" name="ipAddress" th:value="${log.ipAddress}" />
+                                <button type="submit" class="btn btn--primary btn--unblock-override">
+                                    Unblock IP
+                                </button>
+                            </form>
+                            <span th:if="${log.successful}" class="audit-action-text--none">No Action</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Shared Footer Fragment -->
+    <div th:replace="~{fragments/layout :: footer}"></div>
+
+    <!-- INITIALIZATION LOGIC WITH DYNAMIC TIMEPICKER FORMATTER -->
+    <script>
+        window.addEventListener('load', function () {
+            var $ = jQuery;
+
+            if ($.fn.DataTable.isDataTable('#auditTable')) {
+                $('#auditTable').DataTable().destroy();
+            }
+
+            $('#auditTable').DataTable({
+                "order": { idx: 0, dir: 'desc' },
+                "pageLength": 25,
+                "searching": true,
+                "ordering": true,
+                "paging": true,
+                "columnDefs": [
+                    {
+                        "targets": 0,
+                        "render": function (data, type, row) {
+                            if ((type === 'display' || type === 'filter') && data) {
+                                var cleanData = data.trim();
+                                if (cleanData === '—' || cleanData === '') return '—';
+
+                                var date = new Date(cleanData);
+
+                                if (!isNaN(date.getTime())) {
+                                    // Localizes automatically to user browser timezone: "Oct 9, 2026, 3:16 PM"
+                                    return date.toLocaleString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        year: 'numeric',
+                                        hour: 'numeric',
+                                        minute: '2-digit',
+                                        hour12: true
+                                    });
+                                }
+                            }
+                            return data;
+                        }
+                    }
+                ],
+                "language": {
+                    "search": "Filter Logs:",
+                    "zeroRecords": "No matching authentication records found in logs history"
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

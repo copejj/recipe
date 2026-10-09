@@ -527,3 +527,129 @@ main {
 .nav-dropdown:hover .dropdown-menu {
     display: block;
 }
+
+/* ==========================================================================
+   10. INTERACTIVE DATATABLES COMPONENT STYLES & OVERRIDES
+   ========================================================================== */
+.dataTables_wrapper {
+    margin-top: 20px;
+    width: 100% !important;
+}
+
+table.dataTable {
+    border-collapse: collapse !important;
+    margin-bottom: 20px;
+    width: 100% !important;
+}
+
+table.dataTable thead th {
+    background-color: var(--color-bg-body);
+    border-bottom: 2px solid var(--color-border) !important;
+    padding: 12px !important;
+    font-size: 0.875rem !important;
+    white-space: nowrap !important;
+}
+
+table.dataTable tbody td {
+    border-bottom: 1px solid var(--color-border);
+    padding: 12px !important;
+}
+
+/* Page Container Layout Overrides */
+.page-card--audit-layout {
+    max-width: 1240px;
+    margin-top: 40px;
+}
+
+.table-responsive-wrapper {
+    overflow-x: auto;
+    width: 100%;
+}
+
+/* NEW: Targets the first column (Timestamp) to shrink its text */
+table.dataTable tbody td:first-child {
+    font-size: 0.8rem !important;
+    white-space: nowrap;
+    color: var(--color-text-muted);
+}
+
+/* Dedicated Grid Typography Utilities */
+.audit-font-monospace {
+    font-family: monospace;
+}
+
+.audit-user-id {
+    font-weight: 600;
+}
+
+.audit-user-id--empty {
+    color: var(--color-text-muted);
+}
+
+.audit-identity-actual {
+    color: var(--color-text-dark);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.audit-identity-attempted {
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
+
+/* Status Badges */
+.audit-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 0.75rem;
+}
+
+.audit-badge--success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.audit-badge--failed {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* MODIFIED: Shrinks the failure font further and restricts column expansion */
+.audit-log-failure {
+    font-size: 0.75rem !important;
+    /* Made smaller */
+    max-width: 160px !important;
+    /* Narrowed down column width limits */
+    word-break: break-word;
+    /* Allows text wrapping within narrow container boundaries */
+}
+
+.audit-log-failure--active {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.audit-log-failure--empty {
+    color: var(--color-text-muted);
+}
+
+.audit-action-form {
+    margin: 0;
+    display: inline;
+}
+
+.btn--unblock-override {
+    width: auto;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    background-color: #28a745;
+    white-space: nowrap;
+}
+
+.audit-action-text--none {
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+    font-style: italic;
+}

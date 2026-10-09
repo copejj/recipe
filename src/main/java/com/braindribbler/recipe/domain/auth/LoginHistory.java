@@ -1,7 +1,6 @@
 package com.braindribbler.recipe.domain.auth;
 
 import java.time.OffsetDateTime;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -21,8 +20,10 @@ public class LoginHistory {
     @Column(name = "login_history_id")
     private Integer loginHistoryId;
 
+    // 🔑 FIXED: Set nullable = true so we can log brute-force probing of
+    // non-existent emails!
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_auth_id", nullable = false)
+    @JoinColumn(name = "user_auth_id", nullable = true)
     private UserAuth userAuth;
 
     @Column(name = "login_at", nullable = false)
@@ -46,7 +47,21 @@ public class LoginHistory {
     public LoginHistory() {
     }
 
-    // Getters and Setters
+    public Integer getUserId() {
+        if (this.userAuth != null && this.userAuth.getUser() != null) {
+            return this.userAuth.getUser().getUserId();
+        }
+        return null;
+    }
+
+    public String getActualEmail() {
+        if (this.userAuth != null) {
+            return this.userAuth.getEmail();
+        }
+        return "Anonymous / Guest Attempt";
+    }
+
+    // Standard Getters and Setters
     public Integer getLoginHistoryId() {
         return loginHistoryId;
     }
