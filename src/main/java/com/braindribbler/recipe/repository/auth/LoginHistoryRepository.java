@@ -8,9 +8,25 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 public interface LoginHistoryRepository extends JpaRepository<LoginHistory, Integer> {
-    List<LoginHistory> findByUserAuthUsersAuthIdOrderByLoginAtDesc(Long usersAuthId);
+
+    List<LoginHistory> findByUserAuthUserAuthIdOrderByLoginAtDesc(Integer userAuthId);
 
     List<LoginHistory> findAllByOrderByLoginAtDesc();
+
+    List<LoginHistory> findByUserAuthUserUserIdOrderByLoginAtDesc(Integer userId);
+
+    @Query(value = "SELECT ua.email as actualEmail, lh.* " +
+            "FROM public.login_history lh " +
+            "LEFT JOIN public.users_auth ua USING (user_auth_id) " +
+            "ORDER BY lh.login_at DESC", nativeQuery = true)
+    List<Object[]> findAllLogsWithActualEmailNative();
+
+    @Query(value = "SELECT ua.email as actualEmail, lh.* " +
+            "FROM public.login_history lh " +
+            "LEFT JOIN public.users_auth ua USING (user_auth_id) " +
+            "WHERE ua.user_id = :userId " +
+            "ORDER BY lh.login_at DESC", nativeQuery = true)
+    List<Object[]> findLogsByUserIdWithActualEmailNative(@Param("userId") Integer userId);
 
     // Counts absolute malicious failed guessing sequences tied directly to a single
     // IP address
@@ -22,5 +38,4 @@ public interface LoginHistoryRepository extends JpaRepository<LoginHistory, Inte
             "                WHERE io.ipAddress = :ip " +
             "                AND io.overrideUntil > CURRENT_TIMESTAMP)")
     long countRecentIpFailures(@Param("ip") String ip, @Param("sinceTime") OffsetDateTime sinceTime);
-
 }

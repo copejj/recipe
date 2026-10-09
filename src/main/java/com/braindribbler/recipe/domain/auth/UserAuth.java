@@ -19,8 +19,8 @@ public class UserAuth {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "users_auth_id")
-    private Integer usersAuthId;
+    @Column(name = "user_auth_id")
+    private Integer userAuthId;
 
     @Column(nullable = false, unique = true, columnDefinition = "text")
     private String email;
@@ -50,12 +50,12 @@ public class UserAuth {
     public UserAuth() {
     }
 
-    public Integer getUsersAuthId() {
-        return usersAuthId;
+    public Integer getUserAuthId() {
+        return userAuthId;
     }
 
-    public void setUsersAuthId(Integer usersAuthId) {
-        this.usersAuthId = usersAuthId;
+    public void setUserAuthId(Integer userAuthId) {
+        this.userAuthId = userAuthId;
     }
 
     public String getEmail() {

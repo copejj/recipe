@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" lang="en">
+
+<head th:replace="~{fragments/layout :: html_head('Login Audit Logs - Braindribbler')}"></head>
+
+<body>
+
+    <!-- Shared Navigation Header Fragment -->
+    <div th:replace="~{fragments/layout :: header}"></div>
+
+    <main class="page-card" style="max-width: 1240px; margin-top: 40px;">
+        <h1 class="page-title">Login Audit History</h1>
+        <p class="page-subtitle">Real-time telemetry monitoring for connection attempts, network IP whitelists, and
+            intrusion probing records.</p>
+
+        <!-- Whitelist Action Feedback Alert Bar -->
+        <div th:if="${param.override_success}" class="alert alert--success">
+            Network IP target context has been successfully whitelisted for the next 2 hours!
+        </div>
+
+        <!-- FILTER CONTROLS BAR -->
+        <div
+            style="background-color: var(--color-bg-body); border: 1px solid var(--color-border); border-radius: 6px; padding: 16px; margin-bottom: 24px;">
+            <form th:action="@{/admin/login-history}" method="get"
+                style="display: flex; gap: 12px; align-items: flex-end;">
+                <div style="flex: 0 1 200px;">
+                    <label for="userIdFilter" class="form-label" style="margin-bottom: 4px;">Filter by User ID</label>
+                    <input type="number" id="userIdFilter" name="userId" th:value="${selectedUserId}" class="form-input"
+                        style="padding: 6px 12px;" placeholder="e.g. 1" />
+                </div>
+                <button type="submit" class="btn btn--primary"
+                    style="width: auto; padding: 8px 16px; font-size: 0.9rem;">Apply Filter</button>
+                <a th:if="${selectedUserId != null}" th:href="@{/admin/login-history}" class="btn"
+                    style="width: auto; padding: 8px 16px; font-size: 0.9rem; background-color: var(--color-border-input); color: var(--color-text-dark); text-decoration: none;">Clear
+                    Filter</a>
+            </form>
+        </div>
+
+        <!-- Auditing Streams Data Table -->
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--color-border); background-color: var(--color-bg-body);">
+                        <th style="padding: 12px; font-weight: 600;">Timestamp</th>
+                        <th style="padding: 12px; font-weight: 600;">Attempted Input</th>
+                        <th style="padding: 12px; font-weight: 600;">Actual Registered Email</th>
+                        <th style="padding: 12px; font-weight: 600;">Network IP Address</th>
+                        <th style="padding: 12px; font-weight: 600;">Status</th>
+                        <th style="padding: 12px; font-weight: 600;">Failure Reason</th>
+                        <th style="padding: 12px; font-weight: 600;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 🔑 FIXED: Mapping array values explicitly by index position -->
+                    <tr th:each="row : ${rawLogs}" style="border-bottom: 1px solid var(--color-border);">
+
+                        <!-- 1. Timestamp (Mapped from row[3] which is login_at) -->
+                        <td style="padding: 12px; white-space: nowrap; color: var(--color-text-muted);"
+                            th:text="${#temporals.format(row[3], 'yyyy-MM-dd HH:mm:ss')}">2026-10-08 11:26:52</td>
+
+                        <!-- 2. Attempted Input (Mapped from row[8] which is attempted_email) -->
+                        <td style="padding: 12px; font-weight: 600;" th:text="${row[8]}">chef@braindribbler.com</td>
+
+                        <!-- 3. Actual Registered Email (Mapped from row[0] which is actualEmail alias from the LEFT JOIN) -->
+                        <td style="padding: 12px; font-style: italic; color: var(--color-text-muted);"
+                            th:text="${row[0] != null ? row[0] : 'Anonymous / No Match'}">
+                            actual_email@braindribbler.com
+                        </td>
+
+                        <!-- 4. Network IP Address (Mapped from row[4] which is ip_address) -->
+                        <td style="padding: 12px; font-family: monospace;" th:text="${row[4]}">127.0.0.1</td>
+
+                        <!-- 5. Status Badge (Mapped from row[6] which is is_successful) -->
+                        <td style="padding: 12px;">
+                            <span th:if="${row[6]}"
+                                style="background-color: #d4edda; color: #155724; padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">SUCCESS</span>
+                            <span th:if="${!row[6]}"
+                                style="background-color: #f8d7da; color: #721c24; padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">FAILED</span>
+                        </td>
+
+                        <!-- 6. Failure Reason (Mapped from row[7] which is failure_reason) -->
+                        <td style="padding: 12px;" th:text="${row[7] != null ? row[7] : '—'}"
+                            th:style="${row[7] != null ? 'color: #dc3545; font-weight: 600;' : 'color: var(--color-text-muted);'}">
+                            —</td>
+
+                        <!-- 7. Inline Whitelist Actions Overrides -->
+                        <td style="padding: 12px;">
+                            <!-- Only show action for failed rows -->
+                            <form th:if="${!row[6]}" th:action="@{/admin/login-history/override}" method="post"
+                                style="margin: 0; display: inline;">
+                                <input type="hidden" name="ipAddress" th:value="${row[4]}" />
+                                <input type="hidden" name="userId" th:if="${selectedUserId != null}"
+                                    th:value="${selectedUserId}" />
+                                <button type="submit" class="btn btn--primary"
+                                    style="width: auto; padding: 4px 10px; font-size: 0.75rem; background-color: #28a745;">
+                                    Unblock IP
+                                </button>
+                            </form>
+                            <span th:if="${row[6]}"
+                                style="color: var(--color-text-muted); font-size: 0.8rem; font-style: italic;">No
+                                Action</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+
+</html>

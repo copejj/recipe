@@ -4,7 +4,6 @@ import com.braindribbler.recipe.domain.auth.User;
 import com.braindribbler.recipe.dto.auth.RegistrationDto;
 import com.braindribbler.recipe.service.auth.UserRegistrationService;
 
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
 import java.util.UUID;
