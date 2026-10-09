@@ -25,23 +25,17 @@ public class AdminLoginHistoryController {
     }
 
     /**
-     * Renders the history view with optional user filtering.
+     * Renders the unified history view.
+     * 🔑 FIXED: Uses your optimized JPQL fetch query returning clean strongly-typed
+     * objects.
      */
     @GetMapping
-    public String showLoginAuditLogs(@RequestParam(value = "userId", required = false) Integer userId, Model model) {
-        List<Object[]> rawRows;
+    public String showLoginAuditLogs(Model model) {
+        // Natively grabs structured entities instead of raw Object arrays
+        List<LoginHistory> logs = loginHistoryRepository.findAllLogsWithUserAuth();
 
-        if (userId != null) {
-            rawRows = loginHistoryRepository.findLogsByUserIdWithActualEmailNative(userId);
-            model.addAttribute("selectedUserId", userId);
-        } else {
-            rawRows = loginHistoryRepository.findAllLogsWithActualEmailNative();
-        }
-
-        // Convert raw structural array sets directly into standard model bindings
-        // Object mappings index references: [0] = actualEmail, [1..N] are mapped
-        // elements
-        model.addAttribute("rawLogs", rawRows);
+        // Bind cleanly to the model variable your new layout expects
+        model.addAttribute("rawLogs", logs);
         return "admin/login-history";
     }
 
@@ -49,8 +43,7 @@ public class AdminLoginHistoryController {
      * Seamlessly whitelists a connection source for 2 hours.
      */
     @PostMapping("/override")
-    public String createIpOverride(@RequestParam("ipAddress") String ipAddress,
-            @RequestParam(value = "userId", required = false) Integer userId) {
+    public String createIpOverride(@RequestParam("ipAddress") String ipAddress) {
 
         // Find existing override or instantiate a clean entity slot
         IpOverride override = ipOverrideRepository.findByIpAddress(ipAddress)
@@ -62,10 +55,6 @@ public class AdminLoginHistoryController {
 
         ipOverrideRepository.save(override);
 
-        // Redirect back preserving current user filter context if applicable
-        if (userId != null) {
-            return "redirect:/admin/login-history?userId=" + userId + "&override_success";
-        }
         return "redirect:/admin/login-history?override_success";
     }
 }
