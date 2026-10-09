@@ -10,6 +10,8 @@ import java.util.List;
 public interface LoginHistoryRepository extends JpaRepository<LoginHistory, Integer> {
     List<LoginHistory> findByUserAuthUsersAuthIdOrderByLoginAtDesc(Long usersAuthId);
 
+    List<LoginHistory> findAllByOrderByLoginAtDesc();
+
     // Counts absolute malicious failed guessing sequences tied directly to a single
     // IP address
     @Query("SELECT COUNT(lh) FROM LoginHistory lh " +

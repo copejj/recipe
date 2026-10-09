@@ -448,3 +448,82 @@ main {
         width: 100%;
     }
 }
+
+/* ==========================================================================
+    9. EXPLICIT ADMIN DROPDOWN LAYOUTS (GLOBAL SCOPE)
+========================================================================== */
+
+/* 1. Establish the relative coordinate context pin point for the dropdown */
+.nav-dropdown {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    padding-bottom: 12px;
+    margin-bottom: -12px;
+}
+
+/* 2. Style the Admin button element cleanly to match navbar flex lines */
+.nav-dropdown .nav-button {
+    background: none;
+    border: none;
+    color: #ffc107;
+    /* Modern tech yellow branding accent color */
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.95rem;
+    padding: 0 10px;
+    margin: 0;
+    line-height: 1;
+    /* Overrides default browser button height spacing */
+}
+
+/* 3. FORCE the flyout panel card to float completely out of layout flow */
+.dropdown-menu {
+    display: none;
+    /* Keep hidden baseline */
+
+    /* CRITICAL RIPPING ACTIONS */
+    position: absolute;
+    top: 100%;
+    /* Positions top edge exactly flush with button bottom */
+    right: 0;
+    /* Aligns right boundaries perfectly */
+
+    /* Presentation Aesthetics */
+    background-color: #1a1d20;
+    /* Modern tech dark theme background */
+    min-width: 180px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    border: 1px solid #2d3238;
+    z-index: 9999;
+    /* Ensures it floats over layout cards and tables safely */
+    padding: 6px 0;
+    margin: 0;
+    /* Erases stray spacing offsets */
+}
+
+/* 4. Formatting properties for routing links inside the dropdown container */
+.dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 10px 16px;
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: left;
+    transition: background-color 0.1s ease, color 0.1s ease;
+}
+
+/* Highlight background on hover states */
+.dropdown-item:hover {
+    background-color: #2d3238;
+    color: #ffffff;
+}
+
+/* 5. TRIGGER: On container hover, shift state cleanly to visible block overlay card */
+.nav-dropdown:hover .dropdown-menu {
+    display: block;
+}

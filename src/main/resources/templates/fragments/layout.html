@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org/extras/spring-security" lang="en">
+<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
 
 <head th:fragment="html_head(title)">
     <meta charset="UTF-8" />
@@ -21,6 +21,7 @@
             <nav sec:authorize="!isAuthenticated()" class="header-nav">
                 <a th:href="@{/}" class="nav-link">Home</a>
                 <a th:href="@{/search}" class="nav-link">Search</a>
+
                 <a th:href="@{/login}" class="nav-link nav-link--cta">Sign In</a>
             </nav>
 
@@ -28,6 +29,24 @@
             <nav sec:authorize="isAuthenticated()" class="header-nav">
                 <a th:href="@{/dashboard}" class="nav-link">Home</a>
                 <a th:href="@{/search}" class="nav-link">Search</a>
+
+                <!-- Unified Admin Dropdown Menu Options Block -->
+                <div class="nav-dropdown" sec:authorize="hasAuthority('can_manage_users')">
+                    <button type="button" class="nav-button nav-link nav-link--cta">
+                        Admin <span class="dropdown-caret">▼</span>
+                    </button>
+
+                    <!-- Dropdown Link Flyout Options Box -->
+                    <div class="dropdown-menu">
+                        <a th:href="@{/admin/users}" class="dropdown-item">Users Panel</a>
+                        <a th:href="@{/admin/login-history}" class="dropdown-item">Login History</a>
+
+                        <!-- Future slots can slide in smoothly right here as you build them: -->
+                        <!-- <a th:href="@{/admin/recipes}" class="dropdown-item">Recipe Moderation</a> -->
+                    </div>
+                </div>
+
+
                 <form th:action="@{/logout}" method="post" class="nav-logout-form">
                     <button type="submit" class="nav-button nav-button--cta">
                         Sign Out

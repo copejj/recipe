@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" lang="en">
+
+<head th:replace="~{fragments/layout :: html_head('User Management - Braindribbler')}"></head>
+
+<body>
+
+    <!-- Shared Navigation Header Fragment -->
+    <div th:replace="~{fragments/layout :: header}"></div>
+
+    <main class="page-card" style="max-width: 1140px; margin-top: 40px;">
+        <h1 class="page-title">Chef Registry</h1>
+        <p class="page-subtitle">Manage system user access privileges, administrative account bans, and profile states.
+        </p>
+
+        <!-- Administrative Management Data Table Grid Grid -->
+        <div style="overflow-x: auto; margin-top: 20px;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--color-border); background-color: var(--color-bg-body);">
+                        <th style="padding: 12px; font-weight: 600;">Actions</th>
+                        <th style="padding: 12px; font-weight: 600;">Display Name</th>
+                        <th style="padding: 12px; font-weight: 600;">Email Address</th>
+                        <th style="padding: 12px; font-weight: 600;">Created At</th>
+                        <th style="padding: 12px; font-weight: 600;">Verification Status</th>
+                        <th style="padding: 12px; font-weight: 600;">Account Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="chef : ${chefs}"
+                        style="border-bottom: 1px solid var(--color-border); transition: background-color 0.15s ease;">
+                        <td style="padding: 12px;">
+                            <!-- THE CONDITION: Only render the button if the row user's rank is STRICTLY LESS THAN the logged-in admin's rank -->
+                            <a th:if="${chef.highestRoleRankValue < loggedInAdminRank}"
+                                th:href="@{/admin/users/edit/{id}(id=${chef.publicId})}" class="btn btn--primary"
+                                style="width: auto; padding: 6px 14px; font-size: 0.85rem; text-decoration: none; display: inline-block;">
+                                Edit Roles
+                            </a>
+
+                            <!-- Optional: Display a locked badge if they cannot modify it -->
+                            <span th:if="${chef.highestRoleRankValue >= loggedInAdminRank}"
+                                style="color: var(--color-text-muted); font-size: 0.85rem; font-style: italic; font-weight: 500;">
+                                System Locked
+                            </span>
+                        </td>
+                        <td style="padding: 12px; font-weight: 500;" th:text="${chef.displayName}">SousChefJane</td>
+                        <td style="padding: 12px;" th:text="${chef.userAuth != null ? chef.userAuth.email : 'N/A'}">
+                            chef@braindribbler.com</td>
+                        <td style="padding: 12px;" th:text="${#temporals.format(chef.createdAt, 'yyyy-MM-dd HH:mm')}">
+                            2026-10-08</td>
+                        <td style="padding: 12px;">
+                            <span th:if="${chef.userAuth != null && chef.userAuth.verified}"
+                                style="color: #28a745; font-weight: 600;">Verified</span>
+                            <span th:if="${chef.userAuth == null || !chef.userAuth.verified}"
+                                style="color: #dc3545; font-weight: 600;">Pending Link</span>
+                        </td>
+                        <td style="padding: 12px;">
+                            <span th:if="${chef.disabledAt == null}"
+                                style="color: #28a745; font-weight: 600;">Active</span>
+                            <span th:if="${chef.disabledAt != null}"
+                                style="color: #dc3545; font-weight: 600;">Banned</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Shared Footer Fragment -->
+    <div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+
+</html>
