@@ -47,7 +47,6 @@ jobs:
               if [ $EXIT_CODE -ne 0 ]; then
                 echo "!!! ERROR DETECTED in Step: $CURRENT_STEP (Exit Code: $EXIT_CODE) !!!"
                 
-                # Discard the scratchpad on failure; live 'public' is safe.
                 if [ "$CURRENT_STEP" == "DATABASE_MIGRATION" ]; then
                   echo "Cleaning up staging shadow schema due to failure..."
                   psql $PSQL_ARGS -c "DROP SCHEMA IF EXISTS public_shadow CASCADE;"
@@ -61,18 +60,29 @@ jobs:
 
             CURRENT_STEP="DATABASE_BACKUP"
             echo "[Step 2/7] Cleaning up older historical backups & preparing isolated shadow schema..."
-            
-            # Clean up lingering 'public_old' and 'public_shadow' from previous cycles here
             psql $PSQL_ARGS -c "DROP SCHEMA IF EXISTS public_old CASCADE; DROP SCHEMA IF EXISTS public_shadow CASCADE;"
             
-            # Dump the current live schema WITH ALL PRODUCTION DATA
             pg_dump $DUMP_ARGS -n public -f /tmp/live_full_snapshot.sql
             
-            # Re-map the namespaces to target the isolated staging partition
             sed -E "s/\bpublic\.([a-zA-Z0-9_]+)/public_shadow.\1/g; s/\bpublic\b/public_shadow/g" /tmp/live_full_snapshot.sql > /tmp/shadow_full_snapshot.sql
             psql $PSQL_ARGS -f /tmp/shadow_full_snapshot.sql
             
             psql $PSQL_ARGS -c "ALTER SCHEMA public_shadow OWNER TO $DB_USER;"
+            
+            # --- FIX: FORCIBLY RE-ASSIGN OWNERSHIP OF ALL COPIED TABLES & SEQUENCES TO MIGRATION USER ---
+            echo "Standardizing cloned table ownership rules..."
+            psql $PSQL_ARGS -c "
+              DO \$\$ DECLARE
+                  r RECORD;
+              BEGIN
+                  FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public_shadow') LOOP
+                      EXECUTE 'ALTER TABLE public_shadow.' || quote_ident(r.tablename) || ' OWNER TO $DB_USER;';
+                  END LOOP;
+                  FOR r IN (SELECT sequencename FROM pg_sequences WHERE schemaname = 'public_shadow') LOOP
+                      EXECUTE 'ALTER SEQUENCE public_shadow.' || quote_ident(r.sequencename) || ' OWNER TO $DB_USER;';
+                  END LOOP;
+              END \$\$;
+            "
             rm -f /tmp/live_full_snapshot.sql /tmp/shadow_full_snapshot.sql
 
             CURRENT_STEP="SOURCE_CHECKOUT"
@@ -83,10 +93,8 @@ jobs:
             CURRENT_STEP="DATABASE_MIGRATION"
             echo "[Step 4/7] Running database migrations against shadow schema..."
             
-            # Use a standard string argument for the search path fallback context
             SEARCH_PATH_ARG="--set search_path=public_shadow"
 
-            # Cleanly fix and run the init schema file
             sed -E "s/\bpublic\.([a-zA-Z0-9_]+)/public_shadow.\1/g; s/\bpublic\b/public_shadow/g" sql/init_schema.sql > /tmp/fixed_init_schema.sql
             psql $PSQL_ARGS $SEARCH_PATH_ARG -c "BEGIN;" -f /tmp/fixed_init_schema.sql -c "COMMIT;"
             rm -f /tmp/fixed_init_schema.sql
@@ -95,24 +103,28 @@ jobs:
             for FILE in $FILES; do
               FILENAME=$(basename "$FILE")
               
-              # Explicitly target public_shadow context for the schema tracking queries
               ALREADY_RUN=$(psql $PSQL_ARGS -A -c "SELECT 1 FROM public_shadow.schema_migrations WHERE filename='$FILENAME' AND status='completed';")
               if [ "$ALREADY_RUN" == "1" ]; then continue; fi
-        
-              echo "Executing migration on shadow data: $FILENAME"
               
+              echo "Executing migration on shadow data: $FILENAME"
               psql $PSQL_ARGS -c "INSERT INTO public_shadow.schema_migrations (filename, status) VALUES ('$FILENAME', 'pending') ON CONFLICT (filename) DO UPDATE SET status='pending', started_at=NOW(), ended_at=NULL;"
               
-              # Bulletproof regex rewrite to catch ALL "public.table_name" variations seamlessly
               sed -E "s/\bpublic\.([a-zA-Z0-9_]+)/public_shadow.\1/g; s/\bpublic\b/public_shadow/g" "$FILE" > /tmp/temp_migration.sql
-              
               psql $PSQL_ARGS $SEARCH_PATH_ARG -f /tmp/temp_migration.sql
               rm -f /tmp/temp_migration.sql
               
               psql $PSQL_ARGS -c "UPDATE public_shadow.schema_migrations SET ended_at=NOW(), status='completed' WHERE filename='$FILENAME';"
             done
 
-            # ATOMIC SWAP: We preserve public_old instead of dropping it
+            # REINFORCE PERMISSIONS: Explicitly grant access to the application user on the new schema right before swapping it live
+            echo "Reinforcing application schema access privileges..."
+            psql $PSQL_ARGS -c "
+              GRANT USAGE ON SCHEMA public_shadow TO recipe_app_user; 
+              GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE ON ALL TABLES IN SCHEMA public_shadow TO recipe_app_user; 
+              GRANT SELECT, USAGE ON ALL SEQUENCES IN SCHEMA public_shadow TO recipe_app_user;
+            "
+
+            # ATOMIC SWAP: Slaps the updated schema + records live instantly
             echo "Migrations successful! Performing instant atomic schema swap (preserving backup)..."
             psql $PSQL_ARGS -c "
               BEGIN;
