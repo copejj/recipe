@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" lang="en">
+
+<head th:replace="~{fragments/layout :: html_head('Modify Access - Braindribbler')}"></head>
+
+<body>
+    <div th:replace="~{fragments/layout :: header}"></div>
+
+    <main class="page-card auth-layout">
+        <h1 class="page-title">Manage Permissions</h1>
+        <p class="page-subtitle" th:text="'Modifying role clusters for: ' + ${targetUser.displayName}"></p>
+
+        <form th:action="@{/admin/users/edit/{publicId}/roles(publicId=${targetUser.publicId})}" method="post">
+            <div class="form-group form-group--last">
+                <label class="form-label">Assignable Roles</label>
+
+                <!-- Dynamic Checkbox Grid Container with standard CSS rules -->
+                <div class="permission-checkbox-grid">
+                    <div th:each="role : ${assignableRoles}" class="permission-checkbox-card">
+
+                        <!-- SECURITY PROTECTION: Disable the checkbox if it is the baseline user role -->
+                        <input type="checkbox" name="selectedRoles" th:value="${role.roleId}"
+                            th:id="'role_' + ${role.roleId}"
+                            th:checked="${targetUser.roles.contains(role) || role.roleName == 'ROLE_USER'}"
+                            th:disabled="${role.roleName == 'ROLE_USER'}" />
+
+                        <!-- Keep a hidden fallback input so the browser still transmits the ROLE_USER ID back to Java if disabled -->
+                        <input type="hidden" th:if="${role.roleName == 'ROLE_USER'}" name="selectedRoles"
+                            th:value="${role.roleId}" />
+
+                        <div class="permission-checkbox-details">
+                            <label th:for="'role_' + ${role.roleId}" th:text="${role.roleName}"></label>
+                            <small
+                                th:text="${role.description != null ? role.description : 'Grants access to this group layer.'}"></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions-footer">
+                <a th:href="@{/admin/users}" class="btn btn--cancel">Cancel</a>
+                <button type="submit" class="btn btn--primary btn--submit">Save Privileges</button>
+            </div>
+        </form>
+    </main>
+
+    <div th:replace="~{fragments/layout :: footer}"></div>
+</body>
+
+</html>

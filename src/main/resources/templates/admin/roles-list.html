@@ -1,59 +1,114 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://thymeleaf.org" lang="en">
 
 <head th:replace="~{fragments/layout :: html_head('Role Matrix - Braindribbler')}"></head>
 
 <body>
 
-    <!-- Shared Header Fragment -->
     <div th:replace="~{fragments/layout :: header}"></div>
 
-    <!-- Main Content Container styled after your layout rules -->
-    <main class="page-card admin-layout">
+    <main class="page-card">
 
-        <h1 class="page-title">Role & Authority Matrix</h1>
-        <p class="page-subtitle" style="margin-bottom: 25px;">Manage global security tiers and permissions</p>
+        <!-- Universal Admin Section Layout Controls -->
+        <div class="admin-header-flex">
+            <div>
+                <h1 class="page-title">Role & Authority Matrix</h1>
+                <p class="page-subtitle">Manage global security tiers and permissions</p>
+            </div>
+            <div class="admin-btn-group">
+                <button type="button" class="btn btn--primary" onclick="openModal('roleModal')">+ Add New Role</button>
+                <button type="button" class="btn btn--primary" onclick="openModal('permModal')">+ Add New
+                    Permission</button>
+            </div>
+        </div>
 
-        <div style="overflow-x: auto; margin-bottom: 20px;">
-            <table class="admin-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+        <div class="admin-table-wrapper">
+            <table class="admin-matrix-table">
                 <thead>
-                    <tr style="border-bottom: 2px solid var(--border-color, #ccc); font-weight: bold;">
-                        <th style="padding: 12px 8px;">Role Name</th>
-                        <th style="padding: 12px 8px;">Description</th>
-                        <th style="padding: 12px 8px;">Assigned Permissions</th>
-                        <th style="padding: 12px 8px; text-align: right;">Actions</th>
+                    <tr>
+                        <th>Role Name</th>
+                        <th>Description</th>
+                        <th>Assigned Permissions</th>
+                        <th class="actions-cell">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="role : ${roles}" style="border-bottom: 1px solid var(--border-color, #eee);">
-                        <td style="padding: 12px 8px; font-weight: bold;" th:text="${role.roleName}">ROLE_ADMIN</td>
-                        <td style="padding: 12px 8px;" th:text="${role.description}">Administrative access</td>
-                        <td style="padding: 12px 8px;">
-                            <div style="display: flex; flex-wrap: wrap; gap: 4px;">
-                                <span th:each="perm : ${role.permissions}" class="badge"
-                                    style="background-color: var(--primary-color-light, #e0f2fe); color: var(--primary-color-dark, #0369a1); padding: 2px 8px; border-radius: 4px; font-size: 0.85rem;"
+                    <tr th:each="role : ${roles}">
+                        <td class="role-name-cell" th:text="${role.roleName}">ROLE_ADMIN</td>
+                        <td th:text="${role.description}">Administrative access</td>
+                        <td>
+                            <div class="badge-container">
+                                <span th:each="perm : ${role.permissions}" class="badge-permission"
                                     th:text="${perm.permissionName}">can_manage_users</span>
-                                <span th:if="${role.permissions.empty}" style="color: #888; font-style: italic;">No
+                                <span th:if="${role.permissions.empty}" class="badge-permission--none">No
                                     permissions</span>
                             </div>
                         </td>
-                        <td style="padding: 12px 8px; text-align: right;">
-                            <a th:href="@{/admin/roles/edit/{id}(id=${role.roleId})}" class="auth-link">Modify</a>
+                        <td class="actions-cell">
+                            <a th:href="@{/admin/roles/edit/{id}(id=${role.roleId})}" class="auth-link">Modify
+                                Options</a>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <p class="auth-footer-text" style="text-align: left; margin-top: 20px;">
+        <p class="auth-footer-text" style="text-align: left;">
             <a th:href="@{/admin/users}" class="auth-link">← Back to User Management</a>
         </p>
 
+        <!-- Popups: HTML5 Dialog Elements -->
+        <!-- 1. Add Role Modal Popup -->
+        <dialog id="roleModal" class="admin-modal">
+            <h3>Create New System Role</h3>
+            <form th:action="@{/admin/roles/create}" method="post">
+                <div class="form-group">
+                    <label class="form-label">Role Name</label>
+                    <input type="text" name="roleName" class="form-input" required placeholder="e.g. MODERATOR" />
+                    <small class="footer-git-info">System automatically prepends "ROLE_"</small>
+                </div>
+                <div class="form-group form-group--last">
+                    <label class="form-label">Description</label>
+                    <input type="text" name="description" class="form-input" required
+                        placeholder="Describe access limits..." />
+                </div>
+                <div class="modal-actions-footer">
+                    <button type="button" class="btn btn--cancel" onclick="closeModal('roleModal')">Cancel</button>
+                    <button type="submit" class="btn btn--primary btn--submit">Save Role</button>
+                </div>
+            </form>
+        </dialog>
+
+        <!-- 2. Add Permission Modal Popup -->
+        <dialog id="permModal" class="admin-modal">
+            <h3>Create New Permission</h3>
+            <form th:action="@{/admin/roles/permissions/create}" method="post">
+                <div class="form-group">
+                    <label class="form-label">Permission Authority Name</label>
+                    <input type="text" name="permissionName" class="form-input" required
+                        placeholder="e.g. can_delete_recipes" />
+                </div>
+                <div class="form-group form-group--last">
+                    <label class="form-label">Description</label>
+                    <input type="text" name="description" class="form-input" required
+                        placeholder="Describe operational bounds..." />
+                </div>
+                <div class="modal-actions-footer">
+                    <button type="button" class="btn btn--cancel" onclick="closeModal('permModal')">Cancel</button>
+                    <button type="submit" class="btn btn--primary btn--submit">Save Permission</button>
+                </div>
+            </form>
+        </dialog>
+
     </main>
 
-    <!-- Shared Footer Fragment -->
     <div th:replace="~{fragments/layout :: footer}"></div>
 
+    <script>
+        // Native browser overlay engine controls
+        function openModal(id) { document.getElementById(id).showModal(); }
+        function closeModal(id) { document.getElementById(id).close(); }
+    </script>
 </body>
 
 </html>

@@ -36,7 +36,7 @@ public class AdminUserController {
         model.addAttribute("chefs", chefs);
         model.addAttribute("loggedInAdminRank", adminMaxRank); // 🔑 Inject the rank score into the page context
 
-        return "admin/users";
+        return "admin/users-list"; // Points to templates/admin/users-list.html
     }
 
     private int getHighestRoleRank(Set<Role> roles) {

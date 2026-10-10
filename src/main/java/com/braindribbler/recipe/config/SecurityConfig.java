@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity; // <-- Add import
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -14,6 +15,7 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
         @Bean
@@ -24,7 +26,6 @@ public class SecurityConfig {
 
                 DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
                 authProvider.setPasswordEncoder(passwordEncoder);
-
                 authProvider.setHideUserNotFoundExceptions(false);
 
                 http
@@ -42,18 +43,24 @@ public class SecurityConfig {
                                                 .requestMatchers("/", "/search", "/register", "/login", "/verify",
                                                                 "/error")
                                                 .permitAll()
+
+                                                // Broad administrative catch-alls (Hybrid baseline mapping protection)
                                                 .requestMatchers("/admin/users/**").hasAuthority("can_manage_users")
+                                                .requestMatchers("/admin/roles/**").hasAuthority("can_manage_users") // <--
+                                                                                                                     // Add
+                                                                                                                     // baseline
+                                                                                                                     // role
+                                                                                                                     // guard
+
                                                 .anyRequest().authenticated())
                                 .formLogin(form -> form
                                                 .loginPage("/login")
                                                 .loginProcessingUrl("/login")
                                                 .defaultSuccessUrl("/dashboard", true)
                                                 .failureHandler((request, response, exception) -> {
-
                                                         Throwable cause = (exception.getCause() != null)
                                                                         ? exception.getCause()
                                                                         : exception;
-
                                                         String errorMessage = cause.getMessage();
 
                                                         if (cause instanceof LockedException) {

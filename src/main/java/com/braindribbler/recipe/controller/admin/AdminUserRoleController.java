@@ -7,6 +7,7 @@ import com.braindribbler.recipe.repository.auth.UserRepository;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +18,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping("/admin/users")
+@RequestMapping("/admin/users/edit/{publicId}")
 public class AdminUserRoleController {
 
     private final UserRepository userRepository;
@@ -31,7 +32,7 @@ public class AdminUserRoleController {
     /**
      * Renders the single-user role edit form page.
      */
-    @GetMapping("/edit/{publicId}")
+    @GetMapping
     public String showEditUserForm(@PathVariable("publicId") UUID publicId,
             @AuthenticationPrincipal UserDetails loggedInUser,
             Model model) {
@@ -58,13 +59,13 @@ public class AdminUserRoleController {
         model.addAttribute("targetUser", targetUser);
         model.addAttribute("assignableRoles", assignableRoles);
 
-        return "admin/edit-user-roles"; // Points to templates/admin/edit-user-roles.html
+        return "admin/user-edit"; // Points to templates/admin/user-edit.html
     }
 
     /**
      * Processes the submission form securely.
      */
-    @PostMapping("/edit/{publicId}/roles")
+    @PostMapping("/roles")
     public String updateRoles(@PathVariable("publicId") UUID publicId,
             @RequestParam(value = "selectedRoles", required = false) Set<Integer> selectedRoleIds,
             @AuthenticationPrincipal UserDetails loggedInUser) {
@@ -106,7 +107,7 @@ public class AdminUserRoleController {
 
         // 2. Explicitly handle the missing account check block
         if (adminOpt.isEmpty()) {
-            throw new org.springframework.security.core.userdetails.UsernameNotFoundException(
+            throw new UsernameNotFoundException(
                     "Admin context resolution failed for email: " + email);
         }
 
