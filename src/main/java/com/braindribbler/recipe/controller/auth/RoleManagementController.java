@@ -13,7 +13,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/admin/roles")
-@PreAuthorize("hasAuthority('can_manage_users')")
+@PreAuthorize("hasAuthority('can_manage_roles')")
 public class RoleManagementController {
 
     private final RoleRepository roleRepository;

@@ -17,16 +17,20 @@ public class GlobalNavigationAdvice {
         List<MenuItem> menuItems = new ArrayList<>();
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        // Dynamically build the menu structure only if the user holds authority
-        if (auth != null && auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("can_manage_users"))) {
+        if (auth != null && auth.getAuthorities() != null) {
 
-            menuItems.add(new MenuItem("Users Panel", "/admin/users"));
-            menuItems.add(new MenuItem("Role Customization", "/admin/roles"));
-            menuItems.add(new MenuItem("Login History", "/admin/login-history"));
+            java.util.Set<String> authorities = auth.getAuthorities().stream()
+                    .map(a -> a.getAuthority())
+                    .collect(java.util.stream.Collectors.toSet());
 
-            // Future slots can slide in smoothly right here as you build them:
-            // menuItems.add(new MenuItem("Recipe Moderation", "/admin/recipes"));
+            if (authorities.contains("can_manage_users")) {
+                menuItems.add(new MenuItem("Users Panel", "/admin/users"));
+                menuItems.add(new MenuItem("Login History", "/admin/login-history"));
+            }
+
+            if (authorities.contains("can_manage_roles")) {
+                menuItems.add(new MenuItem("Role Customization", "/admin/roles"));
+            }
         }
 
         return menuItems;

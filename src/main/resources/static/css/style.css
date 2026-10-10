@@ -722,13 +722,12 @@ table.dataTable tbody td:first-child {
 
 .badge-permission {
     background-color: #e0f2fe;
-    /* Light sky blue background */
     color: #0369a1;
-    /* Dark deep blue text accent */
     padding: 2px 8px;
     border-radius: 4px;
     font-size: 0.85rem;
-    font-weight: 600;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
 .badge-permission--none {
@@ -839,4 +838,20 @@ dialog.admin-modal h3 {
     font-size: 0.85rem;
     text-decoration: none;
     display: inline-block;
+}
+
+/* Custom utility to shrink button dimensions and typography */
+.btn--admin-small {
+    width: auto;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+}
+
+/* Forces the permission labels to stay on one line */
+.permission-checkbox-details label {
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--color-text-dark);
+    white-space: nowrap;
+    /* Prevents words from wrapping */
 }
