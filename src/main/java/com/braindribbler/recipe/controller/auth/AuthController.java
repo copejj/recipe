@@ -85,8 +85,10 @@ public class AuthController {
 
         } catch (IllegalArgumentException e) {
             // Catch invalid or expired token issues and pass the error message to the model
-            model.addAttribute("verificationError", e.getMessage());
-            return "verification-failed"; // Points to templates/verification-failed.html
+            model.addAttribute("errorTitle", "Whoops! Verification Failed");
+            model.addAttribute("errorCode", "401");
+            model.addAttribute("errorMessage", e.getMessage());
+            return "error"; // Points to templates/verification-failed.html
         }
     }
 }
