@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" lang="en">
+
+<body>
+
+    <!-- Reusable Role Creation Modal Fragment -->
+    <dialog th:fragment="create_role_modal" id="roleModal" class="admin-modal">
+        <h3>Create New System Role</h3>
+        <form th:action="@{/admin/roles/create}" method="post">
+            <div class="form-group">
+                <label class="form-label">Role Name</label>
+                <input type="text" name="roleName" class="form-input" required placeholder="e.g. COOK" />
+                <small class="footer-git-info">System automatically prepends "ROLE_"</small>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Hierarchy Rank Level</label>
+                <select name="roleRank" class="form-input">
+                    <option value="0" selected>Level 0 - Standard Staff / Guest Floor (Default)</option>
+                    <option value="1">Level 1 - Moderator / Content Editor Access</option>
+                    <option value="2">Level 2 - Admin / Core Management Panel Clearance</option>
+                </select>
+                <small class="footer-git-info">Level 3 (Super Admin) is locked by the system configuration.</small>
+            </div>
+            <div class="form-group form-group--last">
+                <label class="form-label">Description</label>
+                <input type="text" name="description" class="form-input" required
+                    placeholder="Describe access limits..." />
+            </div>
+            <div class="modal-actions-footer">
+                <button type="button" class="btn btn--cancel" onclick="closeModal('roleModal')">Cancel</button>
+                <button type="submit" class="btn btn--primary btn--submit">Save Role</button>
+            </div>
+        </form>
+    </dialog>
+
+</body>
+
+</html>

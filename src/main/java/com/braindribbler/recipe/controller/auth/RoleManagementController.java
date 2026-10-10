@@ -4,6 +4,8 @@ import com.braindribbler.recipe.domain.auth.Permission;
 import com.braindribbler.recipe.domain.auth.Role;
 import com.braindribbler.recipe.repository.auth.PermissionRepository;
 import com.braindribbler.recipe.repository.auth.RoleRepository;
+import com.braindribbler.recipe.service.auth.RoleRankCache;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,10 +20,13 @@ public class RoleManagementController {
 
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
+    private final RoleRankCache roleRankCache;
 
-    public RoleManagementController(RoleRepository roleRepository, PermissionRepository permissionRepository) {
+    public RoleManagementController(RoleRepository roleRepository, PermissionRepository permissionRepository,
+            RoleRankCache roleRankCache) {
         this.roleRepository = roleRepository;
         this.permissionRepository = permissionRepository;
+        this.roleRankCache = roleRankCache;
     }
 
     @GetMapping
@@ -33,15 +38,36 @@ public class RoleManagementController {
 
     // 1. Process New Role Creation
     @PostMapping("/create")
-    public String createRole(@RequestParam String roleName, @RequestParam String description) {
-        Role role = new Role();
-        // Standardize Spring Security role naming conventions if missing
-        if (!roleName.startsWith("ROLE_")) {
-            roleName = "ROLE_" + roleName.toUpperCase();
+    public String createRole(@RequestParam String roleName,
+            @RequestParam String description,
+            @RequestParam(defaultValue = "0") Integer roleRank) {
+
+        // 1. HARDENED BOUNDARY PROTECTION:
+        // Ensure new custom roles are capped safely between standard USER and
+        // SUPER_ADMIN scales
+        if (roleRank < 0) {
+            roleRank = 0; // Force floor protection
         }
-        role.setRoleName(roleName);
+        if (roleRank >= 3) {
+            roleRank = 2; // Clamp ceiling protection so it caps strictly underneath SUPER_ADMIN (3)
+        }
+
+        Role role = new Role();
+
+        // 2. Standardize prefix naming conventions
+        String formattedName = roleName.toUpperCase().trim();
+        if (!formattedName.startsWith("ROLE_")) {
+            formattedName = "ROLE_" + formattedName;
+        }
+
+        role.setRoleName(formattedName);
         role.setDescription(description);
+        role.setRoleRank(roleRank);
+
         roleRepository.save(role);
+
+        roleRankCache.refreshCache();
+
         return "redirect:/admin/roles";
     }
 

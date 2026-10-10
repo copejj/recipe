@@ -56,49 +56,7 @@
             <a th:href="@{/admin/users}" class="auth-link">← Back to User Management</a>
         </p>
 
-        <!-- Popups: HTML5 Dialog Elements -->
-        <!-- 1. Add Role Modal Popup -->
-        <dialog id="roleModal" class="admin-modal">
-            <h3>Create New System Role</h3>
-            <form th:action="@{/admin/roles/create}" method="post">
-                <div class="form-group">
-                    <label class="form-label">Role Name</label>
-                    <input type="text" name="roleName" class="form-input" required placeholder="e.g. MODERATOR" />
-                    <small class="footer-git-info">System automatically prepends "ROLE_"</small>
-                </div>
-                <div class="form-group form-group--last">
-                    <label class="form-label">Description</label>
-                    <input type="text" name="description" class="form-input" required
-                        placeholder="Describe access limits..." />
-                </div>
-                <div class="modal-actions-footer">
-                    <button type="button" class="btn btn--cancel" onclick="closeModal('roleModal')">Cancel</button>
-                    <button type="submit" class="btn btn--primary btn--submit">Save Role</button>
-                </div>
-            </form>
-        </dialog>
-
-        <!-- 2. Add Permission Modal Popup -->
-        <dialog id="permModal" class="admin-modal">
-            <h3>Create New Permission</h3>
-            <form th:action="@{/admin/roles/permissions/create}" method="post">
-                <div class="form-group">
-                    <label class="form-label">Permission Authority Name</label>
-                    <input type="text" name="permissionName" class="form-input" required
-                        placeholder="e.g. can_delete_recipes" />
-                </div>
-                <div class="form-group form-group--last">
-                    <label class="form-label">Description</label>
-                    <input type="text" name="description" class="form-input" required
-                        placeholder="Describe operational bounds..." />
-                </div>
-                <div class="modal-actions-footer">
-                    <button type="button" class="btn btn--cancel" onclick="closeModal('permModal')">Cancel</button>
-                    <button type="submit" class="btn btn--primary btn--submit">Save Permission</button>
-                </div>
-            </form>
-        </dialog>
-
+        <div th:replace="~{fragments/modals :: create_role_modal}"></div>
     </main>
 
     <div th:replace="~{fragments/layout :: footer}"></div>

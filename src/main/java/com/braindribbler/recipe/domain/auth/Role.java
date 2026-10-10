@@ -33,6 +33,9 @@ public class Role {
     @JoinTable(name = "role_permissions", schema = "public", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
     private Set<Permission> permissions = new HashSet<>();
 
+    @Column(name = "role_rank", nullable = false)
+    private Integer roleRank = 0; // Default to baseline user rank
+
     public Role() {
     }
 
@@ -67,4 +70,14 @@ public class Role {
     public void setPermissions(Set<Permission> permissions) {
         this.permissions = permissions;
     }
+
+    public Integer getRoleRank() {
+        // Null protection fallback wrapper layer
+        return roleRank != null ? roleRank : 0;
+    }
+
+    public void setRoleRank(Integer roleRank) {
+        this.roleRank = roleRank;
+    }
+
 }
