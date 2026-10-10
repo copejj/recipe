@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head th:replace="~{fragments/layout :: html_head('Role Matrix - Braindribbler')}"></head>
+
+<body>
+
+    <!-- Shared Header Fragment -->
+    <div th:replace="~{fragments/layout :: header}"></div>
+
+    <!-- Main Content Container styled after your layout rules -->
+    <main class="page-card admin-layout">
+
+        <h1 class="page-title">Role & Authority Matrix</h1>
+        <p class="page-subtitle" style="margin-bottom: 25px;">Manage global security tiers and permissions</p>
+
+        <div style="overflow-x: auto; margin-bottom: 20px;">
+            <table class="admin-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--border-color, #ccc); font-weight: bold;">
+                        <th style="padding: 12px 8px;">Role Name</th>
+                        <th style="padding: 12px 8px;">Description</th>
+                        <th style="padding: 12px 8px;">Assigned Permissions</th>
+                        <th style="padding: 12px 8px; text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="role : ${roles}" style="border-bottom: 1px solid var(--border-color, #eee);">
+                        <td style="padding: 12px 8px; font-weight: bold;" th:text="${role.roleName}">ROLE_ADMIN</td>
+                        <td style="padding: 12px 8px;" th:text="${role.description}">Administrative access</td>
+                        <td style="padding: 12px 8px;">
+                            <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                                <span th:each="perm : ${role.permissions}" class="badge"
+                                    style="background-color: var(--primary-color-light, #e0f2fe); color: var(--primary-color-dark, #0369a1); padding: 2px 8px; border-radius: 4px; font-size: 0.85rem;"
+                                    th:text="${perm.permissionName}">can_manage_users</span>
+                                <span th:if="${role.permissions.empty}" style="color: #888; font-style: italic;">No
+                                    permissions</span>
+                            </div>
+                        </td>
+                        <td style="padding: 12px 8px; text-align: right;">
+                            <a th:href="@{/admin/roles/edit/{id}(id=${role.roleId})}" class="auth-link">Modify</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p class="auth-footer-text" style="text-align: left; margin-top: 20px;">
+            <a th:href="@{/admin/users}" class="auth-link">← Back to User Management</a>
+        </p>
+
+    </main>
+
+    <!-- Shared Footer Fragment -->
+    <div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+
+</html>
