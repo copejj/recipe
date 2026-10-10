@@ -39,7 +39,8 @@ public class SecurityConfig {
                                                 .requestMatchers("/error").permitAll()
                                                 .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**")
                                                 .permitAll()
-                                                .requestMatchers("/", "/search", "/register", "/login", "/verify")
+                                                .requestMatchers("/", "/search", "/register", "/login", "/verify",
+                                                                "/error")
                                                 .permitAll()
                                                 .requestMatchers("/admin/users/**").hasAuthority("can_manage_users")
                                                 .anyRequest().authenticated())
