@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" lang="en">
+
+<head th:replace="~{fragments/layout :: html_head('Role Matrix - Braindribbler')}"></head>
+
+<body>
+
+    <div th:replace="~{fragments/layout :: header}"></div>
+
+    <main class="page-card">
+
+        <!-- Universal Admin Section Layout Controls -->
+        <div class="admin-header-flex">
+            <div>
+                <h1 class="page-title">Role & Authority Matrix</h1>
+                <p class="page-subtitle">Manage global security tiers and permissions</p>
+            </div>
+            <div class="admin-btn-group">
+                <button type="button" class="btn btn--primary btn--admin-small" onclick="openModal('roleModal')">+ Add
+                    New Role</button>
+            </div>
+        </div>
+
+        <div class="admin-table-wrapper">
+            <table class="admin-matrix-table">
+                <thead>
+                    <tr>
+                        <th>Role Name</th>
+                        <th>Description</th>
+                        <th>Assigned Permissions</th>
+                        <th class="actions-cell">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="role : ${roles}">
+                        <td class="role-name-cell" th:text="${role.roleName}">ROLE_ADMIN</td>
+                        <td th:text="${role.description}">Administrative access</td>
+                        <td>
+                            <div class="badge-container">
+                                <span th:each="perm : ${role.permissions}" class="badge-permission"
+                                    th:text="${perm.permissionName}">can_manage_users</span>
+                                <span th:if="${role.permissions.empty}" class="badge-permission--none">No
+                                    permissions</span>
+                            </div>
+                        </td>
+                        <td class="actions-cell">
+                            <a th:href="@{/admin/roles/edit/{id}(id=${role.roleId})}" class="auth-link">Modify
+                                Options</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p class="auth-footer-text" style="text-align: left;">
+            <a th:href="@{/admin/users}" class="auth-link">← Back to User Management</a>
+        </p>
+
+        <div th:replace="~{fragments/modals :: create_role_modal}"></div>
+    </main>
+
+    <div th:replace="~{fragments/layout :: footer}"></div>
+
+    <script>
+        // Native browser overlay engine controls
+        function openModal(id) { document.getElementById(id).showModal(); }
+        function closeModal(id) { document.getElementById(id).close(); }
+    </script>
+</body>
+
+</html>

@@ -4,9 +4,12 @@ import com.braindribbler.recipe.domain.auth.Role;
 import com.braindribbler.recipe.domain.auth.User;
 import com.braindribbler.recipe.repository.auth.RoleRepository;
 import com.braindribbler.recipe.repository.auth.UserRepository;
+import com.braindribbler.recipe.service.auth.RoleRankCache;
+
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -17,21 +20,24 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping("/admin/users")
+@RequestMapping("/admin/users/edit/{publicId}")
 public class AdminUserRoleController {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final RoleRankCache roleRankCache;
 
-    public AdminUserRoleController(UserRepository userRepository, RoleRepository roleRepository) {
+    public AdminUserRoleController(UserRepository userRepository, RoleRepository roleRepository,
+            RoleRankCache roleRankCache) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.roleRankCache = roleRankCache;
     }
 
     /**
      * Renders the single-user role edit form page.
      */
-    @GetMapping("/edit/{publicId}")
+    @GetMapping
     public String showEditUserForm(@PathVariable("publicId") UUID publicId,
             @AuthenticationPrincipal UserDetails loggedInUser,
             Model model) {
@@ -58,13 +64,13 @@ public class AdminUserRoleController {
         model.addAttribute("targetUser", targetUser);
         model.addAttribute("assignableRoles", assignableRoles);
 
-        return "admin/edit-user-roles"; // Points to templates/admin/edit-user-roles.html
+        return "admin/user-edit"; // Points to templates/admin/user-edit.html
     }
 
     /**
      * Processes the submission form securely.
      */
-    @PostMapping("/edit/{publicId}/roles")
+    @PostMapping("/roles")
     public String updateRoles(@PathVariable("publicId") UUID publicId,
             @RequestParam(value = "selectedRoles", required = false) Set<Integer> selectedRoleIds,
             @AuthenticationPrincipal UserDetails loggedInUser) {
@@ -99,44 +105,24 @@ public class AdminUserRoleController {
         return "redirect:/admin/users?success_roles";
     }
 
-    /* --- HELPER RANK EVALUATION UTILITIES --- */
     private int getAdminRankFromUsername(String email) {
-        // 1. Fetch the optional wrapper from your repository
-        java.util.Optional<User> adminOpt = userRepository.findByUserAuthEmail(email);
-
-        // 2. Explicitly handle the missing account check block
-        if (adminOpt.isEmpty()) {
-            throw new org.springframework.security.core.userdetails.UsernameNotFoundException(
-                    "Admin context resolution failed for email: " + email);
-        }
-
-        // 3. Unpack and extract your active roles collection matrix
-        User admin = adminOpt.get();
-        return getHighestRoleRank(admin.getRoles());
+        return userRepository.findByUserAuthEmail(email)
+                .map(admin -> getHighestRoleRank(admin.getRoles()))
+                .orElseThrow(
+                        () -> new UsernameNotFoundException("Admin context resolution failed for email: " + email));
     }
 
     private int getHighestRoleRank(Set<Role> roles) {
-        if (roles == null || roles.isEmpty())
+        if (roles == null || roles.isEmpty()) {
             return 0;
-        int max = 0;
-        for (Role r : roles) {
-            int rank = getRoleRankValue(r.getRoleName());
-            if (rank > max)
-                max = rank;
         }
-        return max;
+        return roles.stream()
+                .mapToInt(role -> roleRankCache.getRankValue(role.getRoleName())) // ⚡ Instant local lookup!
+                .max()
+                .orElse(0);
     }
 
     private int getRoleRankValue(String roleName) {
-        switch (roleName) {
-            case "ROLE_SUPER_ADMIN":
-                return 3;
-            case "ROLE_ADMIN":
-                return 2;
-            case "ROLE_MODERATOR":
-                return 1;
-            default:
-                return 0; // ROLE_USER
-        }
+        return roleRankCache.getRankValue(roleName);
     }
 }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org" lang="en">
 
 <head th:fragment="html_head(title)">
     <meta charset="UTF-8" />
@@ -34,22 +34,20 @@
                 <a th:href="@{/dashboard}" class="nav-link">Home</a>
                 <a th:href="@{/search}" class="nav-link">Search</a>
 
-                <!-- Unified Admin Dropdown Menu Options Block -->
-                <div class="nav-dropdown" sec:authorize="hasAuthority('can_manage_users')">
+                <!-- Dynamic Admin Dropdown Menu Options Block -->
+                <!-- Only renders if the collection list exists and isn't empty -->
+                <div class="nav-dropdown" th:if="${adminMenuItems != null and !adminMenuItems.empty}">
                     <button type="button" class="nav-button nav-link nav-link--cta">
                         Admin <span class="dropdown-caret">▼</span>
                     </button>
 
                     <!-- Dropdown Link Flyout Options Box -->
                     <div class="dropdown-menu">
-                        <a th:href="@{/admin/users}" class="dropdown-item">Users Panel</a>
-                        <a th:href="@{/admin/login-history}" class="dropdown-item">Login History</a>
-
-                        <!-- Future slots can slide in smoothly right here as you build them: -->
-                        <!-- <a th:href="@{/admin/recipes}" class="dropdown-item">Recipe Moderation</a> -->
+                        <!-- Dynamically loops over the array provided by GlobalNavigationAdvice -->
+                        <a th:each="item : ${adminMenuItems}" th:href="@{${item.url}}" class="dropdown-item"
+                            th:text="${item.label}">Dynamic Option</a>
                     </div>
                 </div>
-
 
                 <form th:action="@{/logout}" method="post" class="nav-logout-form">
                     <button type="submit" class="nav-button nav-button--cta">

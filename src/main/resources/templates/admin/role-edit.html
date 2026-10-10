@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" lang="en">
+
+<head th:replace="~{fragments/layout :: html_head('Modify Permissions - Braindribbler')}"></head>
+
+<body>
+
+    <div th:replace="~{fragments/layout :: header}"></div>
+
+    <main class="page-card auth-layout">
+
+        <h1 class="page-title" style="text-align: center;" th:text="'Edit ' + ${role.roleName}">Edit Role</h1>
+        <p class="page-subtitle" style="text-align: center;" th:text="${role.description}">Role description details</p>
+
+        <form th:action="@{/admin/roles/edit/{id}(id=${role.roleId})}" method="post">
+
+            <div class="form-group form-group--last">
+                <label class="form-label">Toggle Active Authorities</label>
+
+                <div class="permission-checkbox-grid">
+                    <div th:each="perm : ${allPermissions}" class="permission-checkbox-card">
+
+                        <input type="checkbox" name="permissionIds" th:value="${perm.permissionId}"
+                            th:id="'perm-' + ${perm.permissionId}" th:checked="${role.permissions.contains(perm)}" />
+
+                        <div class="permission-checkbox-details">
+                            <label th:for="'perm-' + ${perm.permissionId}"
+                                th:text="${perm.permissionName}">can_manage_users</label>
+                            <small th:text="${perm.description}">Grants access to administration parameters.</small>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn--primary">Update Security Matrix</button>
+
+        </form>
+
+        <p class="auth-footer-text">
+            Changed your mind? <a th:href="@{/admin/roles}" class="auth-link">Return to overview</a>
+        </p>
+
+    </main>
+
+    <div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+
+</html>

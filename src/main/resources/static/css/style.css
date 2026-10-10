@@ -653,3 +653,205 @@ table.dataTable tbody td:first-child {
     font-size: 0.8rem;
     font-style: italic;
 }
+
+/* ==========================================================================
+   11. DEDICATED ADMIN MATRIX & MODAL OVERRIDES (NO INLINE STYLES)
+   ========================================================================== */
+
+/* Layout & Typography adjustments */
+.admin-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.admin-header-flex .page-title {
+    margin: 0;
+}
+
+.admin-header-flex .page-subtitle {
+    margin: 5px 0 0 0;
+}
+
+.admin-btn-group {
+    display: flex;
+    gap: 10px;
+}
+
+/* Custom Admin Listing Data Table formatting */
+.admin-table-wrapper {
+    overflow-x: auto;
+    margin-bottom: 20px;
+}
+
+.admin-matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.admin-matrix-table thead tr {
+    border-bottom: 2px solid var(--color-border);
+    font-weight: bold;
+}
+
+.admin-matrix-table th,
+.admin-matrix-table td {
+    padding: 12px 8px;
+}
+
+.admin-matrix-table tbody tr {
+    border-bottom: 1px solid var(--color-border);
+}
+
+.admin-matrix-table td.role-name-cell {
+    font-weight: 700;
+}
+
+.admin-matrix-table td.actions-cell {
+    text-align: right;
+}
+
+/* Atomic Badges Matrix */
+.badge-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.badge-permission {
+    background-color: #e0f2fe;
+    color: #0369a1;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.badge-permission--none {
+    color: var(--color-text-muted);
+    font-style: italic;
+}
+
+/* Flexbox Matrix Container for Permission Checkbox Toggles */
+.permission-checkbox-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.permission-checkbox-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background-color: #ffffff;
+}
+
+.permission-checkbox-card input[type="checkbox"] {
+    margin-top: 4px;
+    cursor: pointer;
+}
+
+.permission-checkbox-details {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+}
+
+.permission-checkbox-details label {
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--color-text-dark);
+}
+
+.permission-checkbox-details small {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    margin-top: 2px;
+}
+
+/* Native HTML5 Dialog Popups Styling Overrides */
+dialog.admin-modal {
+    border: none;
+    border-radius: 8px;
+    padding: 25px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    background-color: var(--color-bg-card);
+}
+
+dialog.admin-modal h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+}
+
+.modal-actions-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.modal-actions-footer .btn--cancel {
+    background-color: #e9ecef;
+    color: var(--color-text-label);
+    width: auto;
+}
+
+.modal-actions-footer .btn--cancel:hover {
+    background-color: #dee2e6;
+}
+
+.modal-actions-footer .btn--submit {
+    width: auto;
+}
+
+.status-text--active,
+.status-text--verified {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.status-text--banned,
+.status-text--pending {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.badge-locked {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    font-style: italic;
+    font-weight: 500;
+}
+
+.btn--table-action {
+    width: auto;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    text-decoration: none;
+    display: inline-block;
+}
+
+/* Custom utility to shrink button dimensions and typography */
+.btn--admin-small {
+    width: auto;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+}
+
+/* Forces the permission labels to stay on one line */
+.permission-checkbox-details label {
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--color-text-dark);
+    white-space: nowrap;
+    /* Prevents words from wrapping */
+}

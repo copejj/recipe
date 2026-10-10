@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" lang="en">
+
+<head th:replace="~{fragments/layout :: html_head('User Management - Braindribbler')}"></head>
+
+<body>
+
+    <!-- Shared Navigation Header Fragment -->
+    <div th:replace="~{fragments/layout :: header}"></div>
+
+    <main class="page-card">
+        <h1 class="page-title">Chef Registry</h1>
+        <p class="page-subtitle">Manage system user access privileges, administrative account bans, and profile states.
+        </p>
+
+        <!-- Administrative Management Data Table Grid -->
+        <div class="admin-table-wrapper">
+            <table class="admin-matrix-table">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Display Name</th>
+                        <th>Email Address</th>
+                        <th>Created At</th>
+                        <th>Verification Status</th>
+                        <th>Account Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="chef : ${chefs}">
+                        <td>
+                            <!-- THE CONDITION: Only render the button if the row user's rank is STRICTLY LESS THAN the logged-in admin's rank -->
+                            <a th:if="${chef.highestRoleRankValue < loggedInAdminRank}"
+                                th:href="@{/admin/users/edit/{id}(id=${chef.publicId})}"
+                                class="btn btn--primary btn--table-action">
+                                Edit Roles
+                            </a>
+
+                            <!-- Optional: Display a locked badge if they cannot modify it -->
+                            <span th:if="${chef.highestRoleRankValue >= loggedInAdminRank}" class="badge-locked">
+                                System Locked
+                            </span>
+                        </td>
+                        <td class="role-name-cell" th:text="${chef.displayName}">SousChefJane</td>
+                        <td th:text="${chef.userAuth != null ? chef.userAuth.email : 'N/A'}">chef@braindribbler.com</td>
+                        <td th:text="${#temporals.format(chef.createdAt, 'yyyy-MM-dd HH:mm')}">2026-10-08</td>
+                        <td>
+                            <span th:if="${chef.userAuth != null && chef.userAuth.verified}"
+                                class="status-text--verified">Verified</span>
+                            <span th:if="${chef.userAuth == null || !chef.userAuth.verified}"
+                                class="status-text--pending">Pending Link</span>
+                        </td>
+                        <td>
+                            <span th:if="${chef.disabledAt == null}" class="status-text--active">Active</span>
+                            <span th:if="${chef.disabledAt != null}" class="status-text--banned">Banned</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Shared Footer Fragment -->
+    <div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+
+</html>
