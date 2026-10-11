@@ -46,7 +46,7 @@ cleanup_on_failure() {
 trap cleanup_on_failure ERR
 
 CURRENT_STEP="DATABASE_MIGRATION"
-echo -e "\n${BLUE}${BOLD}[Step 4/7] DATABASE MIGRATION PHASE${NC}"
+echo -e "\n${BLUE}${BOLD}[Step 4/7] 🗄️  DATABASE MIGRATION PHASE${NC}"
 
 echo -e "  ${CYAN}•${NC} Verifying migration script naming formats..."
 if [ -d sql/migrations ]; then
@@ -59,20 +59,25 @@ if [ -d sql/migrations ]; then
   done
 fi
 
+# Check database metadata catalogs to determine if history tables exist yet
+TABLE_EXISTS=$(psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -t -A -c "SELECT 1 FROM pg_tables WHERE schemaname = 'public_shadow' AND tablename = 'schema_migrations';")
+
 echo -e "  ${CYAN}•${NC} Compiling incremental SQL delta files into master transaction payload..."
 {
   echo "BEGIN;"
   echo "SET search_path = public_shadow, public;"
-  if [ -f sql/init_schema.sql ]; then cat sql/init_schema.sql; fi
-  # Locate files manually to map into SQL transaction file
+  
+  # 🔄 CONDITIONALLY RUN INIT_SCHEMA: Only if the database is blank/missing the history table
+  if [ "$TABLE_EXISTS" != "1" ] && [ -f sql/init_schema.sql ]; then
+    echo "--- Table schema_migrations not found. Injecting base init_schema.sql ---"
+    cat sql/init_schema.sql
+  fi
+  
   if [ -d sql/migrations ]; then
     FILES=$(find sql/migrations -type f | sort)
     for FILE in $FILES; do
       FILENAME=$(basename "$FILE")
       if [[ "$FILENAME" =~ ^[0-9]{8}_[0-9]+.*\.sql$ ]]; then
-        
-        # 🔄 SAFE GUARD PRE-CHECK: Verify if the logging framework table exists before querying it
-        TABLE_EXISTS=$(psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -t -A -c "SELECT 1 FROM pg_tables WHERE schemaname = 'public_shadow' AND tablename = 'schema_migrations';")
         
         ALREADY_RUN="0"
         if [ "$TABLE_EXISTS" = "1" ]; then
@@ -80,7 +85,6 @@ echo -e "  ${CYAN}•${NC} Compiling incremental SQL delta files into master tra
         fi
         
         if [ "$ALREADY_RUN" != "1" ]; then
-          # ALIGNED QUERY: Streams updates seamlessly without breaking trigger parameters
           echo "INSERT INTO public_shadow.schema_migrations (filename) VALUES ('$FILENAME') ON CONFLICT (filename) DO UPDATE SET started_at = NOW(), ended_at = NULL, error_message = NULL;"
           cat "$FILE"
           echo "UPDATE public_shadow.schema_migrations SET ended_at = NOW() WHERE filename='$FILENAME';"
@@ -96,7 +100,7 @@ START_TIME=$(date +%s)
 psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f /tmp/compiled_migration.sql >> "$PIPELINE_LOG" 2>&1
 rm -f /tmp/compiled_migration.sql
 
-echo -e "  ${CYAN}•${NC} Executing atomic live namespace swap (public_shadow and public)..."
+echo -e "  ${CYAN}•${NC} Executing atomic live namespace swap (public_shadow 🔄 public)..."
 psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -c "
   BEGIN;
     ALTER SCHEMA public RENAME TO public_old;
@@ -107,7 +111,7 @@ END_TIME=$(date +%s)
 echo -e "  ${GREEN}✓${NC} Schema migrations processed completely. (${BOLD}$((END_TIME - START_TIME))s${NC})"
 
 CURRENT_STEP="BUILD"
-echo -e "\n${BLUE}${BOLD}[Step 5/7] APPLICATION BUILD PHASE${NC}"
+echo -e "\n${BLUE}${BOLD}[Step 5/7] 🏗️  APPLICATION BUILD PHASE${NC}"
 echo -e "  ${CYAN}•${NC} Compiling 56 Java classes and packaging executable archive..."
 echo -ne "    Running ${YELLOW}${BOLD}mvn clean package -DskipTests${NC} in background... "
 
@@ -123,7 +127,7 @@ END_TIME=$(date +%s)
 echo -e " ${GREEN}${BOLD}[DONE]${NC} (${BOLD}$((END_TIME - START_TIME))s${NC})"
 
 CURRENT_STEP="DEPLOYMENT"
-echo -e "\n${BLUE}${BOLD}[Step 6/7] SIMULATED DISTRIBUTION PHASE${NC}"
+echo -e "\n${BLUE}${BOLD}[Step 6/7] 🚀 SIMULATED DISTRIBUTION PHASE${NC}"
 VERSION_NAME="${PROD_DEPLOY_NAME}##${TAG_NAME}.war"
 BUILD_WAR="${PROD_APP_PATH}/target/${PROD_APP_NAME}.war"
 
@@ -132,12 +136,12 @@ cp "$BUILD_WAR" "${PROD_DEPLOY_PATH}/${VERSION_NAME}" >> "$PIPELINE_LOG" 2>&1
 echo -e "  ${GREEN}✓${NC} Distribution artifact staged successfully."
 
 CURRENT_STEP="FINAL_CLEANUP"
-echo -e "\n${BLUE}${BOLD}[Step 7/7] ENVIRONMENT SANITIZATION${NC}"
+echo -e "\n${BLUE}${BOLD}[Step 7/7] 🧹 ENVIRONMENT SANITIZATION${NC}"
 echo -e "  ${CYAN}•${NC} Exporting raw background logs to your local workspace path..."
 
 cp "$PIPELINE_LOG" "/app/github_action_raw.log"
 rm -f "$PIPELINE_LOG"
 
 echo -e "\n${GREEN}${BOLD}========================================================================${NC}"
-echo -e "${GREEN}${BOLD} SUCCESS: Local Sandbox Test Architecture Finished Successfully!${NC}"
+echo -e "${GREEN}${BOLD}🎉 SUCCESS: Local Sandbox Test Architecture Finished Successfully!${NC}"
 echo -e "${GREEN}${BOLD}========================================================================${NC}\n"
