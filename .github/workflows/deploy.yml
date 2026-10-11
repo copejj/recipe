@@ -39,7 +39,6 @@ jobs:
             cd ${{ vars.PROD_APP_PATH }}
             export PGPASSWORD="$DB_PASS"
             PSQL_ARGS="-h $DB_HOST -U $DB_USER -d $DB_NAME -t --set ON_ERROR_STOP=1"
-            
             DUMP_ARGS="-h $DB_HOST -U $DB_USER -d $DB_NAME -x -O --no-security-labels --no-subscriptions --no-publications"
 
             # --- SAFEGUARDS: GLOBAL ERROR TRAP ---
@@ -64,13 +63,13 @@ jobs:
             # Create the shadow schema namespace explicitly beforehand
             psql $PSQL_ARGS -c "CREATE SCHEMA public_shadow AUTHORIZATION $DB_USER;"
             
-            # Dump production structures to a raw snapshot file
+            # Dump production layouts smoothly
             pg_dump $DUMP_ARGS -n public -f /tmp/live_full_snapshot_raw.sql
             
-            # REGEX SCRUBBER: Convert absolute "public." text paths into "public_shadow." references safely
-            sed -E 's/\bpublic\.([a-zA-Z0-9_]+)/public_shadow.\1/g; s/\bpublic\b/public_shadow/g' /tmp/live_full_snapshot_raw.sql > /tmp/live_full_snapshot.sql
+            # Scrub out duplicate schema commands and safely re-map object name headers
+            sed -E '/CREATE SCHEMA/d; s/\bpublic\.([a-zA-Z0-9_]+)/public_shadow.\1/g; s/\bpublic\b/public_shadow/g' /tmp/live_full_snapshot_raw.sql > /tmp/live_full_snapshot.sql
             
-            # Unpack the scrubbed structures into your public_shadow schema
+            # Unpack the scrubbed structures into your public_shadow schema safely
             psql $PSQL_ARGS -f /tmp/live_full_snapshot.sql
             rm -f /tmp/live_full_snapshot_raw.sql /tmp/live_full_snapshot.sql
 
@@ -82,7 +81,6 @@ jobs:
             CURRENT_STEP="DATABASE_MIGRATION"
             echo "[Step 4/7] Compiling and running migrations against shadow schema..."
             
-            # Verify naming syntax and warn if abnormal patterns are found
             if [ -d sql/migrations ]; then
               for FILE in sql/migrations/*; do
                 [ -e "$FILE" ] || break
@@ -115,7 +113,6 @@ jobs:
                 fi
                 
                 if [ "$ALREADY_RUN" != "1" ]; then
-                  # Stream the change and track progress inside your custom trigger framework
                   echo "INSERT INTO public_shadow.schema_migrations (filename) VALUES ('$FILENAME') ON CONFLICT (filename) DO UPDATE SET started_at = NOW(), ended_at = NULL, error_message = NULL;"
                   cat "$FILE"
                   echo "UPDATE public_shadow.schema_migrations SET ended_at = NOW() WHERE filename='$FILENAME';"
@@ -156,3 +153,4 @@ jobs:
             $MVN_BIN clean
             
             echo "--- Deployment of $TAG_NAME completed successfully! ---"
+
