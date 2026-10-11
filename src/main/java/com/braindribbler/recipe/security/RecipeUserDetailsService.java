@@ -38,11 +38,9 @@ public class RecipeUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         String clientIp = getClientIpAddress();
 
-        // 2. REFACTOR TIMELINE HOOK TO USE PROPERTY VALUE
         OffsetDateTime lockWindowSince = OffsetDateTime.now().minusHours(ipLockHours);
         long ipFailureCount = loginHistoryRepository.countRecentIpFailures(clientIp, lockWindowSince);
 
-        // 3. EVALUATE DYNAMIC THRESHOLD LIMIT
         if (ipFailureCount >= maxIpFailures) {
             throw new LockedException("Your IP address has been temporarily blocked due to suspicious activity.");
         }
@@ -50,6 +48,9 @@ public class RecipeUserDetailsService implements UserDetailsService {
         UserAuth userAuth = userAuthRepository.findByEmail(email)
                 .orElseThrow(
                         () -> new UsernameNotFoundException("No active account discovered matching email: " + email));
+
+        // 🌟 CACHED FIX: The manual throw block is removed here!
+        // We let your RecipeUserDetails object handle the status natively.
 
         return new RecipeUserDetails(userAuth);
     }
