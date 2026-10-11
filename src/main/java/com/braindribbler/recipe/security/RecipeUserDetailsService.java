@@ -6,7 +6,6 @@ import com.braindribbler.recipe.repository.auth.UserAuthRepository;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -51,12 +50,6 @@ public class RecipeUserDetailsService implements UserDetailsService {
         UserAuth userAuth = userAuthRepository.findByEmail(email)
                 .orElseThrow(
                         () -> new UsernameNotFoundException("No active account discovered matching email: " + email));
-
-        if (userAuth.getUser() != null && userAuth.getUser().getDisabledAt() != null) {
-            if (userAuth.getUser().getDisabledAt().isBefore(OffsetDateTime.now())) {
-                throw new DisabledException("This account has been administratively disabled.");
-            }
-        }
 
         return new RecipeUserDetails(userAuth);
     }

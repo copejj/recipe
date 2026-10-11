@@ -11,10 +11,39 @@
         <p class="page-subtitle" th:text="'Modifying role clusters for: ' + ${targetUser.displayName}"></p>
 
         <form th:action="@{/admin/users/edit/{publicId}/roles(publicId=${targetUser.publicId})}" method="post">
+
+            <!-- SECTION 1: ACCOUNT STATUS INACTIVE TOGGLE -->
+            <div sec:authorize="hasAuthority('can_manage_users')" class="form-group"
+                style="border-bottom: 1px solid var(--color-border); padding-bottom: 20px; margin-bottom: 24px;">
+                <label class="form-label">System Account Status</label>
+                <div class="permission-checkbox-card" style="background-color: var(--color-bg-body);">
+
+                    <!-- Renamed parameter to inactiveStatus -->
+                    <input type="checkbox" name="inactiveStatus" id="accountInactive"
+                        th:checked="${targetUser.disabledAt != null}" />
+
+                    <div class="permission-checkbox-details">
+                        <label for="accountInactive">Set Profile to Inactive</label>
+                        <small th:if="${targetUser.disabledAt == null}">Account is active. Checking this will restrict
+                            system login immediately.</small>
+
+                        <!-- Auditing Display Label -->
+                        <div th:if="${targetUser.disabledAt != null}" class="form-error-msg">
+                            <span>Account is currently <strong>Inactive</strong>.</span><br />
+                            <small
+                                th:text="'Disabled on: ' + ${#temporals.format(targetUser.disabledAt, 'yyyy-MM-dd HH:mm')}"></small><br />
+                            <small th:if="${targetUser.disabledBy != null}"
+                                th:text="'Disabled by: ' + ${targetUser.disabledBy.displayName} + ' (' + ${targetUser.disabledBy.userAuth.email} + ')'">
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: ASIGNABLE ROLES CHECKBOXES MATRIX -->
             <div class="form-group form-group--last">
                 <label class="form-label">Assignable Roles</label>
 
-                <!-- Dynamic Checkbox Grid Container with standard CSS rules -->
                 <div class="permission-checkbox-grid">
                     <div th:each="role : ${assignableRoles}" class="permission-checkbox-card">
 

@@ -12,11 +12,22 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.authentication.AuthenticationEventPublisher;
+import org.springframework.security.authentication.DefaultAuthenticationEventPublisher;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
+        @Bean
+        public AuthenticationEventPublisher authenticationEventPublisher(
+                        ApplicationEventPublisher applicationEventPublisher) {
+                // Forces Spring to broadcast hidden exceptions (like DisabledException) to your
+                // EventListener
+                return new DefaultAuthenticationEventPublisher(applicationEventPublisher);
+        }
 
         @Bean
         public SecurityFilterChain securityFilterChain(
@@ -46,29 +57,26 @@ public class SecurityConfig {
 
                                                 // Broad administrative catch-alls (Hybrid baseline mapping protection)
                                                 .requestMatchers("/admin/users/**").hasAuthority("can_manage_users")
-                                                .requestMatchers("/admin/roles/**").hasAuthority("can_manage_users") // <--
-                                                                                                                     // Add
-                                                                                                                     // baseline
-                                                                                                                     // role
-                                                                                                                     // guard
-
+                                                .requestMatchers("/admin/roles/**").hasAuthority("can_manage_users")
                                                 .anyRequest().authenticated())
                                 .formLogin(form -> form
                                                 .loginPage("/login")
                                                 .loginProcessingUrl("/login")
                                                 .defaultSuccessUrl("/dashboard", true)
                                                 .failureHandler((request, response, exception) -> {
-                                                        Throwable cause = (exception.getCause() != null)
-                                                                        ? exception.getCause()
-                                                                        : exception;
-                                                        String errorMessage = cause.getMessage();
+                                                        // Read the incoming exception message directly
+                                                        String errorMessage = exception.getMessage();
 
-                                                        if (cause instanceof LockedException) {
+                                                        if (exception instanceof LockedException) {
                                                                 response.sendRedirect("/login?iplocked");
-                                                        } else if (cause instanceof DisabledException) {
-                                                                if (errorMessage != null && errorMessage.contains(
-                                                                                "administratively disabled")) {
-                                                                        response.sendRedirect("/login?banned");
+                                                        } else if (exception instanceof DisabledException) {
+                                                                // Clean, targeted string checks for your custom error
+                                                                // strings
+                                                                if (errorMessage != null && (errorMessage
+                                                                                .contains("administratively disabled")
+                                                                                || errorMessage.contains(
+                                                                                                "currently inactive"))) {
+                                                                        response.sendRedirect("/login?inactive");
                                                                 } else {
                                                                         response.sendRedirect("/login?unverified");
                                                                 }

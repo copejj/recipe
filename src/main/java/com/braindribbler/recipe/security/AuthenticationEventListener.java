@@ -1,15 +1,20 @@
 package com.braindribbler.recipe.security;
 
 import java.time.OffsetDateTime;
+import java.util.Optional;
 
 import org.springframework.context.event.EventListener;
-import org.springframework.security.authentication.event.AuthenticationFailureBadCredentialsEvent;
-import org.springframework.security.authentication.event.AuthenticationFailureDisabledEvent;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.event.AbstractAuthenticationFailureEvent; // <-- Catch the base class event
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.braindribbler.recipe.domain.auth.LoginHistory;
+import com.braindribbler.recipe.domain.auth.User;
+import com.braindribbler.recipe.domain.auth.UserAuth;
 import com.braindribbler.recipe.repository.auth.LoginHistoryRepository;
 import com.braindribbler.recipe.repository.auth.UserAuthRepository;
 
@@ -20,7 +25,7 @@ public class AuthenticationEventListener {
 
     private final UserAuthRepository userAuthRepository;
     private final LoginHistoryRepository loginHistoryRepository;
-    private final HttpServletRequest request; // Natively injects incoming request details
+    private final HttpServletRequest request;
 
     public AuthenticationEventListener(UserAuthRepository userAuthRepository,
             LoginHistoryRepository loginHistoryRepository,
@@ -59,23 +64,36 @@ public class AuthenticationEventListener {
     }
 
     /**
-     * Intercepts failed log ins due to wrong password or nonexistent emails.
+     * 🌟 UNIVERSAL INTERCEPTOR OVERRIDE:
+     * Catching AbstractAuthenticationFailureEvent handles ALL failures, including
+     * bad credentials, locked states, and our newly added Inactive user exceptions.
      */
     @EventListener
     @Transactional
-    public void handleAuthenticationFailure(AuthenticationFailureBadCredentialsEvent event) {
+    public void handleAuthenticationFailure(AbstractAuthenticationFailureEvent event) {
         String email = event.getAuthentication().getName();
-        logFailure(email, "BAD_CREDENTIALS");
-    }
+        Exception exception = event.getException();
 
-    /**
-     * Intercepts failed log ins due to unverified/disabled user accounts.
-     */
-    @EventListener
-    @Transactional
-    public void handleAuthenticationFailureDisabled(AuthenticationFailureDisabledEvent event) {
-        String email = event.getAuthentication().getName();
-        logFailure(email, "ACCOUNT_UNVERIFIED");
+        // Dynamically compute the precise database reason based on what exception fired
+        String failureReason = "UNKNOWN_FAILURE";
+
+        if (exception instanceof BadCredentialsException) {
+            failureReason = "BAD_CREDENTIALS";
+        } else if (exception instanceof LockedException) {
+            failureReason = "IP_LOCKED";
+        } else if (exception instanceof DisabledException) {
+            // Check if the real account entity has a disabledAt timestamp set to evaluate
+            // context
+            Optional<UserAuth> userAuthOpt = userAuthRepository.findByEmail(email);
+            if (userAuthOpt.isPresent() && userAuthOpt.get().getUser() != null
+                    && userAuthOpt.get().getUser().getDisabledAt() != null) {
+                failureReason = "ACCOUNT_INACTIVE"; // Matches your clean branding adjustments
+            } else {
+                failureReason = "ACCOUNT_UNVERIFIED";
+            }
+        }
+
+        logFailure(email, failureReason);
     }
 
     private void logFailure(String email, String reason) {
@@ -92,13 +110,13 @@ public class AuthenticationEventListener {
         // Look up if the target user actually exists
         userAuthRepository.findByEmail(email).ifPresentOrElse(
                 userAuth -> {
-                    // A: Real User, wrong password or unverified
+                    // A: Real User, wrong password or inactive state
                     history.setUserAuth(userAuth);
                     loginHistoryRepository.save(history);
                 },
                 () -> {
-                    // B: Fake User! We still save the row to catch malicious probing bots
-                    history.setUserAuth(null); // Left null due to our DB schema alteration
+                    // B: Fake User! Save row to catch malicious probing bots
+                    history.setUserAuth(null);
                     history.setFailureReason("UNKNOWN_USER_" + reason);
                     loginHistoryRepository.save(history);
 
@@ -107,8 +125,7 @@ public class AuthenticationEventListener {
     }
 
     /**
-     * Helper tool to accurately extract the true client IP address,
-     * even if your Linux server sits behind an Nginx reverse-proxy down the line.
+     * Helper tool to accurately extract the true client IP address.
      */
     private String getClientIpAddress() {
         String xfHeader = request.getHeader("X-Forwarded-For");

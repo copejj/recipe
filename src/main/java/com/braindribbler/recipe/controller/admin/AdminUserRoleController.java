@@ -7,13 +7,16 @@ import com.braindribbler.recipe.repository.auth.UserRepository;
 import com.braindribbler.recipe.service.auth.RoleRankCache;
 
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -68,11 +71,13 @@ public class AdminUserRoleController {
     }
 
     /**
-     * Processes the submission form securely.
+     * Processes the submission form securely, including updating roles and account
+     * suspension status.
      */
     @PostMapping("/roles")
     public String updateRoles(@PathVariable("publicId") UUID publicId,
             @RequestParam(value = "selectedRoles", required = false) Set<Integer> selectedRoleIds,
+            @RequestParam(value = "inactiveStatus", required = false) Boolean inactiveStatus,
             @AuthenticationPrincipal UserDetails loggedInUser) {
 
         User targetUser = userRepository.findByPublicId(publicId)
@@ -81,21 +86,42 @@ public class AdminUserRoleController {
         int targetUserMaxRank = getHighestRoleRank(targetUser.getRoles());
         int loggedInAdminMaxRank = getAdminRankFromUsername(loggedInUser.getUsername());
 
-        // Stop unauthorized cross-modifications
         if (targetUserMaxRank >= loggedInAdminMaxRank) {
             throw new AccessDeniedException("Unauthorized modification attempt blocked.");
         }
 
-        // Fetch new roles from database
+        /* --- MANAGE INACTIVE STATUS AND AUDIT TRAIL --- */
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean canManageUsers = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("can_manage_users"));
+
+        if (canManageUsers) {
+            if (Boolean.TRUE.equals(inactiveStatus)) {
+                // If the user isn't already inactive, apply the timestamp and log who did it
+                if (targetUser.getDisabledAt() == null) {
+                    targetUser.setDisabledAt(OffsetDateTime.now());
+
+                    // Fetch the current authenticated admin's User entity record
+                    User currentAdmin = userRepository.findByUserAuthEmail(loggedInUser.getUsername())
+                            .orElseThrow(() -> new UsernameNotFoundException("Admin not found"));
+                    targetUser.setDisabledBy(currentAdmin);
+                }
+            } else {
+                // Reactivating the user removes both the timestamp and the administrator log
+                targetUser.setDisabledAt(null);
+                targetUser.setDisabledBy(null);
+            }
+        } else if (inactiveStatus != null) {
+            throw new AccessDeniedException("Security Exception: Insufficient clearance to modify user state.");
+        }
+
+        /* --- MANAGE EXISTING ROLES STRUCTURAL SECURITY --- */
         Set<Role> newRoles = selectedRoleIds == null ? Set.of()
                 : roleRepository.findAllById(selectedRoleIds).stream().collect(Collectors.toSet());
 
-        // 4. HARDENED PRIVILEGE ESCALATION BLOCK: Verify the admin isn't sneaky and
-        // injects a role above their grade
         for (Role r : newRoles) {
-            if (getRoleRankValue(r.getRoleName()) >= loggedInAdminMaxRank) {
-                throw new AccessDeniedException(
-                        "Security Alert: Escalation attempt caught. You cannot assign a role equal to or higher than your own.");
+            if (roleRankCache.getRankValue(r.getRoleName()) >= loggedInAdminMaxRank) {
+                throw new AccessDeniedException("Security Alert: Escalation attempt caught.");
             }
         }
 

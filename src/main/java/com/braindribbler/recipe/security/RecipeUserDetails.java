@@ -3,7 +3,6 @@ package com.braindribbler.recipe.security;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -61,6 +60,10 @@ public class RecipeUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return this.userAuth.isVerified();
+        if (userAuth.getUser() != null && userAuth.getUser().getDisabledAt() != null) {
+            return false;
+        }
+        return true;
     }
+
 }
