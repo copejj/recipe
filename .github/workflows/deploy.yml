@@ -91,21 +91,24 @@ jobs:
               done
             fi
 
+            # Check database metadata catalogs to determine if history tables exist yet
+            TABLE_EXISTS=$(psql $PSQL_ARGS -c "SELECT 1 FROM pg_tables WHERE schemaname = 'public_shadow' AND tablename = 'schema_migrations';")
+
             # Dynamically stitch migrations into a single master transaction block.
             {
               echo "BEGIN;"
               echo "SET search_path = public_shadow, public;"
               
-              if [ -f sql/init_schema.sql ]; then
+              # 🔄 CONDITIONALLY RUN INIT_SCHEMA: Only if the database is blank/missing the history table
+              if [ "$TABLE_EXISTS" != "1" ] && [ -f sql/init_schema.sql ]; then
+                echo "--- Table schema_migrations not found. Injecting base init_schema.sql ---"
                 cat sql/init_schema.sql
               fi
               
+              # Loop through migration scripts sequentially
               FILES=$($FIND_BIN sql/migrations -regextype posix-extended -regex ".*/[0-9]{8}_[0-9]+.*\.sql" | sort)
               for FILE in $FILES; do
                 FILENAME=$(basename "$FILE")
-                
-                # Check database metadata catalogs to determine if history tables exist yet
-                TABLE_EXISTS=$(psql $PSQL_ARGS -c "SELECT 1 FROM pg_tables WHERE schemaname = 'public_shadow' AND tablename = 'schema_migrations';")
                 
                 ALREADY_RUN="0"
                 if [ "$TABLE_EXISTS" = "1" ]; then
@@ -153,4 +156,3 @@ jobs:
             $MVN_BIN clean
             
             echo "--- Deployment of $TAG_NAME completed successfully! ---"
-
