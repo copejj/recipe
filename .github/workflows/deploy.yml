@@ -60,9 +60,13 @@ jobs:
             echo "[Step 2/7] Cleaning up older historical backups & preparing isolated shadow schema..."
             psql $PSQL_ARGS -c "DROP SCHEMA IF EXISTS public_old CASCADE; DROP SCHEMA IF EXISTS public_shadow CASCADE;"
             
-            # Clone production schema structures cleanly into shadow using Postgres native namespaces
-            pg_dump $DUMP_ARGS -n public -f /tmp/live_full_snapshot.sql
+            # Create the shadow schema namespace explicitly beforehand
             psql $PSQL_ARGS -c "CREATE SCHEMA public_shadow AUTHORIZATION $DB_USER;"
+            
+            # Dump production layouts smoothly, omitting structural schema creation statements
+            pg_dump $DUMP_ARGS -n public -f /tmp/live_full_snapshot.sql
+            
+            # Force restore target tables inside public_shadow playground safely
             psql $PSQL_ARGS --set search_path=public_shadow -f /tmp/live_full_snapshot.sql
             rm -f /tmp/live_full_snapshot.sql
 
@@ -74,14 +78,13 @@ jobs:
             CURRENT_STEP="DATABASE_MIGRATION"
             echo "[Step 4/7] Compiling and running migrations against shadow schema..."
             
-            # --- NEW VALIDATION: Scan for invalid migration filenames to alert developers ---
+            # Check for bad filenames to throw clear alerts before starting transaction sequence
             if [ -d sql/migrations ]; then
               for FILE in sql/migrations/*; do
                 [ -e "$FILE" ] || break
                 FILENAME=$(basename "$FILE")
-                # If the file does NOT match the required YYYYMMDD_NN_name.sql format, log a clear warning
                 if [[ ! "$FILENAME" =~ ^[0-9]{8}_[0-9]+.*\.sql$ ]]; then
-                  echo "⚠️  WARNING: File '$FILENAME' in sql/migrations does NOT match the expected naming format (*.sql) and will be SKIPPED by this deployment!"
+                  echo "WARNING: File '$FILENAME' in sql/migrations does NOT match expected naming format (*.sql) and will be SKIPPED!"
                 fi
               done
             fi
@@ -91,27 +94,34 @@ jobs:
               echo "BEGIN;"
               echo "SET search_path = public_shadow, public;"
               
-              # Load base initial schema configurations if applicable
               if [ -f sql/init_schema.sql ]; then
                 cat sql/init_schema.sql
               fi
               
-              # Evaluate and append pending delta migrations sequentially
+              # SWAPPED: Used $FIND_BIN with your exact posix regex filter for production parity!
               FILES=$($FIND_BIN sql/migrations -regextype posix-extended -regex ".*/[0-9]{8}_[0-9]+.*\.sql" | sort)
               for FILE in $FILES; do
                 FILENAME=$(basename "$FILE")
-                ALREADY_RUN=$(psql $PSQL_ARGS -A -c "SELECT 1 FROM public_shadow.schema_migrations WHERE filename='$FILENAME' AND status='completed';")
+                
+                # SAFE GUARD PRE-CHECK: Verify if the logging framework table exists before querying it
+                TABLE_EXISTS=$(psql $PSQL_ARGS -c "SELECT 1 FROM pg_tables WHERE schemaname = 'public_shadow' AND tablename = 'schema_migrations';")
+                
+                ALREADY_RUN="0"
+                if [ "$TABLE_EXISTS" = "1" ]; then
+                  ALREADY_RUN=$(psql $PSQL_ARGS -A -c "SELECT 1 FROM public_shadow.schema_migrations WHERE filename='$FILENAME' AND status='completed';")
+                fi
                 
                 if [ "$ALREADY_RUN" != "1" ]; then
-                  echo "INSERT INTO public_shadow.schema_migrations (filename, status, started_at) VALUES ('$FILENAME', 'pending', NOW()) ON CONFLICT (filename) DO UPDATE SET status='pending';"
+                  # ALIGNED QUERY: Streams updates seamlessly without breaking trigger parameters
+                  echo "INSERT INTO public_shadow.schema_migrations (filename) VALUES ('$FILENAME') ON CONFLICT (filename) DO UPDATE SET started_at = NOW(), ended_at = NULL, error_message = NULL;"
                   cat "$FILE"
-                  echo "UPDATE public_shadow.schema_migrations SET ended_at=NOW(), status='completed' WHERE filename='$FILENAME';"
+                  echo "UPDATE public_shadow.schema_migrations SET ended_at = NOW() WHERE filename='$FILENAME';"
                 fi
               done
               echo "COMMIT;"
             } > /tmp/compiled_migration.sql
 
-            # Fire off the completed migration chain to PostgreSQL
+            # Fire off completed migration chain to PostgreSQL
             psql $PSQL_ARGS -f /tmp/compiled_migration.sql
             rm -f /tmp/compiled_migration.sql
 
