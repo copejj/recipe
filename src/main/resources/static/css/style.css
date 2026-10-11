@@ -855,3 +855,26 @@ dialog.admin-modal h3 {
     white-space: nowrap;
     /* Prevents words from wrapping */
 }
+
+.migration-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
+.migration-badge--success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.migration-badge--pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.migration-badge--failed {
+    background-color: #f8d7da;
+    color: #721c24;
+}

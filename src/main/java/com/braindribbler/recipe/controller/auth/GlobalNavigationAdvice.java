@@ -31,8 +31,13 @@ public class GlobalNavigationAdvice {
             if (authorities.contains("can_manage_roles")) {
                 menuItems.add(new MenuItem("Role Customization", "/admin/roles"));
             }
+
+            if (authorities.contains("can_manage_migrations")) {
+                menuItems.add(new MenuItem("Migration History", "/admin/migrations"));
+            }
         }
 
         return menuItems;
     }
+
 }
