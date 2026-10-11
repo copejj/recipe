@@ -34,6 +34,10 @@ public class User {
     private OffsetDateTime disabledAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "disabled_by_user_id")
+    private User disabledBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "profile_visibility_id", nullable = false)
     private ProfileVisibility profileVisibility;
 
@@ -121,6 +125,14 @@ public class User {
 
     public void setDisabledAt(OffsetDateTime disabledAt) {
         this.disabledAt = disabledAt;
+    }
+
+    public User getDisabledBy() {
+        return disabledBy;
+    }
+
+    public void setDisabledBy(User disabledBy) {
+        this.disabledBy = disabledBy;
     }
 
     public ProfileVisibility getProfileVisibility() {

@@ -33,7 +33,7 @@
                             <a th:if="${chef.highestRoleRankValue < loggedInAdminRank}"
                                 th:href="@{/admin/users/edit/{id}(id=${chef.publicId})}"
                                 class="btn btn--primary btn--table-action">
-                                Edit Roles
+                                Edit User
                             </a>
 
                             <!-- Optional: Display a locked badge if they cannot modify it -->
@@ -52,7 +52,7 @@
                         </td>
                         <td>
                             <span th:if="${chef.disabledAt == null}" class="status-text--active">Active</span>
-                            <span th:if="${chef.disabledAt != null}" class="status-text--banned">Banned</span>
+                            <span th:if="${chef.disabledAt != null}" class="status-text--banned">Inactive</span>
                         </td>
                     </tr>
                 </tbody>

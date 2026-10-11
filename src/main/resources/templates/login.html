@@ -23,9 +23,9 @@
         <div th:if="${param.verified}" class="alert alert--success">Your account has been successfully verified! You can
             now sign in below.</div>
         <!-- Shown if the administrator populates the users.disabled_at column vector -->
-        <div th:if="${param.banned}" class="alert alert--danger">This account has been administratively disabled. Please
-            contact support.</div>
-
+        <div th:if="${param.inactive}" class="alert alert--danger">
+            This account is currently inactive. Please contact our support team for assistance.
+        </div>
         <!-- Shown if an automated network IP blasts your login routes with bad payloads -->
         <div th:if="${param.iplocked}" class="alert alert--danger">Too many failed connection attempts from your
             network. Access from this IP has been blocked temporarily.</div>
