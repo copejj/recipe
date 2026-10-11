@@ -39,7 +39,8 @@ jobs:
             cd ${{ vars.PROD_APP_PATH }}
             export PGPASSWORD="$DB_PASS"
             PSQL_ARGS="-h $DB_HOST -U $DB_USER -d $DB_NAME -t --set ON_ERROR_STOP=1"
-            DUMP_ARGS="-h $DB_HOST -U $DB_USER -d $DB_NAME --no-subscriptions --no-publications -x -O"
+            
+            DUMP_ARGS="-h $DB_HOST -U $DB_USER -d $DB_NAME -x -O --no-security-labels --no-subscriptions --no-publications"
 
             # --- SAFEGUARDS: GLOBAL ERROR TRAP ---
             cleanup_on_failure() {
@@ -63,12 +64,15 @@ jobs:
             # Create the shadow schema namespace explicitly beforehand
             psql $PSQL_ARGS -c "CREATE SCHEMA public_shadow AUTHORIZATION $DB_USER;"
             
-            # Dump production layouts smoothly, omitting structural schema creation statements
-            pg_dump $DUMP_ARGS -n public -f /tmp/live_full_snapshot.sql
+            # Dump production structures to a raw snapshot file
+            pg_dump $DUMP_ARGS -n public -f /tmp/live_full_snapshot_raw.sql
             
-            # Force restore target tables inside public_shadow playground safely
-            psql $PSQL_ARGS --set search_path=public_shadow -f /tmp/live_full_snapshot.sql
-            rm -f /tmp/live_full_snapshot.sql
+            # REGEX SCRUBBER: Convert absolute "public." text paths into "public_shadow." references safely
+            sed -E 's/\bpublic\.([a-zA-Z0-9_]+)/public_shadow.\1/g; s/\bpublic\b/public_shadow/g' /tmp/live_full_snapshot_raw.sql > /tmp/live_full_snapshot.sql
+            
+            # Unpack the scrubbed structures into your public_shadow schema
+            psql $PSQL_ARGS -f /tmp/live_full_snapshot.sql
+            rm -f /tmp/live_full_snapshot_raw.sql /tmp/live_full_snapshot.sql
 
             CURRENT_STEP="SOURCE_CHECKOUT"
             echo "[Step 3/7] Fetching code for tag: $TAG_NAME"
@@ -78,7 +82,7 @@ jobs:
             CURRENT_STEP="DATABASE_MIGRATION"
             echo "[Step 4/7] Compiling and running migrations against shadow schema..."
             
-            # Check for bad filenames to throw clear alerts before starting transaction sequence
+            # Verify naming syntax and warn if abnormal patterns are found
             if [ -d sql/migrations ]; then
               for FILE in sql/migrations/*; do
                 [ -e "$FILE" ] || break
@@ -98,12 +102,11 @@ jobs:
                 cat sql/init_schema.sql
               fi
               
-              # SWAPPED: Used $FIND_BIN with your exact posix regex filter for production parity!
               FILES=$($FIND_BIN sql/migrations -regextype posix-extended -regex ".*/[0-9]{8}_[0-9]+.*\.sql" | sort)
               for FILE in $FILES; do
                 FILENAME=$(basename "$FILE")
                 
-                # SAFE GUARD PRE-CHECK: Verify if the logging framework table exists before querying it
+                # Check database metadata catalogs to determine if history tables exist yet
                 TABLE_EXISTS=$(psql $PSQL_ARGS -c "SELECT 1 FROM pg_tables WHERE schemaname = 'public_shadow' AND tablename = 'schema_migrations';")
                 
                 ALREADY_RUN="0"
@@ -112,7 +115,7 @@ jobs:
                 fi
                 
                 if [ "$ALREADY_RUN" != "1" ]; then
-                  # ALIGNED QUERY: Streams updates seamlessly without breaking trigger parameters
+                  # Stream the change and track progress inside your custom trigger framework
                   echo "INSERT INTO public_shadow.schema_migrations (filename) VALUES ('$FILENAME') ON CONFLICT (filename) DO UPDATE SET started_at = NOW(), ended_at = NULL, error_message = NULL;"
                   cat "$FILE"
                   echo "UPDATE public_shadow.schema_migrations SET ended_at = NOW() WHERE filename='$FILENAME';"
