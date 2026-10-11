@@ -60,7 +60,7 @@ public class RecipeUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        if (userAuth.getUser() != null && userAuth.getUser().getDisabledAt() != null) {
+        if (userAuth != null && userAuth.getUser() != null && userAuth.getUser().getDisabledAt() != null) {
             return false;
         }
         return true;
