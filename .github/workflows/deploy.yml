@@ -38,20 +38,18 @@ jobs:
             
             cd ${{ vars.PROD_APP_PATH }}
             export PGPASSWORD="$DB_PASS"
-            
             PSQL_ARGS="-h $DB_HOST -U $DB_USER -d $DB_NAME -t --set ON_ERROR_STOP=1"
             DUMP_ARGS="-h $DB_HOST -U $DB_USER -d $DB_NAME --no-subscriptions --no-publications -x -O"
-            
+
+            # --- SAFEGUARDS: GLOBAL ERROR TRAP ---
             cleanup_on_failure() {
               EXIT_CODE=$?
               if [ $EXIT_CODE -ne 0 ]; then
                 echo "!!! ERROR DETECTED in Step: $CURRENT_STEP (Exit Code: $EXIT_CODE) !!!"
-                
                 if [ "$CURRENT_STEP" == "DATABASE_MIGRATION" ]; then
                   echo "Cleaning up staging shadow schema due to failure..."
                   psql $PSQL_ARGS -c "DROP SCHEMA IF EXISTS public_shadow CASCADE;"
                 fi
-                
                 $GIT_BIN checkout .
                 exit $EXIT_CODE
               fi
@@ -62,28 +60,11 @@ jobs:
             echo "[Step 2/7] Cleaning up older historical backups & preparing isolated shadow schema..."
             psql $PSQL_ARGS -c "DROP SCHEMA IF EXISTS public_old CASCADE; DROP SCHEMA IF EXISTS public_shadow CASCADE;"
             
+            # Clone production schema structures cleanly into shadow using Postgres native namespaces
             pg_dump $DUMP_ARGS -n public -f /tmp/live_full_snapshot.sql
-            
-            sed -E "s/\bpublic\.([a-zA-Z0-9_]+)/public_shadow.\1/g; s/\bpublic\b/public_shadow/g" /tmp/live_full_snapshot.sql > /tmp/shadow_full_snapshot.sql
-            psql $PSQL_ARGS -f /tmp/shadow_full_snapshot.sql
-            
-            psql $PSQL_ARGS -c "ALTER SCHEMA public_shadow OWNER TO $DB_USER;"
-            
-            # --- FIX: FORCIBLY RE-ASSIGN OWNERSHIP OF ALL COPIED TABLES & SEQUENCES TO MIGRATION USER ---
-            echo "Standardizing cloned table ownership rules..."
-            psql $PSQL_ARGS -c "
-              DO \$\$ DECLARE
-                  r RECORD;
-              BEGIN
-                  FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public_shadow') LOOP
-                      EXECUTE 'ALTER TABLE public_shadow.' || quote_ident(r.tablename) || ' OWNER TO $DB_USER;';
-                  END LOOP;
-                  FOR r IN (SELECT sequencename FROM pg_sequences WHERE schemaname = 'public_shadow') LOOP
-                      EXECUTE 'ALTER SEQUENCE public_shadow.' || quote_ident(r.sequencename) || ' OWNER TO $DB_USER;';
-                  END LOOP;
-              END \$\$;
-            "
-            rm -f /tmp/live_full_snapshot.sql /tmp/shadow_full_snapshot.sql
+            psql $PSQL_ARGS -c "CREATE SCHEMA public_shadow AUTHORIZATION $DB_USER;"
+            psql $PSQL_ARGS --set search_path=public_shadow -f /tmp/live_full_snapshot.sql
+            rm -f /tmp/live_full_snapshot.sql
 
             CURRENT_STEP="SOURCE_CHECKOUT"
             echo "[Step 3/7] Fetching code for tag: $TAG_NAME"
@@ -91,42 +72,55 @@ jobs:
             $GIT_BIN checkout -B "release-$TAG_NAME" "$TAG_NAME"
 
             CURRENT_STEP="DATABASE_MIGRATION"
-            echo "[Step 4/7] Running database migrations against shadow schema..."
+            echo "[Step 4/7] Compiling and running migrations against shadow schema..."
             
-            SEARCH_PATH_ARG="--set search_path=public_shadow"
+            # --- NEW VALIDATION: Scan for invalid migration filenames to alert developers ---
+            if [ -d sql/migrations ]; then
+              for FILE in sql/migrations/*; do
+                [ -e "$FILE" ] || break
+                FILENAME=$(basename "$FILE")
+                # If the file does NOT match the required YYYYMMDD_NN_name.sql format, log a clear warning
+                if [[ ! "$FILENAME" =~ ^[0-9]{8}_[0-9]+.*\.sql$ ]]; then
+                  echo "⚠️  WARNING: File '$FILENAME' in sql/migrations does NOT match the expected naming format (*.sql) and will be SKIPPED by this deployment!"
+                fi
+              done
+            fi
 
-            sed -E "s/\bpublic\.([a-zA-Z0-9_]+)/public_shadow.\1/g; s/\bpublic\b/public_shadow/g" sql/init_schema.sql > /tmp/fixed_init_schema.sql
-            psql $PSQL_ARGS $SEARCH_PATH_ARG -c "BEGIN;" -f /tmp/fixed_init_schema.sql -c "COMMIT;"
-            rm -f /tmp/fixed_init_schema.sql
+            # Dynamically stitch migrations into a single master transaction block.
+            {
+              echo "BEGIN;"
+              echo "SET search_path = public_shadow, public;"
+              
+              # Load base initial schema configurations if applicable
+              if [ -f sql/init_schema.sql ]; then
+                cat sql/init_schema.sql
+              fi
+              
+              # Evaluate and append pending delta migrations sequentially
+              FILES=$($FIND_BIN sql/migrations -regextype posix-extended -regex ".*/[0-9]{8}_[0-9]+.*\.sql" | sort)
+              for FILE in $FILES; do
+                FILENAME=$(basename "$FILE")
+                ALREADY_RUN=$(psql $PSQL_ARGS -A -c "SELECT 1 FROM public_shadow.schema_migrations WHERE filename='$FILENAME' AND status='completed';")
+                
+                if [ "$ALREADY_RUN" != "1" ]; then
+                  echo "INSERT INTO public_shadow.schema_migrations (filename, status, started_at) VALUES ('$FILENAME', 'pending', NOW()) ON CONFLICT (filename) DO UPDATE SET status='pending';"
+                  cat "$FILE"
+                  echo "UPDATE public_shadow.schema_migrations SET ended_at=NOW(), status='completed' WHERE filename='$FILENAME';"
+                fi
+              done
+              echo "COMMIT;"
+            } > /tmp/compiled_migration.sql
 
-            FILES=$($FIND_BIN sql/migrations -regextype posix-extended -regex ".*/[0-9]{8}_[0-9]+.*\.sql" | sort)
-            for FILE in $FILES; do
-              FILENAME=$(basename "$FILE")
-              
-              ALREADY_RUN=$(psql $PSQL_ARGS -A -c "SELECT 1 FROM public_shadow.schema_migrations WHERE filename='$FILENAME' AND status='completed';")
-              if [ "$ALREADY_RUN" == "1" ]; then continue; fi
-              
-              echo "Executing migration on shadow data: $FILENAME"
-              psql $PSQL_ARGS -c "INSERT INTO public_shadow.schema_migrations (filename, status) VALUES ('$FILENAME', 'pending') ON CONFLICT (filename) DO UPDATE SET status='pending', started_at=NOW(), ended_at=NULL;"
-              
-              sed -E "s/\bpublic\.([a-zA-Z0-9_]+)/public_shadow.\1/g; s/\bpublic\b/public_shadow/g" "$FILE" > /tmp/temp_migration.sql
-              psql $PSQL_ARGS $SEARCH_PATH_ARG -f /tmp/temp_migration.sql
-              rm -f /tmp/temp_migration.sql
-              
-              psql $PSQL_ARGS -c "UPDATE public_shadow.schema_migrations SET ended_at=NOW(), status='completed' WHERE filename='$FILENAME';"
-            done
+            # Fire off the completed migration chain to PostgreSQL
+            psql $PSQL_ARGS -f /tmp/compiled_migration.sql
+            rm -f /tmp/compiled_migration.sql
 
-            # REINFORCE PERMISSIONS: Explicitly grant access to the application user on the new schema right before swapping it live
-            echo "Reinforcing application schema access privileges..."
+            echo "Reinforcing application schema access privileges and running atomic schema swap..."
             psql $PSQL_ARGS -c "
-              GRANT USAGE ON SCHEMA public_shadow TO recipe_app_user; 
-              GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE ON ALL TABLES IN SCHEMA public_shadow TO recipe_app_user; 
+              GRANT USAGE ON SCHEMA public_shadow TO recipe_app_user;
+              GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE ON ALL TABLES IN SCHEMA public_shadow TO recipe_app_user;
               GRANT SELECT, USAGE ON ALL SEQUENCES IN SCHEMA public_shadow TO recipe_app_user;
-            "
-
-            # ATOMIC SWAP: Slaps the updated schema + records live instantly
-            echo "Migrations successful! Performing instant atomic schema swap (preserving backup)..."
-            psql $PSQL_ARGS -c "
+              
               BEGIN;
                 ALTER SCHEMA public RENAME TO public_old;
                 ALTER SCHEMA public_shadow RENAME TO public;
@@ -147,4 +141,5 @@ jobs:
             echo "[Step 7/7] Cleaning up environment..."
             $GIT_BIN checkout .
             $MVN_BIN clean
+            
             echo "--- Deployment of $TAG_NAME completed successfully! ---"
