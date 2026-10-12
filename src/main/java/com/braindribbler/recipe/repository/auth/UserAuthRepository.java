@@ -11,6 +11,8 @@ public interface UserAuthRepository extends JpaRepository<UserAuth, Integer> {
 
     Optional<UserAuth> findByVerificationToken(UUID verificationToken);
 
+    Optional<UserAuth> findByResetPasswordToken(UUID token);
+
     @Query("SELECT ua FROM UserAuth ua " +
             "JOIN FETCH ua.user u " +
             "LEFT JOIN FETCH u.roles " +

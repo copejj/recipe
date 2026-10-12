@@ -33,17 +33,14 @@
             <nav sec:authorize="isAuthenticated()" class="header-nav">
                 <a th:href="@{/dashboard}" class="nav-link">Home</a>
                 <a th:href="@{/search}" class="nav-link">Search</a>
+                <a th:href="@{/profile}" class="nav-link">My Profile</a>
 
                 <!-- Dynamic Admin Dropdown Menu Options Block -->
-                <!-- Only renders if the collection list exists and isn't empty -->
                 <div class="nav-dropdown" th:if="${adminMenuItems != null and !adminMenuItems.empty}">
                     <button type="button" class="nav-button nav-link nav-link--cta">
                         Admin <span class="dropdown-caret">▼</span>
                     </button>
-
-                    <!-- Dropdown Link Flyout Options Box -->
                     <div class="dropdown-menu">
-                        <!-- Dynamically loops over the array provided by GlobalNavigationAdvice -->
                         <a th:each="item : ${adminMenuItems}" th:href="@{${item.url}}" class="dropdown-item"
                             th:text="${item.label}">Dynamic Option</a>
                     </div>
