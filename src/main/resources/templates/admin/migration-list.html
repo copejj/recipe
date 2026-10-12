@@ -5,20 +5,21 @@
 
 <body>
 
+    <!-- Shared Navigation Header Fragment -->
     <div th:replace="~{fragments/layout :: header}"></div>
 
     <main class="page-card">
         <h1 class="page-title">Database Migration History</h1>
         <p class="page-subtitle">Monitor systemic schema DDL execution states across deployment nodes.</p>
 
-        <!-- STATE A: THE TABLE CONTEXT DOES NOT EXIST (LOCAL DEV FALLBACK) -->
+        <!-- STATE A: THE TABLE CONTEXT DOES NOT EXIST (LOCAL DEV FALLBACK STATE) -->
         <div th:if="${!tableExists}" class="alert alert--info">
             <h5 style="margin: 0 0 5px 0; font-weight: 700;">Local Environment Detected</h5>
             <p style="margin: 0;">The <code>schema_migrations</code> table is absent in this database instance.
                 Migration records are provisioned dynamically via pipeline scripts during Production deployments.</p>
         </div>
 
-        <!-- STATE B: THE TABLE CONTEXT EXISTS (PRODUCTION VIEW) -->
+        <!-- STATE B: THE TABLE CONTEXT EXISTS (PRODUCTION & IMPORTED DATA VIEW) -->
         <div th:if="${tableExists}" class="admin-table-wrapper">
             <table class="admin-matrix-table">
                 <thead>
@@ -33,28 +34,41 @@
                 </thead>
                 <tbody>
                     <tr th:each="row : ${migrations}">
-                        <td class="audit-font-monospace" th:text="${row.id}">1</td>
-                        <td class="role-name-cell audit-font-monospace" th:text="${row.filename}">V1__init.sql</td>
-                        <td>
-                            <!-- Dynamic Enum Badge Overrides -->
-                            <span th:if="${#strings.toString(row.status) == 'success'}"
-                                class="migration-badge migration-badge--success">Success</span>
-                            <span th:if="${#strings.toString(row.status) == 'pending'}"
-                                class="migration-badge migration-badge--pending">Pending</span>
-                            <span th:if="${#strings.toString(row.status) == 'failed'}"
-                                class="migration-badge migration-badge--failed">Failed</span>
+                        <!-- Lowercase map keys match the raw PostgreSQL column map array output -->
+                        <td class="audit-font-monospace" th:text="${row.get('id')}">1</td>
+                        <td class="role-name-cell audit-font-monospace" th:text="${row.get('filename')}">V1__init.sql
                         </td>
+                        <td>
+                            <span
+                                th:if="${row.get('status') != null && (row.get('status').toString() == 'completed' || row.get('status').toString() == 'success')}"
+                                class="migration-badge migration-badge--success">Success</span>
+                            <span th:if="${row.get('status') != null && row.get('status').toString() == 'pending'}"
+                                class="migration-badge migration-badge--pending">Pending</span>
+                            <span th:if="${row.get('status') != null && row.get('status').toString() == 'failed'}"
+                                class="migration-badge migration-badge--failed">Failed</span>
+
+                            <span
+                                th:if="${row.get('status') != null && row.get('status').toString() != 'completed' && row.get('status').toString() != 'success' && row.get('status').toString() != 'pending' && row.get('status').toString() != 'failed'}"
+                                class="migration-badge migration-badge--pending"
+                                th:text="${row.get('status').toString()}">Status</span>
+
+                            <!-- Fallback if status metadata is null -->
+                            <span th:if="${row.get('status') == null}"
+                                class="migration-badge migration-badge--pending">Pending</span>
+                        </td>
+                        <!-- Legacy Timestamp Map Formatting via native #dates helper to prevent SpEL exceptions -->
                         <td class="footer-git-info"
-                            th:text="${row.started_at != null ? #temporals.format(row.started_at, 'yyyy-MM-dd HH:mm:ss z') : 'N/A'}">
-                            2026-10-11</td>
+                            th:text="${row.get('started_at') != null ? #dates.format(row.get('started_at'), 'yyyy-MM-dd HH:mm:ss') : 'N/A'}">
+                            2026-10-11 18:00:00</td>
                         <td class="footer-git-info"
-                            th:text="${row.ended_at != null ? #temporals.format(row.ended_at, 'yyyy-MM-dd HH:mm:ss z') : 'N/A'}">
-                            2026-10-11</td>
+                            th:text="${row.get('ended_at') != null ? #dates.format(row.get('ended_at'), 'yyyy-MM-dd HH:mm:ss') : 'N/A'}">
+                            2026-10-11 18:01:00</td>
                         <td class="audit-log-failure">
-                            <span th:if="${row.error_message != null}"
+                            <span th:if="${row.get('error_message') != null}"
                                 class="audit-log-failure--active audit-font-monospace"
-                                th:text="${row.error_message}">Syntax Error</span>
-                            <span th:if="${row.error_message == null}" class="audit-log-failure--empty">None</span>
+                                th:text="${row.get('error_message')}">Syntax Error Log</span>
+                            <span th:if="${row.get('error_message') == null}"
+                                class="audit-log-failure--empty">None</span>
                         </td>
                     </tr>
                 </tbody>
@@ -62,6 +76,7 @@
         </div>
     </main>
 
+    <!-- Shared Footer Fragment -->
     <div th:replace="~{fragments/layout :: footer}"></div>
 
 </body>
