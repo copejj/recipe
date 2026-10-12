@@ -48,8 +48,14 @@
             </div>
             <button type="submit" class="btn btn--primary">Log In</button>
         </form>
-        <p class="auth-footer-text">Don't have an account? <a th:href="@{/register}" class="auth-link">Register here</a>
-        </p>
+        <div class="auth-footer-links">
+            <p>
+                <a th:href="@{/forgot-password}" class="auth-link">Forgot your password?</a>
+            </p>
+            <p class="auth-footer-text">
+                Don't have an account? <a th:href="@{/register}" class="auth-link">Register here</a>
+            </p>
+        </div>
     </main>
 
     <div th:replace="~{fragments/layout :: footer}"></div>

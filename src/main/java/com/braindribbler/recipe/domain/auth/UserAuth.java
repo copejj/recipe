@@ -43,6 +43,12 @@ public class UserAuth {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt = OffsetDateTime.now();
 
+    @Column(name = "reset_password_token", columnDefinition = "uuid")
+    private java.util.UUID resetPasswordToken;
+
+    @Column(name = "reset_password_expires_at")
+    private OffsetDateTime resetPasswordExpiresAt;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
@@ -120,5 +126,21 @@ public class UserAuth {
 
     public void setVerificationToken(UUID verificationToken) {
         this.verificationToken = verificationToken;
+    }
+
+    public java.util.UUID getResetPasswordToken() {
+        return resetPasswordToken;
+    }
+
+    public void setResetPasswordToken(java.util.UUID resetPasswordToken) {
+        this.resetPasswordToken = resetPasswordToken;
+    }
+
+    public OffsetDateTime getResetPasswordExpiresAt() {
+        return resetPasswordExpiresAt;
+    }
+
+    public void setResetPasswordExpiresAt(OffsetDateTime resetPasswordExpiresAt) {
+        this.resetPasswordExpiresAt = resetPasswordExpiresAt;
     }
 }

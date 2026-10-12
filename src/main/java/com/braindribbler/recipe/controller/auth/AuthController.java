@@ -27,7 +27,7 @@ public class AuthController {
 
     @GetMapping("/login")
     public String showLoginPage() {
-        return "login"; // Points to templates/login.html
+        return "auth/login"; // Points to templates/login.html
     }
 
     @GetMapping("/register")
@@ -35,7 +35,7 @@ public class AuthController {
         // Binds an empty DTO to the form structure so Thymeleaf can capture fields
         // cleanly
         model.addAttribute("registrationDto", new RegistrationDto());
-        return "register"; // Points to templates/register.html
+        return "auth/register"; // Points to templates/register.html
     }
 
     @PostMapping("/register")

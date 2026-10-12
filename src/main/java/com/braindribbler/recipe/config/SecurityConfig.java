@@ -67,7 +67,7 @@ public class SecurityConfig {
                                                 .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**")
                                                 .permitAll()
                                                 .requestMatchers("/", "/search", "/register", "/login", "/verify",
-                                                                "/error")
+                                                                "/error", "/forgot-password", "/reset-password")
                                                 .permitAll()
 
                                                 // Broad administrative catch-alls (Hybrid baseline mapping protection)

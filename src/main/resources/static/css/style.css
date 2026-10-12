@@ -1,4 +1,8 @@
 /* ==========================================================================
+   STYLE.CSS - PART 1 OF 2 (CHAPTERS 1 - 7)
+   ========================================================================== */
+
+/* ==========================================================================
    1. GLOBAL SYSTEM VARIABLES (THEME CONFIGURATION)
    ========================================================================== */
 :root {
@@ -12,22 +16,36 @@
     --color-border-input: #ced4da;
     --color-bg-card: #ffffff;
     --color-bg-body: #f8f9fa;
+    --color-bg-disabled: #e9ecef;
+
+    /* Theme Layout Color Tokens */
+    --color-dark-bg: #1a1d20;
+    --color-dark-border: #2d3238;
+    --color-profile-dark-btn: #2c3e50;
 
     /* Global Typography System */
     --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
-    /* Functional Alert System */
-    --alert-danger-text: #721c24;
-    --alert-danger-bg: #f8d7da;
-    --alert-danger-border: #f5c6cb;
+    /* Functional Notification & Alert Colors */
+    --color-success-text: #155724;
+    --color-success-bg: #d4edda;
+    --color-success-border: #c3e6cb;
+    --color-success-raw: #28a745;
 
-    --alert-success-text: #155724;
-    --alert-success-bg: #d4edda;
-    --alert-success-border: #c3e6cb;
+    --color-danger-text: #721c24;
+    --color-danger-bg: #f8d7da;
+    --color-danger-border: #f5c6cb;
+    --color-danger-raw: #dc3545;
 
-    --alert-info-text: #0c5460;
-    --alert-info-bg: #d1ecf1;
-    --alert-info-border: #bee5eb;
+    --color-info-text: #0c5460;
+    --color-info-bg: #d1ecf1;
+    --color-info-border: #bee5eb;
+
+    --color-warn-text: #856404;
+    --color-warn-bg: #fff3cd;
+
+    --color-badge-blue-text: #0369a1;
+    --color-badge-blue-bg: #e0f2fe;
 }
 
 /* ==========================================================================
@@ -71,7 +89,6 @@ main {
     flex: 1 0 auto;
     width: 100%;
     max-width: 1140px;
-    /* Standard wide screen desktop utility layout */
     margin: 40px auto;
     padding: 0 24px;
 }
@@ -108,9 +125,8 @@ main {
    4. SHARED FRAGMENTS (HEADER & FOOTER)
    ========================================================================== */
 .main-header {
-    background-color: #1a1d20;
-    /* Darker off-black for modern, tech-focused depth */
-    color: #ffffff;
+    background-color: var(--color-dark-bg);
+    color: var(--color-bg-card);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
@@ -124,7 +140,7 @@ main {
 }
 
 .header-logo a {
-    color: #ffffff;
+    color: var(--color-bg-card);
     text-decoration: none;
     font-size: 1.3rem;
     font-weight: 700;
@@ -146,7 +162,7 @@ main {
 }
 
 .nav-link:hover {
-    color: #ffffff;
+    color: var(--color-bg-card);
 }
 
 .nav-link--cta,
@@ -218,12 +234,11 @@ main {
 .form-input {
     width: 100%;
     padding: 10px 14px;
-    box-sizing: border-box;
     border: 1px solid var(--color-border-input);
     border-radius: 6px;
     font-size: 1rem;
     font-family: inherit;
-    background-color: #ffffff;
+    background-color: var(--color-bg-card);
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -249,7 +264,7 @@ main {
 
 .btn--primary {
     background-color: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-bg-card);
 }
 
 .btn--primary:hover {
@@ -261,22 +276,23 @@ main {
 }
 
 .form-error-msg {
-    color: #dc3545;
+    color: var(--color-danger-raw);
     font-size: 0.85rem;
     margin-top: 6px;
     font-weight: 600;
 }
 
 /* Explicit CSS States for Native System Disabling */
-.form-input:disabled {
-    background-color: var(--color-bg-body);
-    border-color: var(--color-border);
-    color: #a8aeb4;
+.form-input:disabled,
+.profile-input-disabled {
+    background-color: var(--color-bg-body) !important;
+    border-color: var(--color-border) !important;
+    color: #a8aeb4 !important;
     cursor: not-allowed;
 }
 
 .btn:disabled {
-    background-color: #e9ecef !important;
+    background-color: var(--color-bg-disabled) !important;
     border-color: var(--color-border) !important;
     color: #adb5bd !important;
     cursor: not-allowed;
@@ -287,14 +303,6 @@ main {
 /* ==========================================================================
    6. ATOMIC VIEWS & REUSE BLOCKS
    ========================================================================== */
-.auth-footer-text {
-    margin-top: 24px;
-    margin-bottom: 0;
-    text-align: center;
-    font-size: 0.9rem;
-    color: var(--color-text-muted);
-}
-
 .auth-link {
     color: var(--color-primary);
     text-decoration: none;
@@ -399,21 +407,23 @@ main {
 }
 
 .alert--danger {
-    color: var(--alert-danger-text);
-    background-color: var(--alert-danger-bg);
-    border-color: var(--alert-danger-border);
+    color: var(--color-danger-text);
+    background-color: var(--color-danger-bg);
+    border-color: var(--color-danger-border);
 }
 
-.alert--success {
-    color: var(--alert-success-text);
-    background-color: var(--alert-success-bg);
-    border-color: var(--alert-success-border);
+.alert--success,
+.migration-badge--success,
+.audit-badge--success {
+    color: var(--color-success-text);
+    background-color: var(--color-success-bg);
+    border-color: var(--color-success-border);
 }
 
 .alert--info {
-    color: var(--alert-info-text);
-    background-color: var(--alert-info-bg);
-    border-color: var(--alert-info-border);
+    color: var(--color-info-text);
+    background-color: var(--color-info-bg);
+    border-color: var(--color-info-border);
 }
 
 /* ==========================================================================
@@ -452,8 +462,6 @@ main {
 /* ==========================================================================
     9. EXPLICIT ADMIN DROPDOWN LAYOUTS (GLOBAL SCOPE)
 ========================================================================== */
-
-/* 1. Establish the relative coordinate context pin point for the dropdown */
 .nav-dropdown {
     position: relative;
     display: inline-block;
@@ -462,12 +470,10 @@ main {
     margin-bottom: -12px;
 }
 
-/* 2. Style the Admin button element cleanly to match navbar flex lines */
 .nav-dropdown .nav-button {
     background: none;
     border: none;
     color: #ffc107;
-    /* Modern tech yellow branding accent color */
     font-weight: 600;
     cursor: pointer;
     font-family: inherit;
@@ -475,36 +481,23 @@ main {
     padding: 0 10px;
     margin: 0;
     line-height: 1;
-    /* Overrides default browser button height spacing */
 }
 
-/* 3. FORCE the flyout panel card to float completely out of layout flow */
 .dropdown-menu {
     display: none;
-    /* Keep hidden baseline */
-
-    /* CRITICAL RIPPING ACTIONS */
     position: absolute;
     top: 100%;
-    /* Positions top edge exactly flush with button bottom */
     right: 0;
-    /* Aligns right boundaries perfectly */
-
-    /* Presentation Aesthetics */
-    background-color: #1a1d20;
-    /* Modern tech dark theme background */
+    background-color: var(--color-dark-bg);
     min-width: 180px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     border-radius: 4px;
-    border: 1px solid #2d3238;
+    border: 1px solid var(--color-dark-border);
     z-index: 9999;
-    /* Ensures it floats over layout cards and tables safely */
     padding: 6px 0;
     margin: 0;
-    /* Erases stray spacing offsets */
 }
 
-/* 4. Formatting properties for routing links inside the dropdown container */
 .dropdown-item {
     display: block;
     width: 100%;
@@ -517,13 +510,11 @@ main {
     transition: background-color 0.1s ease, color 0.1s ease;
 }
 
-/* Highlight background on hover states */
 .dropdown-item:hover {
-    background-color: #2d3238;
-    color: #ffffff;
+    background-color: var(--color-dark-border);
+    color: var(--color-bg-card);
 }
 
-/* 5. TRIGGER: On container hover, shift state cleanly to visible block overlay card */
 .nav-dropdown:hover .dropdown-menu {
     display: block;
 }
@@ -555,7 +546,6 @@ table.dataTable tbody td {
     padding: 12px !important;
 }
 
-/* Page Container Layout Overrides */
 .page-card--audit-layout {
     max-width: 1240px;
     margin-top: 40px;
@@ -566,14 +556,12 @@ table.dataTable tbody td {
     width: 100%;
 }
 
-/* NEW: Targets the first column (Timestamp) to shrink its text */
 table.dataTable tbody td:first-child {
     font-size: 0.8rem !important;
     white-space: nowrap;
     color: var(--color-text-muted);
 }
 
-/* Dedicated Grid Typography Utilities */
 .audit-font-monospace {
     font-family: monospace;
 }
@@ -598,7 +586,6 @@ table.dataTable tbody td:first-child {
     margin-top: 2px;
 }
 
-/* Status Badges */
 .audit-badge {
     padding: 4px 8px;
     border-radius: 4px;
@@ -606,28 +593,22 @@ table.dataTable tbody td:first-child {
     font-size: 0.75rem;
 }
 
-.audit-badge--success {
-    background-color: #d4edda;
-    color: #155724;
+.audit-badge--failed,
+.migration-badge--failed {
+    background-color: var(--color-danger-bg);
+    color: var(--color-danger-text);
 }
 
-.audit-badge--failed {
-    background-color: #f8d7da;
-    color: #721c24;
-}
-
-/* MODIFIED: Shrinks the failure font further and restricts column expansion */
 .audit-log-failure {
     font-size: 0.75rem !important;
-    /* Made smaller */
     max-width: 160px !important;
-    /* Narrowed down column width limits */
     word-break: break-word;
-    /* Allows text wrapping within narrow container boundaries */
 }
 
-.audit-log-failure--active {
-    color: #dc3545;
+.audit-log-failure--active,
+.status-text--banned,
+.status-text--pending {
+    color: var(--color-danger-raw);
     font-weight: 600;
 }
 
@@ -644,7 +625,7 @@ table.dataTable tbody td:first-child {
     width: auto;
     padding: 4px 10px;
     font-size: 0.75rem;
-    background-color: #28a745;
+    background-color: var(--color-success-raw);
     white-space: nowrap;
 }
 
@@ -655,10 +636,8 @@ table.dataTable tbody td:first-child {
 }
 
 /* ==========================================================================
-   11. DEDICATED ADMIN MATRIX & MODAL OVERRIDES (NO INLINE STYLES)
+   11. DEDICATED ADMIN MATRIX, ATOMIC UTILITIES, & USER PROFILE CONFIGS
    ========================================================================== */
-
-/* Layout & Typography adjustments */
 .admin-header-flex {
     display: flex;
     justify-content: space-between;
@@ -679,7 +658,6 @@ table.dataTable tbody td:first-child {
     gap: 10px;
 }
 
-/* Custom Admin Listing Data Table formatting */
 .admin-table-wrapper {
     overflow-x: auto;
     margin-bottom: 20px;
@@ -713,7 +691,6 @@ table.dataTable tbody td:first-child {
     text-align: right;
 }
 
-/* Atomic Badges Matrix */
 .badge-container {
     display: flex;
     flex-wrap: wrap;
@@ -721,8 +698,8 @@ table.dataTable tbody td:first-child {
 }
 
 .badge-permission {
-    background-color: #e0f2fe;
-    color: #0369a1;
+    background-color: var(--color-badge-blue-bg);
+    color: var(--color-badge-blue-text);
     padding: 2px 8px;
     border-radius: 4px;
     font-size: 0.85rem;
@@ -735,7 +712,6 @@ table.dataTable tbody td:first-child {
     font-style: italic;
 }
 
-/* Flexbox Matrix Container for Permission Checkbox Toggles */
 .permission-checkbox-grid {
     display: flex;
     flex-direction: column;
@@ -749,7 +725,7 @@ table.dataTable tbody td:first-child {
     padding: 12px;
     border: 1px solid var(--color-border);
     border-radius: 6px;
-    background-color: #ffffff;
+    background-color: var(--color-bg-card);
 }
 
 .permission-checkbox-card input[type="checkbox"] {
@@ -767,6 +743,7 @@ table.dataTable tbody td:first-child {
     font-weight: 700;
     cursor: pointer;
     color: var(--color-text-dark);
+    white-space: nowrap;
 }
 
 .permission-checkbox-details small {
@@ -775,7 +752,6 @@ table.dataTable tbody td:first-child {
     margin-top: 2px;
 }
 
-/* Native HTML5 Dialog Popups Styling Overrides */
 dialog.admin-modal {
     border: none;
     border-radius: 8px;
@@ -815,13 +791,7 @@ dialog.admin-modal h3 {
 
 .status-text--active,
 .status-text--verified {
-    color: #28a745;
-    font-weight: 600;
-}
-
-.status-text--banned,
-.status-text--pending {
-    color: #dc3545;
+    color: var(--color-success-raw);
     font-weight: 600;
 }
 
@@ -840,20 +810,10 @@ dialog.admin-modal h3 {
     display: inline-block;
 }
 
-/* Custom utility to shrink button dimensions and typography */
 .btn--admin-small {
     width: auto;
     padding: 6px 12px;
     font-size: 0.85rem;
-}
-
-/* Forces the permission labels to stay on one line */
-.permission-checkbox-details label {
-    font-weight: 700;
-    cursor: pointer;
-    color: var(--color-text-dark);
-    white-space: nowrap;
-    /* Prevents words from wrapping */
 }
 
 .migration-badge {
@@ -864,17 +824,50 @@ dialog.admin-modal h3 {
     text-transform: uppercase;
 }
 
-.migration-badge--success {
-    background-color: #d4edda;
-    color: #155724;
-}
-
 .migration-badge--pending {
-    background-color: #fff3cd;
-    color: #856404;
+    background-color: var(--color-warn-bg);
+    color: var(--color-warn-text);
 }
 
-.migration-badge--failed {
-    background-color: #f8d7da;
-    color: #721c24;
+/* Consolidated Atomic Text Alignments & Global Spacing Utilities */
+.auth-centered,
+.auth-footer-links,
+.auth-footer-text {
+    text-align: center;
+}
+
+.auth-header-spacing {
+    margin-bottom: 20px;
+}
+
+.auth-footer-links {
+    margin-top: 20px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.auth-footer-links p {
+    margin: 5px 0;
+}
+
+/* User Profile Workspace Base Classes */
+.profile-card {
+    max-width: 650px;
+    margin: 40px auto;
+    padding: 30px;
+}
+
+.profile-section-title {
+    margin-top: 20px;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 5px;
+}
+
+.profile-input-hint {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+}
+
+.profile-password-btn {
+    background-color: var(--color-profile-dark-btn);
 }

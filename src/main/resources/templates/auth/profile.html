@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head th:replace="~{fragments/layout :: html_head('My Profile - Braindribbler')}"></head>
+
+<body>
+    <div th:replace="~{fragments/layout :: header}"></div>
+
+    <main class="page-card profile-card">
+        <h1 class="page-title">Profile Settings</h1>
+        <p class="page-subtitle auth-header-spacing">Manage your chef profile information and account credentials.</p>
+
+        <!-- Dynamic Success/Error Alerts Feedback Vectors -->
+        <div th:if="${successMessage}" class="alert alert--success" th:text="${successMessage}"></div>
+        <div th:if="${infoMessage}" class="alert alert--info" th:text="${infoMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert--danger" th:text="${errorMessage}"></div>
+
+        <!-- SECTION 1: Personal Details Form -->
+        <h3 class="profile-section-title">Personal Details</h3>
+        <form th:action="@{/profile/update-details}" method="post" style="margin-bottom: 40px;">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+            <div class="form-group">
+                <label class="form-label">Email Address (Username)</label>
+                <input type="text" class="form-input profile-input-disabled" th:value="${email}" disabled />
+                <small class="profile-input-hint">Account emails cannot be altered dynamically.</small>
+            </div>
+            <div class="form-group">
+                <label for="firstName" class="form-label">First Name</label>
+                <input type="text" id="firstName" name="firstName" class="form-input" required
+                    th:value="${user.firstName}" />
+            </div>
+            <div class="form-group">
+                <label for="lastName" class="form-label">Last Name</label>
+                <input type="text" id="lastName" name="lastName" class="form-input" required
+                    th:value="${user.lastName}" />
+            </div>
+            <div class="form-group">
+                <label for="displayName" class="form-label">Display Name</label>
+                <input type="text" id="displayName" name="displayName" class="form-input" required
+                    th:value="${user.displayName}" />
+            </div>
+            <button type="submit" class="btn btn--primary">Save Changes</button>
+        </form>
+
+        <!-- SECTION 2: Password Modification Form -->
+        <h3 class="profile-section-title">Security Settings</h3>
+        <form th:action="@{/profile/change-password}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+            <div class="form-group">
+                <label for="currentPassword" class="form-label">Current Password</label>
+                <input type="password" id="currentPassword" name="currentPassword" class="form-input" required
+                    placeholder="••••••••" />
+            </div>
+            <div class="form-group">
+                <label for="newPassword" class="form-label">New Password</label>
+                <input type="password" id="newPassword" name="newPassword" class="form-input" required
+                    placeholder="••••••••" minlength="8" />
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" required
+                    placeholder="••••••••" minlength="8" />
+            </div>
+            <button type="submit" class="btn btn--primary profile-password-btn">Update Password</button>
+        </form>
+    </main>
+    <div th:replace="~{fragments/layout :: footer}"></div>
+</body>
+
+</html>
