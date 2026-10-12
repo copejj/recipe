@@ -13,7 +13,7 @@
 </head>
 
 <body>
-
+    <!-- Unified Header Fragment -->
     <!-- Unified Header Fragment -->
     <header th:fragment="header" class="main-header">
         <div class="header-container">
@@ -21,39 +21,39 @@
                 <a th:href="@{/}">Braindribbler Recipes</a>
             </h3>
 
-            <!-- Navigation: Guest User -->
-            <nav sec:authorize="!isAuthenticated()" class="header-nav">
-                <a th:href="@{/}" class="nav-link">Home</a>
-                <a th:href="@{/search}" class="nav-link">Search</a>
+            <nav class="header-nav">
+                <!-- Loop through the globally provided list -->
+                <th:block th:each="item : ${globalMenuItems}">
 
-                <a th:href="@{/login}" class="nav-link nav-link--cta">Sign In</a>
-            </nav>
-
-            <!-- Navigation: Logged-In User -->
-            <nav sec:authorize="isAuthenticated()" class="header-nav">
-                <a th:href="@{/dashboard}" class="nav-link">Home</a>
-                <a th:href="@{/search}" class="nav-link">Search</a>
-                <a th:href="@{/profile}" class="nav-link">My Profile</a>
-
-                <!-- Dynamic Admin Dropdown Menu Options Block -->
-                <div class="nav-dropdown" th:if="${adminMenuItems != null and !adminMenuItems.empty}">
-                    <button type="button" class="nav-button nav-link nav-link--cta">
-                        Admin <span class="dropdown-caret">▼</span>
-                    </button>
-                    <div class="dropdown-menu">
-                        <a th:each="item : ${adminMenuItems}" th:href="@{${item.url}}" class="dropdown-item"
-                            th:text="${item.label}">Dynamic Option</a>
+                    <!-- If item has child links, render it as a Dropdown Menu Block -->
+                    <div class="nav-dropdown" th:if="${item.hasChildren()}">
+                        <button type="button" class="nav-button nav-link nav-link--cta">
+                            <span th:text="${item.label}">Dropdown Title</span>
+                            <span class="dropdown-caret">▼</span>
+                        </button>
+                        <div class="dropdown-menu">
+                            <a th:each="child : ${item.children}" th:href="@{${child.url}}" class="dropdown-item"
+                                th:text="${child.label}">Child Option</a>
+                        </div>
                     </div>
-                </div>
 
-                <form th:action="@{/logout}" method="post" class="nav-logout-form">
+                    <!-- If item is a normal standalone link, render standard tag -->
+                    <a th:if="${!item.hasChildren()}" th:href="@{${item.url}}" class="nav-link"
+                        th:text="${item.label}">Standard Link</a>
+
+                </th:block>
+
+                <!-- Keep your structural Sign Out button outside the loop for styling layout parity -->
+                <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="nav-logout-form">
                     <button type="submit" class="nav-button nav-button--cta">
                         Sign Out
                     </button>
                 </form>
+                <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="nav-link nav-link--cta">Sign In</a>
             </nav>
         </div>
     </header>
+
 
     <!-- Unified Footer Fragment -->
     <footer th:fragment="footer" class="main-footer">
