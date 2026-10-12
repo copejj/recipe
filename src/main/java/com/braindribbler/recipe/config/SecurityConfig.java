@@ -12,8 +12,12 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+
+import com.braindribbler.recipe.security.exception.AuthenticationExceptions;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationEventPublisher;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DefaultAuthenticationEventPublisher;
 
 @Configuration
@@ -59,29 +63,29 @@ public class SecurityConfig {
                                                 .requestMatchers("/admin/users/**").hasAuthority("can_manage_users")
                                                 .requestMatchers("/admin/roles/**").hasAuthority("can_manage_users")
                                                 .anyRequest().authenticated())
+
                                 .formLogin(form -> form
                                                 .loginPage("/login")
                                                 .loginProcessingUrl("/login")
                                                 .defaultSuccessUrl("/dashboard", true)
                                                 .failureHandler((request, response, exception) -> {
-                                                        String errorMessage = exception.getMessage();
-
-                                                        if (exception instanceof LockedException) {
+                                                        if (exception instanceof AuthenticationExceptions.IpBruteForceLockedException) {
                                                                 response.sendRedirect("/login?iplocked");
-                                                        } else if (exception instanceof DisabledException) {
-                                                                if (errorMessage != null && (errorMessage
-                                                                                .contains("administratively disabled")
-                                                                                || errorMessage.contains(
-                                                                                                "currently inactive"))) {
-                                                                        response.sendRedirect("/login?inactive");
-                                                                } else {
-                                                                        response.sendRedirect("/login?unverified");
-                                                                }
-                                                        } else {
+                                                        } else if (exception instanceof AuthenticationExceptions.AccountInactiveException) {
+                                                                response.sendRedirect("/login?inactive");
+                                                        } else if (exception instanceof AuthenticationExceptions.AccountUnverifiedException) {
+                                                                response.sendRedirect("/login?unverified");
+                                                        } else if (exception instanceof BadCredentialsException) {
                                                                 response.sendRedirect("/login?error");
+                                                        } else {
+                                                                System.err.println(
+                                                                                "CRITICAL SECURITY ERROR: Unexpected auth failure -> "
+                                                                                                + exception.getMessage());
+                                                                exception.printStackTrace();
+
+                                                                response.sendRedirect("/login?systemError");
                                                         }
                                                 })
-
                                                 .permitAll())
                                 .logout(logout -> logout
                                                 .logoutUrl("/logout")

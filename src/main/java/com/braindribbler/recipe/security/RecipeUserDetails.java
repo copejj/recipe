@@ -12,6 +12,7 @@ import com.braindribbler.recipe.domain.auth.Permission;
 import com.braindribbler.recipe.domain.auth.Role;
 import com.braindribbler.recipe.domain.auth.User;
 import com.braindribbler.recipe.domain.auth.UserAuth;
+import com.braindribbler.recipe.security.exception.AuthenticationExceptions;
 
 public class RecipeUserDetails implements UserDetails {
 
@@ -61,11 +62,13 @@ public class RecipeUserDetails implements UserDetails {
     @Override
     public boolean isEnabled() {
         if (userAuth != null && userAuth.getUser() != null && userAuth.getUser().getDisabledAt() != null) {
-            return false;
+            throw new AuthenticationExceptions.AccountInactiveException("Account is inactive.");
         }
+
         if (userAuth != null && !userAuth.isVerified()) {
-            return false; // Triggers a clean native DisabledException
+            throw new AuthenticationExceptions.AccountUnverifiedException("Profile verification required.");
         }
+
         return true;
     }
 

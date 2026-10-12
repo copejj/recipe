@@ -1,11 +1,8 @@
 package com.braindribbler.recipe.security;
 
 import java.time.OffsetDateTime;
-import java.util.Optional;
 
 import org.springframework.context.event.EventListener;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.event.AbstractAuthenticationFailureEvent;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
@@ -13,9 +10,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.braindribbler.recipe.domain.auth.LoginHistory;
-import com.braindribbler.recipe.domain.auth.UserAuth;
 import com.braindribbler.recipe.repository.auth.LoginHistoryRepository;
 import com.braindribbler.recipe.repository.auth.UserAuthRepository;
+import com.braindribbler.recipe.security.exception.AuthenticationExceptions;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -70,20 +67,15 @@ public class AuthenticationEventListener {
 
         if (exception instanceof BadCredentialsException) {
             failureReason = "BAD_CREDENTIALS";
-        } else if (exception instanceof LockedException) {
+        } else if (exception instanceof AuthenticationExceptions.IpBruteForceLockedException) {
             failureReason = "IP_LOCKED";
-        } else if (exception instanceof DisabledException) {
-            // Check if the user entity has a disabledAt timestamp set to evaluate context
-            Optional<UserAuth> userAuthOpt = userAuthRepository.findByEmail(email);
-            if (userAuthOpt.isPresent() && userAuthOpt.get().getUser() != null
-                    && userAuthOpt.get().getUser().getDisabledAt() != null) {
-                failureReason = "ACCOUNT_INACTIVE";
-            } else {
-                failureReason = "ACCOUNT_UNVERIFIED";
-            }
+        } else if (exception instanceof AuthenticationExceptions.AccountInactiveException) {
+            failureReason = "ACCOUNT_INACTIVE";
+        } else if (exception instanceof AuthenticationExceptions.AccountUnverifiedException) {
+            failureReason = "ACCOUNT_UNVERIFIED";
         }
 
-        logFailure(email, failureReason);
+        logFailure(email, failureReason); // Writes entry flawlessly to login_history
     }
 
     private void logFailure(String email, String reason) {

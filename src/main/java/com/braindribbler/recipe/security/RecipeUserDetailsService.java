@@ -3,6 +3,8 @@ package com.braindribbler.recipe.security;
 import com.braindribbler.recipe.domain.auth.UserAuth;
 import com.braindribbler.recipe.repository.auth.LoginHistoryRepository;
 import com.braindribbler.recipe.repository.auth.UserAuthRepository;
+import com.braindribbler.recipe.security.exception.AuthenticationExceptions;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -37,20 +39,15 @@ public class RecipeUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         String clientIp = getClientIpAddress();
-
         OffsetDateTime lockWindowSince = OffsetDateTime.now().minusHours(ipLockHours);
         long ipFailureCount = loginHistoryRepository.countRecentIpFailures(clientIp, lockWindowSince);
 
         if (ipFailureCount >= maxIpFailures) {
-            throw new LockedException("Your IP address has been temporarily blocked due to suspicious activity.");
+            throw new AuthenticationExceptions.IpBruteForceLockedException("IP temporary restriction active.");
         }
 
         UserAuth userAuth = userAuthRepository.findByEmail(email)
-                .orElseThrow(
-                        () -> new UsernameNotFoundException("No active account discovered matching email: " + email));
-
-        // 🌟 CACHED FIX: The manual throw block is removed here!
-        // We let your RecipeUserDetails object handle the status natively.
+                .orElseThrow(() -> new UsernameNotFoundException("No active account matching email: " + email));
 
         return new RecipeUserDetails(userAuth);
     }
