@@ -64,16 +64,24 @@ public class SecurityConfig {
                                                 .loginProcessingUrl("/login")
                                                 .defaultSuccessUrl("/dashboard", true)
                                                 .failureHandler((request, response, exception) -> {
+                                                        String errorMessage = exception.getMessage();
+
                                                         if (exception instanceof LockedException) {
                                                                 response.sendRedirect("/login?iplocked");
                                                         } else if (exception instanceof DisabledException) {
-                                                                // Natively catches the exception and routes to your
-                                                                // Inactive banner!
-                                                                response.sendRedirect("/login?inactive");
+                                                                if (errorMessage != null && (errorMessage
+                                                                                .contains("administratively disabled")
+                                                                                || errorMessage.contains(
+                                                                                                "currently inactive"))) {
+                                                                        response.sendRedirect("/login?inactive");
+                                                                } else {
+                                                                        response.sendRedirect("/login?unverified");
+                                                                }
                                                         } else {
                                                                 response.sendRedirect("/login?error");
                                                         }
                                                 })
+
                                                 .permitAll())
                                 .logout(logout -> logout
                                                 .logoutUrl("/logout")

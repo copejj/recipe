@@ -63,6 +63,9 @@ public class RecipeUserDetails implements UserDetails {
         if (userAuth != null && userAuth.getUser() != null && userAuth.getUser().getDisabledAt() != null) {
             return false;
         }
+        if (userAuth != null && !userAuth.isVerified()) {
+            return false; // Triggers a clean native DisabledException
+        }
         return true;
     }
 
