@@ -2,19 +2,15 @@ package com.braindribbler.recipe.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity; // <-- Add import
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-
 import com.braindribbler.recipe.security.exception.AuthenticationExceptions;
-
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationEventPublisher;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -24,13 +20,28 @@ import org.springframework.security.authentication.DefaultAuthenticationEventPub
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-
         @Bean
         public AuthenticationEventPublisher authenticationEventPublisher(
                         ApplicationEventPublisher applicationEventPublisher) {
-                // Forces Spring to broadcast hidden exceptions (like DisabledException) to your
-                // EventListener
-                return new DefaultAuthenticationEventPublisher(applicationEventPublisher);
+
+                DefaultAuthenticationEventPublisher publisher = new DefaultAuthenticationEventPublisher(
+                                applicationEventPublisher);
+
+                // Define the modern, type-safe exception-to-event mappings
+                java.util.Map<Class<? extends org.springframework.security.core.AuthenticationException>, Class<? extends org.springframework.security.authentication.event.AbstractAuthenticationFailureEvent>> mappings = new java.util.HashMap<>();
+
+                mappings.put(AuthenticationExceptions.AccountInactiveException.class,
+                                org.springframework.security.authentication.event.AuthenticationFailureDisabledEvent.class);
+
+                mappings.put(AuthenticationExceptions.AccountUnverifiedException.class,
+                                org.springframework.security.authentication.event.AuthenticationFailureDisabledEvent.class);
+
+                mappings.put(AuthenticationExceptions.IpBruteForceLockedException.class,
+                                org.springframework.security.authentication.event.AuthenticationFailureLockedEvent.class);
+
+                publisher.setAdditionalExceptionMappings(mappings);
+
+                return publisher;
         }
 
         @Bean
@@ -69,6 +80,9 @@ public class SecurityConfig {
                                                 .loginProcessingUrl("/login")
                                                 .defaultSuccessUrl("/dashboard", true)
                                                 .failureHandler((request, response, exception) -> {
+                                                        System.out.println("security failure: "
+                                                                        + exception.getClass().getName() + " - "
+                                                                        + exception.getMessage());
                                                         if (exception instanceof AuthenticationExceptions.IpBruteForceLockedException) {
                                                                 response.sendRedirect("/login?iplocked");
                                                         } else if (exception instanceof AuthenticationExceptions.AccountInactiveException) {

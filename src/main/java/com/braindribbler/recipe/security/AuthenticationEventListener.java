@@ -75,7 +75,8 @@ public class AuthenticationEventListener {
             failureReason = "ACCOUNT_UNVERIFIED";
         }
 
-        logFailure(email, failureReason); // Writes entry flawlessly to login_history
+        System.out.println("Authentication failure for email: " + email + ", reason: " + failureReason);
+        logFailure(email, failureReason);
     }
 
     private void logFailure(String email, String reason) {
