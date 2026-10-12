@@ -26,6 +26,10 @@
         <div th:if="${param.inactive}" class="alert alert--danger">
             This account is currently inactive. Please contact our support team for assistance.
         </div>
+        <!-- Fall through error -->
+        <div th:if="${param.systemError}" class="alert alert--danger">
+            Our kitchen is experiencing connection issues. Please try again shortly.
+        </div>
         <!-- Shown if an automated network IP blasts your login routes with bad payloads -->
         <div th:if="${param.iplocked}" class="alert alert--danger">Too many failed connection attempts from your
             network. Access from this IP has been blocked temporarily.</div>
