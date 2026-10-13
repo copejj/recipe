@@ -1,4 +1,4 @@
 BEGIN;
-ALTER TABLE public.recipes 
+ALTER TABLE recipes 
 DROP CONSTRAINT recipes_user_id_key;
 COMMIT;

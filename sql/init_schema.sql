@@ -1,3 +1,4 @@
+BEGIN;
 -- Create the enum type for migration status if it doesn't exist
 DO $$ 
 BEGIN
@@ -42,3 +43,4 @@ BEGIN
 EXCEPTION
     WHEN duplicate_object THEN NULL;
 END $$;
+COMMIT;

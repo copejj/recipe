@@ -3,7 +3,7 @@
 BEGIN;
 
 
-CREATE TABLE IF NOT EXISTS public.recipes
+CREATE TABLE IF NOT EXISTS recipes
 (
     recipe_id serial NOT NULL,
     user_id integer NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS public.recipes
     UNIQUE (user_id)
 );
 
-CREATE TABLE IF NOT EXISTS public.recipe_step_ingredient
+CREATE TABLE IF NOT EXISTS recipe_step_ingredient
 (
     recipe_id integer NOT NULL,
     recipe_step_id integer NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS public.recipe_step_ingredient
     CONSTRAINT uniq_recipe_step_id_ingredient_id UNIQUE (ingredient_id, recipe_step_id)
 );
 
-CREATE TABLE IF NOT EXISTS public.ingredients
+CREATE TABLE IF NOT EXISTS ingredients
 (
     ingredient_id serial NOT NULL,
     ingredient_name text NOT NULL,
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS public.ingredients
     CONSTRAINT uniq_ingredient_name UNIQUE (ingredient_name)
 );
 
-CREATE TABLE IF NOT EXISTS public.measurements
+CREATE TABLE IF NOT EXISTS measurements
 (
     measurement_id serial NOT NULL,
     unit_name text NOT NULL,
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS public.measurements
     CONSTRAINT uniq_unit_name UNIQUE (unit_name)
 );
 
-CREATE TABLE IF NOT EXISTS public.grocery_category
+CREATE TABLE IF NOT EXISTS grocery_category
 (
     grocery_category_id serial NOT NULL,
     category_name text NOT NULL,
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS public.grocery_category
     CONSTRAINT uniq_category_name UNIQUE (category_name)
 );
 
-CREATE TABLE IF NOT EXISTS public.base_type
+CREATE TABLE IF NOT EXISTS base_type
 (
     base_type_id serial NOT NULL,
     type_name text NOT NULL,
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS public.base_type
     CONSTRAINT uniq_type_name UNIQUE (type_name)
 );
 
-CREATE TABLE IF NOT EXISTS public.recipe_step
+CREATE TABLE IF NOT EXISTS recipe_step
 (
     recipe_step_id serial NOT NULL,
     recipe_id integer NOT NULL,
@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS public.recipe_step
     CONSTRAINT uniq_recipe_step_number UNIQUE (recipe_id, step_number)
 );
 
-CREATE TABLE IF NOT EXISTS public.users
+CREATE TABLE IF NOT EXISTS users
 (
     user_id serial NOT NULL,
     first_name text NOT NULL,
@@ -88,7 +88,7 @@ CREATE TABLE IF NOT EXISTS public.users
     PRIMARY KEY (user_id)
 );
 
-CREATE TABLE IF NOT EXISTS public.users_auth
+CREATE TABLE IF NOT EXISTS users_auth
 (
     users_auth_id serial NOT NULL,
     user_id integer NOT NULL,
@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS public.users_auth
     UNIQUE (user_id)
 );
 
-CREATE TABLE IF NOT EXISTS public.roles
+CREATE TABLE IF NOT EXISTS roles
 (
     role_id serial NOT NULL,
     role_name text NOT NULL,
@@ -111,7 +111,7 @@ CREATE TABLE IF NOT EXISTS public.roles
     CONSTRAINT uniq_role_name UNIQUE (role_name)
 );
 
-CREATE TABLE IF NOT EXISTS public.user_roles
+CREATE TABLE IF NOT EXISTS user_roles
 (
     user_id integer NOT NULL,
     role_id integer NOT NULL,
@@ -119,13 +119,13 @@ CREATE TABLE IF NOT EXISTS public.user_roles
     PRIMARY KEY (user_id, role_id)
 );
 
-CREATE TABLE IF NOT EXISTS public.role_permissions
+CREATE TABLE IF NOT EXISTS role_permissions
 (
     role_id integer NOT NULL,
     permission_id integer NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS public.permissions
+CREATE TABLE IF NOT EXISTS permissions
 (
     permission_id serial NOT NULL,
     permission_name text NOT NULL,
@@ -134,7 +134,7 @@ CREATE TABLE IF NOT EXISTS public.permissions
     CONSTRAINT uniq_permission_name UNIQUE (permission_name)
 );
 
-CREATE TABLE IF NOT EXISTS public.login_history
+CREATE TABLE IF NOT EXISTS login_history
 (
     login_history_id serial NOT NULL,
     user_auth_id integer NOT NULL,
@@ -146,7 +146,7 @@ CREATE TABLE IF NOT EXISTS public.login_history
     PRIMARY KEY (login_history_id)
 );
 
-CREATE TABLE IF NOT EXISTS public.profile_visiblities
+CREATE TABLE IF NOT EXISTS profile_visiblities
 (
     profile_visibilitiy_id serial NOT NULL,
     profile_name text NOT NULL,
@@ -155,7 +155,7 @@ CREATE TABLE IF NOT EXISTS public.profile_visiblities
     CONSTRAINT uniq_profile_name UNIQUE (profile_name)
 );
 
-CREATE TABLE IF NOT EXISTS public.recipe_visibilities
+CREATE TABLE IF NOT EXISTS recipe_visibilities
 (
     recipe_visibility_id serial NOT NULL,
     visibility_name text NOT NULL,
@@ -164,7 +164,7 @@ CREATE TABLE IF NOT EXISTS public.recipe_visibilities
     CONSTRAINT uniq_visibility_name UNIQUE (visibility_name)
 );
 
-CREATE TABLE IF NOT EXISTS public.recipe_shares
+CREATE TABLE IF NOT EXISTS recipe_shares
 (
     recipe_shares_id serial NOT NULL,
     recipe_id integer NOT NULL,
@@ -175,7 +175,7 @@ CREATE TABLE IF NOT EXISTS public.recipe_shares
     PRIMARY KEY (recipe_shares_id)
 );
 
-CREATE TABLE IF NOT EXISTS public.access_levels
+CREATE TABLE IF NOT EXISTS access_levels
 (
     access_level_id serial NOT NULL,
     access_name text NOT NULL,
@@ -184,155 +184,155 @@ CREATE TABLE IF NOT EXISTS public.access_levels
     CONSTRAINT uniq_access_name UNIQUE (access_name)
 );
 
-ALTER TABLE IF EXISTS public.recipes
+ALTER TABLE IF EXISTS recipes
     ADD FOREIGN KEY (user_id)
-    REFERENCES public.users (user_id) MATCH SIMPLE
+    REFERENCES users (user_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS public.recipes
+ALTER TABLE IF EXISTS recipes
     ADD FOREIGN KEY (recipe_visibility_id)
-    REFERENCES public.recipe_visibilities (recipe_visibility_id) MATCH SIMPLE
+    REFERENCES recipe_visibilities (recipe_visibility_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS public.recipe_step_ingredient
+ALTER TABLE IF EXISTS recipe_step_ingredient
     ADD FOREIGN KEY (ingredient_id)
-    REFERENCES public.ingredients (ingredient_id) MATCH SIMPLE
+    REFERENCES ingredients (ingredient_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS public.recipe_step_ingredient
+ALTER TABLE IF EXISTS recipe_step_ingredient
     ADD FOREIGN KEY (measurement_id)
-    REFERENCES public.measurements (measurement_id) MATCH SIMPLE
+    REFERENCES measurements (measurement_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS public.recipe_step_ingredient
+ALTER TABLE IF EXISTS recipe_step_ingredient
     ADD FOREIGN KEY (recipe_step_id)
-    REFERENCES public.recipe_step (recipe_step_id) MATCH SIMPLE
+    REFERENCES recipe_step (recipe_step_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE CASCADE
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS public.recipe_step_ingredient
+ALTER TABLE IF EXISTS recipe_step_ingredient
     ADD FOREIGN KEY (recipe_id)
-    REFERENCES public.recipes (recipe_id) MATCH SIMPLE
+    REFERENCES recipes (recipe_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS public.ingredients
+ALTER TABLE IF EXISTS ingredients
     ADD FOREIGN KEY (grocery_category_id)
-    REFERENCES public.grocery_category (grocery_category_id) MATCH SIMPLE
+    REFERENCES grocery_category (grocery_category_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS public.measurements
+ALTER TABLE IF EXISTS measurements
     ADD FOREIGN KEY (base_type_id)
-    REFERENCES public.base_type (base_type_id) MATCH SIMPLE
+    REFERENCES base_type (base_type_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS public.recipe_step
+ALTER TABLE IF EXISTS recipe_step
     ADD FOREIGN KEY (recipe_id)
-    REFERENCES public.recipes (recipe_id) MATCH SIMPLE
+    REFERENCES recipes (recipe_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE CASCADE
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS public.users
+ALTER TABLE IF EXISTS users
     ADD FOREIGN KEY (profile_visibility_id)
-    REFERENCES public.profile_visiblities (profile_visibilitiy_id) MATCH SIMPLE
+    REFERENCES profile_visiblities (profile_visibilitiy_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS public.users_auth
+ALTER TABLE IF EXISTS users_auth
     ADD FOREIGN KEY (user_id)
-    REFERENCES public.users (user_id) MATCH SIMPLE
+    REFERENCES users (user_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE CASCADE
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS public.user_roles
+ALTER TABLE IF EXISTS user_roles
     ADD FOREIGN KEY (user_id)
-    REFERENCES public.users (user_id) MATCH SIMPLE
+    REFERENCES users (user_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE CASCADE
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS public.user_roles
+ALTER TABLE IF EXISTS user_roles
     ADD FOREIGN KEY (role_id)
-    REFERENCES public.roles (role_id) MATCH SIMPLE
+    REFERENCES roles (role_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS public.role_permissions
+ALTER TABLE IF EXISTS role_permissions
     ADD FOREIGN KEY (permission_id)
-    REFERENCES public.permissions (permission_id) MATCH SIMPLE
+    REFERENCES permissions (permission_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE CASCADE
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS public.role_permissions
+ALTER TABLE IF EXISTS role_permissions
     ADD FOREIGN KEY (role_id)
-    REFERENCES public.roles (role_id) MATCH SIMPLE
+    REFERENCES roles (role_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE CASCADE
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS public.login_history
+ALTER TABLE IF EXISTS login_history
     ADD FOREIGN KEY (user_auth_id)
-    REFERENCES public.users_auth (users_auth_id) MATCH SIMPLE
+    REFERENCES users_auth (users_auth_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE CASCADE
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS public.recipe_shares
+ALTER TABLE IF EXISTS recipe_shares
     ADD FOREIGN KEY (recipe_id)
-    REFERENCES public.recipes (recipe_id) MATCH SIMPLE
+    REFERENCES recipes (recipe_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE CASCADE
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS public.recipe_shares
+ALTER TABLE IF EXISTS recipe_shares
     ADD FOREIGN KEY (shared_user_id)
-    REFERENCES public.users (user_id) MATCH SIMPLE
+    REFERENCES users (user_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE CASCADE
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS public.recipe_shares
+ALTER TABLE IF EXISTS recipe_shares
     ADD FOREIGN KEY (access_level_id)
-    REFERENCES public.access_levels (access_level_id) MATCH SIMPLE
+    REFERENCES access_levels (access_level_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
-END;
+COMMIT;

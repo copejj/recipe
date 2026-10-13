@@ -1,0 +1,32 @@
+name: SQL Schema Prefix Linter
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  lint-sql-schema:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetches full history so git diff operates accurately
+
+      - name: Run Schema Namespace Prefix Check
+        run: |
+          echo "Scanning codebase migration directories for invalid explicit public. definitions..."
+          
+          # Scan all project .sql files inside your data paths
+          VIOLATIONS=$(grep -rnw --include="*.sql" -E '\bpublic\.' . || true)
+          
+          if [ ! -z "$VIOLATIONS" ]; then
+            echo "REJECTED: Hardcoded 'public.' prefix text strings discovered:"
+            echo "$VIOLATIONS"
+            echo "Please remove explicit schema prefixes to support native pipeline search_path routing."
+            exit 1
+          fi
+          
+          echo "All SQL schemas are perfectly clean and universally portable!"
