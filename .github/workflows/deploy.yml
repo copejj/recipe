@@ -62,10 +62,14 @@ jobs:
             echo "[Step 2/7] Cleaning up older historical backups & preparing isolated shadow schema..."
             psql $PSQL_ARGS -c "DROP SCHEMA IF EXISTS public_old CASCADE; DROP SCHEMA IF EXISTS public_shadow CASCADE;"
             
+            # Create a clean, fast backup snapshot file of the current live database layout
             pg_dump $DUMP_ARGS -n public -f /tmp/live_full_snapshot.sql
             
-            sed -E "s/\bpublic\.([a-zA-Z0-9_]+)/public_shadow.\1/g; s/\bpublic\b/public_shadow/g" /tmp/live_full_snapshot.sql > /tmp/shadow_full_snapshot.sql
-            psql $PSQL_ARGS -f /tmp/shadow_full_snapshot.sql
+            # FIXED FIX: Instead of mangling the dump text with sed, we safely create the shadow schema container
+            psql $PSQL_ARGS -c "CREATE SCHEMA public_shadow;"
+            
+            # We force psql to pipe the backup rows cleanly straight into the shadow schema natively!
+            psql $PSQL_ARGS --set search_path=public_shadow -f /tmp/live_full_snapshot.sql
             
             psql $PSQL_ARGS -c "ALTER SCHEMA public_shadow OWNER TO $DB_USER;"
             
@@ -83,7 +87,7 @@ jobs:
                   END LOOP;
               END \$\$;
             "
-            rm -f /tmp/live_full_snapshot.sql /tmp/shadow_full_snapshot.sql
+            rm -f /tmp/live_full_snapshot.sql
 
             CURRENT_STEP="SOURCE_CHECKOUT"
             echo "[Step 3/7] Fetching code for tag: $TAG_NAME"
@@ -91,32 +95,33 @@ jobs:
             $GIT_BIN checkout -B "release-$TAG_NAME" "$TAG_NAME"
 
             CURRENT_STEP="DATABASE_MIGRATION"
-            echo "[Step 4/7] Running database migrations against shadow schema..."
+            echo "[Step 4/7] Running database migrations against shadow schema natively..."
             
+            # This runtime variable natively routes all un-prefixed queries straight to your public_shadow sandbox
             SEARCH_PATH_ARG="--set search_path=public_shadow"
 
-            sed -E "s/\bpublic\.([a-zA-Z0-9_]+)/public_shadow.\1/g; s/\bpublic\b/public_shadow/g" sql/init_schema.sql > /tmp/fixed_init_schema.sql
-            psql $PSQL_ARGS $SEARCH_PATH_ARG -c "BEGIN;" -f /tmp/fixed_init_schema.sql -c "COMMIT;"
-            rm -f /tmp/fixed_init_schema.sql
+            # Execute your base initialization schema cleanly with no text modifications
+            psql $PSQL_ARGS $SEARCH_PATH_ARG -c "BEGIN;" -f sql/init_schema.sql -c "COMMIT;"
 
+            # Iterate through your versioned migration files in chronological order
             FILES=$($FIND_BIN sql/migrations -regextype posix-extended -regex ".*/[0-9]{8}_[0-9]+.*\.sql" | sort)
             for FILE in $FILES; do
               FILENAME=$(basename "$FILE")
               
-              ALREADY_RUN=$(psql $PSQL_ARGS -A -c "SELECT 1 FROM public_shadow.schema_migrations WHERE filename='$FILENAME' AND status='completed';")
+              # Check migration history metrics natively within our public_shadow schema
+              ALREADY_RUN=$(psql $PSQL_ARGS $SEARCH_PATH_ARG -A -c "SELECT 1 FROM schema_migrations WHERE filename='$FILENAME' AND status='completed';")
               if [ "$ALREADY_RUN" == "1" ]; then continue; fi
               
-              echo "Executing migration on shadow data: $FILENAME"
-              psql $PSQL_ARGS -c "INSERT INTO public_shadow.schema_migrations (filename, status) VALUES ('$FILENAME', 'pending') ON CONFLICT (filename) DO UPDATE SET status='pending', started_at=NOW(), ended_at=NULL;"
+              echo "Executing migration on shadow data natively: $FILENAME"
+              psql $PSQL_ARGS $SEARCH_PATH_ARG -c "INSERT INTO schema_migrations (filename, status) VALUES ('$FILENAME', 'pending') ON CONFLICT (filename) DO UPDATE SET status='pending', started_at=NOW(), ended_at=NULL;"
               
-              sed -E "s/\bpublic\.([a-zA-Z0-9_]+)/public_shadow.\1/g; s/\bpublic\b/public_shadow/g" "$FILE" > /tmp/temp_migration.sql
-              psql $PSQL_ARGS $SEARCH_PATH_ARG -f /tmp/temp_migration.sql
-              rm -f /tmp/temp_migration.sql
+              # Run the raw file directly via native search_path pathing
+              psql $PSQL_ARGS $SEARCH_PATH_ARG -f "$FILE"
               
-              psql $PSQL_ARGS -c "UPDATE public_shadow.schema_migrations SET ended_at=NOW(), status='completed' WHERE filename='$FILENAME';"
+              psql $PSQL_ARGS $SEARCH_PATH_ARG -c "UPDATE schema_migrations SET ended_at=NOW(), status='completed' WHERE filename='$FILENAME';"
             done
 
-            # REINFORCE PERMISSIONS: Explicitly grant access to the application user on the new schema right before swapping it live
+            #REINFORCE PERMISSIONS: Secure database application access tiers
             echo "Reinforcing application schema access privileges..."
             psql $PSQL_ARGS -c "
               GRANT USAGE ON SCHEMA public_shadow TO recipe_app_user; 
@@ -124,7 +129,7 @@ jobs:
               GRANT SELECT, USAGE ON ALL SEQUENCES IN SCHEMA public_shadow TO recipe_app_user;
             "
 
-            # ATOMIC SWAP: Slaps the updated schema + records live instantly
+            #ATOMIC SWAP: Handle instant zero-downtime hot swapping
             echo "Migrations successful! Performing instant atomic schema swap (preserving backup)..."
             psql $PSQL_ARGS -c "
               BEGIN;
