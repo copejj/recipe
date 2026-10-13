@@ -60,21 +60,18 @@ jobs:
 
             CURRENT_STEP="DATABASE_BACKUP"
             echo "[Step 2/7] Cleaning up older historical backups & preparing isolated shadow schema..."
-            
-            # Clean up old sandboxes natively using your migration user credentials ($PSQL_ARGS)
             psql $PSQL_ARGS -c "DROP SCHEMA IF EXISTS public_old CASCADE; DROP SCHEMA IF EXISTS public_shadow CASCADE;"
             
-            # 1. Dump raw production layout (contains explicit 'public.' prefix references)
+            # 1. Dump raw production layout
             pg_dump $DUMP_ARGS -n public -f /tmp/live_full_snapshot.sql
             
-            # 2. FIXED STRIP: Map 'public.' prefix references to 'public_shadow.', but completely
-            # delete the 'CREATE SCHEMA public;' line out of the file text.
+            # 2. Map 'public.' prefix references to 'public_shadow.', but strip out the duplicate CREATE SCHEMA statement
             sed -E "/^CREATE SCHEMA/d; s/\bpublic\.([a-zA-Z0-9_]+)/public_shadow.\1/g" /tmp/live_full_snapshot.sql > /tmp/shadow_full_snapshot.sql
             
-            # 3. Natively create the shadow schema container using your migration user credentials (unblocked by your GRANT CREATE rule)
+            # 3. Create the sandbox schema (unblocked by your database GRANT CREATE permission)
             psql $PSQL_ARGS -c "CREATE SCHEMA public_shadow;"
             
-            # 4. Populate the shadow schema sandbox safely using your migration user credentials
+            # 4. Populate the shadow schema sandbox safely
             psql $PSQL_ARGS -f /tmp/shadow_full_snapshot.sql
             
             psql $PSQL_ARGS -c "ALTER SCHEMA public_shadow OWNER TO $DB_USER;"
@@ -102,9 +99,7 @@ jobs:
             CURRENT_STEP="DATABASE_MIGRATION"
             echo "[Step 4/7] Running database migrations against shadow schema natively..."
             
-            SEARCH_PATH_ARG="--set search_path=public_shadow"
-
-            # Execute your base initialization schema cleanly inside public_shadow via structured string configuration
+            # Prepend a schema path declaration before loading our base layout setup script
             (echo "SET search_path TO public_shadow;"; cat sql/init_schema.sql) | psql $PSQL_ARGS
 
             # Iterate through your versioned migration files in chronological order
@@ -112,18 +107,35 @@ jobs:
             for FILE in $FILES; do
               FILENAME=$(basename "$FILE")
               
-              # Check migration history metrics natively within our public_shadow schema
-              ALREADY_RUN=$(psql $PSQL_ARGS $SEARCH_PATH_ARG -A -c "SELECT 1 FROM schema_migrations WHERE filename='$FILENAME' AND status='completed';")
+              # FIXED QUERIES: Explicitly use 'public_shadow.schema_migrations' to bypass CLI argument scope failures
+              ALREADY_RUN=$(psql $PSQL_ARGS -A -c "SELECT 1 FROM public_shadow.schema_migrations WHERE filename='$FILENAME' AND status='completed';")
               if [ "$ALREADY_RUN" == "1" ]; then continue; fi
               
               echo "Executing migration on shadow data natively: $FILENAME"
-              psql $PSQL_ARGS $SEARCH_PATH_ARG -c "INSERT INTO schema_migrations (filename, status) VALUES ('$FILENAME', 'pending') ON CONFLICT (filename) DO UPDATE SET status='pending', started_at=NOW(), ended_at=NULL;"
+              psql $PSQL_ARGS -c "INSERT INTO public_shadow.schema_migrations (filename, status) VALUES ('$FILENAME', 'pending') ON CONFLICT (filename) DO UPDATE SET status='pending', started_at=NOW(), ended_at=NULL;"
               
-              # --- FIXED LINE LAYER: Forcibly prepend the search_path declaration to the file stream input ---
+              # Force the schema target path directly inside the file string buffer execution stream
               (echo "SET search_path TO public_shadow;"; cat "$FILE") | psql $PSQL_ARGS
               
-              psql $PSQL_ARGS $SEARCH_PATH_ARG -c "UPDATE schema_migrations SET ended_at=NOW(), status='completed' WHERE filename='$FILENAME';"
+              # FIXED QUERY: Explicitly target the sandbox metadata tracking tables tablespace
+              psql $PSQL_ARGS -c "UPDATE public_shadow.schema_migrations SET ended_at=NOW(), status='completed' WHERE filename='$FILENAME';"
             done
+
+            echo "Reinforcing application schema access privileges..."
+            psql $PSQL_ARGS -c "
+              GRANT USAGE ON SCHEMA public_shadow TO recipe_app_user; 
+              GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE ON ALL TABLES IN SCHEMA public_shadow TO recipe_app_user; 
+              GRANT SELECT, USAGE ON ALL SEQUENCES IN SCHEMA public_shadow TO recipe_app_user;
+            "
+
+            # RESTORED SWAP ENGINE: Handles instant zero-downtime hot swapping
+            echo "Migrations successful! Performing instant atomic schema swap (preserving backup)..."
+            psql $PSQL_ARGS -c "
+              BEGIN;
+                ALTER SCHEMA public RENAME TO public_old;
+                ALTER SCHEMA public_shadow RENAME TO public;
+              COMMIT;
+            "
 
             CURRENT_STEP="BUILD"
             echo "[Step 5/7] Building WAR file"
