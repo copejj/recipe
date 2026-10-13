@@ -79,7 +79,6 @@ jobs:
             
             psql $PSQL_ARGS -c "ALTER SCHEMA public_shadow OWNER TO $DB_USER;"
             
-            # --- FIX: FORCIBLY RE-ASSIGN OWNERSHIP OF ALL COPIED TABLES & SEQUENCES TO MIGRATION USER ---
             echo "Standardizing cloned table ownership rules..."
             psql $PSQL_ARGS -c "
               DO \$\$ DECLARE
@@ -103,11 +102,10 @@ jobs:
             CURRENT_STEP="DATABASE_MIGRATION"
             echo "[Step 4/7] Running database migrations against shadow schema natively..."
             
-            # This runtime variable natively routes all un-prefixed query operations straight to your public_shadow sandbox
             SEARCH_PATH_ARG="--set search_path=public_shadow"
 
-            # Execute your base initialization schema cleanly with no sed text modifications
-            psql $PSQL_ARGS $SEARCH_PATH_ARG -c "BEGIN;" -f sql/init_schema.sql -c "COMMIT;"
+            # Execute your base initialization schema cleanly inside public_shadow via structured string configuration
+            (echo "SET search_path TO public_shadow;"; cat sql/init_schema.sql) | psql $PSQL_ARGS
 
             # Iterate through your versioned migration files in chronological order
             FILES=$($FIND_BIN sql/migrations -regextype posix-extended -regex ".*/[0-9]{8}_[0-9]+.*\.sql" | sort)
@@ -121,28 +119,11 @@ jobs:
               echo "Executing migration on shadow data natively: $FILENAME"
               psql $PSQL_ARGS $SEARCH_PATH_ARG -c "INSERT INTO schema_migrations (filename, status) VALUES ('$FILENAME', 'pending') ON CONFLICT (filename) DO UPDATE SET status='pending', started_at=NOW(), ended_at=NULL;"
               
-              # Execute your raw, prefix-free file directly via native search_path routing
-              psql $PSQL_ARGS $SEARCH_PATH_ARG -f "$FILE"
+              # --- FIXED LINE LAYER: Forcibly prepend the search_path declaration to the file stream input ---
+              (echo "SET search_path TO public_shadow;"; cat "$FILE") | psql $PSQL_ARGS
               
               psql $PSQL_ARGS $SEARCH_PATH_ARG -c "UPDATE schema_migrations SET ended_at=NOW(), status='completed' WHERE filename='$FILENAME';"
             done
-
-            # REINFORCE PERMISSIONS: Secure database application access tiers for recipe_app_user
-            echo "Reinforcing application schema access privileges..."
-            psql $PSQL_ARGS -c "
-              GRANT USAGE ON SCHEMA public_shadow TO recipe_app_user; 
-              GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE ON ALL TABLES IN SCHEMA public_shadow TO recipe_app_user; 
-              GRANT SELECT, USAGE ON ALL SEQUENCES IN SCHEMA public_shadow TO recipe_app_user;
-            "
-
-            # ATOMIC SWAP: Handle instant zero-downtime hot swapping
-            echo "Migrations successful! Performing instant atomic schema swap (preserving backup)..."
-            psql $PSQL_ARGS -c "
-              BEGIN;
-                ALTER SCHEMA public RENAME TO public_old;
-                ALTER SCHEMA public_shadow RENAME TO public;
-              COMMIT;
-            "
 
             CURRENT_STEP="BUILD"
             echo "[Step 5/7] Building WAR file"
@@ -154,7 +135,6 @@ jobs:
             BUILD_WAR="${{ vars.PROD_APP_PATH }}/target/${{ vars.PROD_APP_NAME }}.war"
             cp "$BUILD_WAR" "${{ vars.PROD_DEPLOY_PATH }}/$VERSION_NAME"
             
-            # --- FIXED WAR TARGET TOUCH: Grabs only this specific app file context to reload it silently ---
             touch "${{ vars.PROD_DEPLOY_PATH }}/$VERSION_NAME"
 
             CURRENT_STEP="FINAL_CLEANUP"
