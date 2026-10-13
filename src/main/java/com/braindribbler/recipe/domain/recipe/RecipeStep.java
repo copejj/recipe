@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "recipe_step", schema = "public")
+@Table(name = "recipe_step")
 public class RecipeStep {
 
     @Id

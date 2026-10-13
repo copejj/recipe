@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.braindribbler.recipe.domain.auth.UserRole;
 
-public interface UserRoleRepository extends JpaRepository<UserRole, Long> {
+public interface UserRoleRepository extends JpaRepository<UserRole, Integer> {
     List<UserRole> findByUserUserId(Long userId);
 }

@@ -3,7 +3,7 @@ package com.braindribbler.recipe.domain.recipe;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "access_levels", schema = "public")
+@Table(name = "access_levels")
 public class AccessLevel {
 
     @Id

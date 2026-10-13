@@ -3,7 +3,7 @@ package com.braindribbler.recipe.domain.recipe;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "grocery_category", schema = "public")
+@Table(name = "grocery_category")
 public class GroceryCategory {
 
     @Id
