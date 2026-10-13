@@ -65,13 +65,11 @@ jobs:
             # 1. Dump raw production schema (contains explicit 'public.' prefix references)
             pg_dump $DUMP_ARGS -n public -f /tmp/live_full_snapshot.sql
             
-            # 2. Safely generate the fresh container schema sandbox
-            psql $PSQL_ARGS -c "CREATE SCHEMA public_shadow;"
-            
-            # 3. Explicitly remap 'public.' to 'public_shadow.' to isolate constraints & indexes safely
+            # 2. The streaming text replacement line converts 'CREATE SCHEMA public;' 
+            # into 'CREATE SCHEMA public_shadow;' natively inside the sql payload file stream.
             sed -E "s/\bpublic\.([a-zA-Z0-9_]+)/public_shadow.\1/g; s/\bpublic\b/public_shadow/g" /tmp/live_full_snapshot.sql > /tmp/shadow_full_snapshot.sql
             
-            # 4. Populate shadow schema with the historical data clone layout
+            # 3. Populate shadow schema natively
             psql $PSQL_ARGS -f /tmp/shadow_full_snapshot.sql
             
             psql $PSQL_ARGS -c "ALTER SCHEMA public_shadow OWNER TO $DB_USER;"
