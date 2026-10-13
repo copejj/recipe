@@ -4,7 +4,7 @@ import java.time.OffsetDateTime;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "ip_overrides", schema = "public")
+@Table(name = "ip_overrides")
 public class IpOverride {
 
     @Id

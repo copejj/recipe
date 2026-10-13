@@ -14,7 +14,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "users_auth", schema = "public")
+@Table(name = "users_auth")
 public class UserAuth {
 
     @Id

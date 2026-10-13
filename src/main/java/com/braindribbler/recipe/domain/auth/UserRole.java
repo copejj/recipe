@@ -13,7 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "user_roles", schema = "public")
+@Table(name = "user_roles")
 public class UserRole {
 
     @Id

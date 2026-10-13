@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.braindribbler.recipe.domain.recipe.Measurement;
 
-public interface MeasurementRepository extends JpaRepository<Measurement, Long> {
+public interface MeasurementRepository extends JpaRepository<Measurement, Integer> {
     Optional<Measurement> findByUnitName(String unitName);
 }

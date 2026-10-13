@@ -15,7 +15,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "roles", schema = "public")
+@Table(name = "roles")
 public class Role {
 
     @Id

@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByPublicId(UUID publicId);
 
     boolean existsByUserAuthEmail(String email); // Relationship traversal to search email in users_auth
