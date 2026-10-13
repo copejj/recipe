@@ -62,14 +62,17 @@ jobs:
             echo "[Step 2/7] Cleaning up older historical backups & preparing isolated shadow schema..."
             psql $PSQL_ARGS -c "DROP SCHEMA IF EXISTS public_old CASCADE; DROP SCHEMA IF EXISTS public_shadow CASCADE;"
             
-            # Create a clean backup snapshot file of the current live database layout
+            # 1. Dump raw production schema (contains explicit 'public.' prefix references)
             pg_dump $DUMP_ARGS -n public -f /tmp/live_full_snapshot.sql
             
-            # Create the shadow schema container safely
+            # 2. Safely generate the fresh container schema sandbox
             psql $PSQL_ARGS -c "CREATE SCHEMA public_shadow;"
             
-            # --- FIXED LINE: We use a custom flag for the restore dump so it doesn't halt on the pre-existing public schema declaration ---
-            psql -h $DB_HOST -U $DB_USER -d $DB_NAME -t --set ON_ERROR_STOP=0 --set search_path=public_shadow -f /tmp/live_full_snapshot.sql
+            # 3. Explicitly remap 'public.' to 'public_shadow.' to isolate constraints & indexes safely
+            sed -E "s/\bpublic\.([a-zA-Z0-9_]+)/public_shadow.\1/g; s/\bpublic\b/public_shadow/g" /tmp/live_full_snapshot.sql > /tmp/shadow_full_snapshot.sql
+            
+            # 4. Populate shadow schema with the historical data clone layout
+            psql $PSQL_ARGS -f /tmp/shadow_full_snapshot.sql
             
             psql $PSQL_ARGS -c "ALTER SCHEMA public_shadow OWNER TO $DB_USER;"
             
@@ -87,7 +90,7 @@ jobs:
                   END LOOP;
               END \$\$;
             "
-            rm -f /tmp/live_full_snapshot.sql
+            rm -f /tmp/live_full_snapshot.sql /tmp/shadow_full_snapshot.sql
 
             CURRENT_STEP="SOURCE_CHECKOUT"
             echo "[Step 3/7] Fetching code for tag: $TAG_NAME"
@@ -97,10 +100,10 @@ jobs:
             CURRENT_STEP="DATABASE_MIGRATION"
             echo "[Step 4/7] Running database migrations against shadow schema natively..."
             
-            # This runtime variable natively routes all un-prefixed queries straight to your public_shadow sandbox
+            # This runtime variable natively routes all un-prefixed query operations straight to your public_shadow sandbox
             SEARCH_PATH_ARG="--set search_path=public_shadow"
 
-            # Execute your base initialization schema cleanly with no text modifications
+            # Execute your base initialization schema cleanly with no sed text modifications
             psql $PSQL_ARGS $SEARCH_PATH_ARG -c "BEGIN;" -f sql/init_schema.sql -c "COMMIT;"
 
             # Iterate through your versioned migration files in chronological order
@@ -115,13 +118,13 @@ jobs:
               echo "Executing migration on shadow data natively: $FILENAME"
               psql $PSQL_ARGS $SEARCH_PATH_ARG -c "INSERT INTO schema_migrations (filename, status) VALUES ('$FILENAME', 'pending') ON CONFLICT (filename) DO UPDATE SET status='pending', started_at=NOW(), ended_at=NULL;"
               
-              # Run the raw file directly via native search_path pathing
+              # Execute your raw, prefix-free file directly via native search_path routing
               psql $PSQL_ARGS $SEARCH_PATH_ARG -f "$FILE"
               
               psql $PSQL_ARGS $SEARCH_PATH_ARG -c "UPDATE schema_migrations SET ended_at=NOW(), status='completed' WHERE filename='$FILENAME';"
             done
 
-            #REINFORCE PERMISSIONS: Secure database application access tiers
+            # REINFORCE PERMISSIONS: Secure database application access tiers
             echo "Reinforcing application schema access privileges..."
             psql $PSQL_ARGS -c "
               GRANT USAGE ON SCHEMA public_shadow TO recipe_app_user; 
@@ -129,7 +132,7 @@ jobs:
               GRANT SELECT, USAGE ON ALL SEQUENCES IN SCHEMA public_shadow TO recipe_app_user;
             "
 
-            #ATOMIC SWAP: Handle instant zero-downtime hot swapping
+            # ATOMIC SWAP: Handle instant zero-downtime hot swapping
             echo "Migrations successful! Performing instant atomic schema swap (preserving backup)..."
             psql $PSQL_ARGS -c "
               BEGIN;
