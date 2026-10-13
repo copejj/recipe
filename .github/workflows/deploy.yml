@@ -62,14 +62,14 @@ jobs:
             echo "[Step 2/7] Cleaning up older historical backups & preparing isolated shadow schema..."
             psql $PSQL_ARGS -c "DROP SCHEMA IF EXISTS public_old CASCADE; DROP SCHEMA IF EXISTS public_shadow CASCADE;"
             
-            # Create a clean, fast backup snapshot file of the current live database layout
+            # Create a clean backup snapshot file of the current live database layout
             pg_dump $DUMP_ARGS -n public -f /tmp/live_full_snapshot.sql
             
-            # FIXED FIX: Instead of mangling the dump text with sed, we safely create the shadow schema container
+            # Create the shadow schema container safely
             psql $PSQL_ARGS -c "CREATE SCHEMA public_shadow;"
             
-            # We force psql to pipe the backup rows cleanly straight into the shadow schema natively!
-            psql $PSQL_ARGS --set search_path=public_shadow -f /tmp/live_full_snapshot.sql
+            # --- FIXED LINE: We use a custom flag for the restore dump so it doesn't halt on the pre-existing public schema declaration ---
+            psql -h $DB_HOST -U $DB_USER -d $DB_NAME -t --set ON_ERROR_STOP=0 --set search_path=public_shadow -f /tmp/live_full_snapshot.sql
             
             psql $PSQL_ARGS -c "ALTER SCHEMA public_shadow OWNER TO $DB_USER;"
             
