@@ -47,7 +47,7 @@ jobs:
               if [ $EXIT_CODE -ne 0 ]; then
                 echo "!!! ERROR DETECTED in Step: $CURRENT_STEP (Exit Code: $EXIT_CODE) !!!"
                 
-                if [ "$CURRENT_STEP" == "DATABASE_MIGRATION" ]; then
+                if [ "$CURRENT_STEP" == "DATABASE_MIGRATION" ] || [ "$CURRENT_STEP" == "DATABASE_BACKUP" ]; then
                   echo "Cleaning up staging shadow schema due to failure..."
                   psql $PSQL_ARGS -c "DROP SCHEMA IF EXISTS public_shadow CASCADE;"
                 fi
@@ -65,11 +65,10 @@ jobs:
             # 1. Dump raw production schema (contains explicit 'public.' prefix references)
             pg_dump $DUMP_ARGS -n public -f /tmp/live_full_snapshot.sql
             
-            # 2. The streaming text replacement line converts 'CREATE SCHEMA public;' 
-            # into 'CREATE SCHEMA public_shadow;' natively inside the sql payload file stream.
-            sed -E "s/\bpublic\.([a-zA-Z0-9_]+)/public_shadow.\1/g; s/\bpublic\b/public_shadow/g" /tmp/live_full_snapshot.sql > /tmp/shadow_full_snapshot.sql
+            # 2. FIXED FIXED: Only match 'public.' structure targets. Never strip the raw word 'public' by itself.
+            sed -E "s/\bpublic\.([a-zA-Z0-9_]+)/public_shadow.\1/g" /tmp/live_full_snapshot.sql > /tmp/shadow_full_snapshot.sql
             
-            # 3. Populate shadow schema natively
+            # 3. Populate shadow schema natively with strict error tracking enabled
             psql $PSQL_ARGS -f /tmp/shadow_full_snapshot.sql
             
             psql $PSQL_ARGS -c "ALTER SCHEMA public_shadow OWNER TO $DB_USER;"
@@ -144,10 +143,13 @@ jobs:
             $MVN_BIN clean package -DskipTests
 
             CURRENT_STEP="DEPLOYMENT"
-            echo "[Step 6/7] Deploying versioned WAR..."
+            echo "[Step 6/7] Deploying versioned WAR and triggering isolated context reload..."
             VERSION_NAME="${{ vars.PROD_DEPLOY_NAME }}##${TAG_NAME}.war"
             BUILD_WAR="${{ vars.PROD_APP_PATH }}/target/${{ vars.PROD_APP_NAME }}.war"
             cp "$BUILD_WAR" "${{ vars.PROD_DEPLOY_PATH }}/$VERSION_NAME"
+            
+            # --- UPGRADE: Natively touch the individual application WAR context to reload it silently without taking down other sites ---
+            touch "${{ vars.PROD_DEPLOY_PATH }}/$VERSION_NAME"
 
             CURRENT_STEP="FINAL_CLEANUP"
             echo "[Step 7/7] Cleaning up environment..."
