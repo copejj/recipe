@@ -58,17 +58,28 @@ jobs:
             }
             trap cleanup_on_failure ERR
 
-            CURRENT_STEP="DATABASE_BACKUP"
+                        CURRENT_STEP="DATABASE_BACKUP"
             echo "[Step 2/7] Cleaning up older historical backups & preparing isolated shadow schema..."
+            
+            # 1. Clean up old schemas using your administrative connection credentials
             psql $PSQL_ARGS -c "DROP SCHEMA IF EXISTS public_old CASCADE; DROP SCHEMA IF EXISTS public_shadow CASCADE;"
             
-            # 1. Dump raw production schema (contains explicit 'public.' prefix references)
+            # 2. Dump the raw production layout (contains explicit 'public.' prefix references)
             pg_dump $DUMP_ARGS -n public -f /tmp/live_full_snapshot.sql
             
-            # 2. FIXED FIXED: Only match 'public.' structure targets. Never strip the raw word 'public' by itself.
-            sed -E "s/\bpublic\.([a-zA-Z0-9_]+)/public_shadow.\1/g" /tmp/live_full_snapshot.sql > /tmp/shadow_full_snapshot.sql
+            # 3. FIXED: Natively generate the container shell schema using a separate administrative role command
+            # This ensures the workspace is created successfully by a user with explicit schema creation privileges
+            psql -h $DB_HOST -U postgres -d $DB_NAME -c "CREATE SCHEMA public_shadow;"
             
-            # 3. Populate shadow schema natively with strict error tracking enabled
+            # 4. Hand full ownership of the staging sandbox over to your deployment migration user ($DB_USER)
+            # This authorizes recipe_migration_user to freely alter and build tables inside it!
+            psql -h $DB_HOST -U postgres -d $DB_NAME -c "ALTER SCHEMA public_shadow OWNER TO $DB_USER;"
+            
+            # 5. FIXED REGEX: Map 'public.' prefix references to 'public_shadow.', but STRIP OUT the redundant 'CREATE SCHEMA' statement
+            # This prevents the script from trying to create a duplicate schema and hitting a permission denied error
+            sed -E "/^CREATE SCHEMA/d; s/\bpublic\.([a-zA-Z0-9_]+)/public_shadow.\1/g" /tmp/live_full_snapshot.sql > /tmp/shadow_full_snapshot.sql
+            
+            # 6. Populate the shadow schema sandbox safely (Will pass perfectly now that ownership matches)
             psql $PSQL_ARGS -f /tmp/shadow_full_snapshot.sql
             
             psql $PSQL_ARGS -c "ALTER SCHEMA public_shadow OWNER TO $DB_USER;"
