@@ -58,28 +58,23 @@ jobs:
             }
             trap cleanup_on_failure ERR
 
-                        CURRENT_STEP="DATABASE_BACKUP"
+            CURRENT_STEP="DATABASE_BACKUP"
             echo "[Step 2/7] Cleaning up older historical backups & preparing isolated shadow schema..."
             
-            # 1. Clean up old schemas using your administrative connection credentials
+            # Clean up old sandboxes natively using your migration user credentials ($PSQL_ARGS)
             psql $PSQL_ARGS -c "DROP SCHEMA IF EXISTS public_old CASCADE; DROP SCHEMA IF EXISTS public_shadow CASCADE;"
             
-            # 2. Dump the raw production layout (contains explicit 'public.' prefix references)
+            # 1. Dump raw production layout (contains explicit 'public.' prefix references)
             pg_dump $DUMP_ARGS -n public -f /tmp/live_full_snapshot.sql
             
-            # 3. FIXED: Natively generate the container shell schema using a separate administrative role command
-            # This ensures the workspace is created successfully by a user with explicit schema creation privileges
-            psql -h $DB_HOST -U postgres -d $DB_NAME -c "CREATE SCHEMA public_shadow;"
-            
-            # 4. Hand full ownership of the staging sandbox over to your deployment migration user ($DB_USER)
-            # This authorizes recipe_migration_user to freely alter and build tables inside it!
-            psql -h $DB_HOST -U postgres -d $DB_NAME -c "ALTER SCHEMA public_shadow OWNER TO $DB_USER;"
-            
-            # 5. FIXED REGEX: Map 'public.' prefix references to 'public_shadow.', but STRIP OUT the redundant 'CREATE SCHEMA' statement
-            # This prevents the script from trying to create a duplicate schema and hitting a permission denied error
+            # 2. FIXED STRIP: Map 'public.' prefix references to 'public_shadow.', but completely
+            # delete the 'CREATE SCHEMA public;' line out of the file text.
             sed -E "/^CREATE SCHEMA/d; s/\bpublic\.([a-zA-Z0-9_]+)/public_shadow.\1/g" /tmp/live_full_snapshot.sql > /tmp/shadow_full_snapshot.sql
             
-            # 6. Populate the shadow schema sandbox safely (Will pass perfectly now that ownership matches)
+            # 3. Natively create the shadow schema container using your migration user credentials (unblocked by your GRANT CREATE rule)
+            psql $PSQL_ARGS -c "CREATE SCHEMA public_shadow;"
+            
+            # 4. Populate the shadow schema sandbox safely using your migration user credentials
             psql $PSQL_ARGS -f /tmp/shadow_full_snapshot.sql
             
             psql $PSQL_ARGS -c "ALTER SCHEMA public_shadow OWNER TO $DB_USER;"
@@ -132,7 +127,7 @@ jobs:
               psql $PSQL_ARGS $SEARCH_PATH_ARG -c "UPDATE schema_migrations SET ended_at=NOW(), status='completed' WHERE filename='$FILENAME';"
             done
 
-            # REINFORCE PERMISSIONS: Secure database application access tiers
+            # REINFORCE PERMISSIONS: Secure database application access tiers for recipe_app_user
             echo "Reinforcing application schema access privileges..."
             psql $PSQL_ARGS -c "
               GRANT USAGE ON SCHEMA public_shadow TO recipe_app_user; 
@@ -159,7 +154,7 @@ jobs:
             BUILD_WAR="${{ vars.PROD_APP_PATH }}/target/${{ vars.PROD_APP_NAME }}.war"
             cp "$BUILD_WAR" "${{ vars.PROD_DEPLOY_PATH }}/$VERSION_NAME"
             
-            # --- UPGRADE: Natively touch the individual application WAR context to reload it silently without taking down other sites ---
+            # --- FIXED WAR TARGET TOUCH: Grabs only this specific app file context to reload it silently ---
             touch "${{ vars.PROD_DEPLOY_PATH }}/$VERSION_NAME"
 
             CURRENT_STEP="FINAL_CLEANUP"
