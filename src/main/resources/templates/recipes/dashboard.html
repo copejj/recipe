@@ -1,43 +1,129 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" lang="en">
+<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
 
-<head th:replace="~{fragments/layout :: html_head('Dashboard - Braindribbler')}"></head>
+<head th:replace="~{fragments/layout :: html_head('Culinary Command Center')}"></head>
 
 <body>
-    <div th:replace="~{fragments/layout :: header}"></div>
+    <header th:replace="~{fragments/layout :: header}"></header>
 
-    <main>
-        <div class="page-card">
-            <h1 class="page-title" style="color: #28a745;">Session Fully Authenticated</h1>
-            <p th:text="${message}" class="page-subtitle">Placeholder welcome text.</p>
+    <main class="page-card">
 
-            <hr class="dashboard-divider" />
-
-            <p>Your security infrastructure is fully operational:</p>
-            <div class="status-grid">
-                <div class="status-item">
-                    <div class="status-info">
-                        <span class="status-label">Password Engine</span>
-                        <span class="status-value">Argon2id</span>
-                    </div>
-                </div>
-                <div class="status-item">
-                    <div class="status-info">
-                        <span class="status-label">Identity Storage</span>
-                        <span class="status-value">PostgreSQL</span>
-                    </div>
-                </div>
-                <div class="status-item">
-                    <div class="status-info">
-                        <span class="status-label">Layout Engine</span>
-                        <span class="status-value">Thymeleaf</span>
-                    </div>
-                </div>
+        <!-- ==========================================================================
+           DYNAMIC ALERTS SYSTEM SECTION (Adapts based on current access)
+           ========================================================================== -->
+        <div th:if="${dashboardAlerts != null && !dashboardAlerts.isEmpty()}">
+            <div th:each="alert : ${dashboardAlerts}" class="alert alert--info"
+                style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                <span>💡</span>
+                <span th:text="${alert}">System Alert Notice String</span>
             </div>
         </div>
+
+        <!-- Dashboard Welcome Banner -->
+        <h1 class="page-title">Welcome back, <span
+                th:text="${userDisplayName != null ? userDisplayName : 'Chef'}">Chef</span>!</h1>
+        <p class="page-subtitle" th:text="${message}">Security status message.</p>
+
+        <!-- ==========================================================================
+           SECTION 1: STANDARD CULINARY WORKSPACE (Visible to All Members)
+           ========================================================================== -->
+        <h2
+            style="margin-top: 20px; font-size: 1.5rem; border-bottom: 2px solid var(--color-border); padding-bottom: 8px;">
+            My Kitchen Workspace</h2>
+        <div class="status-grid">
+
+            <div class="status-item">
+                <span class="status-icon">🍳</span>
+                <div class="status-info">
+                    <span class="status-label">Recipe Collection</span>
+                    <span class="status-value"><span th:text="${myRecipesCount}">0</span> Recipes Saved</span>
+                    <a th:href="@{/recipes/my-list}"
+                        style="font-size: 0.85rem; color: var(--color-primary); margin-top: 6px; text-decoration: none; font-weight: 600;">View
+                        My Collection →</a>
+                </div>
+            </div>
+
+            <div class="status-item">
+                <span class="status-icon">➕</span>
+                <div class="status-info">
+                    <span class="status-label">Creation Studio</span>
+                    <span class="status-value">Add a New Recipe</span>
+                    <a th:href="@{/recipes/create}"
+                        style="font-size: 0.85rem; color: var(--color-primary); margin-top: 6px; text-decoration: none; font-weight: 600;">Open
+                        Form Wizard →</a>
+                </div>
+            </div>
+
+            <div class="status-item">
+                <span class="status-icon">🔍</span>
+                <div class="status-info">
+                    <span class="status-label">Discovery Hub</span>
+                    <span class="status-value">Search Public Catalog</span>
+                    <a th:href="@{/search}"
+                        style="font-size: 0.85rem; color: var(--color-primary); margin-top: 6px; text-decoration: none; font-weight: 600;">Find
+                        Inspiration →</a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ==========================================================================
+           SECTION 2: LIVE CONTENT MODERATION MATRIX (Preserved Tasks Review Center)
+           ========================================================================== -->
+        <div
+            sec:authorize="hasAnyAuthority('can_moderate_ingredients', 'can_hide_any_recipe', 'can_delete_any_comment')">
+            <hr class="dashboard-divider" style="margin: 40px 0 30px 0;" />
+            <h2 style="font-size: 1.5rem; border-bottom: 2px solid var(--color-border); padding-bottom: 8px;">Pending
+                Review Items</h2>
+            <div class="status-grid">
+
+                <!-- Ingredient Queue Card - Highlights RED if items are waiting -->
+                <div sec:authorize="hasAuthority('can_moderate_ingredients')" class="status-item"
+                    th:style="${pendingIngredientsCount > 0} ? 'border-color: var(--color-danger-border); background-color: var(--color-danger-bg);' : ''">
+                    <span class="status-icon">🌿</span>
+                    <div class="status-info">
+                        <span class="status-label">Ingredients Pool</span>
+                        <span class="status-value">
+                            <span th:text="${pendingIngredientsCount}"
+                                th:style="${pendingIngredientsCount > 0} ? 'color: var(--color-danger-raw); font-weight:700;' : ''">0</span>
+                            Unverified Options
+                        </span>
+                        <a th:href="@{/admin/ingredients}"
+                            style="font-size: 0.85rem; color: var(--color-primary); margin-top: 6px; text-decoration: none; font-weight: 600;">Review
+                            Ingestion Queue →</a>
+                    </div>
+                </div>
+
+                <!-- Global Content Metric Monitor -->
+                <div sec:authorize="hasAuthority('can_hide_any_recipe')" class="status-item">
+                    <span class="status-icon">🛡️</span>
+                    <div class="status-info">
+                        <span class="status-label">Recipe Moderation</span>
+                        <span class="status-value"><span th:text="${totalRecipesCount}">0</span> Public Postings</span>
+                        <a th:href="@{/search}"
+                            style="font-size: 0.85rem; color: var(--color-primary); margin-top: 6px; text-decoration: none; font-weight: 600;">Moderate
+                            Catalog →</a>
+                    </div>
+                </div>
+
+                <!-- Community Safety Monitor -->
+                <div sec:authorize="hasAuthority('can_delete_any_comment')" class="status-item">
+                    <span class="status-icon">💬</span>
+                    <div class="status-info">
+                        <span class="status-label">Community Board</span>
+                        <span class="status-value">Discussion Safety</span>
+                        <span class="status-text--active"
+                            style="font-size: 0.85rem; margin-top: 6px; font-weight: 600;">Live Safety Watch
+                            Active</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
     </main>
 
-    <div th:replace="~{fragments/layout :: footer}"></div>
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
 </body>
 
 </html>

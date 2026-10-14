@@ -20,10 +20,12 @@ public class GlobalNavigationAdvice {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         // 1. Handle Guest User (Not authenticated or anonymous)
-        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+        // Inside your guest user conditional check:
+        if (auth == null || !auth.isAuthenticated() ||
+                auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken) {
             menuItems.add(new MenuItem("Home", "/"));
             menuItems.add(new MenuItem("Search", "/search"));
-            return menuItems; // Exit early for guests
+            return menuItems;
         }
 
         // 2. Handle Logged-In Authenticated User Base Links
