@@ -19,7 +19,6 @@ public class RecipeService {
     private final MeasurementRepository measurementRepository;
     private final RecipeVisibilityRepository visibilityRepository;
 
-    // Direct Constructor Injection for all domain repositories
     public RecipeService(RecipeRepository recipeRepository,
             IngredientRepository ingredientRepository,
             MeasurementRepository measurementRepository,
@@ -32,7 +31,6 @@ public class RecipeService {
 
     @Transactional(readOnly = true)
     public long getRecipeCountByUserId(Integer userId) {
-        // Calls the existing query hook from your repository layer
         return recipeRepository.findByUserUserId(Long.valueOf(userId)).size();
     }
 
@@ -51,6 +49,9 @@ public class RecipeService {
         return visibilityRepository.findAll();
     }
 
+    /**
+     * Maps the complex nested Form DTO data into database entities and commits them
+     */
     @Transactional
     public Recipe saveRecipeFromForm(RecipeForm form, User currentUser) {
         Recipe recipe = new Recipe();
@@ -58,42 +59,48 @@ public class RecipeService {
         recipe.setDescription(form.getDescription());
         recipe.setServings(form.getServings());
         recipe.setRecipeNote(form.getRecipeNote());
-        recipe.setUser(currentUser);
+        recipe.setUser(currentUser); // Link recipe to the logged-in user profile
 
+        // 1. Resolve and wire Global Visibility setting
         RecipeVisibility visibility = visibilityRepository.findById(form.getRecipeVisibilityId())
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "Visibility not found with ID: " + form.getRecipeVisibilityId()));
+                        "Recipe visibility mapping not found for ID: " + form.getRecipeVisibilityId()));
         recipe.setRecipeVisibility(visibility);
 
+        // 2. Loop through dynamic instruction rows sequentially to assign step
+        // positions
         List<RecipeStep> targetSteps = new ArrayList<>();
         for (int i = 0; i < form.getSteps().size(); i++) {
             StepForm stepForm = form.getSteps().get(i);
 
             RecipeStep step = new RecipeStep();
-            step.setRecipe(recipe);
-            step.setStepNumber(i + 1);
+            step.setRecipe(recipe); // Crucial bi-directional mapping link back to parent
+            step.setStepNumber(i + 1); // Normalize auto-assigned step order number
             step.setInstructionText(stepForm.getInstructionText());
 
+            // 3. Process the distinct subset of ingredients scoped exclusively to this
+            // single step
             List<RecipeStepIngredient> stepIngredients = new ArrayList<>();
             for (IngredientForm ingForm : stepForm.getIngredients()) {
+                // Drop empty dropdown modifications safely
                 if (ingForm.getIngredientId() == null || ingForm.getMeasurementId() == null) {
                     continue;
                 }
 
                 RecipeStepIngredient link = new RecipeStepIngredient();
-                link.setRecipe(recipe);
-                link.setRecipeStep(step);
+                link.setRecipe(recipe); // Ties into global recipe context lookup
+                link.setRecipeStep(step); // Ties into step position index lookup
                 link.setAmount(ingForm.getAmount());
                 link.setIngredientNote(ingForm.getIngredientNote());
 
                 Ingredient ingredient = ingredientRepository.findById(ingForm.getIngredientId())
                         .orElseThrow(() -> new EntityNotFoundException(
-                                "Ingredient missing with ID: " + ingForm.getIngredientId()));
+                                "Master ingredient database entry missing: " + ingForm.getIngredientId()));
                 link.setIngredient(ingredient);
 
                 Measurement measurement = measurementRepository.findById(ingForm.getMeasurementId())
                         .orElseThrow(() -> new EntityNotFoundException(
-                                "Measurement missing with ID: " + ingForm.getMeasurementId()));
+                                "Measurement configuration unit missing: " + ingForm.getMeasurementId()));
                 link.setMeasurement(measurement);
 
                 stepIngredients.add(link);
@@ -103,6 +110,17 @@ public class RecipeService {
         }
         recipe.setSteps(targetSteps);
 
+        // Due to cascade = CascadeType.ALL configurations on your models, saving the
+        // top-level
+        // recipe automatically persists the linked children step rows and composite
+        // ingredient links seamlessly!
         return recipeRepository.save(recipe);
     }
+
+    @Transactional(readOnly = true)
+    public List<Recipe> getRecipesByUserId(Integer userId) {
+        // Calls your existing repository method hook cleanly
+        return recipeRepository.findByUserUserId(Long.valueOf(userId));
+    }
+
 }

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
+
+<head th:replace="~{fragments/layout :: html_head('My Recipe Collection')}"></head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <main class="page-card page-card--audit-layout">
+
+        <!-- Header Controls Row -->
+        <div class="admin-header-flex"
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <div>
+                <h1 class="page-title" style="margin:0;">My Recipe Collection</h1>
+                <p class="page-subtitle" style="margin: 4px 0 0 0;">Manage, edit, or view the recipe structures you have
+                    published to the database.</p>
+            </div>
+            <!-- Quick-action shortcut matching your workspace token setup -->
+            <a th:href="@{/recipes/create}" class="btn btn--primary btn--admin-small"
+                style="width: auto; text-decoration: none; display: inline-block;">+ Create New Recipe</a>
+        </div>
+
+        <!-- DataTables Grid Container -->
+        <div class="table-responsive-wrapper">
+            <table id="myRecipesTable" class="dataTable stripe hover row-border">
+                <thead>
+                    <tr>
+                        <th>ID (UUID)</th>
+                        <th>Recipe Title</th>
+                        <th>Servings</th>
+                        <th>Steps Count</th>
+                        <th>Visibility</th>
+                        <th>Date Published</th>
+                        <th style="text-align: right; white-space: nowrap;">Management Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Fallback message if list collection arrives empty -->
+                    <tr th:if="${recipesList == null || recipesList.isEmpty()}">
+                        <td colspan="7"
+                            style="text-align: center; color: var(--color-text-muted); font-style: italic; padding: 30px !important;">
+                            You haven't shared any recipes yet! Click "+ Create New Recipe" to start.
+                        </td>
+                    </tr>
+
+                    <!-- Dynamic iteration loop processing active rows -->
+                    <tr th:each="recipe : ${recipesList}">
+                        <!-- Obfuscates internal integer IDs by displaying the secure publicId UUID -->
+                        <td class="audit-font-monospace" style="font-size: 0.8rem !important;"
+                            th:text="${recipe.publicId}">00000000-0000-0000-0000-000000000000</td>
+                        Recipe Title Placeholder</td>
+                        <td th:text="${recipe.servings != null ? recipe.servings : '-'}">4</td>
+                        <td th:text="${recipe.steps != null ? recipe.steps.size() : 0}">0 Steps</td>
+                        <td>
+                            <!-- Uses badge stylings matching your theme's lookup rules -->
+                            <span class="badge-permission"
+                                th:text="${recipe.recipeVisibility != null ? recipe.recipeVisibility.visibilityName : 'Private'}">Public</span>
+                        </td>
+                        <td th:text="${#temporals.format(recipe.createdAt, 'yyyy-MM-dd HH:mm')}">2026-10-14 12:00</td>
+                        <td class="actions-cell" style="text-align: right; white-space: nowrap;">
+                            <div class="admin-btn-group"
+                                style="justify-content: flex-end; display: inline-flex; gap: 8px;">
+                                <!-- Public read path using the obfuscated publicId parameter token -->
+                                <a th:href="@{/recipes/view/{id}(id=${recipe.publicId})}" class="btn btn--admin-small"
+                                    style="background-color: var(--color-bg-body); border: 1px solid var(--color-border); color: var(--color-text-dark); text-decoration: none;">
+                                    👁 View
+                                </a>
+                                <a th:href="@{/recipes/edit/{id}(id=${recipe.publicId})}"
+                                    class="btn btn--admin-small btn--table-action status-text--active"
+                                    style="border: 1px solid #bce5c6; text-decoration: none; font-weight:600;">
+                                    ✎ Edit
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+    <!-- Initialize Datatables Engine Script Wrapper Block -->
+    <script th:inline="none">
+        $(document).ready(function () {
+            // Only apply DataTables parsing enhancements if data records are loaded in the view DOM
+            if ($("#myRecipesTable tbody tr td").length > 1) {
+                $('#myRecipesTable').DataTable({
+                    "order": [[5, "desc"]], // Sort recipes by newest creation timestamp first
+                    "pageLength": 10,
+                    "columnDefs": [
+                        { "orderable": false, "targets": 6 }, // Protect operations cell from sorting glitches
+                        { "searchable": false, "targets": [0, 6] } // Keep search focused directly on recipe names/visibilities
+                    ]
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -104,4 +104,21 @@ public class RecipeController {
         model.addAttribute("measurements", recipeService.getAllMeasurements());
         model.addAttribute("visibilities", recipeService.getAllVisibilities());
     }
+
+    @GetMapping("/recipes/my-list")
+    public String showMyRecipesList(Model model, @AuthenticationPrincipal RecipeUserDetails currentUser) {
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
+
+        // Safely extract your core database User object using your verified profile
+        // wrapper hook
+        var domainUser = currentUser.getUserProfile();
+
+        // Fetch user-owned recipe entities through the service wrapper layer
+        List<Recipe> myRecipes = recipeService.getRecipesByUserId(domainUser.getUserId());
+        model.addAttribute("recipesList", myRecipes);
+
+        return "recipes/my-list";
+    }
 }
