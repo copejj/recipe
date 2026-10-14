@@ -1,5 +1,9 @@
 package com.braindribbler.recipe.domain.recipe;
 
+import java.time.ZonedDateTime;
+
+import com.braindribbler.recipe.domain.auth.User;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -17,6 +21,16 @@ public class Ingredient {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "grocery_category_id", nullable = false)
     private GroceryCategory groceryCategory;
+
+    @Column(name = "is_verified", nullable = false)
+    private Boolean isVerified = false;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_user_id")
+    private User createdByUser;
+
+    @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
+    private ZonedDateTime createdAt;
 
     public Ingredient() {
     }
@@ -43,5 +57,25 @@ public class Ingredient {
 
     public void setGroceryCategory(GroceryCategory groceryCategory) {
         this.groceryCategory = groceryCategory;
+    }
+
+    public Boolean getIsVerified() {
+        return isVerified;
+    }
+
+    public void setIsVerified(Boolean isVerified) {
+        this.isVerified = isVerified;
+    }
+
+    public User getCreatedByUser() {
+        return createdByUser;
+    }
+
+    public void setCreatedByUser(User createdByUser) {
+        this.createdByUser = createdByUser;
+    }
+
+    public ZonedDateTime getCreatedAt() {
+        return createdAt;
     }
 }

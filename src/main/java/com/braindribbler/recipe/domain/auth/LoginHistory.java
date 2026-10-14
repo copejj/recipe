@@ -12,7 +12,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-k
 @Table(name = "login_history")
 public class LoginHistory {
 
@@ -21,8 +20,6 @@ public class LoginHistory {
     @Column(name = "login_history_id")
     private Integer loginHistoryId;
 
-    // 🔑 FIXED: Set nullable = true so we can log brute-force probing of
-    // non-existent emails!
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_auth_id", nullable = true)
     private UserAuth userAuth;

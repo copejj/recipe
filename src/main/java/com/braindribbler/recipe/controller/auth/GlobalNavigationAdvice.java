@@ -20,10 +20,12 @@ public class GlobalNavigationAdvice {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         // 1. Handle Guest User (Not authenticated or anonymous)
-        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+        // Inside your guest user conditional check:
+        if (auth == null || !auth.isAuthenticated() ||
+                auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken) {
             menuItems.add(new MenuItem("Home", "/"));
             menuItems.add(new MenuItem("Search", "/search"));
-            return menuItems; // Exit early for guests
+            return menuItems;
         }
 
         // 2. Handle Logged-In Authenticated User Base Links
@@ -37,7 +39,22 @@ public class GlobalNavigationAdvice {
                     .map(a -> a.getAuthority())
                     .collect(Collectors.toSet());
 
-            // Build dynamic child options for Admin sub-menu
+            // Build isolated child options for operational Recipe Management
+            List<MenuItem> recipesChildren = new ArrayList<>();
+
+            // Base culinary actions available to standard users or creators
+            recipesChildren.add(new MenuItem("My Recipes", "/recipes/my-list"));
+            recipesChildren.add(new MenuItem("Create New Recipe", "/recipes/create"));
+
+            // Securely append the Moderation Panel to the Recipe Group for Authorized Users
+            if (authorities.contains("can_moderate_ingredients")) {
+                recipesChildren.add(new MenuItem("Manage Ingredients", "/admin/ingredients"));
+            }
+
+            // Map the complete Recipes Parent Dropdown
+            menuItems.add(new MenuItem("Recipes", recipesChildren));
+
+            // Build completely separate child options for technical System Administration
             List<MenuItem> adminChildren = new ArrayList<>();
 
             if (authorities.contains("can_manage_users")) {
@@ -51,8 +68,7 @@ public class GlobalNavigationAdvice {
                 adminChildren.add(new MenuItem("Migration History", "/admin/migrations"));
             }
 
-            // Only add the Admin dropdown if the user has access to at least one child
-            // action
+            // Only append the System Admin dropdown if the user has technical access rights
             if (!adminChildren.isEmpty()) {
                 menuItems.add(new MenuItem("Admin", adminChildren));
             }
