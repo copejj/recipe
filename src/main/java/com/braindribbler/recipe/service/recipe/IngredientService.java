@@ -1,21 +1,26 @@
 package com.braindribbler.recipe.service.recipe;
 
+import com.braindribbler.recipe.domain.auth.UserMessage;
 import com.braindribbler.recipe.domain.recipe.Ingredient;
 import com.braindribbler.recipe.dto.recipe.PendingIngredientProjection;
+import com.braindribbler.recipe.repository.auth.UserMessageRepository;
 import com.braindribbler.recipe.repository.recipe.IngredientRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class IngredientService {
 
     private final IngredientRepository ingredientRepository;
+    private final UserMessageRepository userMessageRepository;
 
-    public IngredientService(IngredientRepository ingredientRepository) {
+    public IngredientService(IngredientRepository ingredientRepository, UserMessageRepository userMessageRepository) {
         this.ingredientRepository = ingredientRepository;
+        this.userMessageRepository = userMessageRepository;
     }
 
     /**
@@ -72,4 +77,11 @@ public class IngredientService {
         // Uses your custom sorted repository query hook
         return ingredientRepository.findAllByOrderByIngredientNameAsc();
     }
+
+    @Transactional(readOnly = true)
+    public Optional<UserMessage> getLatestActiveMessageForUser(Integer userId) {
+        // Normalizes time explicitly to the database's OffsetDateTime context
+        return userMessageRepository.findLatestActiveMessage(userId, java.time.OffsetDateTime.now());
+    }
+
 }
