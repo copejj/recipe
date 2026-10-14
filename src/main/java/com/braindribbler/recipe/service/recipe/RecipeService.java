@@ -123,4 +123,10 @@ public class RecipeService {
         return recipeRepository.findByUserUserId(Long.valueOf(userId));
     }
 
+    @Transactional(readOnly = true)
+    public Recipe getRecipeByPublicId(java.util.UUID publicId) {
+        return recipeRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException(
+                        "Recipe record not found for public ID: " + publicId));
+    }
 }

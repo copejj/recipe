@@ -84,4 +84,9 @@ public class IngredientService {
         return userMessageRepository.findLatestActiveMessage(userId, java.time.OffsetDateTime.now());
     }
 
+    @Transactional
+    public Ingredient saveRawIngredient(Ingredient ing) {
+        return ingredientRepository.save(ing);
+    }
+
 }
