@@ -9,18 +9,27 @@
     <main class="page-card">
 
         <!-- ==========================================================================
-           DYNAMIC ALERTS SYSTEM SECTION (Adapts based on current access)
-           ========================================================================== -->
+       NEW: DYNAMIC BROADCAST BANNER (Pulls directly from user_messages table)
+       ========================================================================== -->
+        <div th:if="${dbMessageText != null}" class="alert"
+            th:classappend="${dbMessageClass != null ? dbMessageClass : 'alert--info'}"
+            style="margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
+            <span>📢</span>
+            <strong th:text="${dbMessageText}">System broadcast alert announcement text goes here
+                dynamically...</strong>
+        </div>
+
+        <!-- Operational System Flags (Admin Action Notices) -->
         <div th:if="${dashboardAlerts != null && !dashboardAlerts.isEmpty()}">
             <div th:each="alert : ${dashboardAlerts}" class="alert alert--info"
-                style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; background-color: var(--color-bg-body); border-color: var(--color-border);">
                 <span>💡</span>
                 <span th:text="${alert}">System Alert Notice String</span>
             </div>
         </div>
 
         <!-- Dashboard Welcome Banner -->
-        <h1 class="page-title">Welcome back, <span
+        <h1 class="page-title">Welcome <span
                 th:text="${userDisplayName != null ? userDisplayName : 'Chef'}">Chef</span>!</h1>
         <p class="page-subtitle" th:text="${message}">Security status message.</p>
 

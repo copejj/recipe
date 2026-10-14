@@ -46,7 +46,7 @@ public class RecipeController {
         User domainUser = currentUser.getUserProfile();
         model.addAttribute("userDisplayName", domainUser.getDisplayName());
 
-        // Gather real-time workspace metric counters
+        // 1. Gather baseline counter metrics via services
         long myRecipesCount = recipeService.getRecipeCountByUserId(domainUser.getUserId());
         int pendingIngredients = ingredientService.getUnverifiedIngredients().size();
 
@@ -54,23 +54,14 @@ public class RecipeController {
         model.addAttribute("pendingIngredientsCount", pendingIngredients);
         model.addAttribute("totalRecipesCount", recipeService.getTotalRecipesCount());
 
-        // --- NEW: Dynamic Time-of-Day Call to Action Greetings ---
-        int hour = java.time.LocalTime.now().getHour();
-        String timeGreeting;
-        if (hour < 12) {
-            timeGreeting = "Good morning";
-        } else if (hour < 17) {
-            timeGreeting = "Good afternoon";
-        } else {
-            timeGreeting = "Good evening";
-        }
+        // 2. Fetch message cleanly via service layer wrapper ---
+        ingredientService.getLatestActiveMessageForUser(domainUser.getUserId())
+                .ifPresent(msg -> {
+                    model.addAttribute("dbMessageText", msg.getMessageText());
+                    model.addAttribute("dbMessageClass", "alert--" + msg.getAlertType());
+                });
 
-        // Create an inspirational subtitle tailored directly to the workspace context
-        String customizedSubtitle = String.format("%s, %s! What are we cooking up in the kitchen today?",
-                timeGreeting, domainUser.getDisplayName());
-        model.addAttribute("message", customizedSubtitle);
-
-        // Dynamic Dashboard Action Alerts Engine
+        // 3. Dynamic Moderator Action Alerts
         List<String> dashboardAlerts = new ArrayList<>();
         if (currentUser.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("can_moderate_ingredients"))) {
             if (pendingIngredients > 0) {
@@ -78,8 +69,8 @@ public class RecipeController {
                         + " unverified ingredients in the master pool requiring moderator review.");
             }
         }
-
         model.addAttribute("dashboardAlerts", dashboardAlerts);
+
         return "recipes/dashboard";
     }
 
