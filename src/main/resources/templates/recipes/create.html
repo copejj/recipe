@@ -7,7 +7,7 @@
     <header th:replace="~{fragments/layout :: header}"></header>
 
     <main class="page-card">
-        <h1 class="page-title">Create a New Recipe</h1>
+        <h1 th:text="${isEditMode ?: false} ? 'Edit Your Recipe' : 'Create New Recipe'">Recipe Stuff</h1>
         <p class="page-subtitle">Map out your instructions and attach step-scoped ingredients with exact quantities.</p>
 
         <form th:action="@{/recipes/create}" th:object="${recipeForm}" method="post" id="recipeForm">
@@ -184,8 +184,6 @@
     </dialog>
 
     <footer th:replace="~{fragments/layout :: footer}"></footer>
-
-    <!-- Dynamic Layout Array Reindexing Handler Script Framework -->
     <script th:inline="javascript">
         $(document).ready(function () {
             var activeSelectDropdown = null; // Tracks which specific drop-down card requested the modal open
@@ -217,7 +215,6 @@
                 var clone = firstCard.clone();
                 clone.find("textarea, input").val("");
                 clone.find("select").prop("selectedIndex", 0);
-                clone.find(".ingredients-container .ingredient-row").not(":first").remove();
                 $("#steps-container").append(clone);
                 reindexForm();
             });
@@ -227,35 +224,33 @@
                 reindexForm();
             });
 
+            $(document).off("click", ".add-ingredient-btn").on("click", ".add-ingredient-btn", function (e) {
+                e.preventDefault();
 
-            $(document).on("click", ".add-ingredient-btn", function () {
-                // 1. Locate the container target inside this specific step card boundary cleanly
                 var container = $(this).closest(".step-card").find(".ingredients-container");
 
-                // 2. Self-contained HTML row literal snippet layout matching your styling tokens exactly
-                var newRowHtml = `
-                    <div class="ingredient-row" style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
-                        <select class="form-input" style="flex: 2.5;" required>
-                            <option value="">-- Choose Ingredient --</option>
-                            ${$('#allIngredients-pool-source').html() || ''}
-                        </select>
+                // Grab inner HTML from our robust hidden select structures
+                var ingredientOptions = $('#ingredient-options-pool').html();
+                var measurementOptions = $('#measurement-options-pool').html();
 
-                        <input type="number" step="0.01" class="form-input" placeholder="Amount" style="flex: 1;" required />
+                var newRowHtml =
+                    '<div class="ingredient-row" style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">' +
+                    '<select class="form-input" style="flex: 2.5;" required>' +
+                    ingredientOptions +
+                    '</select>' +
+                    '<input type="number" step="0.01" class="form-input" placeholder="Amount" style="flex: 1;" required />' +
+                    '<select class="form-input" style="flex: 1.5;" required>' +
+                    measurementOptions +
+                    '</select>' +
+                    '<input type="text" class="form-input" placeholder="Note (e.g., melted, chilled)" style="flex: 2;" />' +
+                    '<button type="button" class="btn remove-ing-btn" style="width: auto; padding: 10px 14px; font-size: 1rem; margin: 0; background-color: #e9ecef; color: var(--color-text-dark); border: 1px solid var(--color-border-input); border-radius: 6px;">×</button>' +
+                    '</div>';
 
-                        <select class="form-input" style="flex: 1.5;" required>
-                            <option value="">-- Unit --</option>
-                            ${$('#measurements-pool-source').html() || ''}
-                        </select>
-
-                        <input type="text" class="form-input" placeholder="Note (e.g., melted, chilled)" style="flex: 2;" />
-
-                        <button type="button" class="btn remove-ing-btn" style="width: auto; padding: 10px 14px; font-size: 1rem; margin: 0; background-color: #e9ecef; color: var(--color-text-dark); border: 1px solid var(--color-border-input); border-radius: 6px;">×</button>
-                    </div>
-                `;
-
-                // 3. Append to our empty container and trigger your re-indexing script handler
                 container.append(newRowHtml);
-                reindexForm();
+
+                if (typeof reindexForm === "function") {
+                    reindexForm();
+                }
             });
 
             $(document).on("click", ".remove-ing-btn", function () {
@@ -327,6 +322,24 @@
             });
         });
     </script>
+
+    <!-- Hidden Master Options templates for clean jQuery cloning -->
+    <div style="display: none;" aria-hidden="true">
+
+        <select id="ingredient-options-pool">
+            <option value="">-- Choose Ingredient --</option>
+            <option th:each="ing : ${allIngredients}" th:value="${ing.ingredientId}" th:text="${ing.ingredientName}">
+            </option>
+        </select>
+
+        <select id="measurement-options-pool">
+            <option value="">-- Unit --</option>
+            <!-- CHANGED: Iterating over Measurement entities cleanly -->
+            <option th:each="unit : ${measurements}" th:value="${unit.measurementId}" th:text="${unit.unitName}">
+            </option>
+        </select>
+
+    </div>
 </body>
 
 </html>

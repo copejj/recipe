@@ -24,13 +24,13 @@ public class PasswordResetController {
     }
 
     // 1. Display Forgot Password Request Form
-    @GetMapping("/forgot-password")
+    @GetMapping("/password/forgot")
     public String showForgotPasswordForm() {
-        return "auth/forgot-password";
+        return "auth/password/forgot";
     }
 
     // 2. Process Request and Dispatch Email safely
-    @PostMapping("/forgot-password")
+    @PostMapping("/password/forgot")
     public String handleForgotPassword(@RequestParam("email") String email, RedirectAttributes redirectAttributes) {
         // Runs the transactional generation and safely try-catches the Mailgun engine
         passwordService.initiatePasswordReset(email, appApiHost);
@@ -39,18 +39,18 @@ public class PasswordResetController {
         // enumeration sniffing
         redirectAttributes.addFlashAttribute("successMessage",
                 "If an account matches that address, a secure reset link has been dispatched to your inbox.");
-        return "redirect:/forgot-password";
+        return "redirect:/password/forgot";
     }
 
     // 3. Display Reset Password Form (Landing page from Mailgun URL link click)
-    @GetMapping("/reset-password")
+    @GetMapping("/password/reset")
     public String showResetPasswordForm(@RequestParam("token") UUID token, Model model) {
         model.addAttribute("token", token);
-        return "auth/reset-password";
+        return "auth/password/reset";
     }
 
     // 4. Process Form Payload and Commit New Password Hash
-    @PostMapping("/reset-password")
+    @PostMapping("/password/reset")
     public String handleResetPassword(@RequestParam("token") UUID token,
             @RequestParam("password") String password,
             @RequestParam("confirmPassword") String confirmPassword,
@@ -60,13 +60,13 @@ public class PasswordResetController {
         if (!password.equals(confirmPassword)) {
             model.addAttribute("token", token);
             model.addAttribute("errorMessage", "Passwords do not match.");
-            return "auth/reset-password";
+            return "auth/password/reset";
         }
 
         if (password.length() < 8) {
             model.addAttribute("token", token);
             model.addAttribute("errorMessage", "Password must be at least 8 characters long.");
-            return "auth/reset-password";
+            return "auth/password/reset";
         }
 
         boolean success = passwordService.completePasswordReset(token, password);
@@ -74,7 +74,7 @@ public class PasswordResetController {
         if (!success) {
             redirectAttributes.addFlashAttribute("errorMessage",
                     "The recovery link is invalid or has expired. Please request a new one.");
-            return "redirect:/forgot-password";
+            return "redirect:/password/forgot";
         }
 
         redirectAttributes.addFlashAttribute("success", "true"); // Passes param.success payload cleanly into login view

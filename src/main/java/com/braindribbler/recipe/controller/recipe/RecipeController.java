@@ -1,12 +1,10 @@
 package com.braindribbler.recipe.controller.recipe;
 
-// Core Framework Web Annotations & Utilities
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -87,9 +85,17 @@ public class RecipeController {
         return "recipes/search";
     }
 
+    private void populateFormMetadata(Model model) {
+        model.addAttribute("allIngredients", ingredientService.getAllIngredientsSorted());
+        model.addAttribute("measurements", recipeService.getAllMeasurements());
+        model.addAttribute("visibilities", recipeService.getAllVisibilities());
+        model.addAttribute("groceryCategories", ingredientService.getAllGroceryCategories());
+    }
+
     @GetMapping("/recipes/create")
     public String showCreateForm(Model model) {
         model.addAttribute("recipeForm", new RecipeForm());
+        model.addAttribute("isEditMode", false); // ◄ ADD THIS LINE TO FIX THE CRASH
         populateFormMetadata(model);
         return "recipes/create";
     }
@@ -109,13 +115,6 @@ public class RecipeController {
         return "redirect:/recipes/view/" + savedRecipe.getRecipeId();
     }
 
-    private void populateFormMetadata(Model model) {
-        model.addAttribute("allIngredients", ingredientService.getAllIngredientsSorted());
-        model.addAttribute("measurements", recipeService.getAllMeasurements());
-        model.addAttribute("visibilities", recipeService.getAllVisibilities());
-        model.addAttribute("groceryCategories", ingredientService.getAllGroceryCategories());
-    }
-
     @GetMapping("/recipes/my-list")
     public String showMyRecipesList(Model model, @AuthenticationPrincipal RecipeUserDetails currentUser) {
         if (currentUser == null) {
@@ -132,7 +131,6 @@ public class RecipeController {
         return "recipes/my-list";
     }
 
-    // --- VIEW ROUTE: Safely captures the trailing variable path parameter ---
     @GetMapping("/recipes/view/{id}")
     public String viewRecipeDetail(@PathVariable("id") String id, Model model,
             @AuthenticationPrincipal RecipeUserDetails currentUser) {
