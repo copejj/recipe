@@ -22,7 +22,7 @@
                 <!-- Quick Edit Button: Renders only if current user owns this recipe -->
                 <a sec:authorize="isAuthenticated()"
                     th:if="${#authentication.principal.userProfile.userId == recipe.user.userId}"
-                    th:href="@{/recipes/edit/{id}(id=${recipe.publicId})}"
+                    th:href="@{/recipes/edit/{id}(id=${recipe.recipeId})}"
                     class="btn btn--admin-small status-text--active"
                     style="width: auto; text-decoration: none; border: 1px solid #bce5c6; font-weight: 600;">✎ Edit
                     Recipe</a>
@@ -32,9 +32,9 @@
                 Short description text placeholder.</p>
 
             <div style="display: flex; gap: 24px; font-size: 0.9rem; color: var(--color-text-label); font-weight: 600;">
-                <div>🍽️ Servings: <span th:text="${recipe.servings != null ? recipe.servings : '-'}">4</span></div>
-                <div>👤 Published By: <span th:text="${recipe.user.displayName}">Chef Name</span></div>
-                <div>📅 Date: <span th:text="${#temporals.format(recipe.createdAt, 'yyyy-MM-dd')}">2026-10-14</span>
+                <div>️Servings: <span th:text="${recipe.servings != null ? recipe.servings : '-'}">4</span></div>
+                <div>Published By: <span th:text="${recipe.user.displayName}">Chef Name</span></div>
+                <div>Date: <span th:text="${#temporals.format(recipe.createdAt, 'yyyy-MM-dd')}">2026-10-14</span>
                 </div>
             </div>
         </div>
@@ -42,7 +42,7 @@
         <!-- ==========================================================================
            INSTRUCTIONS & STEP-SCOPED INGREDIENTS CASCADE TIMELINE
            ========================================================================== -->
-        <h2 style="font-size: 1.5rem; margin-bottom: 20px;">Preparation Blueprint</h2>
+        <h2 style="font-size: 1.5rem; margin-bottom: 20px;">Instructions</h2>
 
         <div th:each="step : ${recipe.steps}"
             style="margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px dashed var(--color-border);">
@@ -71,11 +71,10 @@
                     style="margin: 0; padding-left: 20px; font-size: 0.95rem; line-height: 1.6; color: var(--color-text-label);">
                     <li th:each="item : ${step.stepIngredients}">
                         <strong th:text="${item.amount}">1.5</strong>
-                        <span
-                            th:text="${item.measurement.abbreviation != null ? item.measurement.abbreviation : item.measurement.unitName}">cups</span>
-                        of <strong th:text="${item.ingredient.ingredientName}"
+                        <span th:text="${item.measurement.unitName}">cups</span> of
+                        <strong th:text="${item.ingredient.ingredientName}"
                             style="color: var(--color-text-dark);">Flour</strong>
-                        <!-- Conditional Note tag block appended if user entered modifiers -->
+
                         <span th:if="${item.ingredientNote != null && !item.ingredientNote.isEmpty()}"
                             th:text="'(' + ${item.ingredientNote} + ')'"
                             style="font-style: italic; color: var(--color-text-muted); font-size: 0.85rem;">(sifted)</span>

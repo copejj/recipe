@@ -11,6 +11,7 @@
         <p class="page-subtitle">Map out your instructions and attach step-scoped ingredients with exact quantities.</p>
 
         <form th:action="@{/recipes/create}" th:object="${recipeForm}" method="post" id="recipeForm">
+            <input type="hidden" th:field="*{recipeId}" />
 
             <!-- Global Recipe Metadata -->
             <div class="form-group">
@@ -67,53 +68,62 @@
                             required></textarea>
                     </div>
 
-                    <!-- Step Specific Nested Ingredients Box Matrix -->
+                    <!-- Locate this container inside templates/recipes/create.html -->
                     <div class="ingredients-section"
                         style="margin-top: 18px; padding-left: 20px; border-left: 3px solid var(--color-primary);">
-                        <label class="form-label"
-                            style="color: var(--color-text-dark); margin-bottom: 10px;">Ingredients Needed for this
-                            Step</label>
-                        <button type="button" class="open-quick-ing-btn"
-                            style="background: none; border: none; color: var(--color-primary); cursor: pointer; font-size: 0.85rem; font-weight: 600; padding: 0;">✨
-                            Missing an ingredient?</button>
-                        <div class="ingredients-container">
-
-                            <div th:each="ing, ingStat : ${step.ingredients}" class="ingredient-row"
-                                th:data-ing-index="${ingStat.index}"
-                                style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
-
-                                <select
-                                    th:field="*{steps[__${stepStat.index}__].ingredients[__${ingStat.index}__].ingredientId}"
-                                    class="form-input" style="flex: 2.5;" required>
-                                    <option value="">-- Choose Ingredient --</option>
-                                    <option th:each="i : ${allIngredients}" th:value="${i.ingredientId}"
-                                        th:text="${i.ingredientName}"></option>
-                                </select>
-
-                                <input type="number" step="0.01"
-                                    th:field="*{steps[__${stepStat.index}__].ingredients[__${ingStat.index}__].amount}"
-                                    class="form-input" placeholder="Amount" style="flex: 1;" required />
-
-                                <select
-                                    th:field="*{steps[__${stepStat.index}__].ingredients[__${ingStat.index}__].measurementId}"
-                                    class="form-input" style="flex: 1.5;" required>
-                                    <option value="">-- Unit --</option>
-                                    <option th:each="m : ${measurements}" th:value="${m.measurementId}"
-                                        th:text="${m.abbreviation != null ? m.abbreviation : m.unitName}"></option>
-                                </select>
-
-                                <input type="text"
-                                    th:field="*{steps[__${stepStat.index}__].ingredients[__${ingStat.index}__].ingredientNote}"
-                                    class="form-input" placeholder="Note (e.g., melted, chilled)" style="flex: 2;" />
-
-                                <button type="button" class="btn remove-ing-btn"
-                                    style="width: auto; padding: 10px 14px; font-size: 1rem; margin: 0; background-color: #e9ecef; color: var(--color-text-dark); border: 1px solid var(--color-border-input); border-radius: 6px;">×</button>
-                            </div>
-
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+                            <label class="form-label" style="color: var(--color-text-dark); margin: 0;">Ingredients
+                                Needed for this Step</label>
+                            <button type="button" class="open-quick-ing-btn"
+                                style="background: none; border: none; color: var(--color-primary); cursor: pointer; font-size: 0.85rem; font-weight: 600; padding: 0;">✨
+                                Missing an ingredient?</button>
                         </div>
+
+                        <div class="ingredients-container">
+                            <!-- FIXED: ONLY generate rows if we are in EDIT MODE and have saved data. Fresh steps start empty! -->
+                            <th:block th:if="${isEditMode and step.ingredients != null}">
+                                <div th:each="ing, ingStat : ${step.ingredients}" class="ingredient-row"
+                                    th:data-ing-index="${ingStat.index}"
+                                    style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                                    <select
+                                        th:name="|steps[${stepStat.index}].ingredients[${ingStat.index}].ingredientId|"
+                                        class="form-input" style="flex: 2.5;" required>
+                                        <option value="">-- Choose Ingredient --</option>
+                                        <option th:each="i : ${allIngredients}" th:value="${i.ingredientId}"
+                                            th:text="${i.ingredientName}"
+                                            th:selected="${i.ingredientId == ing.ingredientId}"></option>
+                                    </select>
+
+                                    <input type="number" step="0.01"
+                                        th:name="|steps[${stepStat.index}].ingredients[${ingStat.index}].amount|"
+                                        th:value="${ing.amount}" class="form-input" placeholder="Amount"
+                                        style="flex: 1;" required />
+
+                                    <select
+                                        th:name="|steps[${stepStat.index}].ingredients[${ingStat.index}].measurementId|"
+                                        class="form-input" style="flex: 1.5;" required>
+                                        <option value="">-- Unit --</option>
+                                        <option th:each="m : ${measurements}" th:value="${m.measurementId}"
+                                            th:text="${m.unitName}"
+                                            th:selected="${m.measurementId == ing.measurementId}"></option>
+                                    </select>
+
+                                    <input type="text"
+                                        th:name="|steps[${stepStat.index}].ingredients[${ingStat.index}].ingredientNote|"
+                                        th:value="${ing.ingredientNote}" class="form-input"
+                                        placeholder="Note (e.g., melted, chilled)" style="flex: 2;" />
+
+                                    <button type="button" class="btn remove-ing-btn"
+                                        style="width: auto; padding: 10px 14px; font-size: 1rem; margin: 0; background-color: #e9ecef; color: var(--color-text-dark); border: 1px solid var(--color-border-input); border-radius: 6px;">×</button>
+                                </div>
+                            </th:block>
+                        </div>
+
+                        <!-- HIGH-VISIBILITY DESIGN: Button styled with an accent border and hover color weights -->
                         <button type="button" class="btn add-ingredient-btn"
-                            style="width: auto; padding: 6px 12px; font-size: 0.85rem; background-color: var(--color-bg-body); border: 1px solid var(--color-border); color: var(--color-text-dark); margin-top: 4px;">+
-                            Add Ingredient to Step</button>
+                            style="width: auto; padding: 8px 16px; font-size: 0.85rem; font-weight: 700; background-color: #f8f9fa; border: 2px solid var(--color-primary); color: var(--color-primary); margin-top: 6px; border-radius: 6px; transition: all 0.2s ease;">
+                            ➕ Add Ingredient to Step
+                        </button>
                     </div>
 
                 </div>
@@ -128,175 +138,173 @@
             <hr class="dashboard-divider" style="margin: 20px 0;" />
 
             <div class="form-group">
-                <label class="form-label" for="recipeNote">General Cookbook Notes</label>
+                <label class="form-label" for="recipeNote">General Recipe Notes</label>
                 <textarea th:field="*{recipeNote}" class="form-input" rows="2"
                     placeholder="Optional notes about presentation templates, pairing ideas, or storage parameters..."></textarea>
             </div>
 
-            <button type="submit" class="btn btn--primary" style="font-size: 1.1rem; padding: 14px;">Publish Recipe to
-                Collection</button>
+            <button type="submit" class="btn btn--primary" style="font-size: 1.1rem; padding: 14px;">Save
+                Recipe</button>
         </form>
     </main>
 
-    <!-- Asynchronous Missing Ingredient Registration Modal Panel Overlay -->
-    <dialog id="quickIngModal" class="admin-modal"
-        style="max-width: 400px; border-radius: 8px; border: 1px solid var(--color-border);">
-        <h3 style="margin-top: 0; margin-bottom: 12px; font-size: 1.25rem;">Suggest Missing Ingredient</h3>
-        <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 16px;">Can't find an item? Type it
-            below to add it to your dropdown layout row instantly.</p>
+    <!-- Native HTML5 Dialog Component for Quick Adding Missing Ingredients -->
+    <dialog id="quickIngredientModal" class="admin-modal">
+        <h3>Suggest a Missing Ingredient</h3>
+        <p style="font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 20px;">
+            Can't find your ingredient? Type it below to instantly add it to your selection drop-downs.
+            It will be saved as unverified until approved by a content moderator.
+        </p>
 
-        <div class="form-group">
-            <label class="form-label" for="quickIngName">Ingredient Name</label>
-            <input type="text" id="quickIngName" class="form-input" placeholder="e.g., Heavy Whipping Cream"
-                autocomplete="off" />
-            <div id="modal-error-msg" class="form-error-msg" style="display: none;"></div>
-        </div>
+        <!-- Error/Success feedback block inside the modal -->
+        <div id="modal-feedback-msg" class="form-error-msg" style="display: none; margin-bottom: 12px;"></div>
 
-        <div class="modal-actions-footer" style="margin-top: 20px;">
-            <button type="button" id="closeIngModalBtn" class="btn btn--cancel"
-                style="padding: 8px 14px; font-size: 0.9rem;">Cancel</button>
-            <button type="button" id="submitQuickIngBtn" class="btn btn--primary"
-                style="padding: 8px 14px; font-size: 0.9rem; width: auto;">+ Insert Option</button>
-        </div>
+        <form id="quickIngredientForm">
+            <div class="form-group">
+                <label class="form-label" for="quickIngredientName">Ingredient Name</label>
+                <input type="text" id="quickIngredientName" class="form-input" placeholder="e.g., Smoked Paprika"
+                    required />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="quickGroceryCategoryId">Grocery Section Category</label>
+                <select id="quickGroceryCategoryId" class="form-input" required>
+                    <option value="">-- Choose Category Section --</option>
+                    <!-- Iterate dynamically over your existing categories -->
+                    <option th:each="cat : ${groceryCategories}" th:value="${cat.groceryCategoryId}"
+                        th:text="${cat.categoryName}"></option>
+                </select>
+            </div>
+
+            <div class="modal-actions-footer">
+                <button type="button" id="closeQuickIngBtn" class="btn btn--cancel">Cancel</button>
+                <button type="submit" class="btn btn--primary">Add to Selection Dropdowns</button>
+            </div>
+        </form>
     </dialog>
 
     <footer th:replace="~{fragments/layout :: footer}"></footer>
 
     <!-- Dynamic Layout Array Reindexing Handler Script Framework -->
-    <!-- Dynamic Layout Array Reindexing Handler Script Framework -->
-    <script th:inline="none">
+    <script th:inline="javascript">
         $(document).ready(function () {
-            // Function to iterate and reset indices so Spring matches array fields perfectly on submission
+            var activeSelectDropdown = null; // Tracks which specific drop-down card requested the modal open
+            var modal = document.getElementById("quickIngredientModal");
+
+            // Function to re-index all inputs so Spring can parse arrays cleanly on submit
             function reindexForm() {
                 $("#steps-container .step-card").each(function (stepIdx) {
                     $(this).attr("data-step-index", stepIdx);
                     $(this).find(".step-number-label").text(stepIdx + 1);
+                    $(this).find(".remove-step-btn").toggle($("#steps-container .step-card").length > 1);
 
-                    // Show or hide instruction delete control based on card sizes
-                    var totalSteps = $("#steps-container .step-card").length;
-                    $(this).find(".remove-step-btn").toggle(totalSteps > 1);
-
-                    // Re-index Step text fields
                     $(this).find("textarea[name*='.instructionText']").attr("name", "steps[" + stepIdx + "].instructionText");
 
-                    // Re-index distinct child ingredient collections nested inside this specific card
                     $(this).find(".ingredient-row").each(function (ingIdx) {
                         $(this).attr("data-ing-index", ingIdx);
                         $(this).find("select[name*='.ingredientId']").attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].ingredientId");
                         $(this).find("input[name*='.amount']").attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].amount");
                         $(this).find("select[name*='.measurementId']").attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].measurementId");
                         $(this).find("input[name*='.ingredientNote']").attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].ingredientNote");
-
-                        // Only show rows close markers if there's more than 1 option item row inside this section
-                        var totalIngs = $(this).closest(".ingredients-container").find(".ingredient-row").length;
-                        $(this).find(".remove-ing-btn").toggle(totalIngs > 1);
+                        $(this).find(".remove-ing-btn").show();
                     });
                 });
             }
 
-            // Handler: Appending a New Instruction Step Card Block
+            // Add Step Card Row handler
             $("#add-step-btn").click(function () {
-                var firstStepCard = $("#steps-container .step-card").first();
-                var clonedCard = firstStepCard.clone();
-
-                // Clean out values from cloned form nodes
-                clonedCard.find("textarea, input").val("");
-                clonedCard.find("select").prop("selectedIndex", 0);
-
-                // Purge extra duplicate ingredient rows leaving only one clean master entry row template
-                clonedCard.find(".ingredients-container .ingredient-row").not(":first").remove();
-
-                $("#steps-container").append(clonedCard);
+                var firstCard = $("#steps-container .step-card").first();
+                var clone = firstCard.clone();
+                clone.find("textarea, input").val("");
+                clone.find("select").prop("selectedIndex", 0);
+                clone.find(".ingredients-container .ingredient-row").not(":first").remove();
+                $("#steps-container").append(clone);
                 reindexForm();
             });
 
-            // Handler: Removing an Instruction Step Card Block
             $(document).on("click", ".remove-step-btn", function () {
                 $(this).closest(".step-card").remove();
                 reindexForm();
             });
 
-            // Handler: Appending a New Ingredient Row Box within a Scoped Step
+            // Add Ingredient Row within a step card handler
             $(document).on("click", ".add-ingredient-btn", function () {
-                var targetContainer = $(this).siblings(".ingredients-container");
-                var firstIngredientRow = targetContainer.find(".ingredient-row").first();
-                var clonedRow = firstIngredientRow.clone();
-
-                clonedRow.find("input").val("");
-                clonedRow.find("select").prop("selectedIndex", 0);
-                targetContainer.append(clonedRow);
+                var container = $(this).siblings(".ingredients-container");
+                var firstRow = container.find(".ingredient-row").first();
+                var clone = firstRow.clone();
+                clone.find("input").val("");
+                clone.find("select").prop("selectedIndex", 0);
+                container.append(clone);
                 reindexForm();
             });
 
-            // Handler: Removing an Ingredient Row Box within a Scoped Step
             $(document).on("click", ".remove-ing-btn", function () {
-                var containerContext = $(this).closest(".ingredients-container");
                 $(this).closest(".ingredient-row").remove();
                 reindexForm();
             });
 
-            // Initialize form layout markers on load
-            reindexForm();
-
-            // Native Modal DOM Management reference pointers
-            var ingModal = document.getElementById("quickIngModal");
-            var activeTargetSelect = null; // Tracks which specific selector triggered the call
-
-            // Open Modal Handler Hook
+            // --- NEW: MODAL MODERATION TRIGGER MANAGEMENT HOOKS ---
             $(document).on("click", ".open-quick-ing-btn", function () {
-                // Find the closest select dropdown within this row block to pre-target selection changes later
-                activeTargetSelect = $(this).closest(".ingredients-section").find(".ingredient-row select").last();
-                $("#quickIngName").val("");
-                $("#modal-error-msg").hide();
-                ingModal.showModal();
+                // Track the sibling select dropdown relative to this specific text button click
+                activeSelectDropdown = $(this).siblings(".ingredients-container").find("select[name*='.ingredientId']");
+
+                $("#quickIngredientName").val("");
+                $("#quickGroceryCategoryId").val("");
+                $("#modal-feedback-msg").hide().text("");
+
+                modal.showModal(); // Trigger native dialog view layer overlay
             });
 
-            $("#closeIngModalBtn").click(function () {
-                ingModal.close();
+            $("#closeQuickIngBtn").click(function () {
+                modal.close();
             });
 
-            // AJAX Submission Handler Flow
-            $("#submitQuickIngBtn").click(function () {
-                var ingName = $("#quickIngName").val();
-                if (!ingName || ingName.trim() === "") {
-                    $("#modal-error-msg").text("Please enter a valid name.").show();
-                    return;
-                }
+            $("#quickIngredientForm").submit(function (e) {
+                e.preventDefault();
+                $("#modal-feedback-msg").hide();
+
+                var ingredientName = $("#quickIngredientName").val();
+                var categoryId = $("#quickGroceryCategoryId").val();
+
+                // --- FIXED: Read the cookie directly from the browser window memory interface ---
+                var token = document.cookie.split('; ')
+                    .find(row => row.startsWith('XSRF-TOKEN='))
+                    ?.split('=')[1];
+
+                var header = "X-XSRF-TOKEN"; // The header token key Spring's CookieCsrfTokenRepository listens for
 
                 $.ajax({
                     url: '/recipes/ingredients/quick-add',
                     type: 'POST',
-                    data: { name: ingName },
+                    data: {
+                        name: ingredientName,
+                        groceryCategoryId: categoryId
+                    },
+                    beforeSend: function (xhr) {
+                        if (token) {
+                            xhr.setRequestHeader(header, decodeURIComponent(token));
+                        }
+                    },
                     success: function (response) {
                         if (response.success) {
-                            // 1. Generate new drop-down option node
-                            var newOption = new Option(response.name, response.id, true, true);
-
-                            // 2. Append option into EVERY selector pool across your instruction steps
+                            var newOption = new Option(response.ingredientName, response.ingredientId, true, true);
                             $("select[name*='.ingredientId']").each(function () {
-                                var selectEl = $(this);
-                                if (selectEl.find("option[value='" + response.id + "']").length === 0) {
-                                    selectEl.append(new Option(response.name, response.id, false, false));
-                                }
+                                $(this).append(new Option(response.ingredientName, response.ingredientId, false, false));
                             });
-
-                            // 3. Pre-select it on the row that triggered the suggestion wizard popup
-                            if (activeTargetSelect) {
-                                activeTargetSelect.val(response.id);
+                            if (activeSelectDropdown) {
+                                activeSelectDropdown.val(response.ingredientId);
                             }
-
-                            ingModal.close();
+                            modal.close();
                         } else {
-                            $("#modal-error-msg").text(response.message).show();
+                            $("#modal-feedback-msg").text(response.message).show();
                         }
                     },
                     error: function (xhr) {
-                        var msg = xhr.responseJSON ? xhr.responseJSON.message : "Error adding option.";
-                        $("#modal-error-msg").text(msg).show();
+                        var errorResponse = xhr.responseJSON ? xhr.responseJSON.message : "Error adding ingredient.";
+                        $("#modal-feedback-msg").text(errorResponse).show();
                     }
                 });
             });
-
         });
     </script>
 </body>
