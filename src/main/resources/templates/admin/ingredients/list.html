@@ -13,6 +13,11 @@
            ========================================================================== -->
         <div
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 20px; flex-wrap: wrap; width: 100%;">
+            <div th:if="${param.retracted}"
+                style="padding: 12px 16px; margin-bottom: 20px; border-radius: 6px; border: 1px solid #ffeeba; background-color: #fff3cd; color: #856404; font-weight: 600; font-size: 0.95rem;">
+                Ingredient successfully retracted from global view and returned to the moderation queue!
+            </div>
+
 
             <!-- LEFT PANEL: Header Titles Block -->
             <div style="flex: 1; min-width: 280px;">
@@ -95,15 +100,15 @@
                                     Edit
                                 </a>
 
-                                <!-- ACTION 2: HARD DELETE CONTROLLER (HTML5 Form Association Pattern) -->
-                                <form th:id="'delete-form-' + ${ing.ingredientId}"
-                                    th:action="@{/admin/ingredients/delete/{id}(id=${ing.ingredientId})}" method="post"
-                                    onsubmit="return confirm('Are you sure you want to permanently delete this ingredient? This will break any recipes using it!');"
+                                <!-- ACTION 2: RETRACT ACTION TRIGGER -->
+                                <form th:id="'retract-form-' + ${ing.ingredientId}"
+                                    th:action="@{/admin/ingredients/retract/{id}(id=${ing.ingredientId})}" method="post"
+                                    onsubmit="return confirm('Retract this ingredient? It will be removed from public view and sent back to the moderation queue.');"
                                     style="display:none;"></form>
 
-                                <button type="submit" th:form="'delete-form-' + ${ing.ingredientId}" class="btn"
-                                    style="background-color: var(--color-danger-bg); color: var(--color-danger-raw); border: 1px solid var(--color-danger-border); padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; cursor: pointer; font-weight: 600;">
-                                    Delete
+                                <button type="submit" th:form="'retract-form-' + ${ing.ingredientId}" class="btn"
+                                    style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; cursor: pointer; font-weight: 600;">
+                                    Retract
                                 </button>
 
                             </div>

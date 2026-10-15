@@ -167,4 +167,18 @@ public class IngredientManagementController {
             return "redirect:/admin/ingredients/list?error=createFailed";
         }
     }
+
+    /**
+     * Retracts an approved ingredient and places it back into the moderation queue
+     * Maps to: POST /admin/ingredients/retract/{id}
+     */
+    @PostMapping("/retract/{id}") // ◄ Renamed from /delete/{id}
+    public String retractApprovedIngredient(@PathVariable("id") Integer id) {
+        try {
+            ingredientService.retractIngredientFromGlobalPool(id);
+            return "redirect:/admin/ingredients/list?retracted=true";
+        } catch (Exception e) {
+            return "redirect:/admin/ingredients/list?error=retractFailed";
+        }
+    }
 }

@@ -227,14 +227,34 @@
                 reindexForm();
             });
 
-            // Add Ingredient Row within a step card handler
+
             $(document).on("click", ".add-ingredient-btn", function () {
-                var container = $(this).siblings(".ingredients-container");
-                var firstRow = container.find(".ingredient-row").first();
-                var clone = firstRow.clone();
-                clone.find("input").val("");
-                clone.find("select").prop("selectedIndex", 0);
-                container.append(clone);
+                // 1. Locate the container target inside this specific step card boundary cleanly
+                var container = $(this).closest(".step-card").find(".ingredients-container");
+
+                // 2. Self-contained HTML row literal snippet layout matching your styling tokens exactly
+                var newRowHtml = `
+                    <div class="ingredient-row" style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                        <select class="form-input" style="flex: 2.5;" required>
+                            <option value="">-- Choose Ingredient --</option>
+                            ${$('#allIngredients-pool-source').html() || ''}
+                        </select>
+
+                        <input type="number" step="0.01" class="form-input" placeholder="Amount" style="flex: 1;" required />
+
+                        <select class="form-input" style="flex: 1.5;" required>
+                            <option value="">-- Unit --</option>
+                            ${$('#measurements-pool-source').html() || ''}
+                        </select>
+
+                        <input type="text" class="form-input" placeholder="Note (e.g., melted, chilled)" style="flex: 2;" />
+
+                        <button type="button" class="btn remove-ing-btn" style="width: auto; padding: 10px 14px; font-size: 1rem; margin: 0; background-color: #e9ecef; color: var(--color-text-dark); border: 1px solid var(--color-border-input); border-radius: 6px;">×</button>
+                    </div>
+                `;
+
+                // 3. Append to our empty container and trigger your re-indexing script handler
+                container.append(newRowHtml);
                 reindexForm();
             });
 

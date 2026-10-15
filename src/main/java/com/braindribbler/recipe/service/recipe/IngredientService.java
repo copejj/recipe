@@ -186,4 +186,19 @@ public class IngredientService {
         return ingredientRepository.save(ingredient);
     }
 
+    /**
+     * Retracts an ingredient from global pools and drops it back into the
+     * moderation queue
+     * without breaking database relationships.
+     */
+    @Transactional
+    public void retractIngredientFromGlobalPool(Integer ingredientId) {
+        Ingredient ingredient = ingredientRepository.findById(ingredientId)
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException(
+                        "Ingredient not found with ID: " + ingredientId));
+
+        // Demote tracking flag parameter
+        ingredient.setIsVerified(false);
+        ingredientRepository.save(ingredient);
+    }
 }
