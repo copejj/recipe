@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RecipeForm {
+    private Integer recipeId;
     private String title;
     private String description;
     private Integer servings;
@@ -17,6 +18,14 @@ public class RecipeForm {
     }
 
     // Getters and Setters...
+    public Integer getRecipeId() {
+        return recipeId;
+    }
+
+    public void setRecipeId(Integer recipeId) {
+        this.recipeId = recipeId;
+    }
+
     public String getTitle() {
         return title;
     }

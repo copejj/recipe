@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" lang="en">
+
+<head
+    th:replace="~{fragments/layout :: html_head(${ingredient.ingredientId != null} ? 'Edit Ingredient' : 'Add New Ingredient')}">
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <main class="page-card"
+        style="max-width: 600px; margin: 40px auto; padding: 24px; border: 1px solid var(--color-border); border-radius: 8px; background-color: var(--color-bg-card);">
+        <h1 class="page-title"
+            th:text="${ingredient.ingredientId != null} ? 'Modify Ingredient Profile' : 'Add Master Ingredient'">Add
+            Master Ingredient</h1>
+        <p class="page-subtitle"
+            th:text="${ingredient.ingredientId != null} ? 'Update global lookup properties or fix lingering typos for this ingredient.' : 'Manually inject a pre-verified food definition straight into the global lookup pool.'">
+        </p>
+
+        <!-- Dynamic Action Route Binding Switch -->
+        <form
+            th:action="${ingredient.ingredientId != null} ? @{/admin/ingredients/edit/{id}(id=${ingredient.ingredientId})} : @{/admin/ingredients/add}"
+            method="post" style="margin-top: 24px;">
+
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label" for="ingredientName"
+                    style="display:block; margin-bottom:6px; font-weight:600;">Ingredient Master Name</label>
+                <input type="text" id="ingredientName" name="ingredientName" th:value="${ingredient.ingredientName}"
+                    class="form-input" style="width:100%; padding:10px;" required />
+            </div>
+
+            <div class="form-group" style="margin-bottom: 24px;">
+                <label class="form-label" for="groceryCategoryId"
+                    style="display:block; margin-bottom:6px; font-weight:600;">Grocery Section Category</label>
+                <select id="groceryCategoryId" name="groceryCategoryId" class="form-input"
+                    style="width:100%; padding:10px;" required>
+                    <option value="">-- Select Category Section --</option>
+                    <option th:each="cat : ${groceryCategories}" th:value="${cat.groceryCategoryId}"
+                        th:text="${cat.categoryName}"
+                        th:selected="${ingredient.groceryCategory != null and cat.groceryCategoryId == ingredient.groceryCategory.groceryCategoryId}">
+                    </option>
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 12px;">
+                <button type="submit" class="btn"
+                    style="background-color: var(--color-primary); color: white; width: auto; padding: 10px 20px; font-weight:700; border-radius:6px; border:none; cursor:pointer;">Save
+                    Global Changes</button>
+                <a th:href="@{/admin/ingredients/list}" class="btn"
+                    style="background-color: #e9ecef; color: var(--color-text-dark); text-decoration: none; width: auto; padding: 10px 20px; border-radius: 6px; text-align: center; border:1px solid var(--color-border);">Cancel</a>
+            </div>
+        </form>
+    </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
+
+<head th:replace="~{fragments/layout :: html_head('Master Ingredient Inventory')}"></head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <main class="page-card" style="max-width: 1100px; margin: 40px auto; padding: 24px;">
+
+        <!-- ==========================================================================
+           UNIFIED RESPONSIVE HEADER GRID (MATCHES CATEGORIES SELECTION MATRIX)
+           ========================================================================== -->
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 20px; flex-wrap: wrap; width: 100%;">
+            <div th:if="${param.retracted}"
+                style="padding: 12px 16px; margin-bottom: 20px; border-radius: 6px; border: 1px solid #ffeeba; background-color: #fff3cd; color: #856404; font-weight: 600; font-size: 0.95rem;">
+                Ingredient successfully retracted from global view and returned to the moderation queue!
+            </div>
+
+
+            <!-- LEFT PANEL: Header Titles Block -->
+            <div style="flex: 1; min-width: 280px;">
+                <h1 class="page-title" style="margin: 0 0 6px 0; font-size: 1.75rem; color: var(--color-text-dark);">
+                    Master Ingredient Inventory</h1>
+                <p class="page-subtitle" style="margin: 0; color: var(--color-text-muted); font-size: 0.95rem;">View,
+                    modify, or remove verified ingredients globally active in the application database.</p>
+            </div>
+
+            <!-- RIGHT PANEL: Symmetric Action Buttons Tray (Split Symmetrically) -->
+            <div
+                style="display: flex; gap: 12px; min-width: 480px; flex: 1; justify-content: flex-end; align-items: flex-end; flex-wrap: wrap;">
+
+                <!-- BUTTON 1: RETURN TO PENDING MODERATION QUEUE (Flex: 1 forces equal symmetry) -->
+                <a th:href="@{/admin/ingredients}" class="btn"
+                    style="flex: 1; text-align: center; background-color: var(--color-bg-body); color: var(--color-text-dark); border: 1px solid var(--color-border); text-decoration: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; font-size: 0.9rem; white-space: nowrap; line-height: 20px; height: 44px; display: inline-flex; align-items: center; justify-content: center;">
+                    ← Back to Queue
+                </a>
+
+                <!-- BUTTON 2: ROUTE TO STORE CATEGORIES AISLE MANAGER (Flex: 1 forces equal symmetry) -->
+                <a th:href="@{/admin/categories}" class="btn"
+                    style="flex: 1; text-align: center; background-color: var(--color-bg-body); color: var(--color-primary); border: 1px solid var(--color-primary); text-decoration: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; font-size: 0.9rem; white-space: nowrap; line-height: 20px; height: 44px; display: inline-flex; align-items: center; justify-content: center;">
+                    🛒 Manage Aisles Order
+                </a>
+
+                <!-- BUTTON 3: + MANUAL CREATE SELECTION PORTAL (Flex: 1 forces equal symmetry) -->
+                <a th:href="@{/admin/ingredients/add}" class="btn btn--primary"
+                    style="flex: 1; text-align: center; text-decoration: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; font-size: 0.9rem; white-space: nowrap; line-height: 20px; height: 44px; display: inline-flex; align-items: center; justify-content: center;">
+                    + Add Ingredient
+                </a>
+
+            </div>
+        </div>
+
+        <!-- Feedback Alert Status Toasts -->
+        <div th:if="${param.updated}"
+            style="padding:12px; margin-bottom:20px; background-color:#e6f4ea; border:1px solid #bce5c6; color:#137333; font-weight:600; border-radius:6px;">
+            ✏️ Ingredient details updated successfully!</div>
+        <div th:if="${param.deleted}"
+            style="padding:12px; margin-bottom:20px; background-color:#f8d7da; border:1px solid #f5c6cb; color:#721c24; font-weight:600; border-radius:6px;">
+            🗑️ Ingredient successfully purged from the global dictionary.</div>
+        <div th:if="${param.error != null and param.error == 'inUse'}"
+            style="padding:12px; margin-bottom:20px; background-color:#fff3cd; border:1px solid #ffeeba; color:#856404; font-weight:600; border-radius:6px;">
+            ⚠️ Relational Violation: This ingredient is currently bound to active recipe steps and cannot be deleted!
+            Try merging it instead.</div>
+
+        <!-- ==========================================================================
+           DATA REPLACEMENT INDEX GRID MATRIX (ALIGNED DESIGN SYSTEM TOKENS)
+           ========================================================================== -->
+        <div class="table-responsive-wrapper" style="margin-top: 16px;">
+            <table id="masterIngredientsTable" class="dataTable stripe row-border hover"
+                style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+                <thead>
+                    <tr
+                        style="background-color: var(--color-bg-body); border-bottom: 2px solid var(--color-border); color: var(--color-text-dark);">
+                        <th style="padding: 12px; text-align: left; width: 10%;">ID</th>
+                        <th style="padding: 12px; text-align: left; width: 45%;">Ingredient Name</th>
+                        <th style="padding: 12px; text-align: left; width: 25%;">Grocery Category</th>
+                        <th style="padding: 12px; text-align: right; width: 20%;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="ing : ${ingredients}"
+                        style="border-bottom: 1px solid var(--color-border); transition: background-color 0.2s;">
+                        <td style="padding: 12px;" th:text="${ing.ingredientId}">1</td>
+                        <td style="padding: 12px;"><strong th:text="${ing.ingredientName}"
+                                style="color: var(--color-text-dark);">Water</strong></td>
+                        <td style="padding: 12px;">
+                            <span class="badge-permission"
+                                style="background-color: #e9ecef; color: var(--color-text-dark); padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;"
+                                th:text="${ing.groceryCategory != null ? ing.groceryCategory.categoryName : 'Unassigned'}">Beverages</span>
+                        </td>
+                        <td style="padding: 12px; text-align: right;">
+                            <div
+                                style="display: inline-flex; gap: 8px; justify-content: flex-end; align-items: center;">
+
+                                <!-- ACTION 1: EDIT REDIRECTION GATEWAY LINK -->
+                                <a th:href="@{/admin/ingredients/edit/{id}(id=${ing.ingredientId})}" class="btn"
+                                    style="background-color: #e9ecef; color: var(--color-text-dark); padding: 6px 12px; font-size: 0.85rem; text-decoration: none; border-radius: 4px; border: 1px solid var(--color-border); font-weight: 500;">
+                                    Edit
+                                </a>
+
+                                <!-- ACTION 2: RETRACT ACTION TRIGGER -->
+                                <form th:id="'retract-form-' + ${ing.ingredientId}"
+                                    th:action="@{/admin/ingredients/retract/{id}(id=${ing.ingredientId})}" method="post"
+                                    onsubmit="return confirm('Retract this ingredient? It will be removed from public view and sent back to the moderation queue.');"
+                                    style="display:none;"></form>
+
+                                <button type="submit" th:form="'retract-form-' + ${ing.ingredientId}" class="btn"
+                                    style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; cursor: pointer; font-weight: 600;">
+                                    Retract
+                                </button>
+
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+    <!-- Initialize Integrated DataTables Interactivity Layer -->
+    <script th:inline="none">
+        $(document).ready(function () {
+            $('#masterIngredientsTable').DataTable({
+                "order": [[1, "asc"]], // Default sorting set alphabetically by name
+                "pageLength": 25,
+                "columnDefs": [
+                    { "orderable": false, "targets": 3 } // Protect action triggers from sorting layout loops
+                ]
+            });
+        });
+    </script>
+</body>
+
+</html>

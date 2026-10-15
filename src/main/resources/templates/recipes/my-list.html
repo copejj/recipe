@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
+
+<head th:replace="~{fragments/layout :: html_head('My Saved Recipes')}"></head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <main class="page-card page-card--audit-layout">
+        <div class="admin-header-flex"
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <div>
+                <h1 class="page-title">My Cookbook</h1>
+                <p class="page-subtitle" style="margin-bottom:0;">Browse, review, or modify your personalized library of
+                    published recipe formulations.</p>
+            </div>
+            <!-- Quick Add Action Button -->
+            <a th:href="@{/recipes/create}" class="btn btn--primary"
+                style="width: auto; padding: 10px 16px; text-decoration: none; border-radius: 6px;">+ Add New Recipe</a>
+        </div>
+
+        <!-- Responsive Interactive Data Table -->
+        <div class="table-responsive-wrapper" style="margin-top: 24px;">
+            <table id="myRecipesTable" class="dataTable stripe hover row-border">
+                <thead>
+                    <tr>
+                        <th style="width: 8%;">ID</th>
+                        <th>Recipe Title</th>
+                        <th>Description Summary</th>
+                        <th style="width: 12%;">Servings</th>
+                        <th style="width: 15%;">Visibility</th>
+                        <th style="text-align: right; white-space: nowrap; width: 15%;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="recipe : ${recipes}">
+                        <td class="audit-font-monospace" th:text="${recipe.recipeId}">1</td>
+                        <td th:text="${recipe.title}" style="font-weight: 700; color: var(--color-text-dark);">
+                            Recipe Name Placeholder
+                        </td>
+                        <td th:text="${recipe.description != null && !recipe.description.isEmpty() ? recipe.description : 'No description provided.'}"
+                            style="color: var(--color-text-muted); font-size: 0.9rem;">
+                            Recipe description summary text detail block.
+                        </td>
+                        <td>
+                            <span th:text="${recipe.servings != null ? recipe.servings : '—'}">4</span> ppl
+                        </td>
+                        <td>
+                            <!-- Style badge dynamically matching your security privacy tables mapping parameters -->
+                            <span class="badge-permission"
+                                th:text="${recipe.recipeVisibility != null ? recipe.recipeVisibility.visibilityName : 'Public'}">Public</span>
+                        </td>
+                        <td class="actions-cell" style="text-align: right; white-space: nowrap;">
+                            <div class="admin-btn-group"
+                                style="justify-content: flex-end; display: inline-flex; gap: 6px;">
+                                <a th:href="@{/recipes/view/{id}(id=${recipe.recipeId})}"
+                                    class="btn btn--table-action btn--admin-small"
+                                    style="background-color: var(--color-bg-body); color: var(--color-text-dark); text-decoration: none; border: 1px solid var(--color-border);">
+                                    👁 View
+                                </a>
+                                <a th:href="@{/recipes/edit/{id}(id=${recipe.recipeId})}"
+                                    class="btn btn--table-action btn--admin-small"
+                                    style="background-color: var(--color-profile-dark-btn); color: white; text-decoration: none;">
+                                    📝 Edit
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+    <!-- Initialize Integrated DataTables Interactivity Layer -->
+    <!-- th:inline="none" tells Thymeleaf to bypass bracket checks on this script -->
+    <script th:inline="none">
+        $(document).ready(function () {
+            $('#myRecipesTable').DataTable({
+                "order": [[0, "desc"]], // Now processes natively in the browser without Thymeleaf crashing
+                "pageLength": 10,
+                "columnDefs": [
+                    { "orderable": false, "targets": 5 }
+                ]
+            });
+        });
+    </script>
+
+</body>
+
+</html>

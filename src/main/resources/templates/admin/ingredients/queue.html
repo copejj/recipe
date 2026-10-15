@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
+
+<head>
+    <div th:replace="~{fragments/layout :: html_head('Ingredient Moderation Queue')}"></div>
+    <meta name="_csrf" th:content="${_csrf != null ? _csrf.token : ''}" />
+    <meta name="_csrf_header" th:content="${_csrf != null ? _csrf.headerName : 'X-CSRF-TOKEN'}" />
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <main class="page-card" style="max-width: 1200px; margin: 40px auto;">
+        <h1 class="page-title">Ingredient Verification Queue</h1>
+        <p class="page-subtitle">Review crowd-sourced ingredient suggestions, verify food database definitions, or merge
+            duplicate row constraints.</p>
+
+        <!-- Asynchronous Dynamic Notification Banners -->
+        <div id="async-toast-alert" class="status-text--active"
+            style="display: none; padding: 12px; margin-bottom: 20px; border-radius: 6px; border: 1px solid #bce5c6; background-color: #e6f4ea; font-weight: 600;">
+        </div>
+
+        <!-- Clean-Slate State if Queue is Empty -->
+        <div id="empty-queue-state"
+            th:style="${pendingIngredients == null or pendingIngredients.isEmpty()} ? 'display: block;' : 'display: none;'"
+            style="text-align: center; padding: 40px; border: 2px dashed var(--color-border); border-radius: 8px; background-color: var(--color-bg-card);">
+            <span style="font-size: 2.5rem;">🎉</span>
+            <h3 style="margin-top: 10px; color: var(--color-text-dark);">Queue is pristine!</h3>
+            <p style="color: var(--color-text-muted); margin: 0;">No unverified recipe ingredients require review right
+                now.</p>
+        </div>
+
+        <!-- Multi-attribute Data Grid Container Table -->
+        <div id="queue-table-wrapper"
+            th:style="${pendingIngredients != null and !pendingIngredients.isEmpty()} ? 'display: block;' : 'display: none;'"
+            class="table-responsive-wrapper" style="margin-top: 20px;">
+            <table class="dataTable stripe row-border" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background-color: var(--color-bg-body); border-bottom: 2px solid var(--color-border);">
+                        <th style="padding: 12px; text-align: left; width: 25%;">Suggested Ingredient</th>
+                        <th style="padding: 12px; text-align: left; width: 20%;">Grocery Category</th>
+                        <th style="padding: 12px; text-align: left; width: 20%;">Submitted By</th>
+                        <th style="padding: 12px; text-align: right; width: 35%;">Action Dashboard Controls</th>
+                    </tr>
+                </thead>
+                <tbody id="queue-tbody">
+                    <!-- Inside templates/admin/ingredients/queue.html - Update your row loops to look exactly like this -->
+                    <tr th:each="ing : ${pendingIngredients}" th:id="'ing-row-' + ${ing.getIngredientId()}"
+                        style="border-bottom: 1px solid var(--color-border); transition: all 0.3s ease;">
+
+                        <!-- COLUMN 1: SELECTABLE & EDITABLE INGREDIENT NAME INPUT -->
+                        <td style="padding: 10px 12px;">
+                            <input type="text" th:id="'ing-name-input-' + ${ing.getIngredientId()}"
+                                th:value="${ing.getIngredientName()}" class="form-input"
+                                style="font-weight: 700; font-size: 1rem; width: 100%; margin: 0; padding: 6px 10px; border-radius: 4px;" />
+                        </td>
+
+                        <!-- COLUMN 2: SELECTABLE & EDITABLE GROCERY CATEGORY DROPDOWN -->
+                        <td style="padding: 10px 12px;">
+                            <select th:id="'ing-category-select-' + ${ing.getIngredientId()}" class="form-input"
+                                style="width: 100%; margin: 0; padding: 6px; font-size: 0.9rem; border-radius: 4px;">
+                                <!-- Loop through grocery categories passed from controller -->
+                                <option th:each="cat : ${groceryCategories}" th:value="${cat.groceryCategoryId}"
+                                    th:text="${cat.categoryName}"
+                                    th:selected="${cat.categoryName == ing.getCategoryName()}">
+                                </option>
+                            </select>
+                        </td>
+
+                        <td style="padding: 14px 12px; color: var(--color-text-muted);"
+                            th:text="${ing.getCreatedByUsername() != null ? ing.getCreatedByUsername() : 'Anonymous Chef'}">
+                            jcope
+                        </td>
+
+                        <td style="padding: 14px 12px; text-align: right;">
+                            <div
+                                style="display: inline-flex; gap: 12px; align-items: center; justify-content: flex-end;">
+
+                                <!-- 1. ASYNC APPROVE TRIGGER BUTTON (Captures updated parameters dynamically) -->
+                                <button type="button" class="btn async-approve-btn"
+                                    th:data-id="${ing.getIngredientId()}"
+                                    style="white-space: nowrap; background-color: var(--color-primary); color: white; padding: 8px 14px; font-size: 0.85rem; font-weight: 700; border-radius: 4px; border: none; cursor: pointer;">
+                                    Verify & Approve
+                                </button>
+
+                                <!-- 2. ASYNC MERGE TRIGGER CONTROL BOX -->
+                                <div style="display: inline-flex; gap: 6px; align-items: center; margin: 0;">
+                                    <select th:id="'merge-target-' + ${ing.getIngredientId()}" class="form-input"
+                                        style="padding: 6px; font-size: 0.85rem; width: 150px; margin: 0;" required>
+                                        <option value="">-- Merge Into... --</option>
+                                        <option th:each="verified : ${verifiedIngredients}"
+                                            th:if="${verified.ingredientId != ing.getIngredientId()}"
+                                            th:value="${verified.ingredientId}" th:text="${verified.ingredientName}">
+                                        </option>
+                                    </select>
+                                    <button type="button" class="btn async-merge-btn"
+                                        th:data-id="${ing.getIngredientId()}"
+                                        style="white-space: nowrap; background-color: #e9ecef; color: var(--color-danger-raw); border: 1px solid var(--color-border); padding: 8px 12px; font-size: 0.85rem; font-weight: 700; border-radius: 4px; cursor: pointer;">
+                                        Dismiss & Merge
+                                    </button>
+                                </div>
+
+                            </div>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+    <!-- INTERACTIVE AJAX ORCHESTRATION LAYER -->
+    <script th:inline="none">
+        $(document).ready(function () {
+            // Eagerly inject CSRF header authorization parameters into all AJAX requests
+            $(document).ajaxSend(function (e, xhr, options) {
+                var token = $("meta[name='_csrf']").attr("content");
+                var header = $("meta[name='_csrf_header']").attr("content");
+                if (header && token) {
+                    xhr.setRequestHeader(header, token);
+                }
+            });
+
+            function showToast(message, isError = false) {
+                var toast = $("#async-toast-alert");
+                toast.text(message).css({
+                    "background-color": isError ? "#fce8e6" : "#e6f4ea",
+                    "border-color": isError ? "#f4c7c3" : "#bce5c6",
+                    "color": isError ? "#c5221f" : "#137333"
+                }).fadeIn().delay(3000).fadeOut();
+            }
+
+            function checkQueueCount() {
+                if ($("#queue-tbody tr:visible").length === 0) {
+                    $("#queue-table-wrapper").hide();
+                    $("#empty-queue-state").fadeIn();
+                }
+            }
+
+            // Locate this block inside the script tag of queue.html and update it:
+            $(document).on("click", ".async-approve-btn", function () {
+                var ingredientId = $(this).attr("data-id");
+                var targetRow = $("#ing-row-" + ingredientId);
+
+                // 🔥 DYNAMIC OVERRIDE: Pull current input values straight from the editable rows
+                var currentTypedName = $("#ing-name-input-" + ingredientId).val();
+                var currentSelectedCategory = $("#ing-category-select-" + ingredientId).val();
+
+                $.ajax({
+                    url: '/admin/ingredients/approve/' + ingredientId,
+                    type: 'POST',
+                    data: {
+                        updatedName: currentTypedName,
+                        updatedCategoryId: currentSelectedCategory
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            targetRow.css("background-color", "#e6f4ea").fadeOut(400, function () {
+                                $(this).remove();
+                                checkQueueCount();
+                            });
+                            showToast(response.message);
+                        }
+                    },
+                    error: function (xhr) {
+                        showToast("Failed to verify ingredient entry.", true);
+                    }
+                });
+            });
+
+            // Asynchronous Merge Action Hook Handler
+            $(document).on("click", ".async-merge-btn", function () {
+                var duplicateId = $(this).attr("data-id");
+                var targetId = $("#merge-target-" + duplicateId).val();
+                var targetRow = $("#ing-row-" + duplicateId);
+
+                if (!targetId) {
+                    showToast("Please choose a valid verification target profile to merge into.", true);
+                    return;
+                }
+
+                $.ajax({
+                    url: '/admin/ingredients/merge',
+                    type: 'POST',
+                    data: {
+                        duplicateId: duplicateId,
+                        targetId: targetId
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            targetRow.css("background-color", "#e8f0fe").fadeOut(400, function () {
+                                $(this).remove();
+                                checkQueueCount();
+                            });
+                            showToast(response.message);
+                        }
+                    },
+                    error: function (xhr) {
+                        showToast("Failed to merge duplicate selection.", true);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

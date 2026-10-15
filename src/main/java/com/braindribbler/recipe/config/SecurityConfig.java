@@ -54,35 +54,51 @@ public class SecurityConfig {
                 authProvider.setPasswordEncoder(passwordEncoder);
                 authProvider.setHideUserNotFoundExceptions(false);
 
+                // --- NEW: Handle raw token values when working with cookie repositories ---
+                org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler requestHandler = new org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler();
+                // By default, Spring Security 6 uses a XORed token handler which causes
+                // mismatches with raw cookies
+                requestHandler.setCsrfRequestAttributeName(null);
+
                 http
                                 .csrf(csrf -> csrf
-                                                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                                                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                                                .csrfTokenRequestHandler(requestHandler)) // ◄ FIXES COOKIE TOKEN
+                                                                                          // MISMATCH
+
+                                // --- FIXED: Explicit type assignment ensures seamless compilation ---
+                                .addFilterAfter((jakarta.servlet.Filter) (request, response, chain) -> {
+                                        org.springframework.security.web.csrf.CsrfToken csrfToken = (org.springframework.security.web.csrf.CsrfToken) request
+                                                        .getAttribute(org.springframework.security.web.csrf.CsrfToken.class
+                                                                        .getName());
+                                        if (csrfToken != null) {
+                                                csrfToken.getToken(); // Forces immediate cookie synchronization
+                                        }
+                                        chain.doFilter(request, response);
+                                }, org.springframework.security.web.csrf.CsrfFilter.class)
+
                                 .authenticationProvider(authProvider)
                                 .authorizeHttpRequests(auth -> auth
                                                 .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.FORWARD)
                                                 .permitAll()
-
-                                                // Public endpoints and assets
                                                 .requestMatchers("/error").permitAll()
                                                 .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**")
                                                 .permitAll()
                                                 .requestMatchers("/", "/search", "/register", "/login", "/verify",
-                                                                "/error", "/forgot-password", "/reset-password")
+                                                                "/forgot-password", "/reset-password")
                                                 .permitAll()
 
-                                                // Broad administrative catch-alls (Hybrid baseline mapping protection)
+                                                .requestMatchers("/admin/ingredients/**", "/admin/categories/**")
+                                                .hasAuthority("can_moderate_ingredients")
+
                                                 .requestMatchers("/admin/users/**").hasAuthority("can_manage_users")
                                                 .requestMatchers("/admin/roles/**").hasAuthority("can_manage_users")
                                                 .anyRequest().authenticated())
-
                                 .formLogin(form -> form
                                                 .loginPage("/login")
                                                 .loginProcessingUrl("/login")
                                                 .defaultSuccessUrl("/dashboard", true)
                                                 .failureHandler((request, response, exception) -> {
-                                                        System.out.println("security failure: "
-                                                                        + exception.getClass().getName() + " - "
-                                                                        + exception.getMessage());
                                                         if (exception instanceof AuthenticationExceptions.IpBruteForceLockedException) {
                                                                 response.sendRedirect("/login?iplocked");
                                                         } else if (exception instanceof AuthenticationExceptions.AccountInactiveException) {
@@ -92,11 +108,6 @@ public class SecurityConfig {
                                                         } else if (exception instanceof BadCredentialsException) {
                                                                 response.sendRedirect("/login?error");
                                                         } else {
-                                                                System.err.println(
-                                                                                "CRITICAL SECURITY ERROR: Unexpected auth failure -> "
-                                                                                                + exception.getMessage());
-                                                                exception.printStackTrace();
-
                                                                 response.sendRedirect("/login?systemError");
                                                         }
                                                 })
@@ -110,4 +121,5 @@ public class SecurityConfig {
                                                 .permitAll());
                 return http.build();
         }
+
 }

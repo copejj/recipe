@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org" lang="en">
+
+<head th:replace="~{fragments/layout :: html_head('Store Layout Categories Manager')}"></head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <main class="page-card" style="max-width: 1100px; margin: 40px auto; padding: 24px;">
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 20px; flex-wrap: wrap; width: 100%;">
+
+            <!-- LEFT PANEL: Header Titles Block -->
+            <div style="flex: 1; min-width: 280px;">
+                <h1 class="page-title" style="margin: 0 0 6px 0; font-size: 1.75rem; color: var(--color-text-dark);">
+                    Grocery Sections Layout Core</h1>
+                <p class="page-subtitle" style="margin: 0; color: var(--color-text-muted); font-size: 0.95rem;">
+                    Organize and weigh store aisle display sequencing vectors to future-proof smart sorting shopping
+                    lists.</p>
+            </div>
+
+            <!-- RIGHT PANEL: Symmetric Action & Creation Row (Split Symmetrically) -->
+            <div
+                style="display: flex; gap: 12px; min-width: 480px; flex: 1; justify-content: flex-end; align-items: flex-end; flex-wrap: wrap;">
+
+                <!-- BUTTON 1: RETURN TO MASTER INVENTORY -->
+                <a th:href="@{/admin/ingredients/list}" class="btn"
+                    style="flex: 1; text-align: center; background-color: var(--color-bg-body); color: var(--color-text-dark); border: 1px solid var(--color-border); text-decoration: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; font-size: 0.9rem; white-space: nowrap; line-height: 20px; height: 44px; display: inline-flex; align-items: center; justify-content: center;">
+                    ← Return to Ingredients
+                </a>
+
+                <!-- CONSOLIDATED INLINE QUICK-CREATE PANEL WRAPPER FORM -->
+                <form th:action="@{/admin/categories/add}" method="post"
+                    style="display: inline-flex; gap: 8px; flex: 2; min-width: 320px; align-items: flex-end; margin: 0;">
+
+                    <div style="flex: 2;">
+                        <input type="text" name="categoryName" placeholder="New Aisle Name (e.g., Bakery)"
+                            class="form-input"
+                            style="width: 100%; padding: 10px; height: 44px; margin: 0; font-size: 0.9rem;" required />
+                    </div>
+
+                    <div style="width: 70px;">
+                        <input type="number" name="displayOrder" value="10" title="Sort Weight" class="form-input"
+                            style="width: 100%; padding: 10px; height: 44px; text-align: center; margin: 0; font-size: 0.9rem;"
+                            required />
+                    </div>
+
+                    <button type="submit" class="btn btn--primary"
+                        style="flex: 1.2; padding: 0 16px; font-weight: 700; border-radius: 6px; border: none; height: 44px; cursor: pointer; font-size: 0.9rem; white-space: nowrap;">
+                        + Add Aisle
+                    </button>
+                </form>
+
+            </div>
+        </div>
+
+        <!-- Feedback Alert Status Toasts -->
+        <div th:if="${param.created}"
+            style="padding:12px; margin-bottom:20px; background-color:#e6f4ea; border:1px solid #bce5c6; color:#137333; font-weight:600; border-radius:6px;">
+            ✨ New grocery section successfully established!</div>
+        <div th:if="${param.updated}"
+            style="padding:12px; margin-bottom:20px; background-color:#e6f4ea; border:1px solid #bce5c6; color:#137333; font-weight:600; border-radius:6px;">
+            ✏️ Section mapping modifications synchronized flawlessly!</div>
+        <div th:if="${param.deleted}"
+            style="padding:12px; margin-bottom:20px; background-color:#f8d7da; border:1px solid #f5c6cb; color:#721c24; font-weight:600; border-radius:6px;">
+            🗑️ Aisle successfully dropped from tracking matrices.</div>
+        <div th:if="${param.error == 'inUse'}"
+            style="padding:12px; margin-bottom:20px; background-color:#fff3cd; border:1px solid #ffeeba; color:#856404; font-weight:600; border-radius:6px;">
+            ⚠️ Relational Warning: Aisle holds active mapped ingredients and cannot be dropped!</div>
+
+        <!-- 2. TRACKING DATA INDEX GRID MATRIX -->
+        <div class="table-responsive-wrapper">
+            <table class="dataTable stripe row-border" style="width:100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background-color: var(--color-bg-body); border-bottom: 2px solid var(--color-border);">
+                        <th style="padding:12px; text-align: left; width: 15%;">Sequence Order</th>
+                        <th style="padding:12px; text-align: left; width: 45%;">Grocery Section Category Aisle</th>
+                        <th style="padding:12px; text-align: right; width: 40%;">Dashboard Configuration Controls</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="cat : ${categories}" style="border-bottom: 1px solid var(--color-border);">
+
+                        <!-- FIXED: Input fields are linked to their respective form using the form="..." attribute tag -->
+                        <td style="padding:10px 12px;">
+                            <input type="number" th:form="'edit-form-' + ${cat.groceryCategoryId}" name="displayOrder"
+                                th:value="${cat.displayOrder}" class="form-input"
+                                style="width:80px; text-align:center; padding:6px; margin:0;" required />
+                        </td>
+
+                        <td style="padding:10px 12px;">
+                            <input type="text" th:form="'edit-form-' + ${cat.groceryCategoryId}" name="categoryName"
+                                th:value="${cat.categoryName}" class="form-input"
+                                style="font-weight:700; width:100%; padding:6px 10px; margin:0;" required />
+                        </td>
+
+                        <td style="padding:10px 12px; text-align: right;">
+                            <div
+                                style="display: inline-flex; gap: 8px; justify-content: flex-end; align-items: center;">
+
+                                <!-- FORM 1: INLINE EDIT CONTROLLER (Kept clean inside the cell boundary) -->
+                                <form th:id="'edit-form-' + ${cat.groceryCategoryId}"
+                                    th:action="@{/admin/categories/edit/{id}(id=${cat.groceryCategoryId})}"
+                                    method="post" style="display:none;"></form>
+
+                                <button type="submit" th:form="'edit-form-' + ${cat.groceryCategoryId}" class="btn"
+                                    style="background-color: var(--color-primary); color: white; padding: 6px 14px; font-size: 0.85rem; border:none; border-radius: 4px; cursor:pointer; font-weight:600;">
+                                    Save Updates
+                                </button>
+
+                                <!-- FORM 2: HARD DELETE CONTROLLER -->
+                                <form th:action="@{/admin/categories/delete/{id}(id=${cat.groceryCategoryId})}"
+                                    method="post"
+                                    onsubmit="return confirm('Are you sure you want to delete this grocery category?');"
+                                    style="margin: 0; display: inline-block;">
+                                    <button type="submit" class="btn"
+                                        style="background-color: var(--color-danger-bg); color: var(--color-danger-raw); border: 1px solid var(--color-danger-border); padding: 6px 14px; font-size: 0.85rem; border-radius: 4px; cursor: pointer; font-weight:600;">
+                                        Delete
+                                    </button>
+                                </form>
+
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+
+</html>

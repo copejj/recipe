@@ -14,6 +14,9 @@ public class GroceryCategory {
     @Column(name = "category_name", nullable = false, unique = true, columnDefinition = "text")
     private String categoryName;
 
+    @Column(name = "display_order", nullable = false)
+    private Integer displayOrder = 0; // Default baseline value for sequence indexes
+
     public GroceryCategory() {
     }
 
@@ -31,5 +34,13 @@ public class GroceryCategory {
 
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
+    }
+
+    public Integer getDisplayOrder() {
+        return displayOrder;
+    }
+
+    public void setDisplayOrder(Integer displayOrder) {
+        this.displayOrder = displayOrder;
     }
 }
