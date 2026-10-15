@@ -49,19 +49,4 @@ public class GroceryCategoryService {
         }
         groceryCategoryRepository.save(category);
     }
-
-    /**
-     * Drops a category row if it doesn't violate active relational foreign keys
-     */
-    public void deleteCategoryById(Integer id) {
-        GroceryCategory category = groceryCategoryRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Category not found with ID: " + id));
-
-        // Safety guard: If ingredients are assigned here, block hard delete via
-        // exception
-        if (category.getIngredients() != null && !category.getIngredients().isEmpty()) {
-            throw new IllegalStateException("Cannot drop category aisle. It currently holds active ingredients!");
-        }
-        groceryCategoryRepository.delete(category);
-    }
 }

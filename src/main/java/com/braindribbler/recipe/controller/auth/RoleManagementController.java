@@ -33,7 +33,7 @@ public class RoleManagementController {
     public String listRoles(Model model) {
         model.addAttribute("roles", roleRepository.findAll());
         model.addAttribute("allPermissions", permissionRepository.findAll());
-        return "admin/roles-list";
+        return "admin/roles/list";
     }
 
     // 1. Process New Role Creation
@@ -87,7 +87,7 @@ public class RoleManagementController {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid role ID: " + id));
         model.addAttribute("role", role);
         model.addAttribute("allPermissions", permissionRepository.findAll());
-        return "admin/role-edit";
+        return "admin/roles/edit";
     }
 
     @PostMapping("/edit/{id}")

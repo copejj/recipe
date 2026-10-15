@@ -13,11 +13,11 @@ import java.util.Map;
 @Controller
 @RequestMapping("/admin/migrations")
 @PreAuthorize("hasAuthority('can_manage_migrations')")
-public class AdminMigrationController {
+public class MigrationController {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public AdminMigrationController(JdbcTemplate jdbcTemplate) {
+    public MigrationController(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -39,6 +39,6 @@ public class AdminMigrationController {
             model.addAttribute("tableExists", false);
         }
 
-        return "admin/migration-list"; // Points securely to templates/admin/migration-list.html
+        return "admin/migrations/history"; // Points securely to templates/admin/migration-list.html
     }
 }

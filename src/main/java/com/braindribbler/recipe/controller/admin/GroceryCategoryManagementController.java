@@ -37,14 +37,4 @@ public class GroceryCategoryManagementController {
         groceryCategoryService.updateCategory(id, name, displayOrder);
         return "redirect:/admin/categories?updated=true";
     }
-
-    @PostMapping("/delete/{id}")
-    public String removeCategoryRow(@PathVariable("id") Integer id) {
-        try {
-            groceryCategoryService.deleteCategoryById(id);
-            return "redirect:/admin/categories?deleted=true";
-        } catch (IllegalStateException e) {
-            return "redirect:/admin/categories?error=inUse";
-        }
-    }
 }
