@@ -13,12 +13,12 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/admin/login-history")
-public class AdminLoginHistoryController {
+public class LoginHistoryController {
 
     private final LoginHistoryRepository loginHistoryRepository;
     private final IpOverrideRepository ipOverrideRepository;
 
-    public AdminLoginHistoryController(LoginHistoryRepository loginHistoryRepository,
+    public LoginHistoryController(LoginHistoryRepository loginHistoryRepository,
             IpOverrideRepository ipOverrideRepository) {
         this.loginHistoryRepository = loginHistoryRepository;
         this.ipOverrideRepository = ipOverrideRepository;
@@ -36,7 +36,7 @@ public class AdminLoginHistoryController {
 
         // Bind cleanly to the model variable your new layout expects
         model.addAttribute("rawLogs", logs);
-        return "admin/login-history";
+        return "admin/logins/history";
     }
 
     /**

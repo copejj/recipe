@@ -24,13 +24,13 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin/users/edit/{publicId}")
-public class AdminUserRoleController {
+public class UserRoleController {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final RoleRankCache roleRankCache;
 
-    public AdminUserRoleController(UserRepository userRepository, RoleRepository roleRepository,
+    public UserRoleController(UserRepository userRepository, RoleRepository roleRepository,
             RoleRankCache roleRankCache) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -59,7 +59,6 @@ public class AdminUserRoleController {
 
         // 3. Filter available roles: Only load roles strictly BELOW the logged-in
         // admin's rank
-        // 🔑 THE FIX: Clean up the collect statement to look exactly like this:
         List<Role> assignableRoles = roleRepository.findAll().stream()
                 .filter(role -> getRoleRankValue(role.getRoleName()) < loggedInAdminMaxRank)
                 .collect(java.util.stream.Collectors.toList()); // <-- Fixed clean termination point
@@ -67,7 +66,7 @@ public class AdminUserRoleController {
         model.addAttribute("targetUser", targetUser);
         model.addAttribute("assignableRoles", assignableRoles);
 
-        return "admin/user-edit"; // Points to templates/admin/user-edit.html
+        return "admin/users/edit"; // Points to templates/admin/user-edit.html
     }
 
     /**

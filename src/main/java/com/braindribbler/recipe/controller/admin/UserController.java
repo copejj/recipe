@@ -14,11 +14,11 @@ import java.util.Set;
 
 @Controller
 @RequestMapping("/admin/users")
-public class AdminUserController {
+public class UserController {
 
     private final UserRepository userRepository;
 
-    public AdminUserController(UserRepository userRepository) {
+    public UserController(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
@@ -36,7 +36,7 @@ public class AdminUserController {
         model.addAttribute("chefs", chefs);
         model.addAttribute("loggedInAdminRank", adminMaxRank); // 🔑 Inject the rank score into the page context
 
-        return "admin/users-list"; // Points to templates/admin/users-list.html
+        return "admin/users/list"; // Points to templates/admin/users/list.html
     }
 
     private int getHighestRoleRank(Set<Role> roles) {
