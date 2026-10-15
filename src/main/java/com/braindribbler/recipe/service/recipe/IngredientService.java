@@ -9,6 +9,8 @@ import com.braindribbler.recipe.repository.recipe.IngredientRepository;
 import com.braindribbler.recipe.repository.recipe.GroceryCategoryRepository;
 import com.braindribbler.recipe.repository.auth.UserMessageRepository;
 import jakarta.persistence.EntityNotFoundException;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -94,5 +96,60 @@ public class IngredientService {
 
         ingredientRepository.relinkMergedIngredients(duplicateId, targetId);
         ingredientRepository.delete(duplicate);
+    }
+
+    // Inside com.braindribbler.recipe.service.recipe.IngredientService
+    @Transactional
+    public void approveAndModifyIngredient(Integer ingredientId, String updatedName, Integer updatedCategoryId) {
+        Ingredient ingredient = ingredientRepository.findById(ingredientId)
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Ingredient missing"));
+
+        // 1. Overwrite the name text if the admin corrected a typo
+        if (updatedName != null && !updatedName.trim().isEmpty()) {
+            ingredient.setIngredientName(updatedName.trim());
+        }
+
+        // 2. Overwrite the grocery section aisle categorization layout mapping if
+        // modified
+        if (updatedCategoryId != null) {
+            ingredient.setGroceryCategory(groceryCategoryRepository.findById(updatedCategoryId)
+                    .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Category missing")));
+        }
+
+        // 3. Promote globally
+        ingredient.setIsVerified(true);
+        ingredientRepository.save(ingredient);
+    }
+
+    /**
+     * Fetches a single ingredient entity by its primary key ID
+     */
+    @Transactional(readOnly = true)
+    public Ingredient getIngredientById(Integer id) {
+        return ingredientRepository.findById(id)
+                .orElseThrow(
+                        () -> new jakarta.persistence.EntityNotFoundException("Ingredient not found with ID: " + id));
+    }
+
+    /**
+     * Hard-deletes an ingredient from the database pool if it is not actively
+     * linked to a recipe step
+     */
+    @Transactional
+    public void deleteIngredientById(Integer ingredientId) {
+        // 1. Verify existence before pulling the trigger
+        if (!ingredientRepository.existsById(ingredientId)) {
+            throw new EntityNotFoundException("Ingredient not found with ID: " + ingredientId);
+        }
+
+        try {
+            // 2. Attempt a clean removal from the master catalog rows
+            ingredientRepository.deleteById(ingredientId);
+        } catch (DataIntegrityViolationException e) {
+            // 3. Intercept active foreign key usage blocks cleanly to prevent a server
+            // crash
+            throw new IllegalStateException(
+                    "Cannot delete this ingredient. It is currently being used in active recipe steps!");
+        }
     }
 }

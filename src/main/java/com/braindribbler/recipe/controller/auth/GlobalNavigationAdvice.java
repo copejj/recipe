@@ -48,7 +48,7 @@ public class GlobalNavigationAdvice {
 
             // Securely append the Moderation Panel to the Recipe Group for Authorized Users
             if (authorities.contains("can_moderate_ingredients")) {
-                recipesChildren.add(new MenuItem("Manage Ingredients", "/admin/ingredients"));
+                recipesChildren.add(new MenuItem("Manage Ingredients", "/admin/ingredients/dashboard"));
             }
 
             // Map the complete Recipes Parent Dropdown
