@@ -141,4 +141,30 @@ public class IngredientManagementController {
         return "admin/ingredients/dashboard"; // Points directly to your new metrics hub!
     }
 
+    /**
+     * Displays a blank form to manually create a new globally verified ingredient
+     * Maps to: GET /admin/ingredients/add
+     */
+    @GetMapping("/add")
+    public String showAddIngredientForm(Model model) {
+        model.addAttribute("ingredient", new com.braindribbler.recipe.domain.recipe.Ingredient());
+        model.addAttribute("groceryCategories", ingredientService.getAllGroceryCategoriesSortedByOrder());
+        return "admin/ingredients/edit"; // Reuses the edit.html form view blueprint for creation profiles!
+    }
+
+    /**
+     * Processes manual ingredient creations from the admin desk
+     * Maps to: POST /admin/ingredients/add
+     */
+    @PostMapping("/add")
+    public String manuallyCreateIngredient(@RequestParam("ingredientName") String name,
+            @RequestParam("groceryCategoryId") Integer categoryId) {
+        try {
+            // Registers item directly flipping is_verified = TRUE instantly
+            ingredientService.registerVerifiedIngredient(name, categoryId);
+            return "redirect:/admin/ingredients/list?created=true";
+        } catch (Exception e) {
+            return "redirect:/admin/ingredients/list?error=createFailed";
+        }
+    }
 }

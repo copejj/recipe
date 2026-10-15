@@ -152,4 +152,38 @@ public class IngredientService {
                     "Cannot delete this ingredient. It is currently being used in active recipe steps!");
         }
     }
+
+    /**
+     * Fetches all grocery categories ordered by their physical aisle display
+     * priority weight
+     */
+    @Transactional(readOnly = true)
+    public List<GroceryCategory> getAllGroceryCategoriesSortedByOrder() {
+        // Bridges cleanly to your backing repository query sequence mapping hook
+        return groceryCategoryRepository.findAllByOrderByDisplayOrderAsc();
+    }
+
+    /**
+     * Manually registers a brand new master ingredient, skipping the review queue
+     * instantly
+     */
+    @Transactional
+    public Ingredient registerVerifiedIngredient(String name, Integer categoryId) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Ingredient master name cannot be empty.");
+        }
+
+        Ingredient ingredient = new Ingredient();
+        ingredient.setIngredientName(name.trim());
+        ingredient.setIsVerified(true); // 🔥 Promotes item straight to global cookbook options instantly
+
+        // Connect structural foreign key lookup dependency row
+        GroceryCategory category = groceryCategoryRepository.findById(categoryId)
+                .orElseThrow(
+                        () -> new EntityNotFoundException("Grocery category section not found with ID: " + categoryId));
+        ingredient.setGroceryCategory(category);
+
+        return ingredientRepository.save(ingredient);
+    }
+
 }
