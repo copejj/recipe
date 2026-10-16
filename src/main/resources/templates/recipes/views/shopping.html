@@ -1,5 +1,4 @@
-<div th:fragment="shopping-panel" id="shopping-panel" class="tab-panel" style="display: none;">
-
+<div th:fragment="shopping-panel">
     <!-- Print Hide Style Sheet Hook Overrides -->
     <style>
         /* CSS Rule: When printing, completely hide any rows that the user marked as 'pantry owned' */
@@ -60,9 +59,8 @@
                         style="width: 19px; height: 18px; cursor: pointer; accent-color: var(--color-primary);" />
 
                     <span class="shopping-item-text" style="font-size: 1.05rem; color: var(--color-text-dark);">
-                        <strong
-                            th:text="${T(com.braindribbler.recipe.util.RecipeUtility).convertDecimalToKitchenFraction(item.amount)}"
-                            style="font-weight: 700;">2</strong>
+                        <strong class="scalable-amount" th:data-base-amount="${item.amount}"
+                            th:text="${T(com.braindribbler.recipe.util.RecipeUtility).convertDecimalToKitchenFraction(item.amount)}">1</strong>
                         <span th:text="${item.measurement.unitName}"
                             style="color: var(--color-text-label);">units</span>
                         <span th:text="${item.ingredient.ingredientName}" style="font-weight: 600;">Yellow Onion</span>

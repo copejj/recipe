@@ -1,5 +1,4 @@
-<div th:fragment="prep-panel" id="prep-panel" class="tab-panel" style="display: none;">
-
+<div th:fragment="prep-panel">
     <!-- Iterates chronologically showing step descriptions with step-scoped sub-ingredients -->
     <div th:each="step, stepStat : ${recipe.steps}" class="step-card"
         style="border: 1px solid var(--color-border); padding: 24px; border-radius: 8px; margin-bottom: 24px; background-color: var(--color-bg-card); box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
@@ -17,7 +16,8 @@
             <ul
                 style="margin: 0; padding-left: 20px; color: var(--color-text-label); line-height: 1.7; font-size: 1rem;">
                 <li th:each="item : ${step.stepIngredients}">
-                    <span
+                    <!-- Update your amount display tags in all 3 sub-views to match this pattern exactly: -->
+                    <span class="scalable-amount" th:data-base-amount="${item.amount}"
                         th:text="${T(com.braindribbler.recipe.util.RecipeUtility).convertDecimalToKitchenFraction(item.amount)}">1</span>
                     <span th:text="${item.measurement.unitName}">cups</span> of
                     <strong th:text="${item.ingredient.ingredientName}"

@@ -379,6 +379,34 @@ $(document).ready(function () {
         }, 3500);
     }
 
+    // --- MID-TIMELINE ELEMENT INSERTION SYSTEM ---
+    $(document).on("click", ".insert-step-here-btn", function (e) {
+        e.preventDefault();
+
+        // Grab a reference copy template to clone from the first step card
+        var firstCard = $("#steps-container .step-card").first();
+
+        // Temporarily destroy select2 attachments on your copy reference container
+        firstCard.find(".ingredient-row select:first-child").each(function () {
+            if ($(this).hasClass("select2-hidden-accessible")) { $(this).select2("destroy"); }
+        });
+
+        var clone = firstCard.clone();
+
+        // Clean out default template texts
+        clone.find("textarea, input").val("");
+        clone.find("select").prop("selectedIndex", 0);
+        clone.find("input[type='hidden']").remove();
+        clone.find(".ingredients-container").empty(); // Start with zero ingredients for clean steps
+
+        // CRITICAL INJECTION LINE: Insert this clone immediately AFTER the card container that requested it!
+        var activeStepCardRow = $(this).closest(".step-card");
+        clone.insertAfter(activeStepCardRow);
+
+        // Force the re-indexing engine to rewrite all backend database collection indices layout maps!
+        reindexForm();
+    });
+
 
     reindexForm();
 });

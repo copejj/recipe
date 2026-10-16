@@ -1,3 +1,4 @@
+<!-- Put this in: templates/recipes/view.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://thymeleaf.org" lang="en">
 
@@ -7,36 +8,62 @@
     <header th:replace="~{fragments/layout :: header}"></header>
 
     <main class="page-card">
-        <!-- Main Recipe Summary Jumbotron Block -->
-        <h1 th:text="${recipe.title}" style="margin-bottom: 6px; font-size: 2.25rem; color: var(--color-text-dark);">
-            Tasty Recipe Title</h1>
-        <div style="font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 24px;">
-            Created by <span th:text="${recipe.user.displayName}" style="font-weight: 600;">Author</span>
+        <!-- 1. JUMBO IDENTITY HEADER WITH LIVE SCALING CONTROLLERS -->
+        <div
+            style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
+            <div>
+                <h1 th:text="${recipe.title}"
+                    style="margin: 0 0 4px 0; font-size: 2.25rem; color: var(--color-text-dark);">Tasty Recipe Title
+                </h1>
+                <div style="font-size: 0.9rem; color: var(--color-text-muted);">
+                    Created by <span th:text="${recipe.user.displayName}" style="font-weight: 600;">Author</span>
+                </div>
+            </div>
+
+            <!-- Live Serving Scaler Widget Component Box -->
+            <div
+                style="background-color: var(--color-bg-card); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--color-border); display: flex; align-items: center; gap: 10px;">
+                <label for="servings-scaler"
+                    style="font-weight: 700; font-size: 0.9rem; color: var(--color-text-dark); margin: 0;">🍳 Change
+                    Servings:</label>
+                <!-- Capture the baseline original database count into a data-attribute for reference mapping -->
+                <input type="number" id="servings-scaler" th:value="${recipe.servings}"
+                    th:data-original-servings="${recipe.servings}" min="1" step="1"
+                    style="width: 70px; padding: 6px; border-radius: 4px; border: 1px solid var(--color-border-input); font-weight: bold; text-align: center;" />
+            </div>
         </div>
 
-        <!-- 🎛️ NAVIGATION BAR: VIEW MODE CONTROLLER SWITCHES -->
+        <!-- 🎛️ NAVIGATION BAR: VIEW MODE CONTROLLER SWITCHES (Prep set to Active) -->
         <div class="view-mode-tabs"
             style="display: flex; gap: 8px; margin-bottom: 30px; border-bottom: 2px solid var(--color-border); padding-bottom: 10px;">
-            <button type="button" class="tab-btn active" data-target="overview-panel"
-                style="padding: 10px 20px; font-weight: 700; border: none; background: none; cursor: pointer; color: var(--color-primary); border-bottom: 3px solid var(--color-primary); margin-bottom: -13px; font-size: 1rem;">📖
-                Recipe Overview</button>
-            <button type="button" class="tab-btn" data-target="prep-panel"
-                style="padding: 10px 20px; font-weight: 600; border: none; background: none; cursor: pointer; color: var(--color-text-muted); font-size: 1rem;">🍳
+            <button type="button" class="tab-btn active" data-target="prep-panel"
+                style="padding: 10px 20px; font-weight: 700; border: none; background: none; cursor: pointer; color: var(--color-primary); border-bottom: 3px solid var(--color-primary); margin-bottom: -13px; font-size: 1rem;">🍳
                 Kitchen Prep Mode</button>
+            <button type="button" class="tab-btn" data-target="overview-panel"
+                style="padding: 10px 20px; font-weight: 600; border: none; background: none; cursor: pointer; color: var(--color-text-muted); font-size: 1rem;">📖
+                Recipe Overview</button>
             <button type="button" class="tab-btn" data-target="shopping-panel"
                 style="padding: 10px 20px; font-weight: 600; border: none; background: none; cursor: pointer; color: var(--color-text-muted); font-size: 1rem;">🛒
                 Grocery Shopping List</button>
         </div>
 
         <!-- 🎛️ MODULAR PANEL CHANNELS: TARGET FRAGMENT REPLACEMENTS -->
-        <div th:replace="~{recipes/views/overview :: overview-panel}"></div>
-        <div th:replace="~{recipes/views/prep :: prep-panel}"></div>
-        <div th:replace="~{recipes/views/shopping :: shopping-panel}"></div>
+        <!-- Prep panel is now active and lacks display:none inline rules -->
+        <div id="prep-panel" class="tab-panel active-panel">
+            <div th:replace="~{recipes/views/prep :: prep-panel}"></div>
+        </div>
+
+        <div id="overview-panel" class="tab-panel" style="display: none;">
+            <div th:replace="~{recipes/views/overview :: overview-panel}"></div>
+        </div>
+
+        <div id="shopping-panel" class="tab-panel" style="display: none;">
+            <div th:replace="~{recipes/views/shopping :: shopping-panel}"></div>
+        </div>
 
     </main>
 
     <footer th:replace="~{fragments/layout :: footer}"></footer>
-    <!-- Client-side tab navigation toggle logic -->
     <script th:src="@{/js/recipe-view.js}"></script>
 </body>
 

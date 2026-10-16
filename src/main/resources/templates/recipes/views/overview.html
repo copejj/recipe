@@ -1,5 +1,4 @@
-<div th:fragment="overview-panel" id="overview-panel" class="tab-panel active-panel">
-
+<div th:fragment="overview-panel">
     <!-- Meta Summary Subtitle Section -->
     <div style="margin-bottom: 24px;">
         <p class="recipe-description-text" th:text="${recipe.description}"
@@ -20,7 +19,7 @@
             style="columns: 2; padding-left: 20px; margin: 0; list-style-type: square; color: var(--color-text-label); line-height: 1.8;">
             <th:block th:each="entry : ${singleRecipeAggregatedIngredients}">
                 <li th:each="item : ${entry.value}" style="margin-bottom: 6px; break-inside: avoid;">
-                    <span
+                    <span class="scalable-amount" th:data-base-amount="${item.amount}"
                         th:text="${T(com.braindribbler.recipe.util.RecipeUtility).convertDecimalToKitchenFraction(item.amount)}">1</span>
                     <span th:text="${item.measurement.unitName}">cups</span>
                     <strong th:text="${item.ingredient.ingredientName}"
