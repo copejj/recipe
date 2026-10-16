@@ -2,7 +2,9 @@ package com.braindribbler.recipe.controller.recipe;
 
 // Core Java Collections 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -14,11 +16,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 // Your Local Domain Models & Service Layers
 import com.braindribbler.recipe.domain.auth.User;
+import com.braindribbler.recipe.domain.recipe.Measurement;
 import com.braindribbler.recipe.domain.recipe.Recipe;
+import com.braindribbler.recipe.domain.recipe.RecipeStepIngredient;
 import com.braindribbler.recipe.dto.recipe.RecipeForm;
 import com.braindribbler.recipe.security.RecipeUserDetails;
 import com.braindribbler.recipe.service.recipe.IngredientService;
 import com.braindribbler.recipe.service.recipe.RecipeService;
+import com.braindribbler.recipe.util.RecipeUtility;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -128,24 +133,32 @@ public class RecipeController {
     }
 
     @GetMapping("/recipes/view/{id}")
-    public String viewRecipeDetail(@PathVariable("id") String id, Model model,
-            @AuthenticationPrincipal RecipeUserDetails currentUser) {
-        if (currentUser == null) {
-            return "redirect:/login";
-        }
+    public String viewRecipeProfile(@PathVariable("id") Integer id, Model model) {
+        // 1. Fetch your recipe record entity from the database repository layer
+        Recipe recipe = recipeService.getRecipeById(id);
 
-        try {
-            // Strip trailing whitespaces and force clean integer base-10 numerical parsing
-            Integer numericRecipeId = Integer.parseInt(id.trim());
-            Recipe recipe = recipeService.getRecipeById(numericRecipeId);
+        // 2. CRITICAL LOOKUP: Fetch all master measurements from your database pool
+        // This gives your auto-promoter access to scaling_ranks and unit equivalents!
+        List<Measurement> measurementsPool = recipeService.getAllMeasurements();
 
-            model.addAttribute("recipe", recipe);
-            model.addAttribute("userDisplayName", currentUser.getUserProfile().getDisplayName());
-            return "recipes/view";
-        } catch (NumberFormatException e) {
-            // Safe fallback redirection if a malformed string or UUID somehow lands here
-            return "redirect:/recipes/my-list?error=invalidRecipeId";
-        }
+        // 3. Wrap your single recipe inside a list wrapper container
+        List<Recipe> singleRecipeSelection = Collections.singletonList(recipe);
+
+        // 4. Run your type-safe BigDecimal scaling and category-sorting math engine
+        Map<String, List<RecipeStepIngredient>> structuredIngredients = RecipeUtility
+                .aggregateAndPromoteShoppingList(singleRecipeSelection, measurementsPool);
+
+        // 5. Inject all matching data attributes down to the Thymeleaf model view
+        // context
+        model.addAttribute("recipe", recipe);
+
+        // FIXED: Passes data explicitly to your Overview summary panel loop variable
+        model.addAttribute("singleRecipeAggregatedIngredients", structuredIngredients);
+
+        // FIXED: Passes data explicitly to your Market Shopping panel loop variable
+        model.addAttribute("shoppingListAggregatedIngredients", structuredIngredients);
+
+        return "recipes/view";
     }
 
     @GetMapping("/recipes/edit/{id}")
