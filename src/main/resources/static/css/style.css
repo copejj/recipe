@@ -925,3 +925,50 @@ dialog.admin-modal h3 {
     border-radius: 4px;
     padding: 6px 10px;
 }
+
+/* --- CARTOON COOKING BUBBLE TOOLTIP --- */
+.amount-wrapper {
+    position: relative;
+    flex: 1;
+}
+
+.fraction-bubble {
+    position: absolute;
+    bottom: 125%;
+    /* Floats comfortably above the input box */
+    left: 50%;
+    transform: translateX(-50%) scale(0.8);
+    background-color: #333;
+    /* Dark slate gray bubble */
+    color: #fff;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    border-radius: 20px;
+    /* Highly rounded cartoon aesthetic */
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+}
+
+/* The talking bubble triangle pointer */
+.fraction-bubble::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    /* Points down to the input field */
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+/* Pops open with a cartoon spring effect when active */
+.amount-wrapper.show-bubble .fraction-bubble {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+}
