@@ -6,71 +6,18 @@ $(document).ready(function () {
     var activeSelectDropdown = null;
     var modal = document.getElementById("quickIngredientModal");
 
-    // --- REINDEXING LOGIC ---
-    function reindexForm() {
-        $("#steps-container .step-card").each(function (stepIdx) {
-            $(this).attr("data-step-index", stepIdx);
-            $(this).find(".step-number-label").text(stepIdx + 1);
-            $(this).find(".remove-step-btn").toggle($("#steps-container .step-card").length > 1);
-
-            $(this).find("textarea").attr("name", "steps[" + stepIdx + "].instructionText");
-
-            $(this).find(".ingredients-container .ingredient-row").each(function (ingIdx) {
-                var $row = $(this);
-                $row.attr("data-ing-index", ingIdx);
-
-                $row.find("select").eq(0).attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].ingredientId");
-                $row.find("input[type='number']").attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].amount");
-                $row.find("select").eq(1).attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].measurementId");
-                $row.find("input[type='text']").attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].ingredientNote");
-
-                $row.find(".remove-ing-btn").show();
-            });
-        });
-    }
-
-    // --- REAL-TIME VALIDATION ENGINE ---
-    function validateStepIngredients() {
-        $(".ingredient-row").removeClass("row-error-highlight");
-        $(".ingredient-error-msg").remove();
-
-        var formIsValid = true;
-
-        $("#steps-container .step-card").each(function () {
-            var $stepCard = $(this);
-            var seenIngredients = {};
-
-            $stepCard.find(".ingredient-row").each(function () {
-                var $row = $(this);
-                var selectedIngredientId = $row.find("select").eq(0).val();
-
-                if (!selectedIngredientId) return;
-
-                if (seenIngredients[selectedIngredientId]) {
-                    formIsValid = false;
-                    seenIngredients[selectedIngredientId].addClass("row-error-highlight");
-                    $row.addClass("row-error-highlight");
-
-                    if ($row.next(".ingredient-error-msg").length === 0) {
-                        var ingredientName = $row.find("select").eq(0).find("option:selected").text();
-                        $row.after('<span class="ingredient-error-msg">⚠️ "' + ingredientName + '" is listed multiple times in this step. Please combine them into a single row.</span>');
-                    }
-                } else {
-                    seenIngredients[selectedIngredientId] = $row;
-                }
-            });
-        });
-
-        return formIsValid;
-    }
-
-    // --- TRIGGER EVENTS ---
-    $(document).on("change", ".ingredient-row select:first-child", function () {
+    // Change from ".ingredient-row select:first-child" to just "select"
+    $(document).on("change", ".ingredient-row select", function () {
         validateStepIngredients();
     });
 
     $("#add-step-btn").click(function () {
         var firstCard = $("#steps-container .step-card").first();
+
+        firstCard.find(".ingredient-row select:first-child").each(function () {
+            if ($(this).hasClass("select2-hidden-accessible")) { $(this).select2("destroy"); }
+        });
+
         var clone = firstCard.clone();
 
         // Reset basic texts and values
@@ -119,7 +66,10 @@ $(document).ready(function () {
     });
 
     $(document).on("click", ".remove-ing-btn", function () {
-        $(this).closest(".ingredient-row").remove();
+        var $row = $(this).closest(".ingredient-row");
+        // Clean tear-down preventing phantom element memory leaks
+        $row.find("select:first-child").select2("destroy");
+        $row.remove();
         reindexForm();
         validateStepIngredients();
     });
@@ -230,4 +180,84 @@ $(document).ready(function () {
             }, 400);
         }
     });
+
+    // --- NEW: SAFE SELECT2 INITIALIZER WRAPPER ---
+    function initializeSelect2Search() {
+        $(".ingredient-row select:first-child").each(function () {
+            // Guard clause: If Select2 is already attached to this element, destroy it first.
+            // This prevents nasty visual duplication bugs when reindexForm() runs!
+            if ($(this).hasClass("select2-hidden-accessible")) {
+                $(this).select2("destroy");
+            }
+
+            // Apply a fresh, beautifully searchable autocomplete instance
+            $(this).select2({
+                placeholder: "-- Choose Ingredient --",
+                width: "resolve", // Automatically snaps perfectly to your CSS/flexbox grid width
+                dropdownAutoWidth: true
+            });
+        });
+    }
+
+    // --- REAL-TIME VALIDATION ENGINE ---
+    function validateStepIngredients() {
+        $(".ingredient-row").removeClass("row-error-highlight");
+        $(".ingredient-error-msg").remove();
+
+        var formIsValid = true;
+
+        $("#steps-container .step-card").each(function () {
+            var $stepCard = $(this);
+            var seenIngredients = {};
+
+            $stepCard.find(".ingredient-row").each(function () {
+                var $row = $(this);
+                var selectedIngredientId = $row.find("select").eq(0).val();
+
+                if (!selectedIngredientId) return;
+
+                if (seenIngredients[selectedIngredientId]) {
+                    formIsValid = false;
+                    seenIngredients[selectedIngredientId].addClass("row-error-highlight");
+                    $row.addClass("row-error-highlight");
+
+                    if ($row.next(".ingredient-error-msg").length === 0) {
+                        var ingredientName = $row.find("select").eq(0).find("option:selected").text();
+                        $row.after('<span class="ingredient-error-msg">⚠️ "' + ingredientName + '" is listed multiple times in this step. Please combine them into a single row.</span>');
+                    }
+                } else {
+                    seenIngredients[selectedIngredientId] = $row;
+                }
+            });
+        });
+
+        return formIsValid;
+    }
+
+    // --- REINDEXING LOGIC ---
+    function reindexForm() {
+        $("#steps-container .step-card").each(function (stepIdx) {
+            $(this).attr("data-step-index", stepIdx);
+            $(this).find(".step-number-label").text(stepIdx + 1);
+            $(this).find(".remove-step-btn").toggle($("#steps-container .step-card").length > 1);
+
+            $(this).find("textarea").attr("name", "steps[" + stepIdx + "].instructionText");
+
+            $(this).find(".ingredients-container .ingredient-row").each(function (ingIdx) {
+                var $row = $(this);
+                $row.attr("data-ing-index", ingIdx);
+
+                $row.find("select").eq(0).attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].ingredientId");
+                $row.find("input[type='number']").attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].amount");
+                $row.find("select").eq(1).attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].measurementId");
+                $row.find("input[type='text']").attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].ingredientNote");
+
+                $row.find(".remove-ing-btn").show();
+            });
+        });
+
+        initializeSelect2Search();
+    }
+
+    reindexForm();
 });
