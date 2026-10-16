@@ -1,15 +1,11 @@
 package com.braindribbler.recipe.controller.admin;
 
-import com.braindribbler.recipe.domain.auth.User;
 import com.braindribbler.recipe.domain.recipe.Ingredient;
 import com.braindribbler.recipe.dto.recipe.PendingIngredientProjection;
 import com.braindribbler.recipe.service.recipe.IngredientService;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
