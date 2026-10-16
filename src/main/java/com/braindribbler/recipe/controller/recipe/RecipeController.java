@@ -21,6 +21,8 @@ import com.braindribbler.recipe.security.RecipeUserDetails;
 import com.braindribbler.recipe.service.recipe.IngredientService;
 import com.braindribbler.recipe.service.recipe.RecipeService;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 // ... Your active RecipeController class implementation body continues below seamlessly ...
 
 @Controller
@@ -86,18 +88,12 @@ public class RecipeController {
         return "recipes/search";
     }
 
-    private void populateFormMetadata(Model model) {
-        model.addAttribute("allIngredients", ingredientService.getAllIngredientsSorted());
-        model.addAttribute("measurements", recipeService.getAllMeasurements());
-        model.addAttribute("visibilities", recipeService.getAllVisibilities());
-        model.addAttribute("groceryCategories", ingredientService.getAllGroceryCategories());
-    }
-
     @GetMapping("/recipes/create")
-    public String showCreateForm(Model model) {
+    public String showCreateForm(Model model, @AuthenticationPrincipal RecipeUserDetails currentUser) {
+
         model.addAttribute("recipeForm", new RecipeForm());
-        model.addAttribute("isEditMode", false); // ◄ ADD THIS LINE TO FIX THE CRASH
-        populateFormMetadata(model);
+        model.addAttribute("isEditMode", false);
+
         return "recipes/create";
     }
 
@@ -187,14 +183,32 @@ public class RecipeController {
             model.addAttribute("recipeForm", recipeForm);
             model.addAttribute("isEditMode", true);
 
-            model.addAttribute("allIngredients", ingredientService.getAllIngredientsSorted());
-            model.addAttribute("measurements", recipeService.getAllMeasurements());
-            model.addAttribute("visibilities", recipeService.getAllVisibilities());
-            model.addAttribute("groceryCategories", ingredientService.getAllGroceryCategories());
-
             return "recipes/create";
         } catch (NumberFormatException e) {
             return "redirect:/recipes/my-list?error=invalidRecipeId";
         }
     }
+
+    @ModelAttribute
+    public void populateFormMetadata(Model model,
+            @AuthenticationPrincipal RecipeUserDetails currentUser,
+            HttpServletRequest request) {
+
+        String method = request.getMethod();
+
+        // CRITICAL EFFICIENCY GUARD: Only query the database for GET requests (page
+        // renders)
+        // Completely skips queries on POST submissions, deletes, or updates!
+        if (!"GET".equalsIgnoreCase(method)) {
+            return;
+        }
+
+        User userEntity = (currentUser != null) ? currentUser.getUserProfile() : null;
+
+        model.addAttribute("allIngredients", ingredientService.getAllIngredientsSorted(userEntity));
+        model.addAttribute("measurements", recipeService.getAllMeasurements());
+        model.addAttribute("visibilities", recipeService.getAllVisibilities());
+        model.addAttribute("groceryCategories", ingredientService.getAllGroceryCategories());
+    }
+
 }

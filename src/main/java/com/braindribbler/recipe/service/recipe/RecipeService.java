@@ -140,6 +140,7 @@ public class RecipeService {
         form.setTitle(recipe.getTitle());
         form.setDescription(recipe.getDescription());
         form.setServings(recipe.getServings());
+        form.setRecipeNote(recipe.getRecipeNote());
         form.setRecipeVisibilityId(
                 recipe.getRecipeVisibility() != null ? recipe.getRecipeVisibility().getRecipeVisibilityId() : null);
 
@@ -201,6 +202,12 @@ public class RecipeService {
         recipe.setTitle(form.getTitle().trim());
         recipe.setDescription(form.getDescription().trim());
         recipe.setServings(form.getServings());
+
+        if (form.getRecipeNote() != null) {
+            recipe.setRecipeNote(form.getRecipeNote().trim());
+        } else {
+            recipe.setRecipeNote(null);
+        }
 
         if (form.getRecipeVisibilityId() != null) {
             recipe.setRecipeVisibility(visibilityRepository.findById(form.getRecipeVisibilityId())

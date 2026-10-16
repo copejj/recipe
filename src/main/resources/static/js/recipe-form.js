@@ -164,17 +164,51 @@ $(document).ready(function () {
             },
             success: function (response) {
                 if (response.success) {
-                    $("select").each(function () {
-                        if ($(this).attr('id') === 'ingredient-options-pool' || $(this).prop('name')?.endsWith('.ingredientId')) {
-                            $(this).append(new Option(response.ingredientName, response.ingredientId, false, false));
-                        }
+                    // 1. Append the brand-new choice into our master hidden options template pool
+                    $('#ingredient-options-pool').append(
+                        new Option(response.ingredientName, response.ingredientId, false, false)
+                    );
+
+                    // --- RE-SORT MASTER POOL ---
+                    var $pool = $('#ingredient-options-pool');
+                    var $poolPlaceholder = $pool.find('option[value=""]');
+
+                    // .get() converts the jQuery selection into a clean native JavaScript array
+                    var nativePoolOptions = $pool.find('option').not('[value=""]').get();
+
+                    nativePoolOptions.sort(function (a, b) {
+                        return $(a).text().localeCompare($(b).text());
+                    });
+                    $pool.empty().append($poolPlaceholder).append(nativePoolOptions);
+
+                    // 2. Update and re-sort every active dropdown across all step rows
+                    $(".ingredient-row select:first-child").each(function () {
+                        var $select = $(this);
+                        var currentSelectedValue = $select.val(); // Save current selection state
+
+                        $select.append(new Option(response.ingredientName, response.ingredientId, false, false));
+
+                        var $placeholder = $select.find('option[value=""]');
+
+                        // FIXED: Extracted to native element array to clear line 199 crash!
+                        var nativeSelectOptions = $select.find('option').not('[value=""]').get();
+
+                        nativeSelectOptions.sort(function (a, b) {
+                            return $(a).text().localeCompare($(b).text());
+                        });
+
+                        // Append elements back rearranged without breaking existing selections
+                        $select.empty().append($placeholder).append(nativeSelectOptions);
+                        $select.val(currentSelectedValue);
                     });
 
+                    // 3. Auto-select the newly added option on the active dropdown
                     if (activeSelectDropdown) {
                         activeSelectDropdown.val(response.ingredientId);
                     }
+
                     if (modal) modal.close();
-                    validateStepIngredients(); // Revalidate immediately with the new assignment
+                    validateStepIngredients();
                 } else {
                     $("#modal-feedback-msg").addClass("error-text").text(response.message || "Failed to add ingredient.").show();
                 }
