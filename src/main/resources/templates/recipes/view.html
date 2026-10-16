@@ -70,7 +70,11 @@
                 <ul
                     style="margin: 0; padding-left: 20px; font-size: 0.95rem; line-height: 1.6; color: var(--color-text-label);">
                     <li th:each="item : ${step.stepIngredients}">
-                        <strong th:text="${item.amount}">1.5</strong>
+                        <!-- FIXED: Calls your helper method to instantly transform 1.25 to '1 1/4' or 0.125 to '1/8' -->
+                        <strong
+                            th:text="${T(com.braindribbler.recipe.util.RecipeUtility).convertDecimalToKitchenFraction(item.amount)}">1
+                            1/2</strong>
+
                         <span th:text="${item.measurement.unitName}">cups</span> of
                         <strong th:text="${item.ingredient.ingredientName}"
                             style="color: var(--color-text-dark);">Flour</strong>

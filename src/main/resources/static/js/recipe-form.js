@@ -53,7 +53,10 @@ $(document).ready(function () {
             '<select class="form-input" style="flex: 2.5;" required>' +
             ingredientOptions +
             '</select>' +
-            '<input type="number" step="0.01" class="form-input" placeholder="Amount" style="flex: 1;" required />' +
+            '<div class="amount-wrapper">' +
+            '<input type="number" step="0.01" class="form-input amount-input" placeholder="Amount" style="width: 100%;" required />' +
+            '<div class="fraction-bubble"></div>' +
+            '</div>' +
             '<select class="form-input" style="flex: 1.5;" required>' +
             measurementOptions +
             '</select>' +
@@ -257,6 +260,123 @@ $(document).ready(function () {
         });
 
         initializeSelect2Search();
+    }
+
+    // --- HELPER: CONVERT CULINARY DECIMALS TO KITCHEN FRACTIONS ---
+    function formatCulinaryFraction(value) {
+        var num = parseFloat(value);
+        if (isNaN(num) || num <= 0) return "";
+
+        var firstPart = Math.floor(num);
+        var decimalPart = num - firstPart;
+
+        decimalPart = Math.round(decimalPart * 1000) / 1000;
+        if (decimalPart === 0) return "";
+
+        var fractionText = "";
+        if (decimalPart >= 0.08 && decimalPart <= 0.16) fractionText = "1/8";
+        else if (decimalPart > 0.16 && decimalPart <= 0.29) fractionText = "1/4";
+        else if (decimalPart > 0.29 && decimalPart <= 0.40) fractionText = "1/3";
+        else if (decimalPart > 0.40 && decimalPart <= 0.58) fractionText = "1/2";
+        else if (decimalPart > 0.58 && decimalPart <= 0.70) fractionText = "2/3";
+        else if (decimalPart > 0.70 && decimalPart <= 0.82) fractionText = "3/4";
+        else if (decimalPart > 0.82 && decimalPart <= 0.93) fractionText = "7/8";
+        else if (decimalPart > 0.93) return (firstPart + 1).toString();
+
+        return (firstPart > 0 ? firstPart + " " : "") + fractionText;
+    }
+
+    // --- CARTOON TALKING BUBBLE EVENTS ---
+    $(document).on("input.fraction change.fraction focusin.fraction", ".ingredient-row .amount-input", function () {
+        var $input = $(this);
+        var $wrapper = $input.closest(".amount-wrapper");
+        var $bubble = $wrapper.find(".fraction-bubble");
+        var fractionString = formatCulinaryFraction($input.val());
+
+        if (fractionString && $bubble.length) {
+            // Put the text in the bubble and toggle the spring-open CSS animation class
+            $bubble.text("🍳 Kitchen Fraction: " + fractionString);
+            $wrapper.addClass("show-bubble");
+        } else {
+            $wrapper.removeClass("show-bubble");
+        }
+    });
+
+    // Hide the bubble when the user clicks away from the input field
+    $(document).on("focusout.fraction", ".ingredient-row .amount-input", function () {
+        $(this).closest(".amount-wrapper").removeClass("show-bubble");
+    });
+
+    // --- AJAX PERSISTENCE ENGINE: SAVE PROGRESS AND STAY ---
+    $(document).on("click", "#save-stay-btn", function (e) {
+        e.preventDefault();
+
+        // 1. First, run your real-time recipe validation sequence
+        if (!validateStepIngredients()) {
+            // If duplicate items exist, highlight them and cancel out
+            $('html, body').animate({
+                scrollTop: $(".row-error-highlight").first().offset().top - 100
+            }, 400);
+            return;
+        }
+
+        var $form = $("#recipeForm");
+        var saveButton = $(this);
+        var originalText = saveButton.html();
+
+        // Visual loading feedback state
+        saveButton.prop("disabled", true).html("⏳ Saving Blueprint...");
+
+        // Grab XSRF parameters out of cookies for Spring Security protection
+        var token = document.cookie.split('; ')
+            .find(row => row.startsWith('XSRF-TOKEN='))
+            ?.split('=')[1];
+        var header = "X-XSRF-TOKEN";
+
+        // 2. Transmit the form array directly to your existing Spring PostMapping endpoint
+        $.ajax({
+            url: $form.attr("action"),
+            type: "POST",
+            data: $form.serialize(), // Packages up titles, descriptions, steps, and ingredients cleanly
+            beforeSend: function (xhr) {
+                if (token) {
+                    xhr.setRequestHeader(header, decodeURIComponent(token));
+                }
+            },
+            success: function (response) {
+                saveButton.prop("disabled", false).html(originalText);
+                showToast("Recipe blueprint progress saved successfully!", true);
+            },
+            error: function (xhr) {
+                saveButton.prop("disabled", false).html(originalText);
+
+                showToast("A persistence error occurred while saving. Verify fields.", false);
+            }
+        });
+    });
+
+    // --- APP TOAST NOTIFICATION ENGINE ---
+    function showToast(message, isSuccess) {
+        var $toast = $("#form-toast-notification");
+
+        // Configure styles based on response validity
+        if (isSuccess) {
+            $toast.css("background-color", "#28a745"); // Green Success
+            $("#toast-icon").text("💾");
+        } else {
+            $toast.css("background-color", "#dc3545"); // Red Danger
+            $("#toast-icon").text("⚠️");
+        }
+
+        $("#toast-message").text(message);
+
+        // Slide down and fade in
+        $toast.css({ "transform": "translateY(0)", "opacity": "1", "pointer-events": "auto" });
+
+        // Auto-dismiss after 3.5 seconds
+        setTimeout(function () {
+            $toast.css({ "transform": "translateY(-20px)", "opacity": "0", "pointer-events": "none" });
+        }, 3500);
     }
 
     reindexForm();

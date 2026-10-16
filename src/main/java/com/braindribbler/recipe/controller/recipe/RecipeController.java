@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import com.braindribbler.recipe.domain.auth.User;
 import com.braindribbler.recipe.domain.recipe.Recipe;
 import com.braindribbler.recipe.dto.recipe.RecipeForm;
-import com.braindribbler.recipe.dto.recipe.StepForm;
 import com.braindribbler.recipe.security.RecipeUserDetails;
 import com.braindribbler.recipe.service.recipe.IngredientService;
 import com.braindribbler.recipe.service.recipe.RecipeService;
@@ -102,19 +101,6 @@ public class RecipeController {
             @AuthenticationPrincipal RecipeUserDetails currentUser) {
         if (currentUser == null) {
             return "redirect:/login";
-        }
-
-        // Initialize a simple counter starting at 1
-        int stepNumber = 1;
-
-        for (StepForm step : recipeForm.getSteps()) {
-            // Safely get the number of ingredients bound to this specific step object
-            int ingredientCount = (step.getIngredients() != null) ? step.getIngredients().size() : 0;
-
-            System.out.println("DEBUG: Step " + stepNumber + " | Ingredients Count = " + ingredientCount);
-
-            // Increment the counter for the next loop iteration
-            stepNumber++;
         }
 
         // Call our unified single transaction handler method
@@ -210,5 +196,4 @@ public class RecipeController {
         model.addAttribute("visibilities", recipeService.getAllVisibilities());
         model.addAttribute("groceryCategories", ingredientService.getAllGroceryCategories());
     }
-
 }
