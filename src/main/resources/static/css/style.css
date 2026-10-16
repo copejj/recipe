@@ -871,3 +871,19 @@ dialog.admin-modal h3 {
 .profile-password-btn {
     background-color: var(--color-profile-dark-btn);
 }
+
+.row-error-highlight {
+    border: 2px solid #dc3545 !important;
+    background-color: #fff8f8 !important;
+    border-radius: 6px;
+    padding: 4px;
+}
+
+.ingredient-error-msg {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: -5px;
+    margin-bottom: 10px;
+    font-weight: 500;
+    display: block;
+}
