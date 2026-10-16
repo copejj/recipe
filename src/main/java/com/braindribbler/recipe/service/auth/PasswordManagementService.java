@@ -39,7 +39,7 @@ public class PasswordManagementService {
         auth.setUpdatedAt(OffsetDateTime.now());
         userAuthRepository.save(auth);
 
-        String resetLink = baseUrl + "/reset-password?token=" + auth.getResetPasswordToken();
+        String resetLink = baseUrl + "/password/reset?token=" + auth.getResetPasswordToken();
         String emailText = "Click the link below to reset your recipe site password:\n\n" + resetLink;
 
         try {

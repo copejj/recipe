@@ -39,8 +39,12 @@ public class IngredientService {
     }
 
     @Transactional(readOnly = true)
-    public List<Ingredient> getAllIngredientsSorted() {
-        return ingredientRepository.findAllByOrderByIngredientNameAsc();
+    public List<Ingredient> getAllIngredientsSorted(User user) {
+        if (user == null) {
+            // Fallback for safety/anonymous access: only show verified items
+            return ingredientRepository.findAvailableIngredientsForUser(null);
+        }
+        return ingredientRepository.findAvailableIngredientsForUser(user);
     }
 
     @Transactional(readOnly = true)

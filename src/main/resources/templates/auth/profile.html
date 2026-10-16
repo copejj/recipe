@@ -45,7 +45,7 @@
 
         <!-- SECTION 2: Password Modification Form -->
         <h3 class="profile-section-title">Security Settings</h3>
-        <form th:action="@{/profile/change-password}" method="post">
+        <form th:action="@{/profile/password/change}" method="post">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
             <div class="form-group">

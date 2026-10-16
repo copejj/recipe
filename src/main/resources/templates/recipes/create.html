@@ -7,7 +7,7 @@
     <header th:replace="~{fragments/layout :: header}"></header>
 
     <main class="page-card">
-        <h1 class="page-title">Create a New Recipe</h1>
+        <h1 th:text="${isEditMode ?: false} ? 'Edit Your Recipe' : 'Create New Recipe'">Recipe Stuff</h1>
         <p class="page-subtitle">Map out your instructions and attach step-scoped ingredients with exact quantities.</p>
 
         <form th:action="@{/recipes/create}" th:object="${recipeForm}" method="post" id="recipeForm">
@@ -185,148 +185,26 @@
 
     <footer th:replace="~{fragments/layout :: footer}"></footer>
 
-    <!-- Dynamic Layout Array Reindexing Handler Script Framework -->
-    <script th:inline="javascript">
-        $(document).ready(function () {
-            var activeSelectDropdown = null; // Tracks which specific drop-down card requested the modal open
-            var modal = document.getElementById("quickIngredientModal");
+    <!-- Load external dynamic recipes form asset orchestration script -->
+    <script th:src="@{/js/recipe-form.js}"></script>
 
-            // Function to re-index all inputs so Spring can parse arrays cleanly on submit
-            function reindexForm() {
-                $("#steps-container .step-card").each(function (stepIdx) {
-                    $(this).attr("data-step-index", stepIdx);
-                    $(this).find(".step-number-label").text(stepIdx + 1);
-                    $(this).find(".remove-step-btn").toggle($("#steps-container .step-card").length > 1);
+    <!-- Hidden Master Options templates for clean jQuery cloning -->
+    <div style="display: none;" aria-hidden="true">
 
-                    $(this).find("textarea[name*='.instructionText']").attr("name", "steps[" + stepIdx + "].instructionText");
+        <select id="ingredient-options-pool">
+            <option value="">-- Choose Ingredient --</option>
+            <option th:each="ing : ${allIngredients}" th:value="${ing.ingredientId}" th:text="${ing.ingredientName}">
+            </option>
+        </select>
 
-                    $(this).find(".ingredient-row").each(function (ingIdx) {
-                        $(this).attr("data-ing-index", ingIdx);
-                        $(this).find("select[name*='.ingredientId']").attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].ingredientId");
-                        $(this).find("input[name*='.amount']").attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].amount");
-                        $(this).find("select[name*='.measurementId']").attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].measurementId");
-                        $(this).find("input[name*='.ingredientNote']").attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].ingredientNote");
-                        $(this).find(".remove-ing-btn").show();
-                    });
-                });
-            }
+        <select id="measurement-options-pool">
+            <option value="">-- Unit --</option>
+            <!-- CHANGED: Iterating over Measurement entities cleanly -->
+            <option th:each="unit : ${measurements}" th:value="${unit.measurementId}" th:text="${unit.unitName}">
+            </option>
+        </select>
 
-            // Add Step Card Row handler
-            $("#add-step-btn").click(function () {
-                var firstCard = $("#steps-container .step-card").first();
-                var clone = firstCard.clone();
-                clone.find("textarea, input").val("");
-                clone.find("select").prop("selectedIndex", 0);
-                clone.find(".ingredients-container .ingredient-row").not(":first").remove();
-                $("#steps-container").append(clone);
-                reindexForm();
-            });
-
-            $(document).on("click", ".remove-step-btn", function () {
-                $(this).closest(".step-card").remove();
-                reindexForm();
-            });
-
-
-            $(document).on("click", ".add-ingredient-btn", function () {
-                // 1. Locate the container target inside this specific step card boundary cleanly
-                var container = $(this).closest(".step-card").find(".ingredients-container");
-
-                // 2. Self-contained HTML row literal snippet layout matching your styling tokens exactly
-                var newRowHtml = `
-                    <div class="ingredient-row" style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
-                        <select class="form-input" style="flex: 2.5;" required>
-                            <option value="">-- Choose Ingredient --</option>
-                            ${$('#allIngredients-pool-source').html() || ''}
-                        </select>
-
-                        <input type="number" step="0.01" class="form-input" placeholder="Amount" style="flex: 1;" required />
-
-                        <select class="form-input" style="flex: 1.5;" required>
-                            <option value="">-- Unit --</option>
-                            ${$('#measurements-pool-source').html() || ''}
-                        </select>
-
-                        <input type="text" class="form-input" placeholder="Note (e.g., melted, chilled)" style="flex: 2;" />
-
-                        <button type="button" class="btn remove-ing-btn" style="width: auto; padding: 10px 14px; font-size: 1rem; margin: 0; background-color: #e9ecef; color: var(--color-text-dark); border: 1px solid var(--color-border-input); border-radius: 6px;">×</button>
-                    </div>
-                `;
-
-                // 3. Append to our empty container and trigger your re-indexing script handler
-                container.append(newRowHtml);
-                reindexForm();
-            });
-
-            $(document).on("click", ".remove-ing-btn", function () {
-                $(this).closest(".ingredient-row").remove();
-                reindexForm();
-            });
-
-            // --- NEW: MODAL MODERATION TRIGGER MANAGEMENT HOOKS ---
-            $(document).on("click", ".open-quick-ing-btn", function () {
-                // Track the sibling select dropdown relative to this specific text button click
-                activeSelectDropdown = $(this).siblings(".ingredients-container").find("select[name*='.ingredientId']");
-
-                $("#quickIngredientName").val("");
-                $("#quickGroceryCategoryId").val("");
-                $("#modal-feedback-msg").hide().text("");
-
-                modal.showModal(); // Trigger native dialog view layer overlay
-            });
-
-            $("#closeQuickIngBtn").click(function () {
-                modal.close();
-            });
-
-            $("#quickIngredientForm").submit(function (e) {
-                e.preventDefault();
-                $("#modal-feedback-msg").hide();
-
-                var ingredientName = $("#quickIngredientName").val();
-                var categoryId = $("#quickGroceryCategoryId").val();
-
-                // --- FIXED: Read the cookie directly from the browser window memory interface ---
-                var token = document.cookie.split('; ')
-                    .find(row => row.startsWith('XSRF-TOKEN='))
-                    ?.split('=')[1];
-
-                var header = "X-XSRF-TOKEN"; // The header token key Spring's CookieCsrfTokenRepository listens for
-
-                $.ajax({
-                    url: '/recipes/ingredients/quick-add',
-                    type: 'POST',
-                    data: {
-                        name: ingredientName,
-                        groceryCategoryId: categoryId
-                    },
-                    beforeSend: function (xhr) {
-                        if (token) {
-                            xhr.setRequestHeader(header, decodeURIComponent(token));
-                        }
-                    },
-                    success: function (response) {
-                        if (response.success) {
-                            var newOption = new Option(response.ingredientName, response.ingredientId, true, true);
-                            $("select[name*='.ingredientId']").each(function () {
-                                $(this).append(new Option(response.ingredientName, response.ingredientId, false, false));
-                            });
-                            if (activeSelectDropdown) {
-                                activeSelectDropdown.val(response.ingredientId);
-                            }
-                            modal.close();
-                        } else {
-                            $("#modal-feedback-msg").text(response.message).show();
-                        }
-                    },
-                    error: function (xhr) {
-                        var errorResponse = xhr.responseJSON ? xhr.responseJSON.message : "Error adding ingredient.";
-                        $("#modal-feedback-msg").text(errorResponse).show();
-                    }
-                });
-            });
-        });
-    </script>
+    </div>
 </body>
 
 </html>

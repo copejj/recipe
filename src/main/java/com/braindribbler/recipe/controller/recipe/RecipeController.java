@@ -1,26 +1,27 @@
 package com.braindribbler.recipe.controller.recipe;
 
-// Core Framework Web Annotations & Utilities
+// Core Java Collections 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
-
-// Core Java Collections 
-import java.util.ArrayList;
-import java.util.List;
+import org.springframework.web.bind.annotation.PostMapping;
 
 // Your Local Domain Models & Service Layers
 import com.braindribbler.recipe.domain.auth.User;
 import com.braindribbler.recipe.domain.recipe.Recipe;
 import com.braindribbler.recipe.dto.recipe.RecipeForm;
-import com.braindribbler.recipe.service.recipe.RecipeService;
-import com.braindribbler.recipe.service.recipe.IngredientService;
+import com.braindribbler.recipe.dto.recipe.StepForm;
 import com.braindribbler.recipe.security.RecipeUserDetails;
+import com.braindribbler.recipe.service.recipe.IngredientService;
+import com.braindribbler.recipe.service.recipe.RecipeService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 // ... Your active RecipeController class implementation body continues below seamlessly ...
 
@@ -88,9 +89,11 @@ public class RecipeController {
     }
 
     @GetMapping("/recipes/create")
-    public String showCreateForm(Model model) {
+    public String showCreateForm(Model model, @AuthenticationPrincipal RecipeUserDetails currentUser) {
+
         model.addAttribute("recipeForm", new RecipeForm());
-        populateFormMetadata(model);
+        model.addAttribute("isEditMode", false);
+
         return "recipes/create";
     }
 
@@ -101,19 +104,25 @@ public class RecipeController {
             return "redirect:/login";
         }
 
+        // Initialize a simple counter starting at 1
+        int stepNumber = 1;
+
+        for (StepForm step : recipeForm.getSteps()) {
+            // Safely get the number of ingredients bound to this specific step object
+            int ingredientCount = (step.getIngredients() != null) ? step.getIngredients().size() : 0;
+
+            System.out.println("DEBUG: Step " + stepNumber + " | Ingredients Count = " + ingredientCount);
+
+            // Increment the counter for the next loop iteration
+            stepNumber++;
+        }
+
         // Call our unified single transaction handler method
         Recipe savedRecipe = recipeService.saveOrUpdateRecipe(recipeForm, currentUser.getUserProfile());
 
         // Redirect the user straight to their gorgeous newly updated recipe viewing
         // sheet profile
         return "redirect:/recipes/view/" + savedRecipe.getRecipeId();
-    }
-
-    private void populateFormMetadata(Model model) {
-        model.addAttribute("allIngredients", ingredientService.getAllIngredientsSorted());
-        model.addAttribute("measurements", recipeService.getAllMeasurements());
-        model.addAttribute("visibilities", recipeService.getAllVisibilities());
-        model.addAttribute("groceryCategories", ingredientService.getAllGroceryCategories());
     }
 
     @GetMapping("/recipes/my-list")
@@ -132,7 +141,6 @@ public class RecipeController {
         return "recipes/my-list";
     }
 
-    // --- VIEW ROUTE: Safely captures the trailing variable path parameter ---
     @GetMapping("/recipes/view/{id}")
     public String viewRecipeDetail(@PathVariable("id") String id, Model model,
             @AuthenticationPrincipal RecipeUserDetails currentUser) {
@@ -175,14 +183,32 @@ public class RecipeController {
             model.addAttribute("recipeForm", recipeForm);
             model.addAttribute("isEditMode", true);
 
-            model.addAttribute("allIngredients", ingredientService.getAllIngredientsSorted());
-            model.addAttribute("measurements", recipeService.getAllMeasurements());
-            model.addAttribute("visibilities", recipeService.getAllVisibilities());
-            model.addAttribute("groceryCategories", ingredientService.getAllGroceryCategories());
-
             return "recipes/create";
         } catch (NumberFormatException e) {
             return "redirect:/recipes/my-list?error=invalidRecipeId";
         }
     }
+
+    @ModelAttribute
+    public void populateFormMetadata(Model model,
+            @AuthenticationPrincipal RecipeUserDetails currentUser,
+            HttpServletRequest request) {
+
+        String method = request.getMethod();
+
+        // CRITICAL EFFICIENCY GUARD: Only query the database for GET requests (page
+        // renders)
+        // Completely skips queries on POST submissions, deletes, or updates!
+        if (!"GET".equalsIgnoreCase(method)) {
+            return;
+        }
+
+        User userEntity = (currentUser != null) ? currentUser.getUserProfile() : null;
+
+        model.addAttribute("allIngredients", ingredientService.getAllIngredientsSorted(userEntity));
+        model.addAttribute("measurements", recipeService.getAllMeasurements());
+        model.addAttribute("visibilities", recipeService.getAllVisibilities());
+        model.addAttribute("groceryCategories", ingredientService.getAllGroceryCategories());
+    }
+
 }

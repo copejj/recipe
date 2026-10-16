@@ -85,7 +85,7 @@ public class SecurityConfig {
                                                 .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**")
                                                 .permitAll()
                                                 .requestMatchers("/", "/search", "/register", "/login", "/verify",
-                                                                "/forgot-password", "/reset-password")
+                                                                "/password/forgot", "/password/reset")
                                                 .permitAll()
 
                                                 .requestMatchers("/admin/ingredients/**", "/admin/categories/**")

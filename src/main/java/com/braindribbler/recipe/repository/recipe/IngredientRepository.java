@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.braindribbler.recipe.domain.auth.User;
 import com.braindribbler.recipe.domain.recipe.Ingredient;
 import com.braindribbler.recipe.dto.recipe.PendingIngredientProjection;
 
@@ -40,4 +41,7 @@ public interface IngredientRepository extends JpaRepository<Ingredient, Integer>
             WHERE ingredient_id = :duplicateId
             """, nativeQuery = true)
     void relinkMergedIngredients(@Param("duplicateId") Integer duplicateId, @Param("targetId") Integer targetId);
+
+    @Query("SELECT i FROM Ingredient i WHERE i.isVerified = true OR i.createdByUser = :user ORDER BY i.ingredientName ASC")
+    List<Ingredient> findAvailableIngredientsForUser(@Param("user") User user);
 }

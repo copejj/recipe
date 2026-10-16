@@ -3,6 +3,7 @@ package com.braindribbler.recipe.controller.admin;
 import com.braindribbler.recipe.domain.recipe.Ingredient;
 import com.braindribbler.recipe.dto.recipe.PendingIngredientProjection;
 import com.braindribbler.recipe.service.recipe.IngredientService;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -30,7 +31,7 @@ public class IngredientManagementController {
     public String showModerationDashboard(Model model) {
         List<PendingIngredientProjection> pendingQueue = ingredientService.getUnverifiedIngredients();
         model.addAttribute("pendingIngredients", pendingQueue);
-        model.addAttribute("verifiedIngredients", ingredientService.getAllIngredientsSorted());
+        model.addAttribute("verifiedIngredients", ingredientService.getAllIngredientsSorted(null));
         model.addAttribute("groceryCategories", ingredientService.getAllGroceryCategories());
         return "admin/ingredients/queue";
     }
@@ -75,7 +76,7 @@ public class IngredientManagementController {
      */
     @GetMapping("/list")
     public String listAllIngredients(Model model) {
-        model.addAttribute("ingredients", ingredientService.getAllIngredientsSorted());
+        model.addAttribute("ingredients", ingredientService.getAllIngredientsSorted(null));
         return "admin/ingredients/list";
     }
 
@@ -131,7 +132,7 @@ public class IngredientManagementController {
     public String showExecutiveDashboard(Model model) {
         // 1. Fetch counts to fuel our high-visibility layout summary widget metrics
         int pendingItems = ingredientService.getUnverifiedIngredients().size();
-        int verifiedItems = ingredientService.getAllIngredientsSorted().size();
+        int verifiedItems = ingredientService.getAllIngredientsSorted(null).size();
         int groceryAisles = ingredientService.getAllGroceryCategories().size();
 
         model.addAttribute("pendingCount", pendingItems);
