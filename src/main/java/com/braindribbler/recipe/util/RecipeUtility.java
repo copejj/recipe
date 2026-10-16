@@ -174,17 +174,38 @@ public class RecipeUtility {
             finalShoppingList.add(shoppingItem);
         }
 
-        // 4. Group A-Z
+        // 4. FIXED: Group, sort by display_order priority first, and sort by ingredient
+        // name alphabetically second
         return finalShoppingList.stream()
                 .collect(Collectors.groupingBy(
-                        item -> item.getIngredient().getGroceryCategory().getCategoryName(),
-                        TreeMap::new,
-                        Collectors.collectingAndThen(
-                                Collectors.toList(),
-                                list -> {
-                                    list.sort(Comparator
-                                            .comparing(item -> item.getIngredient().getIngredientName().toLowerCase()));
-                                    return list;
-                                })));
+                        item -> item.getIngredient().getGroceryCategory(), // Group by the full Entity object
+                        Collectors.toList()))
+                .entrySet().stream()
+                .sorted((entry1, entry2) -> {
+                    // Sort 1: Compare Category display_order priorities numerical ranks
+                    int order1 = entry1.getKey().getDisplayOrder() != null ? entry1.getKey().getDisplayOrder() : 999;
+                    int order2 = entry2.getKey().getDisplayOrder() != null ? entry2.getKey().getDisplayOrder() : 999;
+                    int comp = Integer.compare(order1, order2);
+
+                    // Sort 2: If display orders match exactly, fall back to Alphabetical Category
+                    // names
+                    if (comp == 0) {
+                        comp = entry1.getKey().getCategoryName().compareToIgnoreCase(entry2.getKey().getCategoryName());
+                    }
+                    return comp;
+                })
+                .collect(Collectors.toMap(
+                        entry -> entry.getKey().getCategoryName(), // Extract name string for Thymeleaf UI rendering
+                        entry -> {
+                            List<RecipeStepIngredient> list = entry.getValue();
+                            // Sort 3: Sort inner ingredients alphabetically by name (A-Z)
+                            list.sort(Comparator
+                                    .comparing(item -> item.getIngredient().getIngredientName().toLowerCase()));
+                            return list;
+                        },
+                        (oldValue, newValue) -> oldValue,
+                        LinkedHashMap::new // LinkedHashMap strictly preserves our custom double-sorted query order!
+                ));
+
     }
 }

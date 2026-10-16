@@ -28,3 +28,27 @@ $(document).ready(function () {
         $("#" + targetPanelId).fadeIn(150);
     });
 });
+
+// --- SHOPPING CHECKLIST PANTRY FILTER SYSTEM ---
+// Listens when a user unchecks an item they already have in their kitchen
+$(document).on("change", ".shopping-item-checkbox", function () {
+    var checkbox = $(this);
+    var itemRow = checkbox.closest(".shopping-item-row");
+    var textWrapper = itemRow.find(".shopping-item-text");
+
+    if (!checkbox.is(":checked")) {
+        // User ALREADY HAS this item: strike it out visually and flag it to vanish on print
+        textWrapper.addClass("crossed-out-text");
+        itemRow.addClass("pantry-owned-item");
+    } else {
+        // User NEEDS this item: return it to pristine printable focus states
+        textWrapper.removeClass("crossed-out-text");
+        itemRow.removeClass("pantry-owned-item");
+    }
+
+    // OPTIONAL EXTRA: If all items in a category section get checked off, hide the header too!
+    var categorySection = checkbox.closest(".shopping-category-section");
+    var visibleItems = categorySection.find(".shopping-item-row").not(".pantry-owned-item").length;
+    categorySection.toggle(visibleItems > 0);
+});
+

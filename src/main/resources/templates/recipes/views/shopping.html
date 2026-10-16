@@ -1,32 +1,68 @@
 <div th:fragment="shopping-panel" id="shopping-panel" class="tab-panel" style="display: none;">
 
+    <!-- Print Hide Style Sheet Hook Overrides -->
+    <style>
+        /* CSS Rule: When printing, completely hide any rows that the user marked as 'pantry owned' */
+        @media print {
+            .pantry-owned-item {
+                display: none !important;
+            }
+
+            /* Clean up UI clutter for paper output */
+            .btn,
+            .view-mode-tabs,
+            input[type="checkbox"] {
+                display: none !important;
+            }
+
+            body {
+                background: white;
+                color: black;
+            }
+        }
+
+        /* Interactive text cross-out styling */
+        .crossed-out-text {
+            text-decoration: line-through;
+            opacity: 0.5;
+            transition: all 0.2s ease;
+        }
+    </style>
+
     <div
         style="background-color: var(--color-bg-card); padding: 24px; border-radius: 8px; border: 1px solid var(--color-border);">
         <div
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--color-border); padding-bottom: 12px;">
-            <h3 style="margin: 0; color: var(--color-text-dark); font-size: 1.4rem;">🛒 Consolidated Market Shopping
-                Sheet</h3>
+            <div>
+                <h3 style="margin: 0; color: var(--color-text-dark); font-size: 1.4rem;">🛒 Consolidated Market Shopping
+                    Sheet</h3>
+                <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--color-text-muted);">Uncheck the items you
+                    already have at home to cleanly hide them from your printed list.</p>
+            </div>
             <button type="button" class="btn" onclick="window.print()"
                 style="padding: 8px 16px; font-size: 0.85rem; font-weight: 600; cursor: pointer; background-color: var(--color-primary); color: white; border: none; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">🖨️
-                Print Checklist</button>
+                Print List</button>
         </div>
 
-        <!-- Category Loop (TreeMap auto-arranges parent aisle groupings alphabetically A-Z) -->
-        <div th:each="entry : ${shoppingListAggregatedIngredients}" style="margin-bottom: 24px;">
+        <!-- Category Loop (LinkedHashMap preserves the display_order hierarchy) -->
+        <div th:each="entry : ${shoppingListAggregatedIngredients}" class="shopping-category-section"
+            style="margin-bottom: 24px;">
             <h4 th:text="${entry.key}"
                 style="color: var(--color-primary); border-bottom: 2px solid var(--color-border); padding-bottom: 4px; margin-bottom: 12px; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 0.5px; font-weight: 700;">
                 Produce</h4>
 
             <ul style="list-style: none; padding: 0; margin: 0;">
-                <!-- Inner Loop (Guaranteed sorted Alphabetically by Ingredient Name) -->
-                <li th:each="item : ${entry.value}"
-                    style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px; padding: 6px 0; border-bottom: 1px dashed rgba(0,0,0,0.03);">
-                    <input type="checkbox"
+                <li th:each="item : ${entry.value}" class="shopping-item-row"
+                    style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px; padding: 6px 0; border-bottom: 1px dashed rgba(0,0,0,0.03); transition: all 0.2s ease;">
+
+                    <!-- CHANGED: Checkbox is checked by default and acts as an "I need this" selector flag -->
+                    <input type="checkbox" checked="checked" class="shopping-item-checkbox"
                         style="width: 19px; height: 18px; cursor: pointer; accent-color: var(--color-primary);" />
-                    <span style="font-size: 1.05rem; color: var(--color-text-dark);">
+
+                    <span class="shopping-item-text" style="font-size: 1.05rem; color: var(--color-text-dark);">
                         <strong
                             th:text="${T(com.braindribbler.recipe.util.RecipeUtility).convertDecimalToKitchenFraction(item.amount)}"
-                            style="color: var(--color-text-dark); font-weight: 700;">2</strong>
+                            style="font-weight: 700;">2</strong>
                         <span th:text="${item.measurement.unitName}"
                             style="color: var(--color-text-label);">units</span>
                         <span th:text="${item.ingredient.ingredientName}" style="font-weight: 600;">Yellow Onion</span>
