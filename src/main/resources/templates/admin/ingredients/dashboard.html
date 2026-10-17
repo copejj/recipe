@@ -51,7 +51,7 @@
                     </span>
                     <a th:href="@{/admin/ingredients/list}"
                         style="font-size: 0.85rem; color: var(--color-primary); text-decoration: none; font-weight: 600;">Manage
-                        Master Catalog List →</a>
+                        Master Ingredient List →</a>
                 </div>
             </div>
 
@@ -67,8 +67,9 @@
                         style="display: block; font-size: 1.5rem; font-weight: 700; margin: 4px 0; color: var(--color-text-dark);">
                         <span th:text="${categoryCount}">0</span> Active Aisles
                     </span>
-                    <span style="font-size: 0.85rem; color: var(--color-text-muted); font-weight: 500;">Configured Store
-                        Aisles</span>
+                    <a th:href="@{/admin/categories}"
+                        style="font-size: 0.85rem; color: var(--color-primary); text-decoration: none; font-weight: 600;">Manage
+                        Store Aisles List →</a>
                 </div>
             </div>
 

@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://thymeleaf.org" lang="en">
 
-<head
-    th:replace="~{fragments/layout :: html_head(${ingredient.ingredientId != null} ? 'Edit Ingredient' : 'Add New Ingredient')}">
+<head>
+    <th:block
+        th:replace="~{fragments/layout :: html_head(${ingredient.ingredientId != null} ? 'Edit Ingredient' : 'Add New Ingredient')}">
+    </th:block>
 </head>
 
 <body>
@@ -22,6 +24,7 @@
             th:action="${ingredient.ingredientId != null} ? @{/admin/ingredients/edit/{id}(id=${ingredient.ingredientId})} : @{/admin/ingredients/add}"
             method="post" style="margin-top: 24px;">
 
+            <!-- FIELD 1: INGREDIENT MASTER NAME -->
             <div class="form-group" style="margin-bottom: 20px;">
                 <label class="form-label" for="ingredientName"
                     style="display:block; margin-bottom:6px; font-weight:600;">Ingredient Master Name</label>
@@ -29,7 +32,23 @@
                     class="form-input" style="width:100%; padding:10px;" required />
             </div>
 
+            <!-- FIELD 2: SCALING TRACK CLASSIFICATION DROPDOWN (FIXED WEIGHT) -->
             <div class="form-group" style="margin-bottom: 24px;">
+                <label class="form-label" for="classification"
+                    style="display:block; margin-bottom:6px; font-weight:600;">Scaling Track Classification</label>
+                <!-- REMOVED font-weight: 600; below to balance the look with the other fields -->
+                <select id="classification" name="classification" class="form-input" style="width:100%; padding:10px;"
+                    required>
+                    <!-- Loops dynamically over the classifications exposed globally via the controller -->
+                    <option th:each="enumType : ${classifications}" th:value="${enumType.name()}"
+                        th:text="${enumType.name() + ' — (' + enumType.description + ')'}"
+                        th:selected="${ingredient.classification != null and enumType.name() == ingredient.classification.name()}">
+                    </option>
+                </select>
+            </div>
+
+            <!-- FIELD 3: GROCERY SECTION CATEGORY -->
+            <div class="form-group" style="margin-bottom: 20px;">
                 <label class="form-label" for="groceryCategoryId"
                     style="display:block; margin-bottom:6px; font-weight:600;">Grocery Section Category</label>
                 <select id="groceryCategoryId" name="groceryCategoryId" class="form-input"
@@ -42,9 +61,11 @@
                 </select>
             </div>
 
+            <!-- ACTIONS FOOTER BUTTON GRID -->
             <div style="display: flex; gap: 12px;">
                 <button type="submit" class="btn"
-                    style="background-color: var(--color-primary); color: white; width: auto; padding: 10px 20px; font-weight:700; border-radius:6px; border:none; cursor:pointer;">Save
+                    style="background-color: var(--color-primary); color: white; width: auto; padding: 10px 20px; font-weight:700; border-radius:6px; border:none; cursor:pointer;"
+                    th:text="${ingredient.ingredientId != null} ? 'Save Global Changes' : 'Create Global Master'">Save
                     Global Changes</button>
                 <a th:href="@{/admin/ingredients/list}" class="btn"
                     style="background-color: #e9ecef; color: var(--color-text-dark); text-decoration: none; width: auto; padding: 10px 20px; border-radius: 6px; text-align: center; border:1px solid var(--color-border);">Cancel</a>

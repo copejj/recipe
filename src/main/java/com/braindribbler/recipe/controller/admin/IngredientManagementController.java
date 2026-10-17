@@ -1,6 +1,7 @@
 package com.braindribbler.recipe.controller.admin;
 
 import com.braindribbler.recipe.domain.recipe.Ingredient;
+import com.braindribbler.recipe.domain.recipe.IngredientClassification; // ◄ NEW
 import com.braindribbler.recipe.dto.recipe.PendingIngredientProjection;
 import com.braindribbler.recipe.service.recipe.IngredientService;
 
@@ -25,6 +26,15 @@ public class IngredientManagementController {
     }
 
     /**
+     * Exposes classification enum values automatically to ALL GET endpoints in this
+     * controller
+     */
+    @ModelAttribute
+    public void addManagementMetadata(Model model) {
+        model.addAttribute("classifications", IngredientClassification.values()); // ◄ NEW GLOBAL ATTRIBUTE
+    }
+
+    /**
      * Renders the master ingredient moderation dashboard panel view
      */
     @GetMapping
@@ -45,9 +55,14 @@ public class IngredientManagementController {
     public ResponseEntity<?> approveUserIngredient(
             @PathVariable("id") Integer ingredientId,
             @RequestParam(value = "updatedName", required = false) String updatedName,
-            @RequestParam(value = "updatedCategoryId", required = false) Integer updatedCategoryId) {
+            @RequestParam(value = "updatedCategoryId", required = false) Integer updatedCategoryId,
+            @RequestParam(value = "classification", defaultValue = "SOLID") String classificationStr) { // ◄ NEW
+                                                                                                        // PARAMETER
         try {
-            ingredientService.approveAndModifyIngredient(ingredientId, updatedName, updatedCategoryId);
+            // Update your service layer method definition to accept this classification
+            // enum parameter!
+            IngredientClassification classification = IngredientClassification.valueOf(classificationStr.toUpperCase());
+            ingredientService.approveAndModifyIngredient(ingredientId, updatedName, updatedCategoryId, classification);
             return ResponseEntity.ok(Map.of("success", true, "message", "Ingredient verified successfully!"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
@@ -86,7 +101,6 @@ public class IngredientManagementController {
     @GetMapping("/edit/{id}")
     public String showEditIngredientForm(@PathVariable("id") Integer id, Model model) {
         Ingredient ingredient = ingredientService.getIngredientById(id);
-
         model.addAttribute("ingredient", ingredient);
         model.addAttribute("groceryCategories", ingredientService.getAllGroceryCategories());
         return "admin/ingredients/edit";
@@ -98,9 +112,13 @@ public class IngredientManagementController {
     @PostMapping("/edit/{id}")
     public String updateIngredient(@PathVariable("id") Integer id,
             @RequestParam("ingredientName") String ingredientName,
-            @RequestParam("groceryCategoryId") Integer groceryCategoryId) {
+            @RequestParam("groceryCategoryId") Integer groceryCategoryId,
+            @RequestParam("classification") String classificationStr) { // ◄ NEW PARAMETER
         try {
-            ingredientService.approveAndModifyIngredient(id, ingredientName, groceryCategoryId);
+            IngredientClassification classification = IngredientClassification.valueOf(classificationStr.toUpperCase());
+            // Update your service layer method definition to accept this classification
+            // enum parameter!
+            ingredientService.approveAndModifyIngredient(id, ingredientName, groceryCategoryId, classification);
             return "redirect:/admin/ingredients/list?updated=true";
         } catch (Exception e) {
             return "redirect:/admin/ingredients/list?error=updateFailed";
@@ -116,7 +134,6 @@ public class IngredientManagementController {
             ingredientService.deleteIngredientById(id);
             return "redirect:/admin/ingredients/list?deleted=true";
         } catch (IllegalStateException e) {
-            // Redirects with the specific safety usage restriction string to warn the admin
             return "redirect:/admin/ingredients/list?error=inUse";
         } catch (Exception e) {
             return "redirect:/admin/ingredients/list?error=deleteFailed";
@@ -125,11 +142,9 @@ public class IngredientManagementController {
 
     /**
      * Renders the high-level Executive Metrics Control Dashboard Center
-     * Maps perfectly to: GET /admin/ingredients/dashboard
      */
     @GetMapping("/dashboard")
     public String showExecutiveDashboard(Model model) {
-        // 1. Fetch counts to fuel our high-visibility layout summary widget metrics
         int pendingItems = ingredientService.getUnverifiedIngredients().size();
         int verifiedItems = ingredientService.getAllIngredientsSorted(null).size();
         int groceryAisles = ingredientService.getAllGroceryCategories().size();
@@ -138,30 +153,31 @@ public class IngredientManagementController {
         model.addAttribute("totalCount", verifiedItems);
         model.addAttribute("categoryCount", groceryAisles);
 
-        return "admin/ingredients/dashboard"; // Points directly to your new metrics hub!
+        return "admin/ingredients/dashboard";
     }
 
     /**
      * Displays a blank form to manually create a new globally verified ingredient
-     * Maps to: GET /admin/ingredients/add
      */
     @GetMapping("/add")
     public String showAddIngredientForm(Model model) {
         model.addAttribute("ingredient", new com.braindribbler.recipe.domain.recipe.Ingredient());
         model.addAttribute("groceryCategories", ingredientService.getAllGroceryCategoriesSortedByOrder());
-        return "admin/ingredients/edit"; // Reuses the edit.html form view blueprint for creation profiles!
+        return "admin/ingredients/edit";
     }
 
     /**
      * Processes manual ingredient creations from the admin desk
-     * Maps to: POST /admin/ingredients/add
      */
     @PostMapping("/add")
     public String manuallyCreateIngredient(@RequestParam("ingredientName") String name,
-            @RequestParam("groceryCategoryId") Integer categoryId) {
+            @RequestParam("groceryCategoryId") Integer categoryId,
+            @RequestParam("classification") String classificationStr) { // ◄ NEW PARAMETER
         try {
-            // Registers item directly flipping is_verified = TRUE instantly
-            ingredientService.registerVerifiedIngredient(name, categoryId);
+            IngredientClassification classification = IngredientClassification.valueOf(classificationStr.toUpperCase());
+            // Update your service layer method definition to accept this classification
+            // enum parameter!
+            ingredientService.registerVerifiedIngredient(name, categoryId, classification);
             return "redirect:/admin/ingredients/list?created=true";
         } catch (Exception e) {
             return "redirect:/admin/ingredients/list?error=createFailed";
@@ -170,7 +186,6 @@ public class IngredientManagementController {
 
     /**
      * Retracts an approved ingredient and places it back into the moderation queue
-     * Maps to: POST /admin/ingredients/retract/{id}
      */
     @PostMapping("/retract/{id}")
     public String retractApprovedIngredient(@PathVariable("id") Integer id) {

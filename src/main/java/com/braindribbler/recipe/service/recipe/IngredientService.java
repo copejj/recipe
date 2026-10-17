@@ -106,27 +106,60 @@ public class IngredientService {
         ingredientRepository.delete(duplicate);
     }
 
-    // Inside com.braindribbler.recipe.service.recipe.IngredientService
     @Transactional
-    public void approveAndModifyIngredient(Integer ingredientId, String updatedName, Integer updatedCategoryId) {
+    public void approveAndModifyIngredient(Integer ingredientId, String updatedName, Integer updatedCategoryId,
+            com.braindribbler.recipe.domain.recipe.IngredientClassification classification) { // ◄ UPDATED
         Ingredient ingredient = ingredientRepository.findById(ingredientId)
                 .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Ingredient missing"));
 
         // 1. Overwrite the name text if the admin corrected a typo
         if (updatedName != null && !updatedName.trim().isEmpty()) {
-            ingredient.setIngredientName(updatedName.trim());
+            ingredient.setIngredientName(updatedName.trim()); //
         }
 
         // 2. Overwrite the grocery section aisle categorization layout mapping if
         // modified
         if (updatedCategoryId != null) {
             ingredient.setGroceryCategory(groceryCategoryRepository.findById(updatedCategoryId)
-                    .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Category missing")));
+                    .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Category missing"))); //
         }
 
-        // 3. Promote globally
-        ingredient.setIsVerified(true);
-        ingredientRepository.save(ingredient);
+        // 3. NEW: Overwrite the classification track layout settings
+        if (classification != null) {
+            ingredient.setClassification(classification);
+        }
+
+        // 4. Promote globally
+        ingredient.setIsVerified(true); //
+        ingredientRepository.save(ingredient); //
+    }
+
+    /**
+     * Manually registers a brand new master ingredient, skipping the review queue
+     * instantly
+     */
+    @Transactional
+    public Ingredient registerVerifiedIngredient(String name, Integer categoryId,
+            com.braindribbler.recipe.domain.recipe.IngredientClassification classification) { // ◄ UPDATED
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Ingredient master name cannot be empty."); //
+        }
+
+        Ingredient ingredient = new Ingredient();
+        ingredient.setIngredientName(name.trim()); //
+        ingredient.setIsVerified(true); // 🔥 Promotes item straight to global cookbook options instantly
+
+        // Connect structural foreign key lookup dependency row
+        GroceryCategory category = groceryCategoryRepository.findById(categoryId)
+                .orElseThrow(
+                        () -> new EntityNotFoundException("Grocery category section not found with ID: " + categoryId)); //
+        ingredient.setGroceryCategory(category); //
+
+        // NEW: Set management track classifications parameters
+        ingredient.setClassification(classification != null ? classification
+                : com.braindribbler.recipe.domain.recipe.IngredientClassification.SOLID);
+
+        return ingredientRepository.save(ingredient); //
     }
 
     /**
@@ -169,29 +202,6 @@ public class IngredientService {
     public List<GroceryCategory> getAllGroceryCategoriesSortedByOrder() {
         // Bridges cleanly to your backing repository query sequence mapping hook
         return groceryCategoryRepository.findAllByOrderByDisplayOrderAsc();
-    }
-
-    /**
-     * Manually registers a brand new master ingredient, skipping the review queue
-     * instantly
-     */
-    @Transactional
-    public Ingredient registerVerifiedIngredient(String name, Integer categoryId) {
-        if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Ingredient master name cannot be empty.");
-        }
-
-        Ingredient ingredient = new Ingredient();
-        ingredient.setIngredientName(name.trim());
-        ingredient.setIsVerified(true); // 🔥 Promotes item straight to global cookbook options instantly
-
-        // Connect structural foreign key lookup dependency row
-        GroceryCategory category = groceryCategoryRepository.findById(categoryId)
-                .orElseThrow(
-                        () -> new EntityNotFoundException("Grocery category section not found with ID: " + categoryId));
-        ingredient.setGroceryCategory(category);
-
-        return ingredientRepository.save(ingredient);
     }
 
     /**

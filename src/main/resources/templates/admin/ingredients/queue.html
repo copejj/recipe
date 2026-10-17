@@ -67,16 +67,30 @@
                             </select>
                         </td>
 
+                        <!-- NEW: COLUMN 3: SELECTABLE INLINE CLASSIFICATION SCALING TRACK DROPDOWN -->
+                        <td style="padding: 10px 12px;">
+                            <select th:id="'ing-classification-select-' + ${ing.getIngredientId()}" class="form-input"
+                                style="width: 100%; margin: 0; padding: 6px; font-size: 0.9rem; font-weight: 600; border-radius: 4px;">
+                                <!-- Loop through classifications passed from the global model attribute -->
+                                <option th:each="enumType : ${classifications}" th:value="${enumType.name()}"
+                                    th:text="${enumType.name()}" th:selected="${enumType.name() == 'SOLID'}">
+                                    <!-- Defaults inline rows to standard SOLID profile -->
+                                </option>
+                            </select>
+                        </td>
+
+                        <!-- COLUMN 4: SUBMITTING USER DISPLAY FIELD -->
                         <td style="padding: 14px 12px; color: var(--color-text-muted);"
                             th:text="${ing.getCreatedByUsername() != null ? ing.getCreatedByUsername() : 'Anonymous Chef'}">
                             jcope
                         </td>
 
+                        <!-- COLUMN 5: CONTROL BUTTON ACTIONS GRID BAR PANEL -->
                         <td style="padding: 14px 12px; text-align: right;">
                             <div
                                 style="display: inline-flex; gap: 12px; align-items: center; justify-content: flex-end;">
 
-                                <!-- 1. ASYNC APPROVE TRIGGER BUTTON (Captures updated parameters dynamically) -->
+                                <!-- 1. ASYNC APPROVE TRIGGER BUTTON -->
                                 <button type="button" class="btn async-approve-btn"
                                     th:data-id="${ing.getIngredientId()}"
                                     style="white-space: nowrap; background-color: var(--color-primary); color: white; padding: 8px 14px; font-size: 0.85rem; font-weight: 700; border-radius: 4px; border: none; cursor: pointer;">
@@ -103,107 +117,14 @@
                             </div>
                         </td>
                     </tr>
-
                 </tbody>
             </table>
         </div>
     </main>
 
     <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <script th:src="@{/js/admin-ingredient-queue.js}"></script>
 
-    <!-- INTERACTIVE AJAX ORCHESTRATION LAYER -->
-    <script th:inline="none">
-        $(document).ready(function () {
-            // Eagerly inject CSRF header authorization parameters into all AJAX requests
-            $(document).ajaxSend(function (e, xhr, options) {
-                var token = $("meta[name='_csrf']").attr("content");
-                var header = $("meta[name='_csrf_header']").attr("content");
-                if (header && token) {
-                    xhr.setRequestHeader(header, token);
-                }
-            });
-
-            function showToast(message, isError = false) {
-                var toast = $("#async-toast-alert");
-                toast.text(message).css({
-                    "background-color": isError ? "#fce8e6" : "#e6f4ea",
-                    "border-color": isError ? "#f4c7c3" : "#bce5c6",
-                    "color": isError ? "#c5221f" : "#137333"
-                }).fadeIn().delay(3000).fadeOut();
-            }
-
-            function checkQueueCount() {
-                if ($("#queue-tbody tr:visible").length === 0) {
-                    $("#queue-table-wrapper").hide();
-                    $("#empty-queue-state").fadeIn();
-                }
-            }
-
-            // Locate this block inside the script tag of queue.html and update it:
-            $(document).on("click", ".async-approve-btn", function () {
-                var ingredientId = $(this).attr("data-id");
-                var targetRow = $("#ing-row-" + ingredientId);
-
-                // 🔥 DYNAMIC OVERRIDE: Pull current input values straight from the editable rows
-                var currentTypedName = $("#ing-name-input-" + ingredientId).val();
-                var currentSelectedCategory = $("#ing-category-select-" + ingredientId).val();
-
-                $.ajax({
-                    url: '/admin/ingredients/approve/' + ingredientId,
-                    type: 'POST',
-                    data: {
-                        updatedName: currentTypedName,
-                        updatedCategoryId: currentSelectedCategory
-                    },
-                    success: function (response) {
-                        if (response.success) {
-                            targetRow.css("background-color", "#e6f4ea").fadeOut(400, function () {
-                                $(this).remove();
-                                checkQueueCount();
-                            });
-                            showToast(response.message);
-                        }
-                    },
-                    error: function (xhr) {
-                        showToast("Failed to verify ingredient entry.", true);
-                    }
-                });
-            });
-
-            // Asynchronous Merge Action Hook Handler
-            $(document).on("click", ".async-merge-btn", function () {
-                var duplicateId = $(this).attr("data-id");
-                var targetId = $("#merge-target-" + duplicateId).val();
-                var targetRow = $("#ing-row-" + duplicateId);
-
-                if (!targetId) {
-                    showToast("Please choose a valid verification target profile to merge into.", true);
-                    return;
-                }
-
-                $.ajax({
-                    url: '/admin/ingredients/merge',
-                    type: 'POST',
-                    data: {
-                        duplicateId: duplicateId,
-                        targetId: targetId
-                    },
-                    success: function (response) {
-                        if (response.success) {
-                            targetRow.css("background-color", "#e8f0fe").fadeOut(400, function () {
-                                $(this).remove();
-                                checkQueueCount();
-                            });
-                            showToast(response.message);
-                        }
-                    },
-                    error: function (xhr) {
-                        showToast("Failed to merge duplicate selection.", true);
-                    }
-                });
-            });
-        });
-    </script>
 </body>
 
 </html>
