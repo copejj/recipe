@@ -85,7 +85,6 @@ public class IngredientManagementController {
      */
     @GetMapping("/edit/{id}")
     public String showEditIngredientForm(@PathVariable("id") Integer id, Model model) {
-        // 🔥 FIXED: Routes request through service instead of raw repository pull
         Ingredient ingredient = ingredientService.getIngredientById(id);
 
         model.addAttribute("ingredient", ingredient);
@@ -173,7 +172,7 @@ public class IngredientManagementController {
      * Retracts an approved ingredient and places it back into the moderation queue
      * Maps to: POST /admin/ingredients/retract/{id}
      */
-    @PostMapping("/retract/{id}") // ◄ Renamed from /delete/{id}
+    @PostMapping("/retract/{id}")
     public String retractApprovedIngredient(@PathVariable("id") Integer id) {
         try {
             ingredientService.retractIngredientFromGlobalPool(id);

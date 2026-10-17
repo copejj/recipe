@@ -6,6 +6,9 @@ import com.braindribbler.recipe.domain.auth.User;
 
 import jakarta.persistence.*;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 @Entity
 @Table(name = "ingredients")
 public class Ingredient {
@@ -33,6 +36,7 @@ public class Ingredient {
     private ZonedDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM) // <-- Add this line
     @Column(name = "classification", nullable = false)
     private IngredientClassification classification = IngredientClassification.SOLID;
 

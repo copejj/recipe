@@ -972,3 +972,54 @@ dialog.admin-modal h3 {
     opacity: 1;
     transform: translateX(-50%) scale(1);
 }
+
+/* ==========================================================================
+   SELECT2 FORM UNIFICATION FIXES
+   Overrides Select2 structural wrappers to perfectly match .form-input styles
+   ========================================================================== */
+
+/* 1. Unify the main container box height and spacing */
+.ingredient-row .select2-container--default .select2-selection--single {
+    height: 42px;
+    /* Set this to match the exact height of your other form selects/inputs */
+    padding: 6px 12px;
+    background-color: var(--background-input, #ffffff);
+    border: 1px solid var(--color-border-input, #ccc);
+    border-radius: 6px;
+    /* Snaps perfectly to your 6px button styles */
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+/* 2. Fix the inner selected text alignment box */
+.ingredient-row .select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: var(--color-text-dark, #495057);
+    line-height: normal;
+    padding-left: 0;
+    padding-right: 20px;
+    width: 100%;
+}
+
+/* 3. Re-align and center the down-arrow caret indicator */
+.ingredient-row .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 100%;
+    top: 0;
+    right: 8px;
+    display: flex;
+    align-items: center;
+}
+
+/* 4. Fix standard browser flexbox snapping bugs for rows */
+.ingredient-row .select2-container {
+    flex: 2.5 !important;
+    /* Forces Select2 to accurately respect your style="flex: 2.5;" layout configuration */
+    width: 100% !important;
+}
+
+/* 5. Smooth focus state highlight effect matching standard inputs */
+.ingredient-row .select2-container--default.select2-container--focus .select2-selection--single {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}

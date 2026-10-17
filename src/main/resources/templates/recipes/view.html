@@ -62,24 +62,24 @@
         <!-- 🎛️ VIEW PANEL TABS SWITCH NAVIGATION HEADER BAR -->
         <div class="view-mode-tabs"
             style="display: flex; gap: 8px; margin-bottom: 30px; border-bottom: 2px solid var(--color-border); padding-bottom: 10px;">
-            <button type="button" class="tab-btn active" data-target="prep-panel"
+            <button type="button" class="tab-btn active" data-target="overview-panel"
                 style="padding: 10px 20px; font-weight: 700; border: none; background: none; cursor: pointer; color: var(--color-primary); border-bottom: 3px solid var(--color-primary); margin-bottom: -13px; font-size: 1rem;">🍳
-                Kitchen Prep Mode</button>
-            <button type="button" class="tab-btn" data-target="overview-panel"
-                style="padding: 10px 20px; font-weight: 600; border: none; background: none; cursor: pointer; color: var(--color-text-muted); font-size: 1rem;">📖
                 Recipe Overview</button>
+            <button type="button" class="tab-btn" data-target="prep-panel"
+                style="padding: 10px 20px; font-weight: 600; border: none; background: none; cursor: pointer; color: var(--color-text-muted); font-size: 1rem;">📖
+                Kitchen Prep Mode</button>
             <button type="button" class="tab-btn" data-target="shopping-panel"
                 style="padding: 10px 20px; font-weight: 600; border: none; background: none; cursor: pointer; color: var(--color-text-muted); font-size: 1rem;">🛒
                 Grocery Shopping List</button>
         </div>
 
         <!-- 🎛️ MODULAR DISPLAY LAYOUT CHANNELS -->
-        <div id="prep-panel" class="tab-panel active-panel">
-            <div th:insert="~{recipes/views/prep :: prep-panel}"></div>
+        <div id="overview-panel" class="tab-panel active-panel">
+            <div th:insert="~{recipes/views/overview :: overview-panel}"></div>
         </div>
 
-        <div id="overview-panel" class="tab-panel" style="display: none;">
-            <div th:insert="~{recipes/views/overview :: overview-panel}"></div>
+        <div id="prep-panel" class="tab-panel" style="display: none;">
+            <div th:insert="~{recipes/views/prep :: prep-panel}"></div>
         </div>
 
         <div id="shopping-panel" class="tab-panel" style="display: none;">

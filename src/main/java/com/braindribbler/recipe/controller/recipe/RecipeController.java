@@ -197,7 +197,6 @@ public class RecipeController {
 
         // CRITICAL EFFICIENCY GUARD: Only query the database for GET requests (page
         // renders)
-        // Completely skips queries on POST submissions, deletes, or updates!
         if (!"GET".equalsIgnoreCase(method)) {
             return;
         }
@@ -207,6 +206,8 @@ public class RecipeController {
         model.addAttribute("allIngredients", ingredientService.getAllIngredientsSorted(userEntity));
         model.addAttribute("measurements", recipeService.getAllMeasurements());
         model.addAttribute("visibilities", recipeService.getAllVisibilities());
-        model.addAttribute("groceryCategories", ingredientService.getAllGroceryCategories());
+
+        model.addAttribute("groceryCategories", ingredientService.getAllGroceryCategoriesSortedByOrder());
+        model.addAttribute("classifications", com.braindribbler.recipe.domain.recipe.IngredientClassification.values());
     }
 }

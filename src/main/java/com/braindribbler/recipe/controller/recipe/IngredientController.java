@@ -29,6 +29,7 @@ public class IngredientController {
     @ResponseBody
     public ResponseEntity<?> quickAddIngredient(@RequestParam("name") String ingredientName,
             @RequestParam("groceryCategoryId") Integer groceryCategoryId,
+            @RequestParam(value = "classification", defaultValue = "SOLID") String classificationStr, // ◄ NEW
             @AuthenticationPrincipal RecipeUserDetails currentUser) {
         try {
             if (currentUser == null) {
@@ -38,8 +39,21 @@ public class IngredientController {
                 return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Name cannot be empty."));
             }
 
+            // Convert string to enum safely
+            com.braindribbler.recipe.domain.recipe.IngredientClassification classification;
+            try {
+                classification = com.braindribbler.recipe.domain.recipe.IngredientClassification
+                        .valueOf(classificationStr.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("success", false, "message", "Invalid classification type."));
+            }
+
             User userEntity = currentUser.getUserProfile();
-            Ingredient saved = ingredientService.quickRegisterIngredient(ingredientName, groceryCategoryId, userEntity);
+
+            // Pass classification down to the updated service method
+            Ingredient saved = ingredientService.quickRegisterIngredient(ingredientName, groceryCategoryId,
+                    classification, userEntity);
 
             return ResponseEntity.ok(Map.of(
                     "success", true,
@@ -51,4 +65,5 @@ public class IngredientController {
             return ResponseEntity.internalServerError().body(Map.of("success", false, "message", "An error occurred."));
         }
     }
+
 }

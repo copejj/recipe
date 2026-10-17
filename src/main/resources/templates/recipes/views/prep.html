@@ -21,15 +21,16 @@
                 style="margin: 0; padding-left: 20px; color: var(--color-text-label); line-height: 1.7; font-size: 1rem;">
                 <li th:each="item : ${step.stepIngredients}">
 
-                    <!-- FIXED: Added user-driven data-ingredient-classification property mapping tracker hook -->
+                    <!-- SIMPLIFIED DATA BINDING ATTRIBUTES HERE -->
                     <span class="scalable-amount" th:data-base-amount="${item.amount}"
                         th:data-base-type-id="${item.measurement.baseType.baseTypeId}"
                         th:data-base-unit-equivalent="${item.measurement.baseUnitEquivalent}"
-                        th:data-original-unit-name="${item.measurement.unitName}"
+                        th:data-original-unit-id="${item.measurement.measurementId}"
+                        th:data-is-promotable="${item.measurement.isPromotable}"
                         th:data-ingredient-classification="${item.ingredient.classification.name()}"
                         th:text="${T(com.braindribbler.recipe.util.RecipeUtility).convertDecimalToKitchenFraction(item.amount)}">1</span>
 
-                    <span class="scalable-unit-name" th:text="${item.measurement.unitName}">cups</span> of
+                    <span class="scalable-unit-name" th:text="${item.measurement.unitName}">Cups</span> of
                     <strong th:text="${item.ingredient.ingredientName}">Flour</strong>
                     <!-- Target element anchor for Imperial display packaging updates -->
                     <span class="oz-package-preview"></span>

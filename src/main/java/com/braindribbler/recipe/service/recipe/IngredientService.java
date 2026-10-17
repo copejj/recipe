@@ -1,6 +1,7 @@
 package com.braindribbler.recipe.service.recipe;
 
 import com.braindribbler.recipe.domain.recipe.Ingredient;
+import com.braindribbler.recipe.domain.recipe.IngredientClassification;
 import com.braindribbler.recipe.domain.recipe.GroceryCategory;
 import com.braindribbler.recipe.domain.auth.User;
 import com.braindribbler.recipe.domain.auth.UserMessage;
@@ -66,7 +67,8 @@ public class IngredientService {
     }
 
     @Transactional
-    public Ingredient quickRegisterIngredient(String name, Integer groceryCategoryId, User creator) {
+    public Ingredient quickRegisterIngredient(String name, Integer groceryCategoryId,
+            IngredientClassification classification, User creator) {
         String trimmedName = name.trim();
 
         if (ingredientRepository.findByIngredientNameIgnoreCase(trimmedName).isPresent()) {
@@ -82,6 +84,8 @@ public class IngredientService {
         ingredient.setGroceryCategory(category);
         ingredient.setCreatedByUser(creator);
         ingredient.setIsVerified(false); // Flags it for the admin moderation pipeline panel
+        ingredient.setClassification(classification != null ? classification
+                : IngredientClassification.SOLID);
 
         return ingredientRepository.save(ingredient);
     }
