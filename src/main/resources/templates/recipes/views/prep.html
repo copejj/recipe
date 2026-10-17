@@ -19,12 +19,14 @@
                 Ingredients for this step:</h5>
             <ul
                 style="margin: 0; padding-left: 20px; color: var(--color-text-label); line-height: 1.7; font-size: 1rem;">
-                <!-- ADDED TH:EACH ITERATOR HERE -->
                 <li th:each="item : ${step.stepIngredients}">
+
+                    <!-- FIXED: Added user-driven data-ingredient-classification property mapping tracker hook -->
                     <span class="scalable-amount" th:data-base-amount="${item.amount}"
                         th:data-base-type-id="${item.measurement.baseType.baseTypeId}"
                         th:data-base-unit-equivalent="${item.measurement.baseUnitEquivalent}"
                         th:data-original-unit-name="${item.measurement.unitName}"
+                        th:data-ingredient-classification="${item.ingredient.classification.name()}"
                         th:text="${T(com.braindribbler.recipe.util.RecipeUtility).convertDecimalToKitchenFraction(item.amount)}">1</span>
 
                     <span class="scalable-unit-name" th:text="${item.measurement.unitName}">cups</span> of

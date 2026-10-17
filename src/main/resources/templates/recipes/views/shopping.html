@@ -1,112 +1,41 @@
 <!-- 📁 templates/recipes/views/shopping.html -->
 <div th:fragment="shopping-view">
+    <!-- Category Loop (Matches Controller Map Syntax Perfectly) -->
+    <div th:each="entry : ${shoppingListAggregatedIngredients}" class="shopping-category-section"
+        style="margin-bottom: 24px;">
+        <h4 th:text="${entry.key}"
+            style="color: var(--color-primary); border-bottom: 2px solid var(--color-border); padding-bottom: 4px; margin-bottom: 12px; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 0.5px; font-weight: 700;">
+            Produce</h4>
 
-    <!-- Custom Underline Stylings & Paper Layout Media Engine Queries -->
-    <style>
-        .shopping-note-input {
-            border: none;
-            border-bottom: 1px dashed #ccc;
-            background: transparent;
-            padding: 2px 4px;
-            font-size: 0.85rem;
-            color: #495057;
-            flex: 1;
-            margin-left: 16px;
-            transition: border-color 0.2s ease;
-        }
+        <ul style="list-style: none; padding: 0; margin: 0;">
+            <li th:each="item : ${entry.value}" class="shopping-item-row"
+                style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.03);">
+                <div style="display: flex; align-items: center; gap: 12px; flex: 2;">
+                    <input type="checkbox" checked="checked" class="shopping-item-checkbox"
+                        style="width: 19px; height: 18px; cursor: pointer; accent-color: var(--color-primary);" />
 
-        .shopping-note-input:focus {
-            outline: none;
-            border-bottom: 1px solid var(--color-primary);
-        }
+                    <span class="shopping-item-text"
+                        style="font-size: 1.05rem; color: var(--color-text-dark); white-space: nowrap;">
+                        <span th:text="${item.ingredient.ingredientName}" style="font-weight: 600;">Chicken Broth</span>
+                        -
 
-        @media print {
-            .pantry-owned-item {
-                display: none !important;
-            }
+                        <!-- DATA BINDING CONTRACT ANCHOR WITH CLASSIFICATION ATTRIBUTE -->
+                        <strong class="scalable-amount" th:data-base-amount="${item.amount}"
+                            th:data-base-type-id="${item.measurement.baseType.baseTypeId}"
+                            th:data-base-unit-equivalent="${item.measurement.baseUnitEquivalent}"
+                            th:data-original-unit-name="${item.measurement.unitName}"
+                            th:data-ingredient-classification="${item.ingredient.classification.name()}"
+                            style="font-weight: 700;"
+                            th:text="${T(com.braindribbler.recipe.util.RecipeUtility).convertDecimalToKitchenFraction(item.amount)}">2</strong>
 
-            .btn,
-            .view-mode-tabs,
-            .system-toggle-wrapper,
-            input[type="checkbox"] {
-                display: none !important;
-            }
-
-            .shopping-note-input {
-                border: none !important;
-                color: black !important;
-                font-style: italic;
-                padding: 0 !important;
-            }
-
-            body {
-                background: white;
-                color: black;
-            }
-        }
-
-        .crossed-out-text {
-            text-decoration: line-through;
-            opacity: 0.4;
-            transition: all 0.2s ease;
-        }
-    </style>
-
-    <div
-        style="background-color: var(--color-bg-card); padding: 24px; border-radius: 8px; border: 1px solid var(--color-border);">
-        <div
-            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--color-border); padding-bottom: 12px;">
-            <div>
-                <h3 style="margin: 0; color: var(--color-text-dark); font-size: 1.4rem;">🛒 Consolidated Market Shopping
-                    Sheet</h3>
-                <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--color-text-muted);">Cross out items you
-                    have at home. Type in custom shopper notes for the printer!</p>
-            </div>
-            <button type="button" class="btn" onclick="window.print()"
-                style="padding: 8px 16px; font-size: 0.85rem; font-weight: 600; cursor: pointer; background-color: var(--color-primary); color: white; border: none; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">🖨️
-                Print List</button>
-        </div>
-
-        <!-- Category Loop -->
-        <div th:each="entry : ${shoppingListAggregatedIngredients}" class="shopping-category-section"
-            style="margin-bottom: 24px;">
-            <h4 th:text="${entry.key}"
-                style="color: var(--color-primary); border-bottom: 2px solid var(--color-border); padding-bottom: 4px; margin-bottom: 12px; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 0.5px; font-weight: 700;">
-                Produce</h4>
-
-            <ul style="list-style: none; padding: 0; margin: 0;">
-                <li th:each="item : ${entry.value}" class="shopping-item-row"
-                    style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.03);">
-
-                    <div style="display: flex; align-items: center; gap: 12px; flex: 2;">
-                        <input type="checkbox" checked="checked" class="shopping-item-checkbox"
-                            style="width: 19px; height: 18px; cursor: pointer; accent-color: var(--color-primary);" />
-
-                        <span class="shopping-item-text"
-                            style="font-size: 1.05rem; color: var(--color-text-dark); white-space: nowrap;">
-                            <!-- Layout Pattern: [Name] - [Amount] [Unit] (Ounces) -->
-                            <span th:text="${item.ingredient.ingredientName}" style="font-weight: 600;">Chicken
-                                Broth</span> -
-                            <strong class="scalable-amount" th:data-base-amount="${item.amount}"
-                                th:data-base-type-id="${item.measurement.baseType.baseTypeId}"
-                                th:data-base-unit-equivalent="${item.measurement.baseUnitEquivalent}"
-                                th:data-original-unit-name="${item.measurement.unitName}" style="font-weight: 700;"
-                                th:text="${T(com.braindribbler.recipe.util.RecipeUtility).convertDecimalToKitchenFraction(item.amount)}">2</strong>
-                            <span class="scalable-unit-name" th:text="${item.measurement.unitName}">pt</span>
-
-                            <!-- Ounce Display Span Hook Overlays -->
-                            <span class="oz-package-preview"
-                                style="color: #6c757d; font-size: 0.9rem; font-weight: 500;"></span>
-                        </span>
-                    </div>
-
-                    <!-- Live user typewriter handwritten notes field -->
-                    <input type="text" class="shopping-note-input"
-                        placeholder="Add store note (e.g. brand preferences)..." autocomplete="off" />
-
-                </li>
-            </ul>
-        </div>
+                        <span class="scalable-unit-name" th:text="${item.measurement.unitName}">pt</span>
+                        <span class="oz-package-preview"
+                            style="color: #6c757d; font-size: 0.9rem; font-weight: 500;"></span>
+                    </span>
+                </div>
+                <input type="text" class="shopping-note-input" placeholder="Add store note (e.g. brand preferences)..."
+                    autocomplete="off" />
+            </li>
+        </ul>
     </div>
-
 </div>

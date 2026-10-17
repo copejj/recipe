@@ -77,6 +77,8 @@ $(document).ready(function () {
             var baseUnitEquivalent = parseFloat($amountLabel.data("base-unit-equivalent"));
             var originalUnitName = ($amountLabel.data("original-unit-name") || "").toLowerCase().trim();
 
+            var classification = ($amountLabel.data("ingredient-classification") || "SOLID").toUpperCase().trim();
+
             if (isNaN(baseAmount) || isNaN(baseTypeId) || isNaN(baseUnitEquivalent)) return;
 
             var totalScaledValue = baseAmount * scalingFactor;
@@ -97,6 +99,16 @@ $(document).ready(function () {
                 var candidates = poolMatrix.filter(function (m) {
                     return m.baseTypeId === baseTypeId && m.isMetric === targetMetricFlag;
                 });
+
+                if (baseTypeId === 1 && classification === "DRY") {
+                    candidates = candidates.filter(function (m) {
+                        var unit = (m.unitName || "").toLowerCase().trim();
+                        return unit !== "fl oz" && unit !== "fluid ounce" &&
+                            unit !== "pt" && unit !== "pint" &&
+                            unit !== "qt" && unit !== "quart" &&
+                            unit !== "gal" && unit !== "gallon";
+                    });
+                }
 
                 // Sort by rank descending
                 candidates.sort(function (a, b) { return b.scalingRank - a.scalingRank; });
@@ -139,7 +151,8 @@ $(document).ready(function () {
 
             // Ounce Packaging Preview Display Engine
             if ($ozPreviewLabel.length) {
-                if (baseTypeId === 1 && !targetMetricFlag) {
+                // Modified: Only display fluid ounce previews for non-dry volume tracks
+                if (baseTypeId === 1 && !targetMetricFlag && classification !== "DRY") {
                     var cleanFlOz = Math.round((absoluteBaseUnitsSum / 29.573530) * 10) / 10;
                     $ozPreviewLabel.text(" (" + cleanFlOz + " FL OZ)");
                 } else if (baseTypeId === 2 && !targetMetricFlag) {
