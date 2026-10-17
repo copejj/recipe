@@ -32,6 +32,10 @@ public class Ingredient {
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
     private ZonedDateTime createdAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "classification", nullable = false)
+    private IngredientClassification classification = IngredientClassification.SOLID;
+
     public Ingredient() {
     }
 
@@ -77,5 +81,13 @@ public class Ingredient {
 
     public ZonedDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public IngredientClassification getClassification() {
+        return classification;
+    }
+
+    public void setClassification(IngredientClassification classification) {
+        this.classification = classification;
     }
 }
