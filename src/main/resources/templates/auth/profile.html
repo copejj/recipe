@@ -17,7 +17,7 @@
 
         <!-- SECTION 1: Personal Details Form -->
         <h3 class="profile-section-title">Personal Details</h3>
-        <form th:action="@{/profile/update-details}" method="post" style="margin-bottom: 40px;">
+        <form th:action="@{/profile/details/update}" method="post" style="margin-bottom: 40px;">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
             <div class="form-group">

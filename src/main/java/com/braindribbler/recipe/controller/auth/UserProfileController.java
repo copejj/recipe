@@ -45,7 +45,7 @@ public class UserProfileController {
     }
 
     // 2. Process Core Detail Changes (First Name, Last Name, Display Name)
-    @PostMapping("/update-details")
+    @PostMapping("/details/update")
     public String updateProfileDetails(@AuthenticationPrincipal UserDetails userDetails,
             @RequestParam("firstName") String firstName,
             @RequestParam("lastName") String lastName,
@@ -65,7 +65,7 @@ public class UserProfileController {
     }
 
     // 3. Process Live Password Rotations safely
-    @PostMapping("/change-password")
+    @PostMapping("/password/change")
     public String updateAccountPassword(@AuthenticationPrincipal UserDetails userDetails,
             @RequestParam("currentPassword") String currentPassword,
             @RequestParam("newPassword") String newPassword,
