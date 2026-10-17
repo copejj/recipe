@@ -92,16 +92,18 @@
                                     th:data-ing-index="${ingStat.index}"
                                     style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
 
+                                    <!-- 1. ADJUSTED INGREDIENT SELECT dropdown with custom classification tracking data attributes -->
                                     <select
                                         th:name="|steps[${stepStat.index}].ingredients[${ingStat.index}].ingredientId|"
                                         class="form-input" style="flex: 2.5;" required>
                                         <option value="">-- Choose Ingredient --</option>
                                         <option th:each="i : ${allIngredients}" th:value="${i.ingredientId}"
                                             th:text="${i.ingredientName}"
-                                            th:selected="${i.ingredientId == ing.ingredientId}"></option>
+                                            th:selected="${i.ingredientId == ing.ingredientId}"
+                                            th:data-classification="${i.classification.name()}"></option>
                                     </select>
 
-                                    <!-- MERGED & FIXED: The amount field now has the correct cartoon wrapper, class, and value mapping -->
+                                    <!-- Amount input field wrapper (STAYS AS IS) -->
                                     <div class="amount-wrapper">
                                         <input type="number" step="0.01"
                                             th:name="|steps[${stepStat.index}].ingredients[${ingStat.index}].amount|"
@@ -110,25 +112,32 @@
                                         <div class="fraction-bubble"></div>
                                     </div>
 
+                                    <!-- 2. ADJUSTED MEASUREMENT SELECT dropdown with detailed conversion specifications metadata attributes -->
                                     <select
                                         th:name="|steps[${stepStat.index}].ingredients[${ingStat.index}].measurementId|"
                                         class="form-input" style="flex: 1.5;" required>
                                         <option value="">-- Unit --</option>
                                         <option th:each="m : ${measurements}" th:value="${m.measurementId}"
                                             th:text="${m.unitName}"
-                                            th:selected="${m.measurementId == ing.measurementId}"></option>
+                                            th:selected="${m.measurementId == ing.measurementId}"
+                                            th:data-base-type="${m.baseTypeId}" th:data-unit-id="${m.measurementId}"
+                                            th:data-is-metric="${m.isMetric}" th:data-scaling-rank="${m.scalingRank}">
+                                        </option>
                                     </select>
 
+                                    <!-- Ingredient Note field wrapper (STAYS AS IS) -->
                                     <input type="text"
                                         th:name="|steps[${stepStat.index}].ingredients[${ingStat.index}].ingredientNote|"
                                         th:value="${ing.ingredientNote}" class="form-input"
                                         placeholder="Note (e.g., melted, chilled)" style="flex: 2;" />
 
+                                    <!-- Row Removal button wrapper (STAYS AS IS) -->
                                     <button type="button" class="btn remove-ing-btn"
                                         style="width: auto; padding: 10px 14px; font-size: 1rem; margin: 0; background-color: #e9ecef; color: var(--color-text-dark); border: 1px solid var(--color-border-input); border-radius: 6px;">×</button>
                                 </div>
                             </th:block>
                         </div>
+
 
                         <!-- HIGH-VISIBILITY DESIGN: Button styled with an accent border and hover color weights -->
                         <button type="button" class="btn add-ingredient-btn"
@@ -197,26 +206,50 @@
         <!-- Error/Success feedback block inside the modal -->
         <div id="modal-feedback-msg" class="form-error-msg" style="display: none; margin-bottom: 12px;"></div>
 
-        <form id="quickIngredientForm">
-            <div class="form-group">
-                <label class="form-label" for="quickIngredientName">Ingredient Name</label>
-                <input type="text" id="quickIngredientName" class="form-input" placeholder="e.g., Smoked Paprika"
-                    required />
+        <!-- Inside <dialog id="quickIngredientModal"> ... -->
+        <form id="quickIngredientForm" method="dialog">
+
+            <!-- Ingredient Name Input Field -->
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label for="quickIngredientName"
+                    style="display: block; margin-bottom: 5px; font-weight: bold;">Ingredient Name:</label>
+                <input type="text" id="quickIngredientName" class="form-input" style="width: 100%;" required
+                    placeholder="e.g., Heavy Cream" />
             </div>
 
-            <div class="form-group">
-                <label class="form-label" for="quickGroceryCategoryId">Grocery Section Category</label>
-                <select id="quickGroceryCategoryId" class="form-input" required>
-                    <option value="">-- Choose Category Section --</option>
-                    <!-- Iterate dynamically over your existing categories -->
+            <!-- Grocery Category Selection Dropdown Field -->
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label for="quickGroceryCategoryId"
+                    style="display: block; margin-bottom: 5px; font-weight: bold;">Grocery Section/Aisle:</label>
+                <select id="quickGroceryCategoryId" class="form-input" style="width: 100%;" required>
+                    <option value="" disabled selected>-- Select Aisle --</option>
+                    <!-- Corrected attribute variable target layout reference list matching controller metadata model mapping name -->
                     <option th:each="cat : ${groceryCategories}" th:value="${cat.groceryCategoryId}"
                         th:text="${cat.categoryName}"></option>
                 </select>
             </div>
 
-            <div class="modal-actions-footer">
-                <button type="button" id="closeQuickIngBtn" class="btn btn--cancel">Cancel</button>
-                <button type="submit" class="btn btn--primary">Add to Selection Dropdowns</button>
+            <!-- Kitchen Unit Track (Classification) Selector -->
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label for="quickIngredientClassification"
+                    style="display: block; margin-bottom: 5px; font-weight: bold;">Scaling Classification Track:</label>
+                <select id="quickIngredientClassification" class="form-input" style="width: 100%;" required>
+                    <!-- Separates the programmatic name from the readable text description -->
+                    <option th:each="enumType : ${classifications}" th:value="${enumType.name()}"
+                        th:text="${enumType.name() + ' (' + enumType.description + ')'}"></option>
+                </select>
+            </div>
+
+            <!-- Error/Feedback Container Message Window -->
+            <div id="modal-feedback-msg"
+                style="display: none; margin-bottom: 15px; font-size: 0.9rem; font-weight: bold;"></div>
+
+            <!-- Modal Form Lower Control Bar Options Buttons Layout Wrapper -->
+            <div class="modal-actions" style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" id="closeQuickIngBtn" class="btn btn-secondary"
+                    style="background-color: #e9ecef; color: #495057;">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="background-color: #007bff; color: white;">Add
+                    Ingredient</button>
             </div>
         </form>
     </dialog>
@@ -229,16 +262,17 @@
     <!-- Hidden Master Options templates for clean jQuery cloning -->
     <div style="display: none;" aria-hidden="true">
 
-        <select id="ingredient-options-pool">
+        <select id="ingredient-options-pool" style="display:none;">
             <option value="">-- Choose Ingredient --</option>
-            <option th:each="ing : ${allIngredients}" th:value="${ing.ingredientId}" th:text="${ing.ingredientName}">
-            </option>
+            <option th:each="ing : ${allIngredients}" th:value="${ing.ingredientId}" th:text="${ing.ingredientName}"
+                th:data-classification="${ing.classification.name()}"></option>
         </select>
 
-        <select id="measurement-options-pool">
+        <select id="measurement-options-pool" style="display:none;">
             <option value="">-- Unit --</option>
-            <!-- CHANGED: Iterating over Measurement entities cleanly -->
-            <option th:each="unit : ${measurements}" th:value="${unit.measurementId}" th:text="${unit.unitName}">
+            <option th:each="m : ${measurements}" th:value="${m.measurementId}" th:text="${m.unitName}"
+                th:data-base-type="${m.baseTypeId}" th:data-unit-id="${m.measurementId}"
+                th:data-is-metric="${m.isMetric}" th:data-scaling-rank="${m.scalingRank}">
             </option>
         </select>
 

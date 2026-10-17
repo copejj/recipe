@@ -9,19 +9,7 @@
         </p>
     </div>
 
-    <!-- 2. TRADITIONAL CONTINUOUS TIMELINE READING BLOCK -->
-    <div class="overview-steps-timeline" style="margin-bottom: 30px;">
-        <h4
-            style="color: var(--color-text-dark); font-size: 1.15rem; margin-bottom: 16px; border-bottom: 1px solid var(--color-border); padding-bottom: 8px;">
-            📋 Preparation Instructions
-        </h4>
-        <ol style="padding-left: 20px; line-height: 1.75; color: var(--color-text-dark); font-size: 1.05rem;">
-            <li th:each="step : ${recipe.steps}" th:text="${step.instructionText}"
-                style="margin-bottom: 14px; padding-left: 6px;"></li>
-        </ol>
-    </div>
-
-    <!-- 3. COMBINED MASTER INGREDIENTS CHECKLIST SUMMARY BOX -->
+    <!-- 2. COMBINED MASTER INGREDIENTS CHECKLIST SUMMARY BOX -->
     <div
         style="margin-bottom: 30px; padding: 24px; background-color: var(--color-bg-card); border-radius: 8px; border: 1px solid var(--color-border);">
         <h4
@@ -37,16 +25,30 @@
                     <span class="scalable-amount" th:data-base-amount="${item.amount}"
                         th:data-base-type-id="${item.measurement.baseType.baseTypeId}"
                         th:data-base-unit-equivalent="${item.measurement.baseUnitEquivalent}"
-                        th:data-original-unit-name="${item.measurement.unitName}"
+                        th:data-original-unit-id="${item.measurement.measurementId}" <!-- ◄ NEW -->
+                        th:data-is-promotable="${item.measurement.isPromotable}" <!-- ◄ NEW -->
                         th:data-ingredient-classification="${item.ingredient.classification.name()}"
                         th:text="${T(com.braindribbler.recipe.util.RecipeUtility).convertDecimalToKitchenFraction(item.amount)}">1</span>
 
-                    <span class="scalable-unit-name" th:text="${item.measurement.unitName}">cups</span> of
+                    <span class="scalable-unit-name" th:text="${item.measurement.unitName}">Cups</span> of
                     <strong th:text="${item.ingredient.ingredientName}">Flour</strong>
                     <span class="oz-package-preview"></span>
                 </li>
+
             </th:block>
         </ul>
+    </div>
+
+    <!-- 3. TRADITIONAL CONTINUOUS TIMELINE READING BLOCK -->
+    <div class="overview-steps-timeline" style="margin-bottom: 30px;">
+        <h4
+            style="color: var(--color-text-dark); font-size: 1.15rem; margin-bottom: 16px; border-bottom: 1px solid var(--color-border); padding-bottom: 8px;">
+            📋 Preparation Instructions
+        </h4>
+        <ol style="padding-left: 20px; line-height: 1.75; color: var(--color-text-dark); font-size: 1.05rem;">
+            <li th:each="step : ${recipe.steps}" th:text="${step.instructionText}"
+                style="margin-bottom: 14px; padding-left: 6px;"></li>
+        </ol>
     </div>
 
     <!-- 4. GENERAL RECIPE CHEF NOTES FOOTER CARD (ON THE BOTTOM) -->

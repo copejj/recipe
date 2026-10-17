@@ -7,8 +7,16 @@ $(document).ready(function () {
     var modal = document.getElementById("quickIngredientModal");
 
     // Change from ".ingredient-row select:first-child" to just "select"
-    $(document).on("change", ".ingredient-row select", function () {
+    $(document).on("change select2:select", ".ingredient-row select", function (e) {
+        var $changedSelect = $(this);
+
+        // 1. Always run the duplication validation check
         validateStepIngredients();
+
+        // 2. If the ingredient changed, execute the shared filter worker function
+        if ($changedSelect.is("select:first-child")) {
+            filterMeasurementsByIngredient($changedSelect);
+        }
     });
 
     $("#add-step-btn").click(function () {
@@ -82,6 +90,7 @@ $(document).ready(function () {
         activeSelectDropdown = $(this).siblings(".ingredients-container").find(".ingredient-row:last-child select").first();
         $("#quickIngredientName").val("");
         $("#quickGroceryCategoryId").val("");
+        $("#quickIngredientClassification").val("SOLID"); // ◄ NEW: Reset dropdown state to SOLID default
         $("#modal-feedback-msg").hide().text("");
         if (modal) modal.showModal();
     });
@@ -96,6 +105,7 @@ $(document).ready(function () {
 
         var ingredientName = $("#quickIngredientName").val();
         var categoryId = $("#quickGroceryCategoryId").val();
+        var classificationType = $("#quickIngredientClassification").val();
 
         var token = document.cookie.split('; ')
             .find(row => row.startsWith('XSRF-TOKEN='))
@@ -108,7 +118,8 @@ $(document).ready(function () {
             type: 'POST',
             data: {
                 name: ingredientName,
-                groceryCategoryId: categoryId
+                groceryCategoryId: categoryId,
+                classification: classificationType
             },
             beforeSend: function (xhr) {
                 if (token) {
@@ -119,7 +130,10 @@ $(document).ready(function () {
                 if (response.success) {
                     // 1. Append the brand-new choice into our master hidden options template pool
                     $('#ingredient-options-pool').append(
-                        new Option(response.ingredientName, response.ingredientId, false, false)
+                        $('<option>', {
+                            value: response.ingredientId,
+                            text: response.ingredientName
+                        }).attr('data-classification', classificationType) // ◄ NEW: Embeds category metadata parameters instantly
                     );
 
                     // --- RE-SORT MASTER POOL ---
@@ -135,29 +149,11 @@ $(document).ready(function () {
                     $pool.empty().append($poolPlaceholder).append(nativePoolOptions);
 
                     // 2. Update and re-sort every active dropdown across all step rows
-                    $(".ingredient-row select:first-child").each(function () {
-                        var $select = $(this);
-                        var currentSelectedValue = $select.val(); // Save current selection state
-
-                        $select.append(new Option(response.ingredientName, response.ingredientId, false, false));
-
-                        var $placeholder = $select.find('option[value=""]');
-
-                        // FIXED: Extracted to native element array to clear line 199 crash!
-                        var nativeSelectOptions = $select.find('option').not('[value=""]').get();
-
-                        nativeSelectOptions.sort(function (a, b) {
-                            return $(a).text().localeCompare($(b).text());
-                        });
-
-                        // Append elements back rearranged without breaking existing selections
-                        $select.empty().append($placeholder).append(nativeSelectOptions);
-                        $select.val(currentSelectedValue);
-                    });
-
                     // 3. Auto-select the newly added option on the active dropdown
                     if (activeSelectDropdown) {
                         activeSelectDropdown.val(response.ingredientId);
+
+                        filterMeasurementsByIngredient(activeSelectDropdown);
                     }
 
                     if (modal) modal.close();
@@ -325,7 +321,7 @@ $(document).ready(function () {
         var originalText = saveButton.html();
 
         // Visual loading feedback state
-        saveButton.prop("disabled", true).html("⏳ Saving Blueprint...");
+        saveButton.prop("disabled", true).html("Saving Recipe...");
 
         // Grab XSRF parameters out of cookies for Spring Security protection
         var token = document.cookie.split('; ')
@@ -345,12 +341,12 @@ $(document).ready(function () {
             },
             success: function (response) {
                 saveButton.prop("disabled", false).html(originalText);
-                showToast("Recipe blueprint progress saved successfully!", true);
+                showToast("Recipe saved successfully!", true);
             },
             error: function (xhr) {
                 saveButton.prop("disabled", false).html(originalText);
 
-                showToast("A persistence error occurred while saving. Verify fields.", false);
+                showToast("There seems to be an issue, please verify recipe.", false);
             }
         });
     });
@@ -407,6 +403,117 @@ $(document).ready(function () {
         reindexForm();
     });
 
+    // --- DYNAMIC UNIT FILTERING ENGINE ---
+    // Re-calculates and removes invalid measurement units based on ingredient tracking profiles
+    // --- DYNAMIC UNIT FILTERING & HIERARCHY SORTING ENGINE ---
+    function filterMeasurementsByIngredient($ingredientSelect) {
+        var $row = $ingredientSelect.closest(".ingredient-row");
+        var $measurementSelect = $row.find("select").eq(1);
+
+        var selectedOption = $ingredientSelect.find("option:selected");
+        var classification = selectedOption.attr("data-classification");
+
+        // Global toggle switch helper hook: set to true if user prefers Metric, false for US Imperial
+        var preferMetric = false;
+
+        if (!classification) {
+            var allUnits = $('#measurement-options-pool').html();
+            $measurementSelect.html(allUnits);
+            return;
+        }
+
+        var currentUnitValue = $measurementSelect.val();
+        var $filteredUnitsContainer = $('<div>');
+        var validOptionsArray = [];
+
+        // Extract a clean list from the master pool
+        var $masterOptions = $('<div>').append($('#measurement-options-pool').html()).find('option');
+
+        $masterOptions.each(function () {
+            var $opt = $(this);
+            var unitIdAttr = $opt.attr('data-unit-id');
+            if (!unitIdAttr) return; // Skip placeholder option
+
+            var baseType = parseInt($opt.attr('data-base-type'));
+            var unitId = parseInt(unitIdAttr);
+            var isMetric = $opt.attr('data-is-metric') === 'true';
+
+            var matchesClassificationTrack = false;
+
+            // --- 1. RUN CORE CLASSIFICATION FILTER TRACKS ---
+            if (classification === "SOLID") {
+                matchesClassificationTrack = (baseType === 2 || baseType === 3 || (baseType === 4 && unitId !== 19));
+            }
+            else if (classification === "WET") {
+                matchesClassificationTrack = (baseType === 1 || baseType === 4);
+            }
+            else if (classification === "DRY") {
+                var allowedDryVolumes = [1, 2, 3, 5];
+                var isValidVolume = (baseType === 1 && allowedDryVolumes.includes(unitId));
+                var isValidWeight = (baseType === 2);
+                var isValidEstimate = (baseType === 4 && unitId !== 19);
+
+                matchesClassificationTrack = (isValidVolume || isValidWeight || isValidEstimate);
+            }
+
+            // --- 2. ISOLATE METRIC VS IMPERIAL MEASUREMENT SYSTEMS ---
+            // Volumetric (1) and Weight (2) must match the user system preference.
+            // Discrete units (3) and Estimates (4) bypass this since "2 Whole" or "1 Pinch" applies globally.
+            if (matchesClassificationTrack) {
+                if (baseType === 1 || baseType === 2) {
+                    if (isMetric !== preferMetric) {
+                        matchesClassificationTrack = false; // Filter out system mismatches
+                    }
+                }
+            }
+
+            if (matchesClassificationTrack) {
+                validOptionsArray.push($opt);
+            }
+        });
+
+        // --- 3. SORT SYSTEM OPTIONS BY SCALING RANK STEP-LADDER ---
+        validOptionsArray.sort(function (a, b) {
+            var rankA = parseInt($(a).attr('data-scaling-rank')) || 0;
+            var rankB = parseInt($(b).attr('data-scaling-rank')) || 0;
+
+            // Sort lowest rank sizes to the top (e.g. Teaspoon before Cup)
+            return rankA - rankB;
+        });
+
+        // --- 4. REBUILD DROPDOWN DOM ---
+        // Append the initial placeholder element back
+        $filteredUnitsContainer.append('<option value="">-- Unit --</option>');
+
+        // Append sorted items sequentially
+        $.each(validOptionsArray, function (idx, $sortedOpt) {
+            $filteredUnitsContainer.append($sortedOpt);
+        });
+
+        // Flush the optimized layout clean into the viewport dropdown list
+        $measurementSelect.html($filteredUnitsContainer.html());
+
+        // Restore previous selection if it managed to survive constraints
+        if ($measurementSelect.find('option[value="' + currentUnitValue + '"]').length > 0) {
+            $measurementSelect.val(currentUnitValue);
+        } else {
+            $measurementSelect.val("");
+        }
+    }
+
+    function filterExistingSavedRowsOnLoad() {
+        console.log('filtering existing units');
+        $(".ingredient-row select:first-child").each(function () {
+            var $ingredientSelect = $(this);
+            var selectedValue = $ingredientSelect.val();
+
+            // Only run the filter if an ingredient is already selected in this saved row
+            if (selectedValue && selectedValue !== "") {
+                filterMeasurementsByIngredient($ingredientSelect);
+            }
+        });
+    }
 
     reindexForm();
+    filterExistingSavedRowsOnLoad();
 });

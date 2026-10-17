@@ -19,16 +19,17 @@
                         <span th:text="${item.ingredient.ingredientName}" style="font-weight: 600;">Chicken Broth</span>
                         -
 
-                        <!-- DATA BINDING CONTRACT ANCHOR WITH CLASSIFICATION ATTRIBUTE -->
+                        <!-- SIMPLIFIED DATA BINDING CONTRACT ANCHOR WITH ID ATTRIBUTES -->
                         <strong class="scalable-amount" th:data-base-amount="${item.amount}"
                             th:data-base-type-id="${item.measurement.baseType.baseTypeId}"
                             th:data-base-unit-equivalent="${item.measurement.baseUnitEquivalent}"
-                            th:data-original-unit-name="${item.measurement.unitName}"
+                            th:data-original-unit-id="${item.measurement.measurementId}"
+                            th:data-is-promotable="${item.measurement.isPromotable}"
                             th:data-ingredient-classification="${item.ingredient.classification.name()}"
                             style="font-weight: 700;"
                             th:text="${T(com.braindribbler.recipe.util.RecipeUtility).convertDecimalToKitchenFraction(item.amount)}">2</strong>
 
-                        <span class="scalable-unit-name" th:text="${item.measurement.unitName}">pt</span>
+                        <span class="scalable-unit-name" th:text="${item.measurement.unitName}">Pint</span>
                         <span class="oz-package-preview"
                             style="color: #6c757d; font-size: 0.9rem; font-weight: 500;"></span>
                     </span>
