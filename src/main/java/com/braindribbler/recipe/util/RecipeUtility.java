@@ -1,5 +1,6 @@
 package com.braindribbler.recipe.util;
 
+import com.braindribbler.recipe.domain.recipe.GroceryCategory;
 import com.braindribbler.recipe.domain.recipe.Measurement;
 import com.braindribbler.recipe.domain.recipe.Recipe;
 import com.braindribbler.recipe.domain.recipe.RecipeStepIngredient;
@@ -201,17 +202,33 @@ public class RecipeUtility {
         }
 
         // 4. Group maps alphabetically A-Z by aisle category
-        return finalShoppingList.stream()
+        // ==========================================================================
+        // 4. GROUP & SORT: Order by Grocery Display Order, then Alphabetical A-Z
+        // ==========================================================================
+
+        // Step A: Group by the full GroceryCategory domain entity object
+        Map<GroceryCategory, List<RecipeStepIngredient>> groupedByCategoryEntity = finalShoppingList.stream()
                 .collect(Collectors.groupingBy(
-                        item -> item.getIngredient().getGroceryCategory().getCategoryName(),
-                        TreeMap::new,
-                        Collectors.collectingAndThen(
-                                Collectors.toList(),
-                                list -> {
-                                    list.sort(Comparator
-                                            .comparing(item -> item.getIngredient().getIngredientName().toLowerCase()));
-                                    return list;
-                                })));
+                        item -> item.getIngredient().getGroceryCategory(),
+                        Collectors.toList()));
+
+        // Step B: Sort aisle categories by displayOrder weight, and alphabetize
+        // ingredients underneath
+        return groupedByCategoryEntity.entrySet().stream()
+                .sorted(Comparator.comparingInt(entry -> entry.getKey().getDisplayOrder()))
+                .collect(Collectors.toMap(
+                        // Keep your existing naming layout (returns capitalized category title string)
+                        entry -> entry.getKey().getCategoryName(),
+                        entry -> {
+                            List<RecipeStepIngredient> aisleIngredients = entry.getValue();
+                            // Sort rows alphabetically by ingredient name underneath this aisle
+                            aisleIngredients.sort(Comparator.comparing(
+                                    item -> item.getIngredient().getIngredientName().toLowerCase()));
+                            return aisleIngredients;
+                        },
+                        (oldValue, newValue) -> oldValue,
+                        LinkedHashMap::new // CRITICAL: Retains insertion order from the sorted stream
+                ));
     }
 
 }

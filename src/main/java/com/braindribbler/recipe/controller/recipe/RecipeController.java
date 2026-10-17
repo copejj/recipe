@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 // Your Local Domain Models & Service Layers
 import com.braindribbler.recipe.domain.auth.User;
+import com.braindribbler.recipe.domain.recipe.IngredientClassification;
 import com.braindribbler.recipe.domain.recipe.Measurement;
 import com.braindribbler.recipe.domain.recipe.Recipe;
 import com.braindribbler.recipe.domain.recipe.RecipeStepIngredient;
@@ -151,11 +152,7 @@ public class RecipeController {
         // 5. Inject all matching data attributes down to the Thymeleaf model view
         // context
         model.addAttribute("recipe", recipe);
-
-        // FIXED: Passes data explicitly to your Overview summary panel loop variable
         model.addAttribute("singleRecipeAggregatedIngredients", structuredIngredients);
-
-        // FIXED: Passes data explicitly to your Market Shopping panel loop variable
         model.addAttribute("shoppingListAggregatedIngredients", structuredIngredients);
 
         return "recipes/view";
@@ -208,6 +205,6 @@ public class RecipeController {
         model.addAttribute("visibilities", recipeService.getAllVisibilities());
 
         model.addAttribute("groceryCategories", ingredientService.getAllGroceryCategoriesSortedByOrder());
-        model.addAttribute("classifications", com.braindribbler.recipe.domain.recipe.IngredientClassification.values());
+        model.addAttribute("classifications", IngredientClassification.values());
     }
 }
