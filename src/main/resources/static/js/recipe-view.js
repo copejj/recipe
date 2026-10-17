@@ -150,12 +150,23 @@ $(document).ready(function () {
             }
 
             // Ounce Packaging Preview Display Engine
+            // --- Update this block inside your runLiveScalingEngine() loop in recipe-view.js ---
             if ($ozPreviewLabel.length) {
-                // Modified: Only display fluid ounce previews for non-dry volume tracks
-                if (baseTypeId === 1 && !targetMetricFlag && classification !== "DRY") {
-                    var cleanFlOz = Math.round((absoluteBaseUnitsSum / 29.573530) * 10) / 10;
-                    $ozPreviewLabel.text(" (" + cleanFlOz + " FL OZ)");
+                if (baseTypeId === 1 && !targetMetricFlag) {
+                    // Read our newly integrated user-driven classification string
+                    var classification = ($amountLabel.data("ingredient-classification") || "SOLID").toUpperCase().trim();
+
+                    if (classification === "DRY") {
+                        // Dry baking volume tracking (e.g. Cups of Flour) converts cleanly to mass ounces
+                        var cleanOz = Math.round((absoluteBaseUnitsSum / 28.349523) * 10) / 10;
+                        $ozPreviewLabel.text(" (" + cleanOz + " OZ)");
+                    } else {
+                        // Liquids continue to output clean fluid ounces natively
+                        var cleanFlOz = Math.round((absoluteBaseUnitsSum / 29.573530) * 10) / 10;
+                        $ozPreviewLabel.text(" (" + cleanFlOz + " FL OZ)");
+                    }
                 } else if (baseTypeId === 2 && !targetMetricFlag) {
+                    // Standard dry weight measurements (e.g. Pounds/Grams)
                     var cleanOz = Math.round((absoluteBaseUnitsSum / 28.349523) * 10) / 10;
                     $ozPreviewLabel.text(" (" + cleanOz + " OZ)");
                 } else {
