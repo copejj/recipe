@@ -4,6 +4,49 @@
 <head>
     <!-- Shared Layout Fragment (Handles base metadata & layout title) -->
     <th:block th:replace="~{fragments/layout :: html_head('Login Audit Logs - Braindribbler')}"></th:block>
+    <style>
+        /* Interactive Filter Target Anchor Highlights */
+        .clickable-audit-filter {
+            color: var(--color-primary, #0d6efd);
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: underline dashed;
+        }
+
+        .clickable-audit-filter:hover {
+            color: #0a58ca;
+            text-decoration: underline solid;
+        }
+
+        /* Active Status Badges Layout Row Deck */
+        .filter-deck-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .active-filter-badge {
+            background-color: #e2e3e5;
+            color: #383d41;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            border: 1px solid #d6d8db;
+        }
+
+        .active-filter-badge:hover {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+    </style>
 </head>
 
 <body>
@@ -21,6 +64,16 @@
             Network IP target context has been successfully whitelisted for the next 2 hours!
         </div>
 
+        <!-- NEW: DYNAMIC ACTIVE FILTER CONTROL STATUS BAR DECK -->
+        <div class="filter-deck-bar">
+            <div id="userIdFilterBadge" class="active-filter-badge" style="display: none;">
+                <span>User Filter: </span><strong id="userIdBadgeText"></strong> ×
+            </div>
+            <div id="ipFilterBadge" class="active-filter-badge" style="display: none;">
+                <span>IP Filter: </span><strong id="ipBadgeText"></strong> ×
+            </div>
+        </div>
+
         <div class="table-responsive-wrapper">
             <table id="auditTable" class="display">
                 <thead>
@@ -35,21 +88,19 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- CLEAN OBJECT PROPERTY ITERATION -->
+                    <!-- Inside your auditTable tbody tr loop -->
                     <tr th:each="log : ${rawLogs}">
 
-                        <!-- 1. Formatted Timestamp -->
-                        <!-- FIXED: Removed th:data-order to clear the DataTables string-parsing conflict -->
+                        <!-- 1. Timestamp (Stays as is) -->
                         <td th:text="${log.loginAt}">2026-10-09T15:38:00Z</td>
 
-                        <!-- 2. Dedicated User ID Column -->
+                        <!-- 2. User ID Column -->
                         <td class="audit-user-id audit-font-monospace">
-                            <span th:text="${log.userId != null ? log.userId : '—'}"
-                                th:class="${log.userId == null ? 'audit-user-id--empty' : ''}">—</span>
+                            <span th:if="${log.userId != null}" th:text="${log.userId}"
+                                class="clickable-audit-filter user-filter-trigger"
+                                th:data-user-id="${log.userId}">104</span>
+                            <span th:if="${log.userId == null}" class="audit-user-id--empty">—</span>
                         </td>
-
-
-                        <!-- FIXED: Swapped inline structural spaces out for your clean externalized style.css classes -->
                         <td>
                             <div class="audit-identity-actual"
                                 th:text="${log.actualEmail != null ? log.actualEmail : '—'}"> Actual: chef_
@@ -60,10 +111,16 @@
                         </td>
 
                         <!-- 4. Network IP Address -->
-                        <td class="audit-font-monospace" th:text="${log.ipAddress}">127.0.0.1</td>
+                        <td class="audit-font-monospace">
+                            <span th:if="${log.ipAddress != null}" th:text="${log.ipAddress}"
+                                class="clickable-audit-filter ip-filter-trigger"
+                                th:data-ip-address="${log.ipAddress}">127.0.0.1</span>
+                            <span th:if="${log.ipAddress == null}" class="audit-user-id--empty">—</span>
+                        </td>
 
-                        <!-- 5. Status Badge -->
+                        <!-- 5. Status Badge (FIXED TO MATCH BOOLEAN METHOD LAUNCH HOOKS) -->
                         <td>
+                            <!-- FIXED: SpEL maps isSuccessful() getter directly to the 'successful' or 'isSuccessful' lookup property -->
                             <span th:if="${log.successful}"
                                 class="audit-badge @alert--success audit-badge--success">SUCCESS</span>
                             <span th:if="${!log.successful}" class="audit-badge audit-badge--failed">FAILED</span>
@@ -75,18 +132,20 @@
                             —
                         </td>
 
-                        <!-- 7. Inline Whitelist Quick Unblock Actions Override -->
+                        <!-- 7. Inline Whitelist Quick Unblock Actions Override (FIXED LOGIC) -->
                         <td>
-                            <form th:if="${!log.successful}" th:action="@{/admin/login-history/override}" method="post"
-                                class="audit-action-form">
+                            <form th:if="${!log.successful and log.ipAddress != null}"
+                                th:action="@{/admin/login-history/override}" method="post" class="audit-action-form">
                                 <input type="hidden" name="ipAddress" th:value="${log.ipAddress}" />
                                 <button type="submit" class="btn btn--primary btn--unblock-override">
                                     Unblock IP
                                 </button>
                             </form>
-                            <span th:if="${log.successful}" class="audit-action-text--none">No Action</span>
+                            <span th:if="${log.successful or log.ipAddress == null}" class="audit-action-text--none">No
+                                Action</span>
                         </td>
                     </tr>
+
                 </tbody>
             </table>
         </div>
@@ -95,54 +154,9 @@
     <!-- Shared Footer Fragment -->
     <div th:replace="~{fragments/layout :: footer}"></div>
 
-    <!-- INITIALIZATION LOGIC WITH DYNAMIC TIMEPICKER FORMATTER -->
-    <script>
-        window.addEventListener('load', function () {
-            var $ = jQuery;
-
-            if ($.fn.DataTable.isDataTable('#auditTable')) {
-                $('#auditTable').DataTable().destroy();
-            }
-
-            $('#auditTable').DataTable({
-                "order": { idx: 0, dir: 'desc' },
-                "pageLength": 25,
-                "searching": true,
-                "ordering": true,
-                "paging": true,
-                "columnDefs": [
-                    {
-                        "targets": 0,
-                        "render": function (data, type, row) {
-                            if ((type === 'display' || type === 'filter') && data) {
-                                var cleanData = data.trim();
-                                if (cleanData === '—' || cleanData === '') return '—';
-
-                                var date = new Date(cleanData);
-
-                                if (!isNaN(date.getTime())) {
-                                    // Localizes automatically to user browser timezone: "Oct 9, 2026, 3:16 PM"
-                                    return date.toLocaleString('en-US', {
-                                        month: 'short',
-                                        day: 'numeric',
-                                        year: 'numeric',
-                                        hour: 'numeric',
-                                        minute: '2-digit',
-                                        hour12: true
-                                    });
-                                }
-                            }
-                            return data;
-                        }
-                    }
-                ],
-                "language": {
-                    "search": "Filter Logs:",
-                    "zeroRecords": "No matching authentication records found in logs history"
-                }
-            });
-        });
-    </script>
+    <!-- Unified Script Dependencies Call Pipes -->
+    <script th:src="@{/js/admin-login-history.js}"></script>
+    <script th:src="@{/js/recipe-form.js}"></script>
 </body>
 
 </html>

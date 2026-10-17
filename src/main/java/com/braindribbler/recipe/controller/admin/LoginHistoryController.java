@@ -26,8 +26,6 @@ public class LoginHistoryController {
 
     /**
      * Renders the unified history view.
-     * 🔑 FIXED: Uses your optimized JPQL fetch query returning clean strongly-typed
-     * objects.
      */
     @GetMapping
     public String showLoginAuditLogs(Model model) {
