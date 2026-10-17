@@ -1,60 +1,13 @@
 /**
  * Recipe Profile Viewer View Mode Orchestrator
- * Toggles visibility between Overview, Prep Cards, and Consolidated Shopping panels.
+ * Manages tab toggling, metric conversion triggers, and data-driven unit promotion.
  */
 $(document).ready(function () {
 
-    // --- LAYOUT SWITCHER NAVIGATION TAB LOGIC ---
-    $(".tab-btn").click(function () {
-        var clickedTab = $(this);
-        var targetPanelId = clickedTab.data("target");
+    // Global tracking parameter for active display system lane
+    var currentActiveSystem = "imperial";
 
-        // 1. Reset all tabs to standard deselect typography styles
-        $(".tab-btn").removeClass("active").css({
-            "color": "var(--color-text-muted, #6c757d)",
-            "border-bottom": "none",
-            "margin-bottom": "0"
-        });
-
-        // 2. Apply active highlight weighting to the selected tab header
-        clickedTab.addClass("active").css({
-            "color": "var(--color-primary, #0d6efd)",
-            "border-bottom": "3px solid var(--color-primary, #0d6efd)",
-            "margin-bottom": "-13px"
-        });
-
-        // 3. Hide all display panels and fade in the target viewport sheet container
-        $(".tab-panel").hide();
-        $("#" + targetPanelId).fadeIn(150);
-    });
-});
-
-// --- SHOPPING CHECKLIST PANTRY FILTER SYSTEM ---
-// Listens when a user unchecks an item they already have in their kitchen
-$(document).on("change", ".shopping-item-checkbox", function () {
-    var checkbox = $(this);
-    var itemRow = checkbox.closest(".shopping-item-row");
-    var textWrapper = itemRow.find(".shopping-item-text");
-
-    if (!checkbox.is(":checked")) {
-        // User ALREADY HAS this item: strike it out visually and flag it to vanish on print
-        textWrapper.addClass("crossed-out-text");
-        itemRow.addClass("pantry-owned-item");
-    } else {
-        // User NEEDS this item: return it to pristine printable focus states
-        textWrapper.removeClass("crossed-out-text");
-        itemRow.removeClass("pantry-owned-item");
-    }
-
-    // OPTIONAL EXTRA: If all items in a category section get checked off, hide the header too!
-    var categorySection = checkbox.closest(".shopping-category-section");
-    var visibleItems = categorySection.find(".shopping-item-row").not(".pantry-owned-item").length;
-    categorySection.toggle(visibleItems > 0);
-});
-
-$(document).ready(function () {
-
-    // --- TAB VIEW LAYER TOGGLER ---
+    // --- PERSPECTIVE PANEL TABS TOGGLER ---
     $(".tab-btn").click(function () {
         var clickedTab = $(this);
         var targetPanelId = clickedTab.data("target");
@@ -66,10 +19,27 @@ $(document).ready(function () {
         $("#" + targetPanelId).fadeIn(150);
     });
 
-    // --- FRACTION UTILITY CLIENT FALLBACK FOR SCALER ---
-    function computeLiveFraction(rawAmount) {
-        var firstPart = Math.floor(rawAmount);
-        var decimalPart = Math.round((rawAmount - firstPart) * 1000) / 1000;
+    // --- DYNAMIC SYSTEM CONVERSION MODE CONTROLLER ---
+    $(".system-toggle-btn").click(function (e) {
+        e.preventDefault();
+        var clickedBtn = $(this);
+        var selectedSystem = clickedBtn.data("system");
+
+        if (selectedSystem === currentActiveSystem) return;
+        currentActiveSystem = selectedSystem;
+
+        // Reset toggle tab button layouts
+        $(".system-toggle-btn").removeClass("active").css({ "background-color": "transparent", "color": "var(--color-text-muted)" });
+        clickedBtn.addClass("active").css({ "background-color": "var(--color-primary)", "color": "white" });
+
+        // Force recalculation engine pass over layout elements
+        runLiveScalingEngine();
+    });
+
+    // --- FRACTION VISUAL FORMATTER TOOL ---
+    function formatToKitchenFraction(value) {
+        var firstPart = Math.floor(value);
+        var decimalPart = Math.round((value - firstPart) * 1000) / 1000;
         var fraction = "";
 
         if (decimalPart >= 0.08 && decimalPart <= 0.16) fraction = "1/8";
@@ -85,31 +55,125 @@ $(document).ready(function () {
         return output.trim() || "0";
     }
 
-    // --- DYNAMIC LIVE SCALER TRANSACTION LISTENER ---
-    $("#servings-scaler").on("input change", function () {
-        var inputField = $(this);
-        var customServingsCount = parseFloat(inputField.val());
-        var originalServingsCount = parseFloat(inputField.data("original-servings"));
+    // --- REUSABLE LIVE SCALING AND PROMOTION ENGINE ---
+    function runLiveScalingEngine() {
+        var inputField = $("#servings-scaler");
+        var customServings = parseFloat(inputField.val());
+        var originalServings = parseFloat(inputField.data("original-servings"));
 
-        if (isNaN(customServingsCount) || customServingsCount <= 0) return;
+        if (isNaN(customServings) || customServings <= 0 || isNaN(originalServings) || originalServings <= 0) return;
 
-        // Establish our scaling scale multiplier factor ratio
-        var scalingMultiplierRatio = customServingsCount / originalServingsCount;
+        var scalingFactor = customServings / originalServings;
+        var poolMatrix = window.MEASUREMENT_MATRIX || [];
+        var targetMetricFlag = (currentActiveSystem === "metric");
 
-        // Scan through every registered ingredient across all active panel tabs
         $(".scalable-amount").each(function () {
-            var label = $(this);
-            var baselineBaseAmount = parseFloat(label.data("base-amount"));
+            var $amountLabel = $(this);
+            var $unitLabel = $amountLabel.siblings(".scalable-unit-name");
+            var $ozPreviewLabel = $amountLabel.siblings(".oz-package-preview");
 
-            if (!isNaN(baselineBaseAmount)) {
-                // Calculate new scaled amount parameters
-                var scaledValueAmount = baselineBaseAmount * scalingMultiplierRatio;
+            var baseAmount = parseFloat($amountLabel.data("base-amount"));
+            var baseTypeId = parseInt($amountLabel.data("base-type-id"));
+            var baseUnitEquivalent = parseFloat($amountLabel.data("base-unit-equivalent"));
+            var originalUnitName = ($amountLabel.data("original-unit-name") || "").toLowerCase().trim();
 
-                // Formats the value into a kitchen fraction and rewrites the visual node container text
-                var fractionalKitchenText = computeLiveFraction(scaledValueAmount);
-                label.text(fractionalKitchenText);
+            if (isNaN(baseAmount) || isNaN(baseTypeId) || isNaN(baseUnitEquivalent)) return;
+
+            var totalScaledValue = baseAmount * scalingFactor;
+            var absoluteBaseUnitsSum = totalScaledValue * baseUnitEquivalent;
+
+            // Extract the unchanging target configuration parameters from window memory lookups
+            var originalMeta = poolMatrix.find(function (m) {
+                return (m.unitName || "").toLowerCase().trim() === originalUnitName;
+            }) || { isPromotable: true, isMetric: false };
+
+            var finalTargetUnitText = originalUnitName;
+            var finalDisplayQuantity = totalScaledValue;
+
+            // Only attempt promotions for Volume (1) and Weight (2) buckets
+            if (baseTypeId === 1 || baseTypeId === 2) {
+
+                // DATA-DRIVEN SEPARATION FILTER: Restricts calculations to matching track flags
+                var candidates = poolMatrix.filter(function (m) {
+                    return m.baseTypeId === baseTypeId && m.isMetric === targetMetricFlag;
+                });
+
+                // Sort by rank descending
+                candidates.sort(function (a, b) { return b.scalingRank - a.scalingRank; });
+
+                // Establish base system fallback positions to keep metrics continuous
+                var baseUnitFallback = candidates.find(function (m) { return m.scalingRank === 1; });
+                if (baseUnitFallback) {
+                    finalTargetUnitText = baseUnitFallback.unitName;
+                    finalDisplayQuantity = absoluteBaseUnitsSum / parseFloat(baseUnitFallback.baseUnitEquivalent);
+                }
+
+                // Run data check loops if the original item configuration allowed promotions
+                if (originalMeta.isPromotable) {
+                    for (var i = 0; i < candidates.length; i++) {
+                        var candidate = candidates[i];
+                        var equivValue = parseFloat(candidate.baseUnitEquivalent);
+                        var threshold = equivValue * 0.85;
+
+                        if (absoluteBaseUnitsSum >= threshold) {
+                            if (candidate.isPromotable || candidate.unitName.toLowerCase() === originalUnitName) {
+                                finalTargetUnitText = candidate.unitName;
+                                finalDisplayQuantity = absoluteBaseUnitsSum / equivValue;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 5. Output values back to the screen display layers
+            if (targetMetricFlag && finalDisplayQuantity >= 1) {
+                $amountLabel.text(Math.round(finalDisplayQuantity * 10) / 10);
+            } else {
+                $amountLabel.text(formatToKitchenFraction(finalDisplayQuantity));
+            }
+
+            if ($unitLabel.length) {
+                $unitLabel.text(finalTargetUnitText);
+            }
+
+            // Ounce Packaging Preview Display Engine
+            if ($ozPreviewLabel.length) {
+                if (baseTypeId === 1 && !targetMetricFlag) {
+                    var cleanFlOz = Math.round((absoluteBaseUnitsSum / 29.573530) * 10) / 10;
+                    $ozPreviewLabel.text(" (" + cleanFlOz + " FL OZ)");
+                } else if (baseTypeId === 2 && !targetMetricFlag) {
+                    var cleanOz = Math.round((absoluteBaseUnitsSum / 28.349523) * 10) / 10;
+                    $ozPreviewLabel.text(" (" + cleanOz + " OZ)");
+                } else {
+                    $ozPreviewLabel.text("");
+                }
             }
         });
-    });
-});
+    }
 
+    // --- INTERACTIVE ELEMENT ACTIONS ---
+    $("#servings-scaler").on("input change", function () {
+        runLiveScalingEngine();
+    });
+
+    $(document).on("change", ".shopping-item-checkbox", function () {
+        var checkbox = $(this);
+        var itemRow = checkbox.closest(".shopping-item-row");
+        var textWrapper = itemRow.find(".shopping-item-text");
+        var noteInput = itemRow.find(".shopping-note-input");
+
+        if (!checkbox.is(":checked")) {
+            textWrapper.addClass("crossed-out-text");
+            itemRow.addClass("pantry-owned-item");
+            if (noteInput.length) noteInput.prop("disabled", true).css("opacity", "0.3");
+        } else {
+            textWrapper.removeClass("crossed-out-text");
+            itemRow.removeClass("pantry-owned-item");
+            if (noteInput.length) noteInput.prop("disabled", false).css("opacity", "1");
+        }
+    });
+
+    // Fire calculations instantly upon initial thread presentation
+    runLiveScalingEngine();
+});

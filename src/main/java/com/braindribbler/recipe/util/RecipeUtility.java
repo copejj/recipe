@@ -85,7 +85,7 @@ public class RecipeUtility {
 
     /**
      * Aggregates, normalizes, and auto-promotes multi-recipe ingredient batches
-     * matching exact BigDecimal column attributes seamlessly.
+     * driven entirely by your database is_promotable and is_metric configurations.
      */
     public static Map<String, List<RecipeStepIngredient>> aggregateAndPromoteShoppingList(
             List<Recipe> recipes,
@@ -95,7 +95,7 @@ public class RecipeUtility {
             return Collections.emptyMap();
         }
 
-        // 1. Flatten all step lines
+        // 1. Flatten all step ingredient lines
         List<RecipeStepIngredient> flatIngredients = recipes.stream()
                 .filter(Objects::nonNull)
                 .flatMap(r -> r.getSteps().stream())
@@ -113,10 +113,7 @@ public class RecipeUtility {
             Integer ingId = item.getIngredient().getIngredientId();
             Measurement unit = item.getMeasurement();
 
-            // --- FIXED: Read direct BigDecimal or map primitives cleanly without loops ---
-            BigDecimal amountBd = (item.getAmount() instanceof BigDecimal) ? (BigDecimal) item.getAmount()
-                    : BigDecimal.valueOf(((Number) item.getAmount()).doubleValue());
-
+            BigDecimal amountBd = BigDecimal.valueOf(((Number) item.getAmount()).doubleValue());
             BigDecimal baseAmount = amountBd.multiply(unit.getBaseUnitEquivalent());
 
             ingredientBaseSums.put(ingId, ingredientBaseSums.getOrDefault(ingId, BigDecimal.ZERO).add(baseAmount));
@@ -127,34 +124,63 @@ public class RecipeUtility {
             }
         }
 
-        // 3. Auto-Promote
+        // 3. Auto-Promote Engine
         List<RecipeStepIngredient> finalShoppingList = new ArrayList<>();
 
         for (Map.Entry<Integer, BigDecimal> entry : ingredientBaseSums.entrySet()) {
             Integer ingId = entry.getKey();
             BigDecimal totalBaseAmount = entry.getValue();
             Measurement originalUnit = referenceMeasurements.get(ingId);
-            Integer targetBaseTypeId = originalUnit.getBaseType().getBaseTypeId();
 
-            List<Measurement> candidateUnits = allMeasurementsPool.stream()
-                    .filter(m -> m.getBaseType().getBaseTypeId().equals(targetBaseTypeId))
-                    .sorted((m1, m2) -> Short.compare(m2.getScalingRank(), m1.getScalingRank()))
-                    .toList();
+            Integer targetBaseTypeId = originalUnit.getBaseType().getBaseTypeId();
+            boolean isOriginalMetric = originalUnit.getIsMetric() != null ? originalUnit.getIsMetric() : false;
 
             Measurement optimizedTargetUnit = originalUnit;
             BigDecimal scaledFinalAmount = totalBaseAmount;
 
-            for (Measurement candidate : candidateUnits) {
-                BigDecimal threshold = candidate.getBaseUnitEquivalent().multiply(BigDecimal.valueOf(0.85));
-                if (totalBaseAmount.compareTo(threshold) >= 0) {
-                    optimizedTargetUnit = candidate;
-                    scaledFinalAmount = totalBaseAmount.divide(candidate.getBaseUnitEquivalent(), 4,
-                            RoundingMode.HALF_UP);
-                    break;
+            // Rule: Only attempt unit promotion if dealing with Volume(1) or Weight(2),
+            // AND only if the original unit allows promotion from the start
+            if ((targetBaseTypeId.equals(1) || targetBaseTypeId.equals(2)) && originalUnit.getIsPromotable()) {
+
+                List<Measurement> candidateUnits = allMeasurementsPool.stream()
+                        .filter(m -> m.getBaseType().getBaseTypeId().equals(targetBaseTypeId))
+                        .filter(m -> {
+                            // Enforce strict lane separation: candidate system must match original system
+                            // exactly
+                            boolean isCandidateMetric = m.getIsMetric() != null ? m.getIsMetric() : false;
+                            return m.getIsPromotable() && (isCandidateMetric == isOriginalMetric);
+                        })
+                        // Sort descending by scaling_rank: highest containers checked first
+                        .sorted((m1, m2) -> Short.compare(m2.getScalingRank(), m1.getScalingRank()))
+                        .toList();
+
+                for (Measurement candidate : candidateUnits) {
+                    String unitText = candidate.getUnitName().toLowerCase().trim();
+
+                    // Guardrails: Prevents premature jumping to larger units
+                    if (unitText.equals("qt") && totalBaseAmount.compareTo(BigDecimal.valueOf(946.352946)) < 0)
+                        continue;
+                    if (unitText.equals("gal") && totalBaseAmount.compareTo(BigDecimal.valueOf(3785.411784)) < 0)
+                        continue;
+
+                    BigDecimal threshold = candidate.getBaseUnitEquivalent().multiply(BigDecimal.valueOf(0.85));
+
+                    if (totalBaseAmount.compareTo(threshold) >= 0) {
+                        optimizedTargetUnit = candidate;
+                        scaledFinalAmount = totalBaseAmount.divide(candidate.getBaseUnitEquivalent(), 4,
+                                RoundingMode.HALF_UP);
+                        break;
+                    }
                 }
+            } else {
+                // Non-promotable units (ml, l, pt) or Counts/Text scale numbers linearly but
+                // freeze the unit label!
+                optimizedTargetUnit = originalUnit;
+                scaledFinalAmount = totalBaseAmount.divide(originalUnit.getBaseUnitEquivalent(), 4,
+                        RoundingMode.HALF_UP);
             }
 
-            // Build output entities safely
+            // Build out the final clean row mapping object
             RecipeStepIngredient shoppingItem = new RecipeStepIngredient();
             RecipeStepIngredient sample = flatIngredients.stream()
                     .filter(i -> i.getIngredient().getIngredientId().equals(ingId))
@@ -164,48 +190,28 @@ public class RecipeUtility {
             shoppingItem.setIngredient(sample.getIngredient());
             shoppingItem.setMeasurement(optimizedTargetUnit);
 
-            // --- FIXED: Pass the clean BigDecimal object straight to your entity field ---
-            shoppingItem.setAmount(scaledFinalAmount);
-
-            if (accumulatedNotes.containsKey(ingId)) {
-                shoppingItem.setIngredientNote(String.join(", ", accumulatedNotes.get(ingId)));
+            // Type safety check to prevent compilation casting crashes
+            if (sample.getAmount() instanceof BigDecimal) {
+                shoppingItem.setAmount(scaledFinalAmount);
+            } else {
+                shoppingItem.setAmount(BigDecimal.valueOf(scaledFinalAmount.doubleValue()));
             }
 
             finalShoppingList.add(shoppingItem);
         }
 
-        // 4. FIXED: Group, sort by display_order priority first, and sort by ingredient
-        // name alphabetically second
+        // 4. Group maps alphabetically A-Z by aisle category
         return finalShoppingList.stream()
                 .collect(Collectors.groupingBy(
-                        item -> item.getIngredient().getGroceryCategory(), // Group by the full Entity object
-                        Collectors.toList()))
-                .entrySet().stream()
-                .sorted((entry1, entry2) -> {
-                    // Sort 1: Compare Category display_order priorities numerical ranks
-                    int order1 = entry1.getKey().getDisplayOrder() != null ? entry1.getKey().getDisplayOrder() : 999;
-                    int order2 = entry2.getKey().getDisplayOrder() != null ? entry2.getKey().getDisplayOrder() : 999;
-                    int comp = Integer.compare(order1, order2);
-
-                    // Sort 2: If display orders match exactly, fall back to Alphabetical Category
-                    // names
-                    if (comp == 0) {
-                        comp = entry1.getKey().getCategoryName().compareToIgnoreCase(entry2.getKey().getCategoryName());
-                    }
-                    return comp;
-                })
-                .collect(Collectors.toMap(
-                        entry -> entry.getKey().getCategoryName(), // Extract name string for Thymeleaf UI rendering
-                        entry -> {
-                            List<RecipeStepIngredient> list = entry.getValue();
-                            // Sort 3: Sort inner ingredients alphabetically by name (A-Z)
-                            list.sort(Comparator
-                                    .comparing(item -> item.getIngredient().getIngredientName().toLowerCase()));
-                            return list;
-                        },
-                        (oldValue, newValue) -> oldValue,
-                        LinkedHashMap::new // LinkedHashMap strictly preserves our custom double-sorted query order!
-                ));
-
+                        item -> item.getIngredient().getGroceryCategory().getCategoryName(),
+                        TreeMap::new,
+                        Collectors.collectingAndThen(
+                                Collectors.toList(),
+                                list -> {
+                                    list.sort(Comparator
+                                            .comparing(item -> item.getIngredient().getIngredientName().toLowerCase()));
+                                    return list;
+                                })));
     }
+
 }

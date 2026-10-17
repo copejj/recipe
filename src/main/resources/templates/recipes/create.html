@@ -148,6 +148,15 @@
 
             </div>
 
+            <hr class="dashboard-divider" style="margin: 30px 0;" />
+
+            <div class="form-group" style="margin-bottom: 24px;">
+                <label class="form-label" for="recipeNote"
+                    style="font-weight: 700; color: var(--color-text-dark);">General Recipe Notes</label>
+                <textarea th:field="*{recipeNote}" class="form-input" rows="3"
+                    placeholder="Optional notes about presentation templates, pairing ideas, or storage parameters..."></textarea>
+            </div>
+
             <!-- Global Timeline Action Controllers -->
             <div class="form-actions-footer"
                 style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-top: 20px; border-top: 1px solid var(--color-border);">

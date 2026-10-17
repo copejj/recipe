@@ -28,6 +28,14 @@ public class Measurement {
     @Column(name = "scaling_rank", nullable = false)
     private Short scalingRank;
 
+    // Inside your com.braindribbler.recipe.domain.recipe.Measurement class:
+
+    @Column(name = "is_promotable", nullable = false)
+    private Boolean isPromotable = true;
+
+    @Column(name = "is_metric", nullable = false)
+    private Boolean isMetric = false;
+
     public Measurement() {
     }
 
@@ -63,6 +71,10 @@ public class Measurement {
         this.baseType = baseType;
     }
 
+    public Integer getBaseTypeId() {
+        return this.baseType != null ? this.baseType.getBaseTypeId() : null;
+    }
+
     public BigDecimal getBaseUnitEquivalent() {
         return baseUnitEquivalent;
     }
@@ -77,5 +89,21 @@ public class Measurement {
 
     public void setScalingRank(Short scalingRank) {
         this.scalingRank = scalingRank;
+    }
+
+    public Boolean getIsPromotable() {
+        return isPromotable;
+    }
+
+    public void setIsPromotable(Boolean isPromotable) {
+        this.isPromotable = isPromotable;
+    }
+
+    public Boolean getIsMetric() {
+        return isMetric;
+    }
+
+    public void setIsMetric(Boolean isMetric) {
+        this.isMetric = isMetric;
     }
 }
