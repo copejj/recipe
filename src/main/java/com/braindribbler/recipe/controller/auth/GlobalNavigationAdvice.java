@@ -31,28 +31,12 @@ public class GlobalNavigationAdvice {
         // 2. Handle Logged-In Authenticated User Base Links
         menuItems.add(new MenuItem("Home", "/dashboard"));
         menuItems.add(new MenuItem("Search", "/search"));
-        menuItems.add(new MenuItem("My Profile", "/profile"));
 
         // 3. Collect Authorities for Permission-Based Links
         if (auth.getAuthorities() != null) {
             Set<String> authorities = auth.getAuthorities().stream()
                     .map(a -> a.getAuthority())
                     .collect(Collectors.toSet());
-
-            // Build isolated child options for operational Recipe Management
-            List<MenuItem> recipesChildren = new ArrayList<>();
-
-            // Base culinary actions available to standard users or creators
-            recipesChildren.add(new MenuItem("My Recipes", "/recipes/my-list"));
-            recipesChildren.add(new MenuItem("Create New Recipe", "/recipes/create"));
-
-            // Securely append the Moderation Panel to the Recipe Group for Authorized Users
-            if (authorities.contains("can_moderate_ingredients")) {
-                recipesChildren.add(new MenuItem("Manage Ingredients", "/admin/ingredients/dashboard"));
-            }
-
-            // Map the complete Recipes Parent Dropdown
-            menuItems.add(new MenuItem("Recipes", recipesChildren));
 
             // Build completely separate child options for technical System Administration
             List<MenuItem> adminChildren = new ArrayList<>();
@@ -68,12 +52,53 @@ public class GlobalNavigationAdvice {
                 adminChildren.add(new MenuItem("Migration History", "/admin/migrations"));
             }
 
+            if (authorities.contains("can_moderate_ingredients")) {
+                adminChildren.add(new MenuItem("Ingredient Dashboard", "/admin/ingredients/dashboard"));
+            }
+
             // Only append the System Admin dropdown if the user has technical access rights
             if (!adminChildren.isEmpty()) {
                 menuItems.add(new MenuItem("Admin", adminChildren));
             }
+
+            // Build isolated child options for operational user management
+            List<MenuItem> userChildren = new ArrayList<>();
+
+            // Base culinary actions available to standard users or creators
+            userChildren.add(new MenuItem("My Profile", "/profile"));
+            userChildren.add(new MenuItem("My Recipes", "/recipes/my-list"));
+            userChildren.add(new MenuItem("Create New Recipe", "/recipes/create"));
+
+            // Map the complete Recipes Parent Dropdown
+            menuItems.add(new MenuItem(resolveDisplayName(auth), userChildren));
         }
 
         return menuItems;
+    }
+
+    /**
+     * Extracts the custom display name field from the authenticated principal.
+     */
+    private String resolveDisplayName(Authentication auth) {
+        Object principal = auth.getPrincipal();
+
+        // 1. Direct match with your RecipeUserDetails class
+        if (principal instanceof com.braindribbler.recipe.security.RecipeUserDetails recipeUser) {
+            if (recipeUser.getUserProfile() != null) {
+                return recipeUser.getUserProfile().getDisplayName();
+            }
+        }
+
+        // 2. Fallback to standard UserDetails username if structured differently
+        if (principal instanceof org.springframework.security.core.userdetails.UserDetails userDetails) {
+            return userDetails.getUsername();
+        }
+
+        // 3. Absolute bare-minimum fallback string
+        if (auth.getName() != null && !auth.getName().isEmpty()) {
+            return auth.getName();
+        }
+
+        return "My Account";
     }
 }
