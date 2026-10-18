@@ -24,8 +24,9 @@ public interface IngredientRepository extends JpaRepository<Ingredient, Integer>
                 i.ingredient_id as ingredientId,
                 i.ingredient_name as ingredientName,
                 c.category_name as categoryName,
-                u.display_name as createdByUsername, -- ◄ FIXED: Uses display_name column
-                i.created_at as createdAt
+                u.display_name as createdByUsername,
+                i.created_at as createdAt,
+                CAST(i.classification AS text) as classification -- ◄ FIXED: ADDED AND CAST TO TEXT
             FROM ingredients i
             LEFT JOIN grocery_category c ON i.grocery_category_id = c.grocery_category_id
             LEFT JOIN users u ON i.created_by_user_id = u.user_id

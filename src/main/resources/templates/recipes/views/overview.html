@@ -25,16 +25,14 @@
                     <span class="scalable-amount" th:data-base-amount="${item.amount}"
                         th:data-base-type-id="${item.measurement.baseType.baseTypeId}"
                         th:data-base-unit-equivalent="${item.measurement.baseUnitEquivalent}"
-                        th:data-original-unit-id="${item.measurement.measurementId}" <!-- ◄ NEW -->
-                        th:data-is-promotable="${item.measurement.isPromotable}" <!-- ◄ NEW -->
+                        th:data-original-unit-id="${item.measurement.measurementId}"
+                        th:data-is-promotable="${item.measurement.isPromotable}"
                         th:data-ingredient-classification="${item.ingredient.classification.name()}"
                         th:text="${T(com.braindribbler.recipe.util.RecipeUtility).convertDecimalToKitchenFraction(item.amount)}">1</span>
-
-                    <span class="scalable-unit-name" th:text="${item.measurement.unitName}">Cups</span> of
+                    <span class="scalable-unit-name" th:text="${item.measurement.unitName}">Cups</span>
                     <strong th:text="${item.ingredient.ingredientName}">Flour</strong>
                     <span class="oz-package-preview"></span>
                 </li>
-
             </th:block>
         </ul>
     </div>
