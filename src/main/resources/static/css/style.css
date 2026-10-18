@@ -1036,3 +1036,39 @@ dialog.admin-modal h3 {
     border: 2px solid var(--color-primary);
     background-color: #f0f7ff;
 }
+
+/* ==========================================================================
+   12. RESPONSIVE COOKBOOK INGREDIENT CHECKLIST GRID
+   ========================================================================== */
+/* Mobile and Small Tablet Views: Enforce a single vertical column with natural wrapping */
+.responsive-ingredient-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.responsive-ingredient-grid li {
+    white-space: normal;
+    /* FIXED: Allows text to wrap to the next line naturally on small phone screens */
+    word-break: break-word;
+    /* Breaks long words safely if an ingredient name is exceptionally long */
+    overflow: visible;
+    /* Removes the restrictive clipping bounds */
+    text-overflow: clip;
+    /* Completely removes the '...' truncation effect */
+}
+
+/* Widescreen Desktop / Large Tablet Breakpoint Viewports (Above 768px Width) */
+@media (min-width: 769px) {
+    .responsive-ingredient-grid {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
+        /* Forces 2-3 clean columns max on desktop */
+        gap: 12px 32px !important;
+    }
+
+    .responsive-ingredient-grid li {
+        white-space: normal;
+        /* Retains standard layout wrapping room when in widescreen multi-columns */
+    }
+}
