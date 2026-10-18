@@ -21,7 +21,7 @@
             <!-- TOP PANEL: Header Titles Block -->
             <div style="width: 100%;">
                 <h1 class="page-title" style="margin: 0 0 6px 0; font-size: 1.75rem; color: var(--color-text-dark);">
-                    Master Ingredient Inventory</h1>
+                    Master Ingredient Management</h1>
                 <p class="page-subtitle" style="margin: 0; color: var(--color-text-muted); font-size: 0.95rem;">
                     View, modify, or remove verified ingredients globally active in the application database.
                 </p>
@@ -32,23 +32,22 @@
                 style="display: flex; gap: 12px; width: 100%; justify-content: flex-start; align-items: center; flex-wrap: wrap; box-sizing: border-box;">
 
                 <!-- BUTTON 1: RETURN TO PENDING MODERATION QUEUE -->
-                <a th:href="@{/admin/ingredients}" class="btn"
+                <a th:href="@{/admin/ingredients/dashboard}" class="btn"
                     style="flex: 1; min-width: 140px; text-align: center; background-color: var(--color-bg-body); color: var(--color-text-dark); border: 1px solid var(--color-border); text-decoration: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; font-size: 0.9rem; white-space: nowrap; line-height: 20px; height: 44px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">
-                    ← Back to Queue
+                    ← Ingredients Dashboard
                 </a>
 
-                <!-- BUTTON 2: ROUTE TO STORE CATEGORIES AISLE MANAGER -->
-                <a th:href="@{/admin/categories}" class="btn"
-                    style="flex: 1; min-width: 180px; text-align: center; background-color: var(--color-bg-body); color: var(--color-primary); border: 1px solid var(--color-primary); text-decoration: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; font-size: 0.9rem; white-space: nowrap; line-height: 20px; height: 44px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">
-                    🛒 Manage Aisles Order
-                </a>
-
-                <!-- BUTTON 3: + MANUAL CREATE SELECTION PORTAL -->
+                <!-- BUTTON 2: + MANUAL CREATE SELECTION PORTAL -->
                 <a th:href="@{/admin/ingredients/add}" class="btn btn--primary"
                     style="flex: 1; min-width: 150px; text-align: center; text-decoration: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; font-size: 0.9rem; white-space: nowrap; line-height: 20px; height: 44px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">
                     + Add Ingredient
                 </a>
 
+                <!-- BUTTON 3: ROUTE TO STORE CATEGORIES AISLE MANAGER -->
+                <a th:href="@{/admin/categories}" class="btn"
+                    style="flex: 1; min-width: 180px; text-align: center; background-color: var(--color-bg-body); color: var(--color-primary); border: 1px solid var(--color-primary); text-decoration: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; font-size: 0.9rem; white-space: nowrap; line-height: 20px; height: 44px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">
+                    🛒 Manage Grocery Categories
+                </a>
             </div>
         </div>
 
@@ -63,10 +62,13 @@
         <div th:if="${param.deleted}"
             style="padding:12px; margin-bottom:20px; background-color:#f8d7da; border:1px solid #f5c6cb; color:#721c24; font-weight:600; border-radius:6px; box-sizing: border-box;">
             🗑️ Ingredient successfully purged from the global dictionary.</div>
-        <div th:if="${param.error != null and param.error == 'inUse'}"
-            style="padding:12px; margin-bottom:20px; background-color:#fff3cd; border:1px solid #ffeeba; color:#856404; font-weight:600; border-radius:6px; box-sizing: border-box;">
-            ⚠️ Relational Violation: This ingredient is currently bound to active recipe steps and cannot be deleted!
-            Try merging it instead.</div>
+        <div th:if="${param.error}">
+            <div th:if="${param.error == 'inUse'}"
+                style="padding:12px; margin-bottom:20px; background-color:#fff3cd; border:1px solid #ffeeba; color:#856404; font-weight:600; border-radius:6px; box-sizing: border-box;">
+                ⚠️ Relational Violation: This ingredient is currently bound to active recipe steps and cannot be
+                deleted! Try merging it instead.
+            </div>
+        </div>
         <!-- ==========================================================================
            DATA REPLACEMENT INDEX GRID MATRIX (ISOLATED OVERFLOW SCROLL CONTROLLER)
            ========================================================================== -->
@@ -82,7 +84,7 @@
                         <th style="padding: 12px; text-align: left; width: 32%;">Ingredient Name</th>
                         <th style="padding: 12px; text-align: left; width: 22%;">Scaling Track</th>
                         <th style="padding: 12px; text-align: left; width: 20%;">Grocery Category</th>
-                        <th style="padding: 12px; text-align: right; width: 18%;">Actions</th>
+                        <th style="padding: 12px; text-align: right; width: 18%;"> </th>
                     </tr>
                 </thead>
                 <tbody>
