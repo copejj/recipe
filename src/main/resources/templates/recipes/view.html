@@ -29,13 +29,13 @@
                 </div>
             </div>
 
-            <!-- 🎛️ SYSTEM MODE AND SERVINGS MULTIPLIER BUTTON GROUP PANELS -->
+            <!-- SYSTEM MODE AND SERVINGS MULTIPLIER BUTTON GROUP PANELS -->
             <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
 
                 <!-- US Imperial ⇄ Metric Switcher Component Widget -->
                 <div
                     style="background-color: var(--color-bg-card); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--color-border); display: flex; align-items: center; gap: 10px;">
-                    <span style="font-weight: 700; font-size: 0.9rem; color: var(--color-text-dark);">📐 System:</span>
+                    <span style="font-weight: 700; font-size: 0.9rem; color: var(--color-text-dark);">System:</span>
                     <div class="system-toggle-wrapper"
                         style="display: flex; border: 1px solid var(--color-border-input, #ccc); border-radius: 6px; overflow: hidden; background-color: #f8f9fa;">
                         <button type="button" id="system-imperial-btn" class="system-toggle-btn active"
@@ -50,7 +50,7 @@
                 <div
                     style="background-color: var(--color-bg-card); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--color-border); display: flex; align-items: center; gap: 10px;">
                     <label for="servings-scaler"
-                        style="font-weight: 700; font-size: 0.9rem; color: var(--color-text-dark); margin: 0;">🍳
+                        style="font-weight: 700; font-size: 0.9rem; color: var(--color-text-dark); margin: 0;">
                         Servings:</label>
                     <input type="number" id="servings-scaler" th:value="${recipe.servings}"
                         th:data-original-servings="${recipe.servings}" min="1" step="1"
@@ -59,21 +59,21 @@
             </div>
         </div>
 
-        <!-- 🎛️ VIEW PANEL TABS SWITCH NAVIGATION HEADER BAR -->
+        <!-- VIEW PANEL TABS SWITCH NAVIGATION HEADER BAR -->
         <div class="view-mode-tabs"
             style="display: flex; gap: 8px; margin-bottom: 30px; border-bottom: 2px solid var(--color-border); padding-bottom: 10px;">
             <button type="button" class="tab-btn active" data-target="overview-panel"
-                style="padding: 10px 20px; font-weight: 700; border: none; background: none; cursor: pointer; color: var(--color-primary); border-bottom: 3px solid var(--color-primary); margin-bottom: -13px; font-size: 1rem;">🍳
+                style="padding: 10px 20px; font-weight: 700; border: none; background: none; cursor: pointer; color: var(--color-primary); border-bottom: 3px solid var(--color-primary); margin-bottom: -13px; font-size: 1rem;">
                 Recipe Overview</button>
             <button type="button" class="tab-btn" data-target="prep-panel"
-                style="padding: 10px 20px; font-weight: 600; border: none; background: none; cursor: pointer; color: var(--color-text-muted); font-size: 1rem;">📖
-                Kitchen Prep Mode</button>
+                style="padding: 10px 20px; font-weight: 600; border: none; background: none; cursor: pointer; color: var(--color-text-muted); font-size: 1rem;">
+                Recipe Preparation</button>
             <button type="button" class="tab-btn" data-target="shopping-panel"
-                style="padding: 10px 20px; font-weight: 600; border: none; background: none; cursor: pointer; color: var(--color-text-muted); font-size: 1rem;">🛒
-                Grocery Shopping List</button>
+                style="padding: 10px 20px; font-weight: 600; border: none; background: none; cursor: pointer; color: var(--color-text-muted); font-size: 1rem;">
+                Shopping List</button>
         </div>
 
-        <!-- 🎛️ MODULAR DISPLAY LAYOUT CHANNELS -->
+        <!-- MODULAR DISPLAY LAYOUT CHANNELS -->
         <div id="overview-panel" class="tab-panel active-panel">
             <div th:insert="~{recipes/views/overview :: overview-panel}"></div>
         </div>

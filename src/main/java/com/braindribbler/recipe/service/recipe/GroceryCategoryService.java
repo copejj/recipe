@@ -49,4 +49,29 @@ public class GroceryCategoryService {
         }
         groceryCategoryRepository.save(category);
     }
+
+    /**
+     * Bulk updates all grocery categories within a single transaction pipeline
+     */
+    public void saveAllCategories(List<GroceryCategory> categories) {
+        if (categories != null) {
+            for (GroceryCategory cat : categories) {
+                // Leverages your existing update logic to handle validation and fetching safely
+                this.updateCategory(
+                        cat.getGroceryCategoryId(),
+                        cat.getCategoryName(),
+                        cat.getDisplayOrder());
+            }
+        }
+    }
+
+    /**
+     * Drops a single grocery category by its identifier key
+     */
+    public void deleteCategory(Integer id) {
+        if (!groceryCategoryRepository.existsById(id)) {
+            throw new EntityNotFoundException("Category not found with ID: " + id);
+        }
+        groceryCategoryRepository.deleteById(id);
+    }
 }
