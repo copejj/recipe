@@ -58,13 +58,18 @@ public class GlobalAdvice {
             List<Map<String, Object>> flatMatrix = measurementsPool.stream().map(m -> {
                 Map<String, Object> map = new HashMap<>();
                 map.put("unitName", m.getUnitName());
-                map.put("pluralName", m.getPluralName());
+                map.put("pluralName", m.getPluralName()); // Already added!
+
+                // ADD THIS LINE: Maps your new database floor value into the JavaScript JSON
+                // output array
+                map.put("minPromotionFloor",
+                        m.getMinPromotionFloor() != null ? m.getMinPromotionFloor().doubleValue() : 0.85);
 
                 map.put("baseUnitEquivalent", m.getBaseUnitEquivalent().doubleValue());
                 map.put("scalingRank", m.getScalingRank().intValue());
                 map.put("baseTypeId", m.getBaseType() != null ? m.getBaseType().getBaseTypeId() : null);
 
-                // ADDED: Pass the new database track flags down to the JavaScript engine
+                // Pass the database track flags down to the JavaScript engine
                 map.put("isPromotable", m.getIsPromotable());
                 map.put("isMetric", m.getIsMetric());
                 return map;

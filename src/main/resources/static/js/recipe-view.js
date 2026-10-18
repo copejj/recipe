@@ -127,18 +127,41 @@ $(document).ready(function () {
                 }
 
                 // Check for dynamic size upgrades if unit is promotable
+                // Check for dynamic size upgrades if unit is promotable
                 if (isPromotable) {
+                    var unitPromoted = false;
+
                     for (var i = 0; i < candidates.length; i++) {
                         var candidate = candidates[i];
                         var equivValue = parseFloat(candidate.baseUnitEquivalent);
 
-                        if (absoluteBaseUnitsSum >= (equivValue * 0.85)) {
+                        // Calculate total equivalent quantity relative to this candidate unit
+                        var quantityInCandidateUnit = absoluteBaseUnitsSum / equivValue;
+
+                        // Extract the database-driven promotion floor threshold limit (default to 0.85 fallback)
+                        var dynamicFloorThreshold = parseFloat(candidate.minPromotionFloor) || 0.85;
+                        var satisfiesThreshold = false;
+
+                        // If the threshold is explicitly configured as a unit fraction (like 0.25 for Cups/Pounds)
+                        if (dynamicFloorThreshold < 1.0 && dynamicFloorThreshold > 0.0 && dynamicFloorThreshold !== 0.85) {
+                            satisfiesThreshold = (quantityInCandidateUnit >= dynamicFloorThreshold);
+                        } else {
+                            satisfiesThreshold = (absoluteBaseUnitsSum >= (equivValue * dynamicFloorThreshold));
+                        }
+
+                        if (satisfiesThreshold) {
                             if (candidate.isPromotable || candidate.measurementId === originalUnitId) {
                                 finalTargetUnitText = candidate.unitName;
-                                finalDisplayQuantity = absoluteBaseUnitsSum / equivValue;
+                                finalDisplayQuantity = quantityInCandidateUnit;
+                                unitPromoted = true;
                                 break;
                             }
                         }
+                    }
+
+                    if (!unitPromoted && originalUnitMeta) {
+                        finalTargetUnitText = originalUnitMeta.unitName;
+                        finalDisplayQuantity = totalScaledValue;
                     }
                 }
             }
