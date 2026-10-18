@@ -3,9 +3,12 @@ package com.braindribbler.recipe.controller.recipe;
 // Core Java Collections 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,6 +16,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 // Your Local Domain Models & Service Layers
 import com.braindribbler.recipe.domain.auth.User;
@@ -103,18 +108,36 @@ public class RecipeController {
     }
 
     @PostMapping("/recipes/create")
-    public String handleRecipeSubmission(@ModelAttribute("recipeForm") RecipeForm recipeForm,
+    @ResponseBody
+    public ResponseEntity<?> handleRecipeSubmission(
+            @ModelAttribute("recipeForm") RecipeForm recipeForm,
+            @RequestParam(value = "actionType", defaultValue = "SAVE") String actionType,
             @AuthenticationPrincipal RecipeUserDetails currentUser) {
+
+        Map<String, Object> jsonResponse = new HashMap<>();
+
         if (currentUser == null) {
-            return "redirect:/login";
+            jsonResponse.put("success", false);
+            jsonResponse.put("redirectUrl", "/login");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(jsonResponse);
         }
 
-        // Call our unified single transaction handler method
+        // 1. Call your existing transaction business handler logic
         Recipe savedRecipe = recipeService.saveOrUpdateRecipe(recipeForm, currentUser.getUserProfile());
 
-        // Redirect the user straight to their gorgeous newly updated recipe viewing
-        // sheet profile
-        return "redirect:/recipes/view/" + savedRecipe.getRecipeId();
+        jsonResponse.put("success", true);
+        jsonResponse.put("recipeId", savedRecipe.getRecipeId());
+
+        // 2. Evaluate button pathing commands dynamically
+        if ("FINISH".equalsIgnoreCase(actionType)) {
+            // Provide the routing path for the "Finish & View Recipe" button
+            jsonResponse.put("redirectUrl", "/recipes/view/" + savedRecipe.getRecipeId());
+        } else {
+            // Provide a stay-put confirmation path for the "Save Progress" button
+            jsonResponse.put("redirectUrl", null);
+        }
+
+        return ResponseEntity.ok(jsonResponse);
     }
 
     @GetMapping("/recipes/my-list")
