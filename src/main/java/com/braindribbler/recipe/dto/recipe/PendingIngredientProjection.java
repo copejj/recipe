@@ -7,6 +7,8 @@ public interface PendingIngredientProjection {
 
     String getIngredientName();
 
+    String getClassification();
+
     String getCategoryName();
 
     String getCreatedByUsername();

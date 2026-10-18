@@ -92,10 +92,13 @@ $(document).ready(function () {
             var totalScaledValue = baseAmount * scalingFactor;
             var absoluteBaseUnitsSum = totalScaledValue * baseUnitEquivalent;
 
-            // Direct ID match to find the initial fallback configuration
+            // 1. Grab the existing text from the HTML element to use as the absolute fallback
+            var nativeDatabaseUnitText = $unitLabel.length ? ($unitLabel.data("original-unit-name") || $unitLabel.text().trim()) : "Units";
+
+            // 2. Direct ID match to find the initial configuration inside the matrix array
             var originalUnitMeta = poolMatrix.find(function (m) { return m.measurementId === originalUnitId; });
 
-            var finalTargetUnitText = originalUnitMeta ? originalUnitMeta.unitName : "Units";
+            var finalTargetUnitText = originalUnitMeta ? originalUnitMeta.unitName : nativeDatabaseUnitText;
             var finalDisplayQuantity = totalScaledValue;
 
             // Only process promotions for volumetric liquids (1) and masses (2)
@@ -148,7 +151,33 @@ $(document).ready(function () {
             }
 
             if ($unitLabel.length) {
-                $unitLabel.text(finalTargetUnitText); // Uses database unit_name as-is!
+                // --- DATABASE-DRIVEN PLURALIZATION ENGINE ---
+                if ($unitLabel.length) {
+                    var displayQuantityNumeric = finalDisplayQuantity;
+                    var finalUnitTextOutput = finalTargetUnitText;
+
+                    // Look up the matching unit in the matrix pool using the text signature or ID
+                    var matchedMatrixUnit = poolMatrix.find(function (m) {
+                        return m.unitName === finalTargetUnitText || m.pluralName === finalTargetUnitText;
+                    });
+
+                    if (matchedMatrixUnit) {
+                        // Dynamically toggle names based on the numeric value
+                        if (displayQuantityNumeric === 1) {
+                            finalUnitTextOutput = matchedMatrixUnit.unitName; // e.g., "Pint"
+                        } else {
+                            // Fall back to standard unitName if pluralName happens to be blank/null
+                            finalUnitTextOutput = matchedMatrixUnit.pluralName || matchedMatrixUnit.unitName; // e.g., "Pints"
+                        }
+                    }
+
+                    // Hide the word "Whole" completely from layouts (e.g., "84 Whole Green Beans" -> "84 Green Beans")
+                    if (finalUnitTextOutput.toLowerCase() === "whole") {
+                        $unitLabel.text("");
+                    } else {
+                        $unitLabel.text(finalUnitTextOutput + " ");
+                    }
+                }
             }
 
             // Ounce Packaging Preview Display Engine

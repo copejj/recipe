@@ -58,6 +58,8 @@ public class GlobalAdvice {
             List<Map<String, Object>> flatMatrix = measurementsPool.stream().map(m -> {
                 Map<String, Object> map = new HashMap<>();
                 map.put("unitName", m.getUnitName());
+                map.put("pluralName", m.getPluralName());
+
                 map.put("baseUnitEquivalent", m.getBaseUnitEquivalent().doubleValue());
                 map.put("scalingRank", m.getScalingRank().intValue());
                 map.put("baseTypeId", m.getBaseType() != null ? m.getBaseType().getBaseTypeId() : null);
@@ -71,5 +73,4 @@ public class GlobalAdvice {
             model.addAttribute("globalMeasurementsPool", flatMatrix);
         }
     }
-
 }

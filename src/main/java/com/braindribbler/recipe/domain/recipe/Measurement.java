@@ -36,6 +36,9 @@ public class Measurement {
     @Column(name = "is_metric", nullable = false)
     private Boolean isMetric = false;
 
+    @Column(name = "plural_name", columnDefinition = "text")
+    private String pluralName;
+
     public Measurement() {
     }
 
@@ -105,5 +108,13 @@ public class Measurement {
 
     public void setIsMetric(Boolean isMetric) {
         this.isMetric = isMetric;
+    }
+
+    public String getPluralName() {
+        return pluralName;
+    }
+
+    public void setPluralName(String pluralName) {
+        this.pluralName = pluralName;
     }
 }

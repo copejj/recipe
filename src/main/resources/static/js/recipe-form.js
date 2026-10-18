@@ -402,6 +402,7 @@ $(document).ready(function () {
             },
             success: function (response) {
                 if (response.success) {
+                    // 1. Append the brand-new choice into our master hidden options template pool
                     $('#ingredient-options-pool').append(
                         $('<option>', {
                             value: response.ingredientId,
@@ -409,6 +410,7 @@ $(document).ready(function () {
                         }).attr('data-classification', classificationType)
                     );
 
+                    // --- RE-SORT MASTER POOL ---
                     var $pool = $('#ingredient-options-pool');
                     var $poolPlaceholder = $pool.find('option[value=""]');
                     var nativePoolOptions = $pool.find('option').not('[value=""]').get();
@@ -418,8 +420,27 @@ $(document).ready(function () {
                     });
                     $pool.empty().append($poolPlaceholder).append(nativePoolOptions);
 
+                    // --- FIXED: CASCADE NEW OPTIONS POOL TO ALL ACTIVE DROPDOWNS ON PAGE ---
+                    // This forces every single existing recipe row to instantly recognize the new item
+                    $(".ingredient-row select:first-child").each(function () {
+                        var $currentSelect = $(this);
+                        var savedCurrentValue = $currentSelect.val(); // Cache what the user already picked here
+
+                        // Overwrite native HTML options with the newly expanded pool list
+                        $currentSelect.html($('#ingredient-options-pool').html());
+
+                        // Restore selection state safely
+                        $currentSelect.val(savedCurrentValue);
+                    });
+
+                    // 2. Auto-select the newly quick-added option on the row that requested it
                     if (activeSelectDropdown) {
-                        activeSelectDropdown.val(response.ingredientId).trigger('change');
+                        activeSelectDropdown.val(response.ingredientId);
+
+                        // CRITICAL SELECT2 FORCE OVERRIDE: Tells Select2 the DOM changed so it forces a visual repaint!
+                        activeSelectDropdown.trigger('change');
+
+                        // Execute your shared measurement logic worker function to load units immediately
                         filterMeasurementsByIngredient(activeSelectDropdown);
                     }
 
