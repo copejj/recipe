@@ -39,6 +39,9 @@ public class Measurement {
     @Column(name = "plural_name", columnDefinition = "text")
     private String pluralName;
 
+    @Column(name = "min_promotion_floor", precision = 10, scale = 6)
+    private java.math.BigDecimal minPromotionFloor = java.math.BigDecimal.valueOf(0.85);
+
     public Measurement() {
     }
 
@@ -116,5 +119,13 @@ public class Measurement {
 
     public void setPluralName(String pluralName) {
         this.pluralName = pluralName;
+    }
+
+    public java.math.BigDecimal getMinPromotionFloor() {
+        return minPromotionFloor;
+    }
+
+    public void setMinPromotionFloor(java.math.BigDecimal minPromotionFloor) {
+        this.minPromotionFloor = minPromotionFloor;
     }
 }
