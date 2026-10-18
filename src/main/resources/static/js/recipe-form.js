@@ -42,7 +42,6 @@ $(document).ready(function () {
         reindexForm();
     });
 
-
     $(document).on("click", ".remove-step-btn", function () {
         $(this).closest(".step-card").remove();
         reindexForm();
@@ -90,7 +89,7 @@ $(document).ready(function () {
         activeSelectDropdown = $(this).siblings(".ingredients-container").find(".ingredient-row:last-child select").first();
         $("#quickIngredientName").val("");
         $("#quickGroceryCategoryId").val("");
-        $("#quickIngredientClassification").val("SOLID"); // ◄ NEW: Reset dropdown state to SOLID default
+        $("#quickIngredientClassification").val("SOLID"); // Reset dropdown state to SOLID default
         $("#modal-feedback-msg").hide().text("");
         if (modal) modal.showModal();
     });
@@ -99,92 +98,10 @@ $(document).ready(function () {
         if (modal) modal.close();
     });
 
-    $("#quickIngredientForm").submit(function (e) {
-        e.preventDefault();
-        $("#modal-feedback-msg").hide();
-
-        var ingredientName = $("#quickIngredientName").val();
-        var categoryId = $("#quickGroceryCategoryId").val();
-        var classificationType = $("#quickIngredientClassification").val();
-
-        var token = document.cookie.split('; ')
-            .find(row => row.startsWith('XSRF-TOKEN='))
-            ?.split('=')[1];
-
-        var header = "X-XSRF-TOKEN";
-
-        $.ajax({
-            url: '/recipes/ingredients/quick-add',
-            type: 'POST',
-            data: {
-                name: ingredientName,
-                groceryCategoryId: categoryId,
-                classification: classificationType
-            },
-            beforeSend: function (xhr) {
-                if (token) {
-                    xhr.setRequestHeader(header, decodeURIComponent(token));
-                }
-            },
-            success: function (response) {
-                if (response.success) {
-                    // 1. Append the brand-new choice into our master hidden options template pool
-                    $('#ingredient-options-pool').append(
-                        $('<option>', {
-                            value: response.ingredientId,
-                            text: response.ingredientName
-                        }).attr('data-classification', classificationType) // ◄ NEW: Embeds category metadata parameters instantly
-                    );
-
-                    // --- RE-SORT MASTER POOL ---
-                    var $pool = $('#ingredient-options-pool');
-                    var $poolPlaceholder = $pool.find('option[value=""]');
-
-                    // .get() converts the jQuery selection into a clean native JavaScript array
-                    var nativePoolOptions = $pool.find('option').not('[value=""]').get();
-
-                    nativePoolOptions.sort(function (a, b) {
-                        return $(a).text().localeCompare($(b).text());
-                    });
-                    $pool.empty().append($poolPlaceholder).append(nativePoolOptions);
-
-                    // 2. Update and re-sort every active dropdown across all step rows
-                    // 3. Auto-select the newly added option on the active dropdown
-                    if (activeSelectDropdown) {
-                        activeSelectDropdown.val(response.ingredientId);
-
-                        filterMeasurementsByIngredient(activeSelectDropdown);
-                    }
-
-                    if (modal) modal.close();
-                    validateStepIngredients();
-                } else {
-                    $("#modal-feedback-msg").addClass("error-text").text(response.message || "Failed to add ingredient.").show();
-                }
-            },
-            error: function () {
-                $("#modal-feedback-msg").addClass("error-text").text("An error occurred. Please try again.").show();
-            }
-        });
-    });
-
-    // --- FORM SUBMIT INTERCEPTION ---
-    $("form").submit(function (e) {
-        var isFormValid = validateStepIngredients();
-
-        if (!isFormValid) {
-            e.preventDefault();
-            $('html, body').animate({
-                scrollTop: $(".row-error-highlight").first().offset().top - 100
-            }, 400);
-        }
-    });
-
-    // --- NEW: SAFE SELECT2 INITIALIZER WRAPPER ---
+    // --- SAFE SELECT2 INITIALIZER WRAPPER ---
     function initializeSelect2Search() {
         $(".ingredient-row select:first-child").each(function () {
             // Guard clause: If Select2 is already attached to this element, destroy it first.
-            // This prevents nasty visual duplication bugs when reindexForm() runs!
             if ($(this).hasClass("select2-hidden-accessible")) {
                 $(this).select2("destroy");
             }
@@ -290,7 +207,6 @@ $(document).ready(function () {
         var fractionString = formatCulinaryFraction($input.val());
 
         if (fractionString && $bubble.length) {
-            // Put the text in the bubble and toggle the spring-open CSS animation class
             $bubble.text("🍳 Kitchen Fraction: " + fractionString);
             $wrapper.addClass("show-bubble");
         } else {
@@ -298,64 +214,14 @@ $(document).ready(function () {
         }
     });
 
-    // Hide the bubble when the user clicks away from the input field
     $(document).on("focusout.fraction", ".ingredient-row .amount-input", function () {
         $(this).closest(".amount-wrapper").removeClass("show-bubble");
-    });
-
-    // --- AJAX PERSISTENCE ENGINE: SAVE PROGRESS AND STAY ---
-    $(document).on("click", "#save-stay-btn", function (e) {
-        e.preventDefault();
-
-        // 1. First, run your real-time recipe validation sequence
-        if (!validateStepIngredients()) {
-            // If duplicate items exist, highlight them and cancel out
-            $('html, body').animate({
-                scrollTop: $(".row-error-highlight").first().offset().top - 100
-            }, 400);
-            return;
-        }
-
-        var $form = $("#recipeForm");
-        var saveButton = $(this);
-        var originalText = saveButton.html();
-
-        // Visual loading feedback state
-        saveButton.prop("disabled", true).html("Saving Recipe...");
-
-        // Grab XSRF parameters out of cookies for Spring Security protection
-        var token = document.cookie.split('; ')
-            .find(row => row.startsWith('XSRF-TOKEN='))
-            ?.split('=')[1];
-        var header = "X-XSRF-TOKEN";
-
-        // 2. Transmit the form array directly to your existing Spring PostMapping endpoint
-        $.ajax({
-            url: $form.attr("action"),
-            type: "POST",
-            data: $form.serialize(), // Packages up titles, descriptions, steps, and ingredients cleanly
-            beforeSend: function (xhr) {
-                if (token) {
-                    xhr.setRequestHeader(header, decodeURIComponent(token));
-                }
-            },
-            success: function (response) {
-                saveButton.prop("disabled", false).html(originalText);
-                showToast("Recipe saved successfully!", true);
-            },
-            error: function (xhr) {
-                saveButton.prop("disabled", false).html(originalText);
-
-                showToast("There seems to be an issue, please verify recipe.", false);
-            }
-        });
     });
 
     // --- APP TOAST NOTIFICATION ENGINE ---
     function showToast(message, isSuccess) {
         var $toast = $("#form-toast-notification");
 
-        // Configure styles based on response validity
         if (isSuccess) {
             $toast.css("background-color", "#28a745"); // Green Success
             $("#toast-icon").text("💾");
@@ -366,10 +232,8 @@ $(document).ready(function () {
 
         $("#toast-message").text(message);
 
-        // Slide down and fade in
         $toast.css({ "transform": "translateY(0)", "opacity": "1", "pointer-events": "auto" });
 
-        // Auto-dismiss after 3.5 seconds
         setTimeout(function () {
             $toast.css({ "transform": "translateY(-20px)", "opacity": "0", "pointer-events": "none" });
         }, 3500);
@@ -379,33 +243,26 @@ $(document).ready(function () {
     $(document).on("click", ".insert-step-here-btn", function (e) {
         e.preventDefault();
 
-        // Grab a reference copy template to clone from the first step card
         var firstCard = $("#steps-container .step-card").first();
 
-        // Temporarily destroy select2 attachments on your copy reference container
         firstCard.find(".ingredient-row select:first-child").each(function () {
             if ($(this).hasClass("select2-hidden-accessible")) { $(this).select2("destroy"); }
         });
 
         var clone = firstCard.clone();
 
-        // Clean out default template texts
         clone.find("textarea, input").val("");
         clone.find("select").prop("selectedIndex", 0);
         clone.find("input[type='hidden']").remove();
-        clone.find(".ingredients-container").empty(); // Start with zero ingredients for clean steps
+        clone.find(".ingredients-container").empty();
 
-        // CRITICAL INJECTION LINE: Insert this clone immediately AFTER the card container that requested it!
         var activeStepCardRow = $(this).closest(".step-card");
         clone.insertAfter(activeStepCardRow);
 
-        // Force the re-indexing engine to rewrite all backend database collection indices layout maps!
         reindexForm();
     });
 
-    // --- DYNAMIC UNIT FILTERING ENGINE ---
-    // Re-calculates and removes invalid measurement units based on ingredient tracking profiles
-    // --- DYNAMIC UNIT FILTERING & HIERARCHY SORTING ENGINE ---
+    // --- DYNAMIC UNIT FILTERING ENGINE & HIERARCHY SORTING ---
     function filterMeasurementsByIngredient($ingredientSelect) {
         var $row = $ingredientSelect.closest(".ingredient-row");
         var $measurementSelect = $row.find("select").eq(1);
@@ -413,7 +270,6 @@ $(document).ready(function () {
         var selectedOption = $ingredientSelect.find("option:selected");
         var classification = selectedOption.attr("data-classification");
 
-        // Global toggle switch helper hook: set to true if user prefers Metric, false for US Imperial
         var preferMetric = false;
 
         if (!classification) {
@@ -426,13 +282,12 @@ $(document).ready(function () {
         var $filteredUnitsContainer = $('<div>');
         var validOptionsArray = [];
 
-        // Extract a clean list from the master pool
         var $masterOptions = $('<div>').append($('#measurement-options-pool').html()).find('option');
 
         $masterOptions.each(function () {
             var $opt = $(this);
             var unitIdAttr = $opt.attr('data-unit-id');
-            if (!unitIdAttr) return; // Skip placeholder option
+            if (!unitIdAttr) return;
 
             var baseType = parseInt($opt.attr('data-base-type'));
             var unitId = parseInt(unitIdAttr);
@@ -440,7 +295,6 @@ $(document).ready(function () {
 
             var matchesClassificationTrack = false;
 
-            // --- 1. RUN CORE CLASSIFICATION FILTER TRACKS ---
             if (classification === "SOLID") {
                 matchesClassificationTrack = (baseType === 2 || baseType === 3 || (baseType === 4 && unitId !== 19));
             }
@@ -456,13 +310,10 @@ $(document).ready(function () {
                 matchesClassificationTrack = (isValidVolume || isValidWeight || isValidEstimate);
             }
 
-            // --- 2. ISOLATE METRIC VS IMPERIAL MEASUREMENT SYSTEMS ---
-            // Volumetric (1) and Weight (2) must match the user system preference.
-            // Discrete units (3) and Estimates (4) bypass this since "2 Whole" or "1 Pinch" applies globally.
             if (matchesClassificationTrack) {
                 if (baseType === 1 || baseType === 2) {
                     if (isMetric !== preferMetric) {
-                        matchesClassificationTrack = false; // Filter out system mismatches
+                        matchesClassificationTrack = false;
                     }
                 }
             }
@@ -472,28 +323,20 @@ $(document).ready(function () {
             }
         });
 
-        // --- 3. SORT SYSTEM OPTIONS BY SCALING RANK STEP-LADDER ---
         validOptionsArray.sort(function (a, b) {
             var rankA = parseInt($(a).attr('data-scaling-rank')) || 0;
             var rankB = parseInt($(b).attr('data-scaling-rank')) || 0;
-
-            // Sort lowest rank sizes to the top (e.g. Teaspoon before Cup)
             return rankA - rankB;
         });
 
-        // --- 4. REBUILD DROPDOWN DOM ---
-        // Append the initial placeholder element back
         $filteredUnitsContainer.append('<option value="">-- Unit --</option>');
 
-        // Append sorted items sequentially
         $.each(validOptionsArray, function (idx, $sortedOpt) {
             $filteredUnitsContainer.append($sortedOpt);
         });
 
-        // Flush the optimized layout clean into the viewport dropdown list
         $measurementSelect.html($filteredUnitsContainer.html());
 
-        // Restore previous selection if it managed to survive constraints
         if ($measurementSelect.find('option[value="' + currentUnitValue + '"]').length > 0) {
             $measurementSelect.val(currentUnitValue);
         } else {
@@ -502,17 +345,262 @@ $(document).ready(function () {
     }
 
     function filterExistingSavedRowsOnLoad() {
-        console.log('filtering existing units');
         $(".ingredient-row select:first-child").each(function () {
             var $ingredientSelect = $(this);
             var selectedValue = $ingredientSelect.val();
 
-            // Only run the filter if an ingredient is already selected in this saved row
             if (selectedValue && selectedValue !== "") {
                 filterMeasurementsByIngredient($ingredientSelect);
             }
         });
     }
+
+    // --- QUICK INGREDIENT MODAL HANDLERS ---
+    $(document).on("click", ".open-quick-ing-btn", function () {
+        activeSelectDropdown = $(this).siblings(".ingredients-container").find(".ingredient-row:last-child select").first();
+        $("#quickIngredientName").val("");
+        $("#quickGroceryCategoryId").val("");
+        $("#quickIngredientClassification").val("SOLID");
+        $("#modal-feedback-msg").hide().text("");
+        if (modal) modal.showModal();
+    });
+
+    $("#closeQuickIngBtn").click(function () {
+        if (modal) modal.close();
+    });
+
+    $("#quickIngredientForm").submit(function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $("#modal-feedback-msg").hide();
+
+        var ingredientName = $("#quickIngredientName").val();
+        var categoryId = $("#quickGroceryCategoryId").val();
+        var classificationType = $("#quickIngredientClassification").val();
+
+        if (!categoryId || categoryId === "") {
+            categoryId = null;
+        }
+
+        var tokenCookie = document.cookie.split('; ')
+            .find(row => row.startsWith('XSRF-TOKEN='));
+        var token = tokenCookie ? tokenCookie.split('=')[1] : null;
+        var header = "X-XSRF-TOKEN";
+
+        $.ajax({
+            url: '/recipes/ingredients/quick-add',
+            type: 'POST',
+            data: {
+                name: ingredientName,
+                groceryCategoryId: categoryId,
+                classification: classificationType
+            },
+            beforeSend: function (xhr) {
+                if (token) {
+                    xhr.setRequestHeader(header, decodeURIComponent(token));
+                }
+            },
+            success: function (response) {
+                if (response.success) {
+                    $('#ingredient-options-pool').append(
+                        $('<option>', {
+                            value: response.ingredientId,
+                            text: response.ingredientName
+                        }).attr('data-classification', classificationType)
+                    );
+
+                    var $pool = $('#ingredient-options-pool');
+                    var $poolPlaceholder = $pool.find('option[value=""]');
+                    var nativePoolOptions = $pool.find('option').not('[value=""]').get();
+
+                    nativePoolOptions.sort(function (a, b) {
+                        return $(a).text().localeCompare($(b).text());
+                    });
+                    $pool.empty().append($poolPlaceholder).append(nativePoolOptions);
+
+                    if (activeSelectDropdown) {
+                        activeSelectDropdown.val(response.ingredientId).trigger('change');
+                        filterMeasurementsByIngredient(activeSelectDropdown);
+                    }
+
+                    if (modal) modal.close();
+                } else {
+                    $("#modal-feedback-msg").addClass("error-text").text(response.message || "Failed to add ingredient.").show();
+                }
+            },
+            error: function (xhr) {
+                console.error("Quick Add Error Details:", xhr.status, xhr.responseText);
+                $("#modal-feedback-msg").addClass("error-text").text("An error occurred (" + xhr.status + "). Please check fields and try again.").show();
+            }
+        });
+    });
+
+    // --- UNIFIED BULK RECIPE VALIDATION ENGINE ---
+    // Evaluates constraints dynamically: Save Progress allows partial entries, Finish locks down everything.
+    function validateRecipeForm(skipMetadata) {
+        $(".form-input-error").removeClass("form-input-error");
+        $(".select2-selection--single").removeClass("form-input-error");
+        $(".ingredient-error-msg, .field-error-msg").remove();
+
+        var isFormValid = true;
+
+        // 1. BASE METADATA FIELDS (Only enforced on Final Submit)
+        if (!skipMetadata) {
+            // Validate Recipe Title
+            var $title = $("#title");
+            if ($title.length && $title.val().trim() === "") {
+                isFormValid = false;
+                $title.addClass("form-input-error");
+                $title.after('<span class="field-error-msg" style="color: var(--color-primary); font-size: 0.875rem; font-weight: 600; display: block; margin-top: 4px;">⚠️ Recipe Title is required to publish.</span>');
+            }
+
+            // Validate Servings Count
+            var $servings = $("#servings");
+            if ($servings.length && ($servings.val().trim() === "" || parseInt($servings.val()) <= 0 || isNaN(parseInt($servings.val())))) {
+                isFormValid = false;
+                $servings.addClass("form-input-error");
+                $servings.after('<span class="field-error-msg" style="color: var(--color-primary); font-size: 0.875rem; font-weight: 600; display: block; margin-top: 4px;">⚠️ Servings count must be greater than 0 to publish.</span>');
+            }
+
+            // Validate Privacy & Visibility
+            var $visibility = $("#recipeVisibilityId");
+            if ($visibility.length && ($visibility.val() === "" || $visibility.val() === null)) {
+                isFormValid = false;
+                $visibility.addClass("form-input-error");
+                $visibility.after('<span class="field-error-msg" style="color: var(--color-primary); font-size: 0.875rem; font-weight: 600; display: block; margin-top: 4px;">⚠️ Visibility setting is required to publish.</span>');
+            }
+        }
+
+        // 2. DYNAMIC STEP CARDS 
+        $("#steps-container .step-card").each(function (idx) {
+            var $stepCard = $(this);
+            var stepNum = idx + 1;
+            var $textarea = $stepCard.find("textarea");
+
+            // Only block Save Progress if the user has left absolutely NO instructional text at all
+            if (!skipMetadata && $textarea.length && $textarea.val().trim() === "") {
+                isFormValid = false;
+                $textarea.addClass("form-input-error");
+                $textarea.after('<span class="field-error-msg" style="color: var(--color-primary); font-size: 0.875rem; font-weight: 600; display: block; margin-top: 4px; margin-bottom: 10px;">⚠️ Step ' + stepNum + ' is missing instructional text.</span>');
+            }
+
+            // 3. INGREDIENT ROWS INSIDE THIS STEP
+            $stepCard.find(".ingredients-container .ingredient-row").each(function () {
+                var $row = $(this);
+                var $ingSel = $row.find("select").eq(0);
+                var $amtInp = $row.find(".amount-input");
+                var $unitSel = $row.find("select").eq(1);
+                var rowHasEmptyField = false;
+
+                // On Final Submit, check if fields are completely unentered
+                if (!skipMetadata) {
+                    if (!$ingSel.val() || $ingSel.val() === "") {
+                        $row.find(".select2-container .select2-selection--single").addClass("form-input-error");
+                        rowHasEmptyField = true;
+                    }
+                    if (!$amtInp.val() || parseFloat($amtInp.val()) <= 0 || isNaN(parseFloat($amtInp.val()))) {
+                        $amtInp.addClass("form-input-error");
+                        rowHasEmptyField = true;
+                    }
+                    if (!$unitSel.val() || $unitSel.val() === "") {
+                        $unitSel.addClass("form-input-error");
+                        rowHasEmptyField = true;
+                    }
+
+                    if (rowHasEmptyField) {
+                        isFormValid = false;
+                        if ($row.next(".field-error-msg").length === 0) {
+                            $row.after('<span class="field-error-msg" style="color: var(--color-primary); font-size: 0.875rem; font-weight: 600; display: block; margin-top: 4px; margin-bottom: 10px;">⚠️ This ingredient entry is incomplete. A valid Selection, Amount, and Unit are required.</span>');
+                        }
+                    }
+                }
+            });
+
+            // 4. DUPLICATE CHECKER (Always run this on BOTH buttons to protect database constraints)
+            var seenIngredients = {};
+            $stepCard.find(".ingredients-container .ingredient-row").each(function () {
+                var $row = $(this);
+                var selectedIngredientId = $row.find("select").eq(0).val();
+
+                if (!selectedIngredientId) return;
+
+                if (seenIngredients[selectedIngredientId]) {
+                    isFormValid = false;
+                    seenIngredients[selectedIngredientId].find(".select2-container .select2-selection--single").addClass("form-input-error");
+                    $row.find(".select2-container .select2-selection--single").addClass("form-input-error");
+
+                    if ($row.next(".ingredient-error-msg").length === 0) {
+                        var ingredientName = $row.find("select").eq(0).find("option:selected").text();
+                        $row.after('<span class="ingredient-error-msg" style="color: var(--color-primary); font-size: 0.875rem; font-weight: 600; display: block; margin-top: 4px; margin-bottom: 10px;">⚠️ "' + ingredientName + '" is listed multiple times in this step. Please combine them into a single row.</span>');
+                    }
+                } else {
+                    seenIngredients[selectedIngredientId] = $row;
+                }
+            });
+        });
+
+        return isFormValid;
+    }
+
+    // --- COMBINED AJAX EXECUTION LAYER ---
+    // Enforces strict metadata checks on BOTH buttons simultaneously
+    $(document).on("click", "#save-stay-btn, #finish-view-btn", function (e) {
+        e.preventDefault();
+
+        var clickedButtonId = $(this).attr("id");
+        var saveButton = $(this);
+        var originalText = saveButton.html();
+
+        // CHANGED: Force metadata checks (Title, Servings, Visibility) to ALWAYS run on both actions
+        var skipMetadataChecks = false;
+        var isFormValid = validateRecipeForm(skipMetadataChecks);
+
+        if (!isFormValid) {
+            showToast("Validation failed. Please review missing fields.", false);
+            if ($(".form-input-error").length) {
+                $('html, body').animate({
+                    scrollTop: $(".form-input-error").first().offset().top - 100
+                }, 400);
+            }
+            return;
+        }
+
+        saveButton.prop("disabled", true).html("Processing Request...");
+
+        var $form = $("#recipeForm").length ? $("#recipeForm") : $(this).closest("form");
+        var token = document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN='))?.split('=');
+        var header = "X-XSRF-TOKEN";
+
+        var submissionPayload = $form.serialize();
+        if (clickedButtonId === "finish-view-btn") {
+            submissionPayload += "&actionType=FINISH";
+        } else {
+            submissionPayload += "&actionType=SAVE";
+        }
+
+        $.ajax({
+            url: $form.attr("action") || window.location.pathname,
+            type: "POST",
+            data: submissionPayload,
+            beforeSend: function (xhr) {
+                if (token && token[1]) {
+                    xhr.setRequestHeader(header, decodeURIComponent(token[1]));
+                }
+            },
+            success: function (response) {
+                saveButton.prop("disabled", false).html(originalText);
+                if (clickedButtonId === "finish-view-btn" && response.redirectUrl) {
+                    window.location.href = response.redirectUrl;
+                } else {
+                    showToast("Recipe progress saved successfully!", true);
+                }
+            },
+            error: function (xhr) {
+                saveButton.prop("disabled", false).html(originalText);
+                showToast("Server error saving recipe data. Please try again.", false);
+            }
+        });
+    });
 
     reindexForm();
     filterExistingSavedRowsOnLoad();

@@ -1023,3 +1023,16 @@ dialog.admin-modal h3 {
     outline: 0;
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
+
+/* Direct input field error overrides using brand theme colors */
+.form-input-error {
+    border: 2px solid var(--color-primary);
+    background-color: #f0f7ff;
+    /* Soft light blue background */
+}
+
+/* Force the dynamic Select2 replacement box to snap to your theme styles */
+.select2-container--default .select2-selection--single.form-input-error {
+    border: 2px solid var(--color-primary);
+    background-color: #f0f7ff;
+}
