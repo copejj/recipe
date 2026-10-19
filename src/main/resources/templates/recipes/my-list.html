@@ -45,7 +45,7 @@
             <table id="myRecipesTable" class="dataTable stripe hover row-border">
                 <thead>
                     <tr>
-                        <th style="text-align: right; white-space: nowrap; width: 15%;"></th>
+                        <th style="text-align: left; width: 15%;">Actions</th>
                         <th>Recipe Title</th>
                         <th>Description Summary</th>
                         <th style="width: 12%;">Servings</th>
@@ -53,36 +53,47 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="recipe : ${recipes}">
-                        <td class="actions-cell" style="text-align: right; white-space: nowrap;">
-                            <div class="admin-btn-group"
-                                style="justify-content: flex-end; display: inline-flex; gap: 6px;">
+                    <!-- Embedded standard internal viewing paths on the row frame mapping block -->
+                    <tr th:each="recipe : ${recipes}" th:data-href="@{/recipes/view/{id}(id=${recipe.recipeId})}"
+                        style="cursor: pointer;">
+
+                        <td class="actions-cell">
+                            <div class="admin-btn-group" style="display: inline-flex; gap: 6px;">
+                                <!-- Added explicit navigation classes to screen out row triggers -->
                                 <a th:href="@{/recipes/edit/{id}(id=${recipe.recipeId})}"
-                                    class="btn btn--table-action btn--admin-small"
-                                    style="background-color: var(--color-profile-dark-btn); color: white; text-decoration: none;">
-                                    📝 Edit
+                                    class="btn btn--table-action btn--admin-small btn-action-bypass"
+                                    style="background-color: var(--color-profile-dark-btn); color: white; text-decoration: none; padding: 6px 12px; font-size: 0.85rem; border-radius: 4px;">
+                                    Edit
                                 </a>
                                 <a th:href="@{/recipes/view/{id}(id=${recipe.recipeId})}"
-                                    class="btn btn--table-action btn--admin-small"
-                                    style="background-color: var(--color-bg-body); color: var(--color-text-dark); text-decoration: none; border: 1px solid var(--color-border);">
-                                    👁 View
+                                    class="btn btn--table-action btn--admin-small btn-action-bypass"
+                                    style="background-color: var(--color-bg-body); color: var(--color-text-dark); text-decoration: none; border: 1px solid var(--color-border); padding: 6px 12px; font-size: 0.85rem; border-radius: 4px;">
+                                    View
                                 </a>
                             </div>
                         </td>
-                        <td th:text="${recipe.title}" style="font-weight: 700; color: var(--color-text-dark);">
-                            Recipe Name Placeholder
+
+                        <td>
+                            <strong th:text="${recipe.title}"
+                                style="font-weight: 700; color: var(--color-text-dark); font-size: 1.05rem; display: block;">
+                                Recipe Name Placeholder
+                            </strong>
                         </td>
+
                         <td th:text="${recipe.description != null && !recipe.description.isEmpty() ? recipe.description : 'No description provided.'}"
                             style="color: var(--color-text-muted); font-size: 0.9rem;">
                             Recipe description summary text detail block.
                         </td>
-                        <td>
+
+                        <!-- Added data-label keys for clean mobile portrait visibility -->
+                        <td data-label="Servings:">
                             <span th:text="${recipe.servings != null ? recipe.servings : '—'}">4</span> ppl
                         </td>
-                        <td>
-                            <!-- Style badge dynamically matching your security privacy tables mapping parameters -->
+
+                        <td data-label="Visibility:">
                             <span class="badge-permission"
-                                th:text="${recipe.recipeVisibility != null ? recipe.recipeVisibility.visibilityName : 'Public'}">Public</span>
+                                th:text="${recipe.recipeVisibility != null ? recipe.recipeVisibility.visibilityName : 'Public'}"
+                                style="padding: 4px 8px; font-size: 0.8rem; border-radius: 4px; background-color: var(--color-bg-disabled, #eee); color: var(--color-text-dark);">Public</span>
                         </td>
                     </tr>
                 </tbody>
@@ -92,20 +103,7 @@
 
     <footer th:replace="~{fragments/layout :: footer}"></footer>
 
-    <!-- Initialize Integrated DataTables Interactivity Layer -->
-    <!-- th:inline="none" tells Thymeleaf to bypass bracket checks on this script -->
-    <script th:inline="none">
-        $(document).ready(function () {
-            $('#myRecipesTable').DataTable({
-                "order": [[1, "desc"]],
-                "pageLength": 10,
-                "columnDefs": [
-                    { "orderable": false, "targets": 0 }
-                ]
-            });
-        });
-    </script>
-
+    <script th:src="@{/js/recipe-my-list.js}"></script>
 </body>
 
 </html>
