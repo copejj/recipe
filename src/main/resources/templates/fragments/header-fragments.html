@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org">
+
+<head></head>
+
+<body>
+
+    <!-- ==========================================================================
+       RESPONSIVE MOBILE-FRIENDLY DASHBOARD HEADER FRAGMENT
+       ========================================================================== -->
+    <!-- FIXED: Explicitly declared 'buttons' inside the fragment parameter signature line -->
+    <div th:fragment="dashboard_header(title, subtitle, buttons)" class="admin-header-flex"
+        style="display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 16px; margin-bottom: 24px; width: 100%; box-sizing: border-box;">
+
+        <!-- Top Block: Dynamic Text Content (Guaranteed to be on top) -->
+        <div style="width: 100%;">
+            <h1 class="page-title" th:text="${title}"
+                style="margin: 0 0 6px 0; font-size: 1.75rem; color: var(--color-text-dark); line-height: 1.2;">
+                Fallback Title Text
+            </h1>
+            <p class="page-subtitle" th:text="${subtitle}"
+                style="margin: 0; color: var(--color-text-muted); font-size: 0.95rem; line-height: 1.4;">
+                Fallback subtitle descriptive text placeholder layout bounds.
+            </p>
+        </div>
+
+        <!-- Bottom Block: Action Buttons (Stacks vertically on mobile, flows inline on desktop) -->
+        <div th:if="${buttons != null}" class="admin-header-actions"
+            style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 12px; width: 100%; justify-content: flex-start; align-items: center; box-sizing: border-box;">
+
+            <!-- Injects the button markup passed into the parameter slot -->
+            <th:block th:replace="${buttons}"></th:block>
+        </div>
+
+        <!-- Global Responsive Structural Breakpoint Controller Override Styles -->
+        <style>
+            @media (min-width: 768px) {
+                .admin-header-flex {
+                    flex-direction: row !important;
+                    justify-content: space-between !important;
+                    align-items: center !important;
+                }
+
+                .admin-header-actions {
+                    width: auto !important;
+                    justify-content: flex-end !important;
+                }
+
+                .admin-header-actions .btn {
+                    width: auto !important;
+                }
+            }
+        </style>
+    </div>
+
+</body>
+
+</html>

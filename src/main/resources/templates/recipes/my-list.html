@@ -7,16 +7,20 @@
     <header th:replace="~{fragments/layout :: header}"></header>
 
     <main class="page-card page-card--audit-layout">
-        <div class="admin-header-flex"
-            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-            <div>
-                <h1 class="page-title">My Cookbook</h1>
-                <p class="page-subtitle" style="margin-bottom:0;">Browse, review, or modify your personalized library of
-                    published recipe formulations.</p>
-            </div>
-            <!-- Quick Add Action Button -->
-            <a th:href="@{/recipes/create}" class="btn btn--primary"
-                style="width: auto; padding: 10px 16px; text-decoration: none; border-radius: 6px;">+ Add New Recipe</a>
+        <div th:replace="~{fragments/header-fragments :: dashboard_header(
+                'My Cookbook', 
+                'Browse, review, or modify your personalized library of published recipe formulations.',
+                ~{::cookbookButtons}
+            )}">
+
+            <!-- This block is extracted and sent into the third slot of the header fragment -->
+            <th:block th:fragment="cookbookButtons">
+                <!-- FIXED: Corrected 'white-space' casing properties to enforce single line flow -->
+                <a th:href="@{/recipes/create}" class="btn btn--primary"
+                    style="white-space: nowrap; width: 100%; max-width: 200px; text-align: center; padding: 10px 16px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; height: 44px; box-sizing: border-box;">
+                    + Add Recipe
+                </a>
+            </th:block>
         </div>
 
         <!-- Responsive Interactive Data Table -->

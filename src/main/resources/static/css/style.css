@@ -635,6 +635,57 @@ table.dataTable tbody td:first-child {
     font-style: italic;
 }
 
+/* target standard DataTables layout wrapper classes */
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter {
+    width: 100% !important;
+    text-align: left !important;
+    margin-bottom: 12px !important;
+    float: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Force the inputs inside them to span full width natively */
+.dataTables_wrapper .dataTables_length select,
+.dataTables_wrapper .dataTables_filter input {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    margin-left: 0 !important;
+    margin-top: 6px !important;
+    height: 40px !important;
+    /* Matches touch-friendly height standards */
+    border-radius: 6px !important;
+    border: 1px solid var(--color-border) !important;
+}
+
+/* Desktop Viewport Layout Reversion Breakpoint */
+@media (min-width: 768px) {
+    .dataTables_wrapper .dataTables_length {
+        width: auto !important;
+        float: left !important;
+        flex-direction: row !important;
+        align-items: center !important;
+    }
+
+    .dataTables_wrapper .dataTables_filter {
+        width: auto !important;
+        float: right !important;
+        text-align: right !important;
+        flex-direction: row !important;
+        align-items: center !important;
+    }
+
+    .dataTables_wrapper .dataTables_length select,
+    .dataTables_wrapper .dataTables_filter input {
+        width: auto !important;
+        margin-left: 8px !important;
+        margin-top: 0 !important;
+        display: inline-block !important;
+    }
+}
+
 /* ==========================================================================
    11. DEDICATED ADMIN MATRIX, ATOMIC UTILITIES, & USER PROFILE CONFIGS
    ========================================================================== */

@@ -157,12 +157,14 @@ public class RecipeController {
     }
 
     @GetMapping("/recipes/view/{id}")
-    public String viewRecipeProfile(@PathVariable("id") Integer id, Model model) {
+    public String viewRecipeProfile(@PathVariable("id") Integer id,
+            Model model,
+            @AuthenticationPrincipal RecipeUserDetails currentUser) { // ◄ Added authentication principal
+
         // 1. Fetch your recipe record entity from the database repository layer
         Recipe recipe = recipeService.getRecipeById(id);
 
         // 2. CRITICAL LOOKUP: Fetch all master measurements from your database pool
-        // This gives your auto-promoter access to scaling_ranks and unit equivalents!
         List<Measurement> measurementsPool = recipeService.getAllMeasurements();
 
         // 3. Wrap your single recipe inside a list wrapper container
@@ -172,9 +174,17 @@ public class RecipeController {
         Map<String, List<RecipeStepIngredient>> structuredIngredients = RecipeUtility
                 .aggregateAndPromoteShoppingList(singleRecipeSelection, measurementsPool);
 
-        // 5. Inject all matching data attributes down to the Thymeleaf model view
+        // 5. DETERMINE PERMISSIONS: Evaluate edit rights cleanly using objects
+        boolean canEdit = false;
+        if (currentUser != null && recipe.getUser() != null) {
+            // Safe, type-safe comparison of numeric IDs (Integer / Long)
+            canEdit = recipe.getUser().getUserId().equals(currentUser.getUserProfile().getUserId());
+        }
+
+        // 6. Inject all matching data attributes down to the Thymeleaf model view
         // context
         model.addAttribute("recipe", recipe);
+        model.addAttribute("canEdit", canEdit); // ◄ Added simple boolean flag
         model.addAttribute("singleRecipeAggregatedIngredients", structuredIngredients);
         model.addAttribute("shoppingListAggregatedIngredients", structuredIngredients);
 
