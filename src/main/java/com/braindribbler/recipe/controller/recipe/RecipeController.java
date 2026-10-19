@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 // Your Local Domain Models & Service Layers
 import com.braindribbler.recipe.domain.auth.User;
@@ -239,5 +240,36 @@ public class RecipeController {
 
         model.addAttribute("groceryCategories", ingredientService.getAllGroceryCategoriesSortedByOrder());
         model.addAttribute("classifications", IngredientClassification.values());
+    }
+
+    @PostMapping("/recipes/delete/{id}")
+    public String deleteRecipe(@PathVariable("id") String id,
+            RedirectAttributes redirectAttributes,
+            @AuthenticationPrincipal RecipeUserDetails currentUser) {
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            Integer numericRecipeId = Integer.parseInt(id.trim());
+            Recipe recipe = recipeService.getRecipeById(numericRecipeId);
+
+            // Security Check: Ensure the logged-in user actually owns this recipe
+            if (!recipe.getUser().getUserId().equals(currentUser.getUserProfile().getUserId())) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Unauthorized action.");
+                return "redirect:/recipes/my-list";
+            }
+
+            // Execute service deletion cascading
+            recipeService.deleteRecipeById(numericRecipeId);
+
+            // Use flash attributes to show a sweet alert or toast on the listing page
+            redirectAttributes.addFlashAttribute("successMessage", "Recipe deleted successfully.");
+            return "redirect:/recipes/my-list";
+
+        } catch (NumberFormatException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Invalid recipe ID reference.");
+            return "redirect:/recipes/my-list";
+        }
     }
 }

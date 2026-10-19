@@ -250,4 +250,20 @@ public class RecipeService {
         return recipeRepository.save(recipe);
     }
 
+    /**
+     * Safely deletes a recipe by its primary ID. Natively triggers cascading drops
+     * for steps and ingredients via database constraints.
+     */
+    @Transactional
+    public void deleteRecipeById(Integer recipeId) {
+        // 1. Verify the recipe actually exists before executing delete operations
+        if (!recipeRepository.existsById(recipeId)) {
+            throw new EntityNotFoundException("Recipe not found with ID: " + recipeId);
+        }
+
+        // 2. Fire the deletion command.
+        // PostgreSQL catches this and safely sets parent_recipe_id to NULL for
+        // forks, while cleanly dropping attached steps and step-ingredients!
+        recipeRepository.deleteById(recipeId);
+    }
 }

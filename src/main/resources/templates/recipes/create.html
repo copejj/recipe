@@ -17,7 +17,7 @@
         <p class="page-subtitle">Map out your instructions and attach step-scoped ingredients with exact quantities.</p>
 
         <form th:action="@{/recipes/create}" th:object="${recipeForm}" method="post" id="recipeForm">
-            <input type="hidden" th:field="*{recipeId}" />
+            <input type="hidden" id="recipeId" th:field="*{recipeId}" />
 
             <!-- Global Recipe Metadata -->
             <div class="form-group">
@@ -107,7 +107,7 @@
 
                                     <!-- Amount input field wrapper (STAYS AS IS) -->
                                     <div class="amount-wrapper">
-                                        <input type="number" step="0.01"
+                                        <input type="number" step="0.25"
                                             th:name="|steps[${stepStat.index}].ingredients[${ingStat.index}].amount|"
                                             th:value="${ing.amount}" class="form-input amount-input"
                                             placeholder="Amount" style="width: 100%;" required />
@@ -172,17 +172,29 @@
             <div class="form-actions-footer"
                 style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-top: 20px; border-top: 1px solid var(--color-border);">
 
+                <!-- Left Side: Standard Save Operations -->
                 <div style="display: flex; gap: 12px;">
-                    <!-- Save Progress (Stays on the page) -->
                     <button type="button" id="save-stay-btn" class="btn">Save Progress</button>
-
-                    <!-- Finish & View Recipe (Triggers redirect) -->
-                    <button type="button" id="finish-view-btn" class="btn btn--primary">Finish & View Recipe</button>
-
+                    <button type="button" id="finish-view-btn" class="btn btn--primary"
+                        style="white-space: nowrap;">Finish & View Recipe</button>
                 </div>
+
+                <!-- Right Side: Clean Conditional Delete Action -->
+                <div th:if="${recipeForm.recipeId != null}">
+                    <button type="submit" form="deleteForm" class="btn inline-delete-btn" data-confirmed="false"
+                        style="background-color: #ffffff; color: #dc3545; border: 2px solid #dc3545; padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s ease-in-out; font-size: 0.95rem;">
+                        🗑️ Delete Recipe
+                    </button>
+                </div>
+
             </div>
         </form>
 
+        <!-- THE FUNCTIONAL EXTERNAL ACTION TARGET -->
+        <form th:if="${recipeForm.recipeId != null}" id="deleteForm"
+            th:action="@{/recipes/delete/{id}(id=${recipeForm.recipeId})}" method="post" class="delete-recipe-form"
+            style="display: none;">
+        </form>
     </main>
 
     <!-- Native HTML5 Dialog Component for Quick Adding Missing Ingredients -->
