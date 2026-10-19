@@ -88,6 +88,9 @@ public class SecurityConfig {
                                                                 "/password/forgot", "/password/reset")
                                                 .permitAll()
 
+                                                .requestMatchers("/search/**").permitAll()
+                                                .requestMatchers("/view/**").permitAll()
+
                                                 .requestMatchers("/admin/ingredients/**", "/admin/categories/**")
                                                 .hasAuthority("can_moderate_ingredients")
 

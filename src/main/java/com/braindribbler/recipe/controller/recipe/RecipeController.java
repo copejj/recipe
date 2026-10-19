@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-// Your Local Domain Models & Service Layers
 import com.braindribbler.recipe.domain.auth.User;
 import com.braindribbler.recipe.domain.recipe.IngredientClassification;
 import com.braindribbler.recipe.domain.recipe.Measurement;
@@ -33,8 +32,6 @@ import com.braindribbler.recipe.service.recipe.RecipeService;
 import com.braindribbler.recipe.util.RecipeUtility;
 
 import jakarta.servlet.http.HttpServletRequest;
-
-// ... Your active RecipeController class implementation body continues below seamlessly ...
 
 @Controller
 public class RecipeController {
@@ -91,12 +88,6 @@ public class RecipeController {
         model.addAttribute("dashboardAlerts", dashboardAlerts);
 
         return "recipes/dashboard";
-    }
-
-    @GetMapping("/search")
-    public String showSearch(Model model) {
-        model.addAttribute("message", "Search for your favorite recipes here!");
-        return "recipes/search";
     }
 
     @GetMapping("/recipes/create")

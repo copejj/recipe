@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @Controller
+@RequestMapping("/recipes/ingredients")
 public class IngredientController {
 
     private final IngredientService ingredientService;
@@ -25,11 +26,11 @@ public class IngredientController {
      * construction.
      * Maps to: POST /recipes/ingredients/quick-add
      */
-    @PostMapping("/recipes/ingredients/quick-add")
+    @PostMapping("/quick-add")
     @ResponseBody
     public ResponseEntity<?> quickAddIngredient(@RequestParam("name") String ingredientName,
             @RequestParam("groceryCategoryId") Integer groceryCategoryId,
-            @RequestParam(value = "classification", defaultValue = "SOLID") String classificationStr, // ◄ NEW
+            @RequestParam(value = "classification", defaultValue = "SOLID") String classificationStr,
             @AuthenticationPrincipal RecipeUserDetails currentUser) {
         try {
             if (currentUser == null) {

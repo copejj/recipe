@@ -4,12 +4,15 @@ import com.braindribbler.recipe.domain.auth.User;
 import com.braindribbler.recipe.domain.recipe.*;
 import com.braindribbler.recipe.dto.recipe.*;
 import com.braindribbler.recipe.repository.recipe.*;
+
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class RecipeService {
@@ -124,7 +127,7 @@ public class RecipeService {
     }
 
     @Transactional(readOnly = true)
-    public Recipe getRecipeByPublicId(java.util.UUID publicId) {
+    public Recipe getRecipeByPublicId(UUID publicId) {
         return recipeRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException(
                         "Recipe record not found for public ID: " + publicId));
@@ -222,7 +225,8 @@ public class RecipeService {
                 RecipeStep step = new RecipeStep();
                 step.setRecipe(recipe);
                 step.setStepNumber(i + 1);
-                step.setInstructionText(sf.getInstructionText().trim());
+                String text = sf.getInstructionText();
+                step.setInstructionText(text != null ? text.trim() : "");
 
                 if (sf.getIngredients() != null) {
                     for (IngredientForm inf : sf.getIngredients()) {
@@ -265,5 +269,150 @@ public class RecipeService {
         // PostgreSQL catches this and safely sets parent_recipe_id to NULL for
         // forks, while cleanly dropping attached steps and step-ingredients!
         recipeRepository.deleteById(recipeId);
+    }
+
+    /**
+     * Natively fetches all ingredients sorted alphabetically for clean dropdown
+     * select components.
+     */
+    public List<Ingredient> getAllIngredientsAlphabetical() {
+        return ingredientRepository.findAllByOrderByIngredientNameAsc();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Recipe> searchByText(String query, User loggedInUser) {
+        if (query == null || query.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        boolean isLoggedIn = (loggedInUser != null);
+        Integer currentUserId = isLoggedIn ? loggedInUser.getUserId() : null;
+
+        // .trim() removes any accidental trailing or leading whitespaces
+        return recipeRepository.searchTextRecipes(query.trim(), isLoggedIn, currentUserId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Recipe> searchByIngredientsOnHand(List<Integer> ingredientIds, User loggedInUser) {
+        if (ingredientIds == null || ingredientIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        boolean isLoggedIn = (loggedInUser != null);
+        Integer currentUserId = isLoggedIn ? loggedInUser.getUserId() : null;
+
+        return recipeRepository.searchRecipesByIngredientsList(ingredientIds, isLoggedIn, currentUserId);
+    }
+
+    /**
+     * Fetches all recipes a user is legally allowed to see for general browsing,
+     * utilizing an empty string keyword to bypass title filtering.
+     */
+    @Transactional(readOnly = true)
+    public List<Recipe> getGeneralBrowsingPool(User loggedInUser) {
+
+        boolean isLoggedIn = (loggedInUser != null);
+        Integer currentUserId = isLoggedIn ? loggedInUser.getUserId() : null;
+
+        return recipeRepository.searchTextRecipes("", isLoggedIn, currentUserId);
+    }
+
+    /**
+     * Aggregates all ingredients across all recipe steps, grouping them
+     * to prevent duplicate ingredient display lines in the master checklist.
+     */
+    @Transactional(readOnly = true)
+    public List<RecipeStepIngredient> getAggregatedIngredients(Recipe recipe) {
+        if (recipe == null || recipe.getSteps() == null) {
+            return java.util.Collections.emptyList();
+        }
+
+        // Use a linked hash map to maintain the order in which ingredients appear
+        java.util.Map<Integer, RecipeStepIngredient> summaryMap = new java.util.LinkedHashMap<>();
+
+        for (RecipeStep step : recipe.getSteps()) {
+            if (step.getStepIngredients() != null) {
+                for (RecipeStepIngredient si : step.getStepIngredients()) {
+                    Integer ingredientId = si.getIngredient().getIngredientId();
+
+                    if (summaryMap.containsKey(ingredientId)) {
+                        // If the ingredient is already in the list, combine the amounts
+                        RecipeStepIngredient existing = summaryMap.get(ingredientId);
+                        if (existing.getAmount() != null && si.getAmount() != null) {
+                            existing.setAmount(existing.getAmount().add(si.getAmount()));
+                        }
+                    } else {
+                        // Create a detached copy to aggregate amounts safely without altering database
+                        // state
+                        RecipeStepIngredient detachedItem = new RecipeStepIngredient();
+                        detachedItem.setIngredient(si.getIngredient());
+                        detachedItem.setMeasurement(si.getMeasurement());
+                        detachedItem.setAmount(si.getAmount());
+                        detachedItem.setIngredientNote(si.getIngredientNote());
+                        summaryMap.put(ingredientId, detachedItem);
+                    }
+                }
+            }
+        }
+
+        return new java.util.ArrayList<>(summaryMap.values());
+    }
+
+    /**
+     * Groups all ingredients across all recipe steps by their associated
+     * Grocery Category name for the shopping list fragment view.
+     */
+    @Transactional(readOnly = true)
+    public java.util.Map<String, List<RecipeStepIngredient>> getShoppingListIngredients(Recipe recipe) {
+        if (recipe == null || recipe.getSteps() == null) {
+            return java.util.Collections.emptyMap();
+        }
+
+        // Map where Key = Category Name String (e.g., "Produce"), Value = List of
+        // ingredients
+        java.util.Map<String, List<RecipeStepIngredient>> categoryMap = new java.util.TreeMap<>();
+
+        for (RecipeStep step : recipe.getSteps()) {
+            if (step.getStepIngredients() != null) {
+                for (RecipeStepIngredient si : step.getStepIngredients()) {
+                    // Extract the category name from the ingredient's grocery category association
+                    String categoryName = "Uncategorized";
+                    if (si.getIngredient() != null && si.getIngredient().getGroceryCategory() != null) {
+                        categoryName = si.getIngredient().getGroceryCategory().getCategoryName();
+                    }
+
+                    // Enforce inner list initialization if this is the first item in the category
+                    categoryMap.computeIfAbsent(categoryName, k -> new java.util.ArrayList<>());
+
+                    // Check for duplicate items within the same category to combine their amounts
+                    List<RecipeStepIngredient> currentCategoryList = categoryMap.get(categoryName);
+                    RecipeStepIngredient existingMatch = null;
+
+                    for (RecipeStepIngredient existing : currentCategoryList) {
+                        if (existing.getIngredient().getIngredientId().equals(si.getIngredient().getIngredientId())) {
+                            existingMatch = existing;
+                            break;
+                        }
+                    }
+
+                    if (existingMatch != null) {
+                        if (existingMatch.getAmount() != null && si.getAmount() != null) {
+                            existingMatch.setAmount(existingMatch.getAmount().add(si.getAmount()));
+                        }
+                    } else {
+                        // Create a detached clone to aggregate amounts safely without altering database
+                        // state
+                        RecipeStepIngredient detachedItem = new RecipeStepIngredient();
+                        detachedItem.setIngredient(si.getIngredient());
+                        detachedItem.setMeasurement(si.getMeasurement());
+                        detachedItem.setAmount(si.getAmount());
+                        detachedItem.setIngredientNote(si.getIngredientNote());
+                        currentCategoryList.add(detachedItem);
+                    }
+                }
+            }
+        }
+
+        return categoryMap;
     }
 }
