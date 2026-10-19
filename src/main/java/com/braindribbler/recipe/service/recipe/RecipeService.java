@@ -280,19 +280,6 @@ public class RecipeService {
     }
 
     @Transactional(readOnly = true)
-    public List<Recipe> searchByText(String query, User loggedInUser) {
-        if (query == null || query.trim().isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        boolean isLoggedIn = (loggedInUser != null);
-        Integer currentUserId = isLoggedIn ? loggedInUser.getUserId() : null;
-
-        // .trim() removes any accidental trailing or leading whitespaces
-        return recipeRepository.searchTextRecipes(query.trim(), isLoggedIn, currentUserId);
-    }
-
-    @Transactional(readOnly = true)
     public List<Recipe> searchByIngredientsOnHand(List<Integer> ingredientIds, User loggedInUser) {
         if (ingredientIds == null || ingredientIds.isEmpty()) {
             return Collections.emptyList();
@@ -301,12 +288,13 @@ public class RecipeService {
         boolean isLoggedIn = (loggedInUser != null);
         Integer currentUserId = isLoggedIn ? loggedInUser.getUserId() : null;
 
+        // References your ingredient density lookup method
         return recipeRepository.searchRecipesByIngredientsList(ingredientIds, isLoggedIn, currentUserId);
     }
 
     /**
-     * Fetches all recipes a user is legally allowed to see for general browsing,
-     * utilizing an empty string keyword to bypass title filtering.
+     * Fetches all recipes a user is allowed to see for general browsing.
+     * Updated to invoke the new parameter-based visibility filter query.
      */
     @Transactional(readOnly = true)
     public List<Recipe> getGeneralBrowsingPool(User loggedInUser) {
@@ -314,7 +302,8 @@ public class RecipeService {
         boolean isLoggedIn = (loggedInUser != null);
         Integer currentUserId = isLoggedIn ? loggedInUser.getUserId() : null;
 
-        return recipeRepository.searchTextRecipes("", isLoggedIn, currentUserId);
+        // FIXED: Pointing directly to your clean visibility query method
+        return recipeRepository.findAllPublicOrOwned(isLoggedIn, currentUserId);
     }
 
     /**
@@ -414,5 +403,31 @@ public class RecipeService {
         }
 
         return categoryMap;
+    }
+
+    @Transactional
+    public void forceRecipePrivateByPublicUuid(UUID publicId) {
+        Recipe recipe = recipeRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new IllegalArgumentException("Recipe not found with public UUID: " + publicId));
+
+        applyPrivateVisibility(recipe);
+    }
+
+    @Transactional
+    public void forceRecipePrivateBySequenceId(Integer recipeId) { // Updated type to Integer
+        Recipe recipe = recipeRepository.findById(recipeId)
+                .orElseThrow(() -> new IllegalArgumentException("Recipe not found with ID: " + recipeId));
+
+        applyPrivateVisibility(recipe);
+    }
+
+    // Reusable core state modification method
+    private void applyPrivateVisibility(Recipe recipe) {
+        RecipeVisibility privateVisibility = visibilityRepository.findByVisibilityName("private")
+                .orElseThrow(() -> new IllegalStateException(
+                        "Required visibility configuration 'private' is missing from lookups."));
+
+        recipe.setRecipeVisibility(privateVisibility);
+        recipeRepository.save(recipe);
     }
 }

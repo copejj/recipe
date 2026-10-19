@@ -30,8 +30,21 @@
                     <th:block th:if="${canEdit}">
                         <a th:href="@{/recipes/edit/{id}(id=${recipe.recipeId})}" class="btn"
                             style="width: auto; padding: 6px 14px; font-size: 0.85rem; font-weight: 700; background-color: var(--color-profile-dark-btn); color: white; border-radius: 6px; text-decoration: none; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; height: 32px; white-space: nowrap; box-sizing: border-box;">
-                            📝 Edit
+                            Edit
                         </a>
+                    </th:block>
+
+                    <th:block th:if="${canHide}">
+                        <!-- Safely maps /view/{UUID}/hide OR /recipes/view/{id}/hide depending on which field is present -->
+                        <form th:action="${recipe.publicId != null} 
+                            ? @{/view/{id}/hide(id=${recipe.publicId})} 
+                            : @{/recipes/view/{id}/hide(id=${recipe.recipeId})}" method="post"
+                            style="display: inline-flex; margin: 0;">
+                            <button type="submit" class="btn"
+                                style="cursor: pointer; padding: 6px 14px; font-size: 0.85rem; font-weight: 700; background-color: var(--color-alert-danger, #d9534f); color: white; border: none; border-radius: 6px; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; height: 32px; white-space: nowrap; box-sizing: border-box; font-family: inherit;">
+                                Make Private
+                            </button>
+                        </form>
                     </th:block>
 
                 </div>

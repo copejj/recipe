@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -148,13 +149,48 @@ public class RecipeController {
         return "recipes/my-list";
     }
 
+    // Handles: /recipes/view/1
+    @PreAuthorize("hasAuthority('can_hide_any_recipe')")
+    @PostMapping("/recipes/view/{recipeId}/hide")
+    public String hideRecipeByNumericId(@PathVariable Integer recipeId) {
+        recipeService.forceRecipePrivateBySequenceId(recipeId);
+        return "redirect:/recipes/view/" + recipeId;
+    }
+
     @GetMapping("/recipes/view/{id}")
     public String viewRecipeProfile(@PathVariable("id") Integer id,
             Model model,
-            @AuthenticationPrincipal RecipeUserDetails currentUser) { // ◄ Added authentication principal
+            @AuthenticationPrincipal RecipeUserDetails currentUser) {
 
         // 1. Fetch your recipe record entity from the database repository layer
         Recipe recipe = recipeService.getRecipeById(id);
+        if (recipe == null) {
+            return "redirect:/search?notFound";
+        }
+
+        // 5. DETERMINE PERMISSIONS: Evaluate edit rights cleanly using objects
+        boolean canEdit = false;
+        if (currentUser != null && recipe.getUser() != null) {
+            // Safe, type-safe comparison of numeric IDs (Integer / Long)
+            canEdit = recipe.getUser().getUserId().equals(currentUser.getUserProfile().getUserId());
+        }
+
+        // NEW: Evaluate if the current user has the moderator permission
+        boolean hasHidePermission = (currentUser != null) && currentUser.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("can_hide_any_recipe"));
+
+        int visibilityId = recipe.getRecipeVisibility().getRecipeVisibilityId();
+
+        // NEW: Block private recipes (visibility 2) unless they are the owner or a
+        // moderator
+        if (visibilityId == 2 && !canEdit && !hasHidePermission) {
+            return "redirect:/search?unauthorized";
+        }
+
+        // NEW: Block shared recipes (visibility 3) unless they are the owner
+        if (visibilityId == 3 && !canEdit) {
+            return "redirect:/search?unauthorized";
+        }
 
         // 2. CRITICAL LOOKUP: Fetch all master measurements from your database pool
         List<Measurement> measurementsPool = recipeService.getAllMeasurements();
@@ -166,17 +202,15 @@ public class RecipeController {
         Map<String, List<RecipeStepIngredient>> structuredIngredients = RecipeUtility
                 .aggregateAndPromoteShoppingList(singleRecipeSelection, measurementsPool);
 
-        // 5. DETERMINE PERMISSIONS: Evaluate edit rights cleanly using objects
-        boolean canEdit = false;
-        if (currentUser != null && recipe.getUser() != null) {
-            // Safe, type-safe comparison of numeric IDs (Integer / Long)
-            canEdit = recipe.getUser().getUserId().equals(currentUser.getUserProfile().getUserId());
-        }
-
         // 6. Inject all matching data attributes down to the Thymeleaf model view
         // context
         model.addAttribute("recipe", recipe);
-        model.addAttribute("canEdit", canEdit); // ◄ Added simple boolean flag
+        model.addAttribute("canEdit", canEdit);
+
+        // NEW: Pass the canHide flag to the Thymeleaf view layer
+        // Only true if they have the permission AND the recipe isn't already private
+        model.addAttribute("canHide", hasHidePermission && visibilityId != 2);
+
         model.addAttribute("singleRecipeAggregatedIngredients", structuredIngredients);
         model.addAttribute("shoppingListAggregatedIngredients", structuredIngredients);
 
