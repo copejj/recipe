@@ -76,7 +76,7 @@
                         style="font-weight: 700; font-size: 0.9rem; color: var(--color-text-dark); margin: 0;">
                         Servings:</label>
                     <input type="number" id="servings-scaler" th:value="${recipe.servings}"
-                        th:data-original-servings="${recipe.servings}" min="1" step="1"
+                        th:data-original-servings="${recipe.servings}" min="1" step="1" onfocus="this.select()"
                         style="width: 70px; padding: 6px; border-radius: 4px; border: 1px solid var(--color-border-input); font-weight: bold; text-align: center;" />
                 </div>
             </div>

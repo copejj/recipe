@@ -47,7 +47,7 @@ public class AuthController {
         // 1. If any JSR-303 field validation criteria fail, instantly reject and return
         // the form
         if (result.hasErrors()) {
-            return "register";
+            return "auth/register";
         }
 
         try {
