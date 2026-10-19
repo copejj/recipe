@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 
 <head th:replace="~{fragments/layout :: html_head('Home - Braindribbler')}"></head>
 
@@ -8,16 +8,42 @@
 
     <main>
         <div class="page-card">
-            <h1 class="page-title">Welcome to the Recipe Portal</h1>
-            <p th:text="${message}" class="page-subtitle">Placeholder context.</p>
+            <!-- Welcome Header -->
+            <h1 class="page-title">Welcome to Braindribbler Recipes</h1>
+            <p th:text="${message}" class="page-subtitle">Your personal culinary companion for organizing, scaling, and
+                discovering meals.</p>
 
+            <!-- Friendly & Informative Introduction Narrative -->
+            <div style="margin-bottom: 40px; color: var(--color-text-dark); line-height: 1.7;">
+                <p>
+                    Braindribbler Recipes is a streamlined platform designed to take the friction out of meal planning
+                    and kitchen organization.
+                    Whether you are a guest looking for a quick dinner idea or a registered chef managing a private
+                    culinary portfolio,
+                    our tools are structured to display exactly what you need, right when you need it.
+                </p>
+                <p>
+                    By registering for a free account, you can begin drafting your own custom recipe collections.
+                    You retain complete control over your portfolio: choose to contribute your creations directly to the
+                    public recipe pool for the community to share,
+                    or save your recipes as a private, secure online resource accessible only to you.
+                </p>
+                <p>
+                    Explore our public collection to see step-by-step preparation timelines where ingredients are
+                    isolated to individual instructions,
+                    or check out our specialized fridge matcher tool to find meals based entirely on the ingredients you
+                    currently have on hand.
+                </p>
+            </div>
+
+            <!-- Centralized Database Route Actions -->
             <div class="hero-search-section">
-                <p class="search-prompt">Looking for a specific dish? Use our central database filter:</p>
-                <form th:action="@{/search}" method="get" class="hero-search-form">
-                    <input type="text" name="query" class="form-input hero-search-input"
-                        placeholder="Search recipes, ingredients, or chefs..." required />
-                    <button type="submit" class="btn btn--primary hero-search-btn">Find Recipes</button>
-                </form>
+                <p class="search-prompt">Looking for a specific dish or you're not sure but have a list of some items?
+                    <a th:href="@{/search}"
+                        style="color: var(--color-primary); font-weight: 600; text-decoration: none; margin-left: 6px;">
+                        Try our recipe search!
+                    </a>
+                </p>
             </div>
         </div>
     </main>

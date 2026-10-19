@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" lang="en">
+
+<head>
+    <th:block th:replace="~{fragments/layout :: html_head('Recipe Discovery Hub - Braindribbler')}"></th:block>
+    <style>
+        .panel-card {
+            background-color: var(--color-bg-card);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
+            margin-bottom: 40px;
+            margin-top: 20px;
+        }
+
+        .index-section-header {
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--color-border);
+        }
+    </style>
+</head>
+
+<body>
+    <div th:replace="~{fragments/layout :: header}"></div>
+
+    <main>
+        <div class="page-card">
+            <h1 class="page-title">Recipe Discovery Hub</h1>
+            <p class="page-subtitle">Browse our complete public catalog index generally, or add specific ingredients to
+                find tailored meal matches.</p>
+
+            <!-- 1. INGREDIENT INVENTORY CONSOLE -->
+            <div class="panel-card">
+                <h3>Fridge Ingredient Matcher</h3>
+                <p style="font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 20px;">Select ingredients on
+                    hand to find recipes ordered by best match density.</p>
+
+                <form id="ingredientSearchForm" th:action="@{/search}" method="get">
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label class="form-label" for="fridgeSelect">Quick-Add Ingredients</label>
+                        <select id="fridgeSelect" class="form-input select2-quick-add" style="width: 100%;">
+                            <option value="">-- Type to add ingredient --</option>
+                            <option th:each="ing : ${ingredientPool}" th:value="${ing.ingredientId}"
+                                th:text="${ing.ingredientName}"></option>
+                        </select>
+                    </div>
+
+                    <!-- Custom Selection Checklist List -->
+                    <ul id="fridgeInventoryList" class="badge-container"
+                        style="list-style: none; padding: 0; margin: 0 0 20px 0; min-height: 42px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                        <!-- Reconstruct badges from existing active database parameters on page reload -->
+                        <li th:each="ing : ${ingredientPool}"
+                            th:if="${activeFilterIds != null and activeFilterIds.contains(ing.ingredientId)}"
+                            th:data-id="${ing.ingredientId}" class="badge-permission"
+                            style="padding: 6px 12px; font-size: 0.9rem; border-radius: 20px; display: inline-flex; align-items: center; gap: 10px; background-color: var(--color-badge-blue-bg); color: var(--color-badge-blue-text); border: 1px solid var(--color-border); box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+                            <span th:text="${ing.ingredientName}">Ingredient</span>
+                            <span class="remove-fridge-item"
+                                style="cursor: pointer; color: var(--color-text-muted); font-weight: 700;">X</span>
+                        </li>
+                    </ul>
+
+                    <!-- Holds form array inputs parameters -->
+                    <div id="hiddenInputsContainer">
+                        <input th:each="id : ${activeFilterIds}" type="hidden" name="ingredientIds" th:value="${id}" />
+                    </div>
+
+                    <div style="display: flex; gap: 12px;">
+                        <button type="submit" class="btn btn--primary"
+                            style="background-color: var(--color-success-raw); width: auto;">Apply Ingredient
+                            Filters</button>
+
+                        <a th:if="${isFilteredView}" th:href="@{/search}" class="btn"
+                            style="width: auto; background-color: var(--color-bg-disabled); color: var(--color-text-label); text-decoration: none; border-radius: 6px; padding: 12px 20px; font-weight: 600; font-size: 1rem;">
+                            Clear Filters
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 2. THE DYNAMIC CATALOG DATA TABLE INDEX -->
+            <div class="index-section-header">
+                <h2 th:if="${isFilteredView}">Filtered Recipe Matches</h2>
+                <h2 th:unless="${isFilteredView}">Browse All Available Recipes</h2>
+
+                <p style="color: var(--color-text-muted); margin: 4px 0 0 0;">
+                    <span th:if="${isFilteredView}">Showing recipes ranked by matching criteria density metrics.</span>
+                    <span th:unless="${isFilteredView}">Explore our complete available public catalog instantly.</span>
+                </p>
+            </div>
+
+            <table id="generalIndexTable" class="display" style="width:100%;">
+                <thead>
+                    <tr>
+                        <th style="width: 35%;">Recipe Title</th>
+                        <th style="width: 55%;">Description</th>
+                        <th style="width: 10%; text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="recipe : ${recipesIndexPool}">
+                        <td>
+                            <strong th:text="${recipe.title}"
+                                style="color: var(--color-text-dark); font-size: 1.05rem;">Recipe Title</strong>
+                            <div style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 3px;">
+                                <span th:text="${recipe.servings}">0</span> servings
+                            </div>
+                        </td>
+                        <td>
+                            <span
+                                th:text="${recipe.description != null and recipe.description.length() > 140} ? ${recipe.description.substring(0, 140)} + '...' : ${recipe.description}">
+                                Description snippet...
+                            </span>
+                        </td>
+                        <td style="text-align: right; vertical-align: middle;">
+                            <a th:href="@{/view/{publicId}(publicId=${recipe.publicId})}" class="btn btn--primary"
+                                style="padding: 6px 12px; font-size: 0.85rem; width: auto; text-decoration: none; white-space: nowrap;">
+                                View Recipe
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/layout :: footer}"></div>
+
+    <!-- Call the externalized static script asset -->
+    <script th:src="@{/js/search-dashboard.js}"></script>
+</body>
+
+</html>

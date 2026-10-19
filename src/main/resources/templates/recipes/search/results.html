@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" lang="en">
+
+<head>
+    <th:block th:replace="~{fragments/layout :: html_head('Search Results - Braindribbler')}"></th:block>
+</head>
+
+<body>
+    <div th:replace="~{fragments/layout :: header}"></div>
+
+    <main>
+        <div class="page-card">
+            <div
+                style="margin-bottom: 24px; padding-bottom: 12px; border-bottom: 2px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                <div>
+                    <h1 th:if="${isIngredientSearch}" style="margin: 0; font-size: 1.75rem;">Ingredient Match Results
+                    </h1>
+                    <h1 th:unless="${isIngredientSearch}" style="margin: 0; font-size: 1.75rem;">Keyword Search Results
+                    </h1>
+                    <p style="color: var(--color-text-muted); margin-top: 6px; margin-bottom: 0;">
+                        Found <strong th:text="${recipes.size()}">0</strong> matching recipe(s)
+                        <span th:if="${searchKeyword != null and !searchKeyword.isEmpty()}">
+                            for keyword: "<span th:text="${searchKeyword}" style="font-style: italic;"></span>"
+                        </span>
+                    </p>
+                </div>
+                <a th:href="@{/search}" class="btn"
+                    style="width: auto; padding: 8px 16px; background-color: var(--color-bg-disabled); color: var(--color-text-label); font-size: 0.9rem; text-decoration: none; border-radius: 6px;">
+                    New Search
+                </a>
+            </div>
+
+            <!-- Empty State Fallback -->
+            <div th:if="${recipes.isEmpty()}"
+                style="background-color: var(--color-bg-body); border: 1px dashed var(--color-border); border-radius: 8px; padding: 40px; text-align: center; color: var(--color-text-muted);">
+                <h3>No Recipes Found</h3>
+                <p>No matches found with your criteria. Try adjusting your search entries.</p>
+            </div>
+
+            <!-- MANDATORY DATA PRESENTATION TABLE LAYOUT (DataTables Managed) -->
+            <table th:unless="${recipes.isEmpty()}" id="resultsTable" class="display" style="width:100%;">
+                <thead>
+                    <tr>
+                        <th style="width: 35%;">Recipe Title</th>
+                        <th style="width: 45%;">Description</th>
+                        <th style="width: 10%; text-align: center;">Visibility</th>
+                        <th style="width: 10%; text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="recipe : ${recipes}">
+                        <td>
+                            <strong th:text="${recipe.title}"
+                                style="color: var(--color-text-dark); font-size: 1.05rem;">Recipe Title</strong>
+                            <div style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 3px;">
+                                <span th:text="${recipe.servings}">0</span> servings
+                            </div>
+                        </td>
+                        <td>
+                            <span
+                                th:text="${recipe.description != null and recipe.description.length() > 140} ? ${recipe.description.substring(0, 140)} + '...' : ${recipe.description}">
+                                Description snippet...
+                            </span>
+                        </td>
+                        <td style="text-align: center; vertical-align: middle;">
+                            <span th:if="${recipe.recipeVisibility.recipeVisibilityId == 1}" class="alert--success"
+                                style="padding: 4px 8px; font-size: 0.75rem; font-weight: 600; border-radius: 4px; border: none; white-space: nowrap;">Public</span>
+                            <span th:if="${recipe.recipeVisibility.recipeVisibilityId == 2}" class="alert--info"
+                                style="padding: 4px 8px; font-size: 0.75rem; font-weight: 600; border-radius: 4px; border: none; white-space: nowrap;">Shared</span>
+                            <span th:if="${recipe.recipeVisibility.recipeVisibilityId == 3}" class="alert--danger"
+                                style="padding: 4px 8px; font-size: 0.75rem; font-weight: 600; border-radius: 4px; border: none; white-space: nowrap;">Private</span>
+                        </td>
+                        <td style="text-align: right; vertical-align: middle;">
+                            <!-- Secure public-facing UUID route link -->
+                            <a th:href="@{/view/{publicId}(publicId=${recipe.publicId})}" class="btn btn--primary"
+                                style="padding: 6px 12px; font-size: 0.85rem; width: auto; text-decoration: none; white-space: nowrap;">
+                                View Recipe
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/layout :: footer}"></div>
+
+    <script>
+        $(document).ready(function () {
+            $('#resultsTable').DataTable({
+                paging: true,
+                pageLength: 10,
+                searching: true,
+                ordering: true,
+                responsive: true,
+                language: {
+                    searchPlaceholder: "Filter table rows..."
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
