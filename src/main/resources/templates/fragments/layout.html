@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title th:text="${title}">Braindribbler Recipes</title>
     <link rel="stylesheet" th:href="@{/css/style.css}" />
+
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"
         integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 
@@ -35,6 +36,7 @@
                             <span th:text="${item.label}">Dropdown Title</span>
                             <span class="dropdown-caret">▼</span>
                         </button>
+
                         <div class="dropdown-menu">
                             <a th:each="child : ${item.children}" th:href="@{${child.url}}" class="dropdown-item"
                                 th:text="${child.label}">Child Option</a>

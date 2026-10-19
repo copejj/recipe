@@ -91,39 +91,46 @@
                 </p>
             </div>
 
-            <table id="generalIndexTable" class="display" style="width:100%;">
-                <thead>
-                    <tr>
-                        <th style="width: 35%;">Recipe Title</th>
-                        <th style="width: 55%;">Description</th>
-                        <th style="width: 10%; text-align: right;">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="recipe : ${recipesIndexPool}">
-                        <td>
-                            <strong th:text="${recipe.title}"
-                                style="color: var(--color-text-dark); font-size: 1.05rem;">Recipe Title</strong>
-                            <div style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 3px;">
-                                <span th:text="${recipe.servings}">0</span> servings
-                            </div>
-                        </td>
-                        <td>
-                            <span
-                                th:text="${recipe.description != null and recipe.description.length() > 140} ? ${recipe.description.substring(0, 140)} + '...' : ${recipe.description}">
-                                Description snippet...
-                            </span>
-                        </td>
-                        <td style="text-align: right; vertical-align: middle;">
-                            <a th:href="@{/view/{publicId}(publicId=${recipe.publicId})}" class="btn btn--primary"
-                                style="padding: 6px 12px; font-size: 0.85rem; width: auto; text-decoration: none; white-space: nowrap;">
-                                View Recipe
-                            </a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-responsive-wrapper"
+                style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 15px;">
+                <table id="generalIndexTable" class="display" style="width:100%;">
+                    <thead>
+                        <tr>
+                            <th style="width: 15%; text-align: center;"></th>
+                            <th style="width: 30%;">Recipe Title</th>
+                            <th style="width: 55%;">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Row level tracking remains active, cursor indicates the row is interactive -->
+                        <tr th:each="recipe : ${recipesIndexPool}"
+                            th:data-href="@{/view/{publicId}(publicId=${recipe.publicId})}" style="cursor: pointer;">
 
+                            <td style="text-align: center; vertical-align: middle;">
+                                <!-- Explicit View button for PC/Mac visibility -->
+                                <a th:href="@{/view/{publicId}(publicId=${recipe.publicId})}"
+                                    class="btn btn--primary btn-view"
+                                    style="padding: 6px 12px; font-size: 0.85rem; width: auto; text-decoration: none; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; height: 32px; box-sizing: border-box;">
+                                    View
+                                </a>
+                            </td>
+
+                            <td>
+                                <strong th:text="${recipe.title}"
+                                    style="color: var(--color-text-dark); font-size: 1.05rem; display: block;">Recipe
+                                    Title</strong>
+                            </td>
+
+                            <td>
+                                <span
+                                    th:text="${recipe.description != null and recipe.description.length() > 140} ? ${recipe.description.substring(0, 140)} + '...' : ${recipe.description}">
+                                    Description snippet...
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </main>
 

@@ -63,15 +63,19 @@ $(document).ready(function () {
         });
     }
 
-    // Initialize clean DataTables core layout
+
     $('#generalIndexTable').DataTable({
-        paging: true,
-        pageLength: 10,
-        searching: true,
-        ordering: true,
-        responsive: true,
-        language: {
-            searchPlaceholder: "Filter table index..."
-        }
+        "bAutoWidth": false, // Stops inline pixel injection 
+        "responsive": false  // Disable default extension if you want pure CSS control
     });
+
+    // Your row click tap script from earlier
+    const generalTable = document.getElementById("generalIndexTable");
+    if (generalTable) {
+        generalTable.addEventListener("click", function (event) {
+            if (event.target.closest(".btn-view")) return;
+            const row = event.target.closest("tr");
+            if (row && row.dataset.href) window.location.href = row.dataset.href;
+        });
+    }
 });

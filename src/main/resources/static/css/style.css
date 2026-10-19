@@ -74,7 +74,6 @@ h3 {
     font-weight: 700;
     line-height: 1.2;
     color: var(--color-text-dark);
-    margin-top: 0;
 }
 
 p {
@@ -135,7 +134,7 @@ main {
     margin: 0 auto;
     padding: 16px 24px;
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
     align-items: center;
 }
 
@@ -1339,25 +1338,25 @@ div.dt-container .dt-search input:focus {
 
 /* Stylize standard table pagination buttons to fit your brand foundation */
 div.dt-container .dt-paging .dt-paging-button {
-    padding: 8px 14px !important;
-    border-radius: 6px !important;
-    border: 1px solid var(--color-border) !important;
-    font-weight: 600 !important;
-    font-size: 0.875rem !important;
-    background: var(--color-bg-card) !important;
-    color: var(--color-text-label) !important;
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--color-border);
+    font-weight: 600;
+    font-size: 0.875rem;
+    background: var(--color-bg-card);
+    color: var(--color-text-label);
     transition: all 0.1s ease;
 }
 
 div.dt-container .dt-paging .dt-paging-button.current {
-    background: var(--color-primary) !important;
-    color: white !important;
-    border-color: var(--color-primary) !important;
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
 }
 
 div.dt-container .dt-paging .dt-paging-button:hover:not(.current, .disabled) {
-    background: var(--color-bg-disabled) !important;
-    color: var(--color-text-dark) !important;
+    background: var(--color-bg-disabled);
+    color: var(--color-text-dark);
 }
 
 /* Responsive Table layout optimization row */
@@ -1380,7 +1379,7 @@ div.dt-container .dt-paging .dt-paging-button:hover:not(.current, .disabled) {
     #resultsTable td,
     #resultsTable tr {
         display: block;
-        width: 100% !important;
+        width: 100%;
     }
 
     /* 2. Hide traditional table headers entirely from screen views */
@@ -1403,8 +1402,8 @@ div.dt-container .dt-paging .dt-paging-button:hover:not(.current, .disabled) {
     /* 4. Format row padding and clear vertical boundaries */
     #resultsTable tbody td {
         border: none;
-        padding: 8px 0 !important;
-        text-align: left !important;
+        padding: 8px 0;
+        text-align: left;
         position: relative;
     }
 
@@ -1420,25 +1419,194 @@ div.dt-container .dt-paging .dt-paging-button:hover:not(.current, .disabled) {
     #resultsTable tbody td:nth-child(3),
     #resultsTable tbody td:nth-child(4) {
         display: inline-block;
-        width: auto !important;
-        padding-right: 12px !important;
+        width: auto;
+        padding-right: 12px;
     }
 
     /* 7. Force DataTables modern wrapper elements to stack smoothly */
     div.dt-container div.dt-layout-row {
-        display: block !important;
+        display: block;
         margin: 1em 0;
     }
 
     div.dt-container div.dt-layout-row div.dt-layout-cell {
-        display: block !important;
-        text-align: left !important;
-        width: 100% !important;
-        margin: 0 0 12px 0 !important;
+        display: block;
+        text-align: left;
+        width: 100%;
+        margin: 0 0 12px 0;
     }
 
     div.dt-container .dt-search input {
-        width: 100% !important;
-        margin-left: 0 !important;
+        width: 100%;
+        margin-left: 0;
     }
+}
+
+/* --- Desktop & Base Layout Fixes --- */
+div.table-responsive-wrapper table#generalIndexTable {
+    table-layout: fixed;
+    width: 100%;
+}
+
+/* --- Mobile Portrait Mode (Under 768px wide) --- */
+@media screen and (max-width: 768px) {
+
+    /* Target the table container strictly */
+    .page-card div.table-responsive-wrapper table#generalIndexTable {
+        display: block;
+        width: 100%;
+        border: none;
+    }
+
+    /* Hide table header cleanly */
+    .page-card div.table-responsive-wrapper table#generalIndexTable thead {
+        display: none;
+    }
+
+    /* Transform rows into isolated layout cards */
+    .page-card div.table-responsive-wrapper table#generalIndexTable tbody,
+    .page-card div.table-responsive-wrapper table#generalIndexTable tbody tr {
+        display: block;
+        width: 100%;
+    }
+
+    .page-card div.table-responsive-wrapper table#generalIndexTable tbody tr {
+        background: #ffffff;
+        border: 1px solid var(--color-border, #eef0f2);
+        border-radius: 8px;
+        margin-bottom: 16px;
+        padding: 16px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        box-sizing: border-box;
+    }
+
+    /* Stack your data cells vertically */
+    .page-card div.table-responsive-wrapper table#generalIndexTable tbody td {
+        display: block;
+        width: 100%;
+        padding: 6px 0;
+        text-align: left;
+        border: none;
+        box-sizing: border-box;
+    }
+
+    /* Format your view button as a mobile block action item */
+    .page-card div.table-responsive-wrapper table#generalIndexTable tbody td:first-child {
+        margin-top: 10px;
+        border-top: 1px dashed var(--color-border, #eee);
+        padding-top: 12px;
+    }
+
+    .page-card div.table-responsive-wrapper table#generalIndexTable .btn-view {
+        width: 100%;
+        height: 38px;
+    }
+}
+
+/* --- Desktop Base Layout --- */
+.page-card div.table-responsive-wrapper table#myRecipesTable {
+    table-layout: fixed;
+    width: 100%;
+}
+
+/* --- Mobile Portrait Mode (Under 768px wide) --- */
+@media screen and (max-width: 768px) {
+
+    /* Transform table element to basic block flow container layout */
+    .page-card div.table-responsive-wrapper table#myRecipesTable {
+        display: block;
+        width: 100%;
+        border: none;
+    }
+
+    /* Hide table header cleanly on mobile screen */
+    .page-card div.table-responsive-wrapper table#myRecipesTable thead {
+        display: none;
+    }
+
+    /* Re-shape container parts to form a vertical stacking deck */
+    .page-card div.table-responsive-wrapper table#myRecipesTable tbody,
+    .page-card div.table-responsive-wrapper table#myRecipesTable tbody tr {
+        display: block;
+        width: 100%;
+    }
+
+    .page-card div.table-responsive-wrapper table#myRecipesTable tbody tr {
+        background: #ffffff;
+        border: 1px solid var(--color-border, #eef0f2);
+        border-radius: 8px;
+        margin-bottom: 16px;
+        padding: 16px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        box-sizing: border-box;
+    }
+
+    /* Convert table cells to full width block entries */
+    .page-card div.table-responsive-wrapper table#myRecipesTable tbody td {
+        display: block;
+        width: 100%;
+        padding: 6px 0;
+        text-align: left;
+        border: none;
+        box-sizing: border-box;
+    }
+
+    /* Render clean inline titles dynamically using our HTML data attributes */
+    .page-card div.table-responsive-wrapper table#myRecipesTable tbody td[data-label]::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: var(--color-text-muted, #777);
+        display: inline-block;
+        width: 90px;
+        /* Aligns data text columns perfectly inside cards */
+    }
+
+    /* Format your administrative action panel layout to wrap on mobile frames */
+    .page-card div.table-responsive-wrapper table#myRecipesTable tbody td.actions-cell {
+        margin-top: 12px;
+        border-top: 1px dashed var(--color-border, #eee);
+        padding-top: 12px;
+        order: 5;
+        /* Forces buttons block container straight to bottom stack */
+    }
+
+    .page-card div.table-responsive-wrapper table#myRecipesTable .admin-btn-group {
+        display: flex;
+        width: 100%;
+        gap: 10px;
+    }
+
+    .page-card div.table-responsive-wrapper table#myRecipesTable .admin-btn-group a {
+        flex: 1;
+        /* Spreads Edit and View buttons to take 50% width space each */
+        text-align: center;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* ==========================================================================
+   Base & Desktop Navigation Menu Adjustments
+   ========================================================================== */
+nav.header-nav div.nav-dropdown button.nav-button.nav-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+    /* Clean gap on desktop layouts */
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+nav.header-nav span.dropdown-caret {
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    /* Scales the fat '▼' symbol slightly for better balance */
+    transition: transform 0.2s ease;
+    /* Preps the arrow if you want to flip it on open */
 }
