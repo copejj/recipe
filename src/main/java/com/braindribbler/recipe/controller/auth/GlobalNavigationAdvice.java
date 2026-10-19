@@ -38,6 +38,17 @@ public class GlobalNavigationAdvice {
                     .map(a -> a.getAuthority())
                     .collect(Collectors.toSet());
 
+            // Build isolated child options for operational user management
+            List<MenuItem> userChildren = new ArrayList<>();
+
+            // Base culinary actions available to standard users or creators
+            userChildren.add(new MenuItem("Create New Recipe", "/recipes/create"));
+            userChildren.add(new MenuItem("My Recipes", "/recipes/my-list"));
+            userChildren.add(new MenuItem("My Profile", "/profile"));
+
+            // Map the complete Recipes Parent Dropdown
+            menuItems.add(new MenuItem("My Stuff", userChildren));
+
             // Build completely separate child options for technical System Administration
             List<MenuItem> adminChildren = new ArrayList<>();
 
@@ -60,17 +71,6 @@ public class GlobalNavigationAdvice {
             if (!adminChildren.isEmpty()) {
                 menuItems.add(new MenuItem("Admin", adminChildren));
             }
-
-            // Build isolated child options for operational user management
-            List<MenuItem> userChildren = new ArrayList<>();
-
-            // Base culinary actions available to standard users or creators
-            userChildren.add(new MenuItem("My Profile", "/profile"));
-            userChildren.add(new MenuItem("My Recipes", "/recipes/my-list"));
-            userChildren.add(new MenuItem("Create New Recipe", "/recipes/create"));
-
-            // Map the complete Recipes Parent Dropdown
-            menuItems.add(new MenuItem(resolveDisplayName(auth), userChildren));
         }
 
         return menuItems;
