@@ -10,24 +10,34 @@
         <!-- 1. JUMBO IDENTITY HEADER WITH LIVE SCALING CONTROLLERS -->
         <div
             style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
-            <div>
-                <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
-                    <h1 th:text="${recipe.title}" style="margin: 0; font-size: 2.25rem; color: var(--color-text-dark);">
-                        Tasty Recipe Title</h1>
 
-                    <!-- ✏️ EDIT BUTTON SHORTCUT LINK -->
-                    <th:block
-                        th:if="${currentUser != null and String.valueOf(recipe.user.userId).equals(String.valueOf(currentUser.userId))}">
+            <div
+                style="display: flex; flex-direction: column; gap: 12px; width: 100%; margin-bottom: 24px; box-sizing: border-box;">
+
+                <h1 th:text="${recipe.title}"
+                    style="margin: 0; font-size: 2.25rem; color: var(--color-text-dark); line-height: 1.2; font-weight: 700;">
+                    Tasty Recipe Title
+                </h1>
+
+                <div
+                    style="display: flex; flex-direction: row; flex-wrap: wrap; justify-content: flex-start; align-items: center; gap: 12px; width: 100%; box-sizing: border-box;">
+
+                    <div style="font-size: 0.95rem; color: var(--color-text-muted); white-space: nowrap;">
+                        Created by <span th:text="${recipe.user.displayName}"
+                            style="font-weight: 600; color: var(--color-text-dark);">Author</span>
+                    </div>
+
+                    <th:block th:if="${canEdit}">
                         <a th:href="@{/recipes/edit/{id}(id=${recipe.recipeId})}" class="btn"
-                            style="width: auto; padding: 6px 14px; font-size: 0.85rem; font-weight: 700; background-color: #ffc107; color: #212529; border: 1px solid #e0a800; border-radius: 6px; text-decoration: none; transition: all 0.2s ease;">
-                            ✏️ Edit Recipe
+                            style="width: auto; padding: 6px 14px; font-size: 0.85rem; font-weight: 700; background-color: var(--color-profile-dark-btn); color: white; border-radius: 6px; text-decoration: none; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; height: 32px; white-space: nowrap; box-sizing: border-box;">
+                            📝 Edit
                         </a>
                     </th:block>
-                </div>
-                <div style="font-size: 0.9rem; color: var(--color-text-muted); margin-top: 4px;">
-                    Created by <span th:text="${recipe.user.displayName}" style="font-weight: 600;">Author</span>
+
                 </div>
             </div>
+
+
 
             <!-- SYSTEM MODE AND SERVINGS MULTIPLIER BUTTON GROUP PANELS -->
             <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
