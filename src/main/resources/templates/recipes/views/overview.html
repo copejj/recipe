@@ -1,28 +1,25 @@
 <!-- 📁 templates/recipes/views/overview.html -->
 <div th:fragment="overview-panel">
 
-    <!-- 1. RECIPE HIGH-LEVEL DESCRIPTION SECTION -->
+    <!-- 1. RECIPE HIGH-LEVEL DESCRIPTION SECTION (FULL WIDTH TOP) -->
     <div style="margin-bottom: 24px;">
         <p class="recipe-description-text" th:text="${recipe.description}"
-            style="font-size: 1.15rem; line-height: 1.6; font-style: italic; color: var(--color-text-muted); margin-bottom: 12px;">
+            style="font-size: 1.15rem; line-height: 1.6; font-style: italic; color: var(--color-text-muted); margin-bottom: 12px; margin-top: 0;">
             Mix, bake, and enjoy!
         </p>
     </div>
 
     <!-- 2. COMBINED MASTER INGREDIENTS CHECKLIST SUMMARY BOX -->
     <div
-        style="margin-bottom: 30px; padding: 24px; background-color: var(--color-bg-card); border-radius: 8px; border: 1px solid var(--color-border);">
+        style="margin-bottom: 30px; padding: 24px; background-color: var(--color-bg-card); border-radius: 8px; border: 1px solid var(--color-border); box-sizing: border-box;">
         <h4
             style="margin-top: 0; margin-bottom: 16px; font-size: 1.15rem; color: var(--color-text-dark); border-bottom: 1px solid var(--color-border); padding-bottom: 8px;">
-            🛒 Complete Ingredient Checklist
+            Ingredient Checklist
         </h4>
 
-        <!-- FIXED: Replaced inline grid styles with a dedicated responsive CSS engine class hook -->
         <ul class="responsive-ingredient-grid"
             style="padding-left: 20px; margin: 0; list-style-type: square; color: var(--color-text-label); line-height: 1.8;">
-            <!-- STEP 1: Loop through each map category group entry -->
             <th:block th:each="categoryGroup : ${singleRecipeAggregatedIngredients}">
-                <!-- STEP 2: Loop through the list of items stored inside that category value -->
                 <li th:each="item : ${categoryGroup.value}">
                     <span class="scalable-amount" th:data-base-amount="${item.amount}"
                         th:data-base-type-id="${item.measurement.baseType.baseTypeId}"
@@ -40,12 +37,15 @@
     </div>
 
     <!-- 3. TRADITIONAL CONTINUOUS TIMELINE READING BLOCK -->
-    <div class="overview-steps-timeline" style="margin-bottom: 30px;">
+    <!-- FIXED: Wrapped in matching layout constraints (padding left/right 24px) to perfectly level the <h4> left edges -->
+    <div class="overview-steps-timeline"
+        style="margin-bottom: 35px; padding: 0 24px; box-sizing: border-box; width: 100%;">
         <h4
-            style="color: var(--color-text-dark); font-size: 1.15rem; margin-bottom: 16px; border-bottom: 1px solid var(--color-border); padding-bottom: 8px;">
-            📋 Preparation Instructions
+            style="color: var(--color-text-dark); font-size: 1.15rem; margin-top: 0; margin-bottom: 16px; border-bottom: 1px solid var(--color-border); padding-bottom: 8px;">
+            Preparation Instructions
         </h4>
-        <ol style="padding-left: 20px; line-height: 1.75; color: var(--color-text-dark); font-size: 1.05rem;">
+        <ol
+            style="padding-left: 20px; line-height: 1.75; color: var(--color-text-dark); font-size: 1.05rem; margin: 0;">
             <li th:each="step : ${recipe.steps}" th:text="${step.instructionText}"
                 style="margin-bottom: 14px; padding-left: 6px;"></li>
         </ol>
@@ -53,9 +53,8 @@
 
     <!-- 4. GENERAL RECIPE CHEF NOTES FOOTER CARD (ON THE BOTTOM) -->
     <div th:if="${recipe.recipeNote != null && !recipe.recipeNote.trim().isEmpty()}"
-        style="border: 1px solid var(--color-border); padding: 24px; border-radius: 8px; background-color: var(--color-bg-card); border-top: 4px solid #6c757d; margin-top: 24px;">
-        <h4 style="margin-top: 0; margin-bottom: 8px; color: var(--color-text-dark); font-size: 1.15rem;">📝 Chef Notes
-            & Parameters</h4>
+        style="border: 1px solid var(--color-border); padding: 24px; border-radius: 8px; background-color: var(--color-bg-card); border-top: 4px solid #6c757d; margin-top: 24px; width: 100%; box-sizing: border-box;">
+        <h4 style="margin-top: 0; margin-bottom: 8px; color: var(--color-text-dark); font-size: 1.15rem;">Notes</h4>
         <p th:text="${recipe.recipeNote}"
             style="margin: 0; line-height: 1.6; color: var(--color-text-label); font-style: italic;"></p>
     </div>

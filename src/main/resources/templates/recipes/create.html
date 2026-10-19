@@ -68,8 +68,10 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Instructional Text</label>
+                        <label class="form-label">Instructions</label>
+                        <!-- FIXED: Added data-auto-grow identifier, manual resizing remains fully functional -->
                         <textarea th:field="*{steps[__${stepStat.index}__].instructionText}" class="form-input" rows="2"
+                            data-auto-grow
                             placeholder="Describe the culinary tasks for this step (e.g., Whisk eggs and sugar until pale)..."
                             required></textarea>
                     </div>
@@ -205,26 +207,26 @@
                     placeholder="e.g., Heavy Cream" />
             </div>
 
+            <!-- Kitchen Unit Track (Classification) Selector -->
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label for="quickIngredientClassification"
+                    style="display: block; margin-bottom: 5px; font-weight: bold;">Ingredient Classification:</label>
+                <select id="quickIngredientClassification" class="form-input" style="width: 100%;" required>
+                    <!-- Separates the programmatic name from the readable text description -->
+                    <option th:each="enumType : ${classifications}" th:value="${enumType.name()}"
+                        th:text="${enumType.name() + ' (' + enumType.description + ')'}"></option>
+                </select>
+            </div>
+
             <!-- Grocery Category Selection Dropdown Field -->
             <div class="form-group" style="margin-bottom: 15px;">
                 <label for="quickGroceryCategoryId"
-                    style="display: block; margin-bottom: 5px; font-weight: bold;">Grocery Section/Aisle:</label>
+                    style="display: block; margin-bottom: 5px; font-weight: bold;">Grocery Category:</label>
                 <select id="quickGroceryCategoryId" class="form-input" style="width: 100%;" required>
                     <option value="" disabled selected>-- Select Aisle --</option>
                     <!-- Corrected attribute variable target layout reference list matching controller metadata model mapping name -->
                     <option th:each="cat : ${groceryCategories}" th:value="${cat.groceryCategoryId}"
                         th:text="${cat.categoryName}"></option>
-                </select>
-            </div>
-
-            <!-- Kitchen Unit Track (Classification) Selector -->
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label for="quickIngredientClassification"
-                    style="display: block; margin-bottom: 5px; font-weight: bold;">Scaling Classification Track:</label>
-                <select id="quickIngredientClassification" class="form-input" style="width: 100%;" required>
-                    <!-- Separates the programmatic name from the readable text description -->
-                    <option th:each="enumType : ${classifications}" th:value="${enumType.name()}"
-                        th:text="${enumType.name() + ' (' + enumType.description + ')'}"></option>
                 </select>
             </div>
 

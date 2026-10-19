@@ -167,13 +167,13 @@ main {
 
 .nav-link--cta,
 .nav-button--cta {
-    color: #ffc107 !important;
+    color: #ffc107;
     font-weight: 600;
 }
 
 .nav-link--cta:hover,
 .nav-button--cta:hover {
-    color: #ffe082 !important;
+    color: #ffe082;
 }
 
 .nav-logout-form {
@@ -285,19 +285,19 @@ main {
 /* Explicit CSS States for Native System Disabling */
 .form-input:disabled,
 .profile-input-disabled {
-    background-color: var(--color-bg-body) !important;
-    border-color: var(--color-border) !important;
-    color: #a8aeb4 !important;
+    background-color: var(--color-bg-body);
+    border-color: var(--color-border);
+    color: #a8aeb4;
     cursor: not-allowed;
 }
 
 .btn:disabled {
-    background-color: var(--color-bg-disabled) !important;
-    border-color: var(--color-border) !important;
-    color: #adb5bd !important;
+    background-color: var(--color-bg-disabled);
+    border-color: var(--color-border);
+    color: #adb5bd;
     cursor: not-allowed;
-    box-shadow: none !important;
-    transform: none !important;
+    box-shadow: none;
+    transform: none;
 }
 
 /* ==========================================================================
@@ -524,26 +524,26 @@ main {
    ========================================================================== */
 .dataTables_wrapper {
     margin-top: 20px;
-    width: 100% !important;
+    width: 100%;
 }
 
 table.dataTable {
-    border-collapse: collapse !important;
+    border-collapse: collapse;
     margin-bottom: 20px;
-    width: 100% !important;
+    width: 100%;
 }
 
 table.dataTable thead th {
     background-color: var(--color-bg-body);
-    border-bottom: 2px solid var(--color-border) !important;
-    padding: 12px !important;
-    font-size: 0.875rem !important;
-    white-space: nowrap !important;
+    border-bottom: 2px solid var(--color-border);
+    padding: 12px;
+    font-size: 0.875rem;
+    white-space: nowrap;
 }
 
 table.dataTable tbody td {
     border-bottom: 1px solid var(--color-border);
-    padding: 12px !important;
+    padding: 12px;
 }
 
 .page-card--audit-layout {
@@ -557,7 +557,7 @@ table.dataTable tbody td {
 }
 
 table.dataTable tbody td:first-child {
-    font-size: 0.8rem !important;
+    font-size: 0.8rem;
     white-space: nowrap;
     color: var(--color-text-muted);
 }
@@ -600,8 +600,8 @@ table.dataTable tbody td:first-child {
 }
 
 .audit-log-failure {
-    font-size: 0.75rem !important;
-    max-width: 160px !important;
+    font-size: 0.75rem;
+    max-width: 160px;
     word-break: break-word;
 }
 
@@ -638,51 +638,51 @@ table.dataTable tbody td:first-child {
 /* target standard DataTables layout wrapper classes */
 .dataTables_wrapper .dataTables_length,
 .dataTables_wrapper .dataTables_filter {
-    width: 100% !important;
-    text-align: left !important;
-    margin-bottom: 12px !important;
-    float: none !important;
-    display: flex !important;
-    flex-direction: column !important;
+    width: 100%;
+    text-align: left;
+    margin-bottom: 12px;
+    float: none;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Force the inputs inside them to span full width natively */
 .dataTables_wrapper .dataTables_length select,
 .dataTables_wrapper .dataTables_filter input {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-    margin-left: 0 !important;
-    margin-top: 6px !important;
-    height: 40px !important;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin-left: 0;
+    margin-top: 6px;
+    height: 40px;
     /* Matches touch-friendly height standards */
-    border-radius: 6px !important;
-    border: 1px solid var(--color-border) !important;
+    border-radius: 6px;
+    border: 1px solid var(--color-border);
 }
 
 /* Desktop Viewport Layout Reversion Breakpoint */
 @media (min-width: 768px) {
     .dataTables_wrapper .dataTables_length {
-        width: auto !important;
-        float: left !important;
-        flex-direction: row !important;
-        align-items: center !important;
+        width: auto;
+        float: left;
+        flex-direction: row;
+        align-items: center;
     }
 
     .dataTables_wrapper .dataTables_filter {
-        width: auto !important;
-        float: right !important;
-        text-align: right !important;
-        flex-direction: row !important;
-        align-items: center !important;
+        width: auto;
+        float: right;
+        text-align: right;
+        flex-direction: row;
+        align-items: center;
     }
 
     .dataTables_wrapper .dataTables_length select,
     .dataTables_wrapper .dataTables_filter input {
-        width: auto !important;
-        margin-left: 8px !important;
-        margin-top: 0 !important;
-        display: inline-block !important;
+        width: auto;
+        margin-left: 8px;
+        margin-top: 0;
+        display: inline-block;
     }
 }
 
@@ -924,8 +924,8 @@ dialog.admin-modal h3 {
 }
 
 .row-error-highlight {
-    border: 2px solid #dc3545 !important;
-    background-color: #fff8f8 !important;
+    border: 2px solid #dc3545;
+    background-color: #fff8f8;
     border-radius: 6px;
     padding: 4px;
 }
@@ -1063,9 +1063,9 @@ dialog.admin-modal h3 {
 
 /* 4. Fix standard browser flexbox snapping bugs for rows */
 .ingredient-row .select2-container {
-    flex: 2.5 !important;
+    flex: 2.5;
     /* Forces Select2 to accurately respect your style="flex: 2.5;" layout configuration */
-    width: 100% !important;
+    width: 100%;
 }
 
 /* 5. Smooth focus state highlight effect matching standard inputs */
@@ -1112,14 +1112,147 @@ dialog.admin-modal h3 {
 /* Widescreen Desktop / Large Tablet Breakpoint Viewports (Above 768px Width) */
 @media (min-width: 769px) {
     .responsive-ingredient-grid {
-        display: grid !important;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
         /* Forces 2-3 clean columns max on desktop */
-        gap: 12px 32px !important;
+        gap: 12px 32px;
     }
 
     .responsive-ingredient-grid li {
         white-space: normal;
         /* Retains standard layout wrapping room when in widescreen multi-columns */
+    }
+}
+
+textarea {
+    field-sizing: content;
+
+    min-height: 3lh;
+    max-height: 300px;
+}
+
+/* ==========================================================================
+   13. FLUID FLEX-WRAP INGREDIENT CONSOLE CONTROL PIPELINE
+   ========================================================================== */
+
+/* 
+   Main container card: 
+   Sits in a single line on desktop, but drops into a stack cleanly on narrow screens.
+*/
+.ingredient-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    /* Permits wrapping natively if space drops below minimums */
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+}
+
+/* 1. Main Ingredient Choice Dropdown */
+.ingredient-row>select,
+.ingredient-row>.select2-container {
+    flex: 3 1;
+    /* Thrives at 2.5/3 ratio, wraps if space shrinks below 240px */
+    min-width: 200px;
+    height: 42px;
+}
+
+/* 2. Metrics Shared Container Sub-Wrapper */
+.ingredient-row .ingredient-metrics-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    /* Allows internal wrapping for notes or buttons if needed */
+    align-items: center;
+    flex: 7 1 400px;
+    /* Fluid expansion layout ratio */
+    gap: 10px;
+    box-sizing: border-box;
+}
+
+/* 3. Amount Field Box Wrapper */
+.ingredient-row .ingredient-metrics-row .amount-wrapper {
+    flex: 1 1;
+    /* Shrinks comfortably to a small scale baseline width */
+    min-width: 70px;
+    height: 42px;
+}
+
+/* 4. Measurement Variant Unit Picker */
+.ingredient-row .ingredient-metrics-row select {
+    flex: 1.5 1;
+    min-width: 90px;
+    height: 42px;
+}
+
+/* 5. Optional Descriptive Notes String Input */
+.ingredient-row .ingredient-metrics-row input[type="text"] {
+    flex: 3 1;
+    /* Stretches to fill available row room */
+    min-width: 140px;
+    height: 42px;
+}
+
+/* 6. Permanent Deletion Button Target */
+.ingredient-row .ingredient-metrics-row .remove-ing-btn {
+    flex: 0 0 auto;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ==========================================================================
+   PORTRAIT PHONE SCREEN OPTIMIZATIONS (BELOW 576px)
+   Organizes items into a clean, easy-to-use 3-line input block
+   ========================================================================== */
+@media (max-width: 576px) {
+    .ingredient-row {
+        background-color: var(--color-bg-card);
+        padding: 14px;
+        border-radius: 8px;
+        border: 1px solid var(--color-border);
+        gap: 12px;
+    }
+
+    /* LINE 1: Force ingredient dropdown to occupy its own line */
+    .ingredient-row>select,
+    .ingredient-row>.select2-container {
+        flex: 1 1 100%;
+        width: 100%;
+    }
+
+    /* Sub-wrapper spans 100% of the space below the dropdown */
+    .ingredient-row .ingredient-metrics-row {
+        flex: 1 1 100%;
+        width: 100%;
+        gap: 12px;
+    }
+
+    /* LINE 2: Split Amount and Units 50/50 across the second row */
+    .ingredient-row .ingredient-metrics-row .amount-wrapper {
+        flex: 1 1 calc(50% - 6px);
+    }
+
+    .ingredient-row .ingredient-metrics-row>select {
+        flex: 1 1 calc(50% - 6px);
+    }
+
+    /* LINE 3: Notes spans the width, leaving just enough room for the delete button */
+    .ingredient-row .ingredient-metrics-row input[type="text"] {
+        flex: 1 1 calc(100% - 64px);
+        /* Expands to fill the line */
+        margin-top: 4px;
+    }
+
+    .ingredient-row .ingredient-metrics-row .remove-ing-btn {
+        flex: 0 0 42px;
+        /* Stays as a touch-friendly square on the right edge */
+        margin-top: 4px;
     }
 }
