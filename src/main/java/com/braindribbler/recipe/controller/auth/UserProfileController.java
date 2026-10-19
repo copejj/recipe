@@ -33,7 +33,6 @@ public class UserProfileController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // 1. Display Profile Management Workspace
     @GetMapping
     public String showProfilePage(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         UserAuth authObj = userAuthRepository.findByEmail(userDetails.getUsername())
@@ -44,7 +43,6 @@ public class UserProfileController {
         return "auth/profile";
     }
 
-    // 2. Process Core Detail Changes (First Name, Last Name, Display Name)
     @PostMapping("/details/update")
     public String updateProfileDetails(@AuthenticationPrincipal UserDetails userDetails,
             @RequestParam("firstName") String firstName,
@@ -64,7 +62,6 @@ public class UserProfileController {
         return "redirect:/profile";
     }
 
-    // 3. Process Live Password Rotations safely
     @PostMapping("/password/change")
     public String updateAccountPassword(@AuthenticationPrincipal UserDetails userDetails,
             @RequestParam("currentPassword") String currentPassword,
