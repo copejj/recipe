@@ -67,6 +67,14 @@ public class RecipeController {
         long myRecipesCount = recipeService.getRecipeCountByUserId(domainUser.getUserId());
         int pendingIngredients = ingredientService.getUnverifiedIngredients().size();
 
+        int freshCount = 0;
+        if (currentUser != null) {
+            Integer userId = currentUser.getUserProfile().getUserId();
+            freshCount = (int) ingredientService.getFreshIngredientsCount(userId);
+        }
+
+        // Inject the total count variable to the view engine
+        model.addAttribute("freshIngredientsCount", freshCount);
         model.addAttribute("myRecipesCount", myRecipesCount);
         model.addAttribute("pendingIngredientsCount", pendingIngredients);
         model.addAttribute("totalRecipesCount", recipeService.getTotalRecipesCount());

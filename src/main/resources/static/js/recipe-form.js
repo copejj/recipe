@@ -388,7 +388,7 @@ $(document).ready(function () {
         var header = "X-XSRF-TOKEN";
 
         $.ajax({
-            url: '/recipes/ingredients/quick-add',
+            url: '/ingredients/quick-add',
             type: 'POST',
             data: {
                 name: ingredientName,

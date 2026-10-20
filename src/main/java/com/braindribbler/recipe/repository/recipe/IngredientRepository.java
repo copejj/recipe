@@ -19,6 +19,10 @@ public interface IngredientRepository extends JpaRepository<Ingredient, Integer>
 
     List<Ingredient> findAllByOrderByIngredientNameAsc();
 
+    long countByCreatedByUserIdAndIsVerifiedFalse(Integer createdByUserId);
+
+    List<Ingredient> findByCreatedByUserIdAndIsVerifiedFalse(Integer createdByUserId);
+
     @Query(value = """
             SELECT
                 i.ingredient_id as ingredientId,

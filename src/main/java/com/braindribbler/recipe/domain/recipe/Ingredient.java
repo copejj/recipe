@@ -29,8 +29,11 @@ public class Ingredient {
     private Boolean isVerified = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by_user_id")
+    @JoinColumn(name = "created_by_user_id", nullable = true)
     private User createdByUser;
+
+    @Column(name = "created_by_user_id", insertable = false, updatable = false)
+    private Integer createdByUserId;
 
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
     private ZonedDateTime createdAt;
@@ -81,6 +84,10 @@ public class Ingredient {
 
     public void setCreatedByUser(User createdByUser) {
         this.createdByUser = createdByUser;
+    }
+
+    public Integer getCreatedByUserId() {
+        return createdByUserId;
     }
 
     public ZonedDateTime getCreatedAt() {

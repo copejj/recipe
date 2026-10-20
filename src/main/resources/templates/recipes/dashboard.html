@@ -74,6 +74,23 @@
                 </div>
             </div>
 
+            <div th:if="${freshIngredientsCount > 0}" class="status-item"
+                style="border-color: var(--color-success-border, #c3e6cb); background-color: var(--color-success-bg, #d4edda);">
+                <span class="status-icon">🌱</span>
+                <div class="status-info">
+                    <span class="status-label">My Fresh Ingredients</span>
+                    <span class="status-value">
+                        <span th:text="${freshIngredientsCount}"
+                            style="color: var(--color-success-raw, #28a745); font-weight: 700;">0</span>
+                        Pending Verification
+                    </span>
+                    <a th:href="@{/ingredients/my-fresh}"
+                        style="font-size: 0.85rem; color: var(--color-success-raw, #28a745); margin-top: 6px; text-decoration: none; font-weight: 600;">
+                        Manage My Submissions →
+                    </a>
+                </div>
+            </div>
+
         </div>
 
         <!-- ==========================================================================

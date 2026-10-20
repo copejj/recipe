@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -219,4 +220,43 @@ public class IngredientService {
         ingredient.setIsVerified(false);
         ingredientRepository.save(ingredient);
     }
+
+    @Transactional(readOnly = true)
+    public long getFreshIngredientsCount(Integer userId) {
+        if (userId == null)
+            return 0;
+
+        // Pass the raw integer ID straight into the repository query
+        return ingredientRepository.countByCreatedByUserIdAndIsVerifiedFalse(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Ingredient> getUnverifiedIngredientsByUser(Integer userId) {
+        if (userId == null)
+            return Collections.emptyList();
+
+        return ingredientRepository.findByCreatedByUserIdAndIsVerifiedFalse(userId);
+    }
+
+    @Transactional
+    public void updateUserSubmittedIngredient(Integer id, String name, Integer categoryId, String classification,
+            Integer userId) {
+        Ingredient ingredient = ingredientRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Ingredient not found ID: " + id));
+
+        // Re-verify that user has write permission authority
+        if (ingredient.getIsVerified() || !ingredient.getCreatedByUserId().equals(userId)) {
+            throw new SecurityException("Unauthorized alteration attempt on restricted ingredient entity.");
+        }
+
+        GroceryCategory cat = groceryCategoryRepository.findById(categoryId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid grocery category selection."));
+
+        ingredient.setIngredientName(name);
+        ingredient.setGroceryCategory(cat);
+        ingredient.setClassification(IngredientClassification.valueOf(classification));
+
+        ingredientRepository.save(ingredient);
+    }
+
 }
