@@ -115,7 +115,6 @@ main {
 
 /* Centralized Small Form Card Layouts (For Login & Registration Only) */
 .auth-layout {
-    max-width: 440px;
     margin-top: 60px;
     margin-bottom: 60px;
 }
@@ -822,7 +821,6 @@ dialog.admin-modal h3 {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-    margin-top: 24px;
 }
 
 .modal-actions-footer .btn--cancel {

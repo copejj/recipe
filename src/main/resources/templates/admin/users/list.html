@@ -18,7 +18,7 @@
             <table class="admin-matrix-table">
                 <thead>
                     <tr>
-                        <th>Actions</th>
+                        <th></th>
                         <th>Display Name</th>
                         <th>Email Address</th>
                         <th>Created At</th>
@@ -29,11 +29,10 @@
                 <tbody>
                     <tr th:each="chef : ${chefs}">
                         <td>
-                            <!-- THE CONDITION: Only render the button if the row user's rank is STRICTLY LESS THAN the logged-in admin's rank -->
                             <a th:if="${chef.highestRoleRankValue < loggedInAdminRank}"
                                 th:href="@{/admin/users/edit/{id}(id=${chef.publicId})}"
                                 class="btn btn--primary btn--table-action">
-                                Edit User
+                                Edit
                             </a>
 
                             <!-- Optional: Display a locked badge if they cannot modify it -->
