@@ -6,7 +6,7 @@
 <body>
     <div th:replace="~{fragments/layout :: header}"></div>
 
-    <main class="page-card auth-layout">
+    <main class="page-card other-layout">
         <h1 class="page-title">Manage Permissions</h1>
         <p class="page-subtitle" th:text="'Modifying role clusters for: ' + ${targetUser.displayName}"></p>
 
@@ -66,14 +66,33 @@
                 </div>
             </div>
 
-            <div class="modal-actions-footer">
-                <a th:href="@{/admin/users}" class="btn btn--cancel">Cancel</a>
-                <button type="submit" class="btn btn--primary btn--submit">Save Privileges</button>
+            <div class="form-actions-footer"
+                style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-top: 20px; border-top: 1px solid var(--color-border);">
+
+                <div class="modal-actions-footer" style="display: flex; gap: 12px;">
+                    <a th:href="@{/admin/users}" class="btn btn--cancel">Cancel</a>
+                    <button type="submit" class="btn btn--primary btn--submit">Save</button>
+                </div>
+
+                <div th:if="${targetUser.publicId != null}">
+                    <button type="submit" form="deleteUser" class="btn inline-delete-btn" data-confirmed="false"
+                        style="background-color: #ffffff; color: #dc3545; border: 2px solid #dc3545; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s ease-in-out; font-size: 0.95rem;">
+                        Delete
+                    </button>
+                </div>
             </div>
+        </form>
+
+        <!-- THE FUNCTIONAL EXTERNAL ACTION TARGET -->
+        <form th:if="${targetUser.publicId != null}" id="deleteUser"
+            th:action="@{/admin/users/delete/{publicId}(publicId=${targetUser.publicId})}" method="post"
+            class="delete-user-form" style="display: none;">
         </form>
     </main>
 
     <div th:replace="~{fragments/layout :: footer}"></div>
+
+    <script th:src="@{/js/admin-user-form.js}"></script>
 </body>
 
 </html>

@@ -11,11 +11,13 @@ import java.util.UUID;
 public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByPublicId(UUID publicId);
 
-    boolean existsByUserAuthEmail(String email); // Relationship traversal to search email in users_auth
-
     @Query("SELECT u FROM User u " +
             "JOIN FETCH u.userAuth ua " +
             "LEFT JOIN FETCH u.roles " +
             "WHERE ua.email = :email")
     Optional<User> findByUserAuthEmail(@Param("email") String email);
+
+    boolean existsByPublicId(UUID publicId);
+
+    void deleteByPublicId(UUID publicId);
 }

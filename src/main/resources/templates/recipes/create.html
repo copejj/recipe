@@ -174,7 +174,7 @@
 
                 <!-- Left Side: Standard Save Operations -->
                 <div style="display: flex; gap: 12px;">
-                    <button type="button" id="save-stay-btn" class="btn">Save Progress</button>
+                    <button type="button" id="save-stay-btn" class="btn">Save Recipe</button>
                     <button type="button" id="finish-view-btn" class="btn btn--primary"
                         style="white-space: nowrap;">Finish & View Recipe</button>
                 </div>
@@ -183,7 +183,7 @@
                 <div th:if="${recipeForm.recipeId != null}">
                     <button type="submit" form="deleteForm" class="btn inline-delete-btn" data-confirmed="false"
                         style="background-color: #ffffff; color: #dc3545; border: 2px solid #dc3545; padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s ease-in-out; font-size: 0.95rem;">
-                        🗑️ Delete Recipe
+                        Delete Recipe
                     </button>
                 </div>
 

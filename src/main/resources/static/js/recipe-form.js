@@ -696,7 +696,7 @@ $(document).ready(function () {
     function resetDeleteButtonState($btn) {
         if ($btn.length) {
             $btn.attr("data-confirmed", "false");
-            $btn.html("🗑️ Delete Recipe");
+            $btn.html("Delete Recipe");
             $btn.css({
                 "background-color": "#ffffff",
                 "color": "#dc3545",

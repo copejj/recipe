@@ -120,6 +120,11 @@ main {
     margin-bottom: 60px;
 }
 
+.other-layout {
+    margin-top: 60px;
+    margin-bottom: 60px;
+}
+
 /* ==========================================================================
    4. SHARED FRAGMENTS (HEADER & FOOTER)
    ========================================================================== */
@@ -822,7 +827,6 @@ dialog.admin-modal h3 {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-    margin-top: 24px;
 }
 
 .modal-actions-footer .btn--cancel {
