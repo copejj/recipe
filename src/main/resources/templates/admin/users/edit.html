@@ -85,7 +85,7 @@
 
         <!-- THE FUNCTIONAL EXTERNAL ACTION TARGET -->
         <form th:if="${targetUser.publicId != null}" id="deleteUser"
-            th:action="@{/admin/users/delete/{publicId}/roles(publicId=${targetUser.publicId})}" method="post"
+            th:action="@{/admin/users/delete/{publicId}(publicId=${targetUser.publicId})}" method="post"
             class="delete-user-form" style="display: none;">
         </form>
     </main>
