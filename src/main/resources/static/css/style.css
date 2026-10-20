@@ -115,6 +115,12 @@ main {
 
 /* Centralized Small Form Card Layouts (For Login & Registration Only) */
 .auth-layout {
+    max-width: 440px;
+    margin-top: 60px;
+    margin-bottom: 60px;
+}
+
+.other-layout {
     margin-top: 60px;
     margin-bottom: 60px;
 }

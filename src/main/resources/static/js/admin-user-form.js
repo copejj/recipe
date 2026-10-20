@@ -1,4 +1,15 @@
 $(document).ready(function () {
+    $(document).on("mouseenter", ".inline-delete-btn", function () {
+        var $btn = $(this);
+        if ($btn.attr("data-confirmed") === "false") {
+            $btn.css({ "background-color": "#dc3545", "color": "#ffffff" });
+        }
+    }).on("mouseleave", ".inline-delete-btn", function () {
+        var $btn = $(this);
+        if ($btn.attr("data-confirmed") === "false") {
+            $btn.css({ "background-color": "#ffffff", "color": "#dc3545" });
+        }
+    });
 
     // --- STREAMLINED DELETION BLOCK ---
     $(document).on("submit", ".delete-user-form", function (e) {
