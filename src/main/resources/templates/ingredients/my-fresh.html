@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" lang="en">
+
+<head th:replace="~{fragments/layout :: html_head('My Fresh Ingredients')}"></head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <main class="page-card">
+        <div style="margin-bottom: 24px;">
+            <a th:href="@{/dashboard}"
+                style="text-decoration: none; color: var(--color-text-muted); font-size: 0.9rem; font-weight: 600;">←
+                Back to Dashboard</a>
+            <h1 style="margin: 8px 0 4px 0; font-size: 2rem; color: var(--color-text-dark); font-weight: 700;">My Fresh
+                Ingredients Workspace</h1>
+            <p style="margin: 0; color: var(--color-text-muted); font-size: 0.95rem;">Modify and save ingredient
+                properties inline. Changes apply instantly to your pending moderation queue.</p>
+        </div>
+
+        <div th:if="${param.success}"
+            style="background-color: var(--color-success-bg, #d4edda); color: var(--color-success-raw, #28a745); padding: 12px; border-radius: 6px; margin-bottom: 20px; font-weight: 600; border: 1px solid var(--color-success-border, #c3e6cb);">
+            ✓ Ingredient changes saved successfully.
+        </div>
+
+        <div th:if="${#lists.isEmpty(myFreshIngredients)}"
+            style="text-align: center; padding: 40px; border: 1px dashed var(--color-border); border-radius: 8px;">
+            <p style="color: var(--color-text-muted); margin: 0;">You don't have any pending ingredient submissions
+                right now.</p>
+        </div>
+
+        <!-- HIDDEN INDEPENDENT FORM PAYLOAD CONTAINERS BLOCK -->
+        <!-- Renders safe hidden standalone form nodes that don't disrupt table parsers -->
+        <th:block th:each="ing : ${myFreshIngredients}">
+            <form th:id="'form-' + ${ing.ingredientId}" th:action="@{/ingredients/edit/{id}(id=${ing.ingredientId})}"
+                method="post" style="display: none;"></form>
+        </th:block>
+
+        <!-- SECURE STANDARD HTML DATA WORKBOOK -->
+        <div th:if="${not #lists.isEmpty(myFreshIngredients)}" class="table-responsive-wrapper">
+            <table id="myFreshIngredientsTable" style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--color-border); text-align: left;">
+                        <th style="padding: 12px 8px; width: 35%;">Ingredient Name</th>
+                        <th style="padding: 12px 8px; width: 25%;">Classification</th>
+                        <th style="padding: 12px 8px; width: 25%;">Grocery Section Category</th>
+                        <th style="padding: 12px 8px; text-align: right; width: 15%;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="ing : ${myFreshIngredients}"
+                        style="border-bottom: 1px solid var(--color-border); vertical-align: middle;">
+
+                        <!-- FIELD 1: INLINE INGREDIENT NAME INPUT (Linked via form attribute) -->
+                        <td style="padding: 10px 8px;">
+                            <input type="text" name="ingredientName" th:value="${ing.ingredientName}" required
+                                th:form="'form-' + ${ing.ingredientId}" onfocus="this.select()"
+                                style="width: 100%; padding: 8px 10px; border-radius: 4px; border: 1px solid var(--color-border-input, #ccc); font-size: 0.95rem; font-weight: 600; box-sizing: border-box; font-family: inherit; color: var(--color-text-dark);" />
+                        </td>
+
+                        <!-- FIELD 2: INLINE CLASSIFICATION SELECTION -->
+                        <td style="padding: 10px 8px;" data-label="Type:">
+                            <select name="classification" required th:form="'form-' + ${ing.ingredientId}"
+                                style="width: 100%; padding: 8px 10px; border-radius: 4px; border: 1px solid var(--color-border-input, #ccc); font-size: 0.95rem; box-sizing: border-box; font-family: inherit; cursor: pointer; background-color: transparent;">
+                                <option th:each="enumType : ${classifications}" th:value="${enumType.name()}"
+                                    th:text="${enumType.name()}"
+                                    th:selected="${ing.classification != null and enumType.name() == ing.classification.name()}">
+                                </option>
+                            </select>
+                        </td>
+
+                        <!-- FIELD 3: INLINE GROCERY SECTION DROPDOWN -->
+                        <td style="padding: 10px 8px;" data-label="Category:">
+                            <select name="groceryCategoryId" required th:form="'form-' + ${ing.ingredientId}"
+                                style="width: 100%; padding: 8px 10px; border-radius: 4px; border: 1px solid var(--color-border-input, #ccc); font-size: 0.95rem; box-sizing: border-box; font-family: inherit; cursor: pointer; background-color: transparent;">
+                                <option value="">-- Choose Category --</option>
+                                <option th:each="cat : ${groceryCategories}" th:value="${cat.groceryCategoryId}"
+                                    th:text="${cat.categoryName}"
+                                    th:selected="${ing.groceryCategory != null and cat.groceryCategoryId == ing.groceryCategory.groceryCategoryId}">
+                                </option>
+                            </select>
+                        </td>
+
+                        <!-- ACTIONS: ROW CONTEXT CONSOLIDATED SAVE BUTTON -->
+                        <td style="padding: 10px 8px; text-align: right;" class="actions-cell">
+                            <button type="submit" th:form="'form-' + ${ing.ingredientId}" class="btn"
+                                style="display: inline-flex; align-items: center; justify-content: center; height: 32px; padding: 0 16px; box-sizing: border-box; font-size: 0.85rem; font-weight: 700; background-color: var(--color-profile-dark-btn, #333); color: white; border-radius: 6px; border: none; cursor: pointer; font-family: inherit; transition: opacity 0.2s;"
+                                onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                                Save
+                            </button>
+                        </td>
+
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Edge-Safe No-Border Responsive Styling Fallbacks Override -->
+    <style>
+        @media screen and (max-width: 768px) {
+            .page-card div.table-responsive-wrapper table#myFreshIngredientsTable {
+                display: block;
+                width: 100%;
+            }
+
+            .page-card div.table-responsive-wrapper table#myFreshIngredientsTable thead {
+                display: none;
+            }
+
+            .page-card div.table-responsive-wrapper table#myFreshIngredientsTable tbody {
+                display: block;
+                width: 100%;
+            }
+
+            .page-card div.table-responsive-wrapper table#myFreshIngredientsTable tbody tr {
+                display: block;
+                width: 100%;
+                background: transparent;
+                border-bottom: 1px solid var(--color-border, #eee);
+                padding: 16px 4px;
+                box-sizing: border-box;
+            }
+
+            .page-card div.table-responsive-wrapper table#myFreshIngredientsTable tbody td {
+                display: block !important;
+                width: 100% !important;
+                padding: 6px 0 !important;
+                text-align: left !important;
+                border: none !important;
+                box-sizing: border-box;
+            }
+
+            .page-card div.table-responsive-wrapper table#myFreshIngredientsTable tbody td[data-label]::before {
+                content: attr(data-label);
+                font-weight: 700;
+                color: var(--color-text-muted, #777);
+                display: inline-block;
+                width: 95px;
+            }
+
+            .page-card div.table-responsive-wrapper table#myFreshIngredientsTable tbody td.actions-cell {
+                margin-top: 8px;
+                padding-top: 8px;
+            }
+
+            .page-card div.table-responsive-wrapper table#myFreshIngredientsTable .btn {
+                width: 100%;
+                height: 36px;
+            }
+        }
+    </style>
+</body>
+
+</html>
