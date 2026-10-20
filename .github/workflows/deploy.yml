@@ -11,17 +11,71 @@ on:
         default: 'testing'
 
 jobs:
-  deploy-to-production:
+  # --- JOB 1: FAIL FAST BUILD ---
+  build-application:
     runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.determine-tag.outputs.TAG_NAME }}
     steps:
-      - name: Execute Remote Deployment
+      - name: Determine Tag
+        id: determine-tag
+        run: |
+          TAG="${{ github.event.inputs.test_tag || github.event.release.tag_name }}"
+          echo "TAG_NAME=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.test_tag || github.event.release.tag_name }}
+
+      - name: Set up JDK & Maven Environment
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build WAR File
+        run: mvn clean package -DskipTests
+
+      - name: Upload WAR Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: application-war
+          path: target/${{ vars.PROD_APP_NAME }}.war
+
+  # --- JOB 2: DEPLOYMENT & DATABASE ---
+  deploy-to-production:
+    needs: build-application
+    runs-on: ubuntu-latest
+    env:
+      TAG_NAME: ${{ needs.build-application.outputs.tag_name }}
+    steps:
+      - name: Download WAR Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: application-war
+          path: .
+
+      # Transfer the pre-compiled WAR file over to the server target directory safely
+      - name: Copy WAR to Production
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ vars.PROD_HOST }}
+          port: ${{ secrets.SSH_PRIVATE_PORT }}
+          username: ${{ secrets.SSH_PRIVATE_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "${{ vars.PROD_APP_NAME }}.war"
+          target: "${{ vars.PROD_APP_PATH }}/target/"
+
+      - name: Execute Remote Deployment & DB Changes
         uses: appleboy/ssh-action@v1.2.0
         env:
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASS: ${{ secrets.DB_PASS }}
           DB_HOST: ${{ secrets.DB_HOST }}
-          TAG_NAME: ${{ github.event.inputs.test_tag || github.event.release.tag_name }}
+          TAG_NAME: ${{ env.TAG_NAME }}
         with:
           host: ${{ vars.PROD_HOST }}
           port: ${{ secrets.SSH_PRIVATE_PORT }}
@@ -30,10 +84,9 @@ jobs:
           envs: DB_NAME,DB_USER,DB_PASS,DB_HOST,TAG_NAME
           script: |
             CURRENT_STEP="INITIALIZATION"
-            echo "[Step 1/7] --- Starting Deployment for $TAG_NAME ---"
+            echo "[Step 1/6] --- Starting Deployment for $TAG_NAME ---"
             
             GIT_BIN="/usr/bin/git"
-            MVN_BIN="/usr/bin/mvn"
             FIND_BIN="/usr/bin/find"
             
             cd ${{ vars.PROD_APP_PATH }}
@@ -48,43 +101,33 @@ jobs:
               EXIT_CODE=$?
               if [ $EXIT_CODE -ne 0 ]; then
                 echo "!!! ERROR DETECTED in Step: $CURRENT_STEP (Exit Code: $EXIT_CODE) !!!"
-                
                 if [ "$RUN_DB_STEPS" == "true" ] && { [ "$CURRENT_STEP" == "DATABASE_MIGRATION" ] || [ "$CURRENT_STEP" == "DATABASE_BACKUP" ]; }; then
                   echo "Cleaning up staging shadow schema due to failure..."
                   psql $PSQL_ARGS -c "DROP SCHEMA IF EXISTS public_shadow CASCADE;"
                 fi
-                
                 $GIT_BIN checkout .
                 exit $EXIT_CODE
               fi
             }
             trap cleanup_on_failure ERR
 
-            # We must move SOURCE_CHECKOUT up so we can read the incoming tag's SQL migration files
             CURRENT_STEP="SOURCE_CHECKOUT"
-            echo "[Step 2/7] Fetching code for tag: $TAG_NAME"
+            echo "[Step 2/6] Fetching code for tag: $TAG_NAME"
             $GIT_BIN fetch --tags --all
             $GIT_BIN checkout -B "release-$TAG_NAME" "$TAG_NAME"
 
             CURRENT_STEP="DATABASE_EVALUATION"
-            echo "Checking production migration history to determine if database cloning is required..."
-            
-            # Verify if the migrations table even exists in the live 'public' schema yet
+            echo "Checking production migration history..."
             MIGRATIONS_TABLE_EXISTS=$(psql $PSQL_ARGS -A -c "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='schema_migrations';")
             
             if [ "$MIGRATIONS_TABLE_EXISTS" != "1" ]; then
-              echo "The schema_migrations tracking table does not exist in public schema. Forcing full database execution context."
               RUN_DB_STEPS="true"
             else
-              # Gather incoming files and compare directly against live historical entries
               FILES=$($FIND_BIN sql/migrations -regextype posix-extended -regex ".*/[0-9]{8}_[0-9]+.*\.sql" | sort)
               for FILE in $FILES; do
                 FILENAME=$(basename "$FILE")
-                
-                # Check against the operational live public deployment table space metadata tracking records
                 ALREADY_RUN=$(psql $PSQL_ARGS -A -c "SELECT 1 FROM public.schema_migrations WHERE filename='$FILENAME' AND status='completed';")
                 if [ "$ALREADY_RUN" != "1" ]; then
-                  echo "Found unapplied or pending migration: $FILENAME"
                   RUN_DB_STEPS="true"
                   break
                 fi
@@ -93,85 +136,55 @@ jobs:
 
             if [ "$RUN_DB_STEPS" == "true" ]; then
               CURRENT_STEP="DATABASE_BACKUP"
-              echo "[Step 3/7] Changes detected! Preparing isolated shadow schema..."
+              echo "[Step 3/6] Changes detected! Preparing isolated shadow schema..."
               psql $PSQL_ARGS -c "DROP SCHEMA IF EXISTS public_old CASCADE; DROP SCHEMA IF EXISTS public_shadow CASCADE;"
-              
               pg_dump $DUMP_ARGS -n public -f /tmp/live_full_snapshot.sql
               sed -E "/^CREATE SCHEMA/d; s/\bpublic\.([a-zA-Z0-9_]+)/public_shadow.\1/g" /tmp/live_full_snapshot.sql > /tmp/shadow_full_snapshot.sql
               psql $PSQL_ARGS -c "CREATE SCHEMA public_shadow;"
               psql $PSQL_ARGS -f /tmp/shadow_full_snapshot.sql
               psql $PSQL_ARGS -c "ALTER SCHEMA public_shadow OWNER TO $DB_USER;"
               
-              echo "Standardizing cloned table ownership rules..."
               psql $PSQL_ARGS -c "
-                DO \$\$ DECLARE
-                    r RECORD;
-                BEGIN
-                    FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public_shadow') LOOP
-                        EXECUTE 'ALTER TABLE public_shadow.' || quote_ident(r.tablename) || ' OWNER TO $DB_USER;';
-                    END LOOP;
-                    FOR r IN (SELECT sequencename FROM pg_sequences WHERE schemaname = 'public_shadow') LOOP
-                        EXECUTE 'ALTER SEQUENCE public_shadow.' || quote_ident(r.sequencename) || ' OWNER TO $DB_USER;';
-                    END LOOP;
-                END \$\$;
-              "
+                DO \$\$ DECLARE r RECORD; BEGIN
+                    FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public_shadow') LOOP EXECUTE 'ALTER TABLE public_shadow.' || quote_ident(r.tablename) || ' OWNER TO $DB_USER;'; END LOOP;
+                    FOR r IN (SELECT sequencename FROM pg_sequences WHERE schemaname = 'public_shadow') LOOP EXECUTE 'ALTER SEQUENCE public_shadow.' || quote_ident(r.sequencename) || ' OWNER TO $DB_USER;'; END LOOP;
+                END \$\$;"
               rm -f /tmp/live_full_snapshot.sql /tmp/shadow_full_snapshot.sql
-            else
-              echo "[Step 3/7] SKIPPED: Database matches production schema history state perfectly. Leaving database alone."
             fi
 
             if [ "$RUN_DB_STEPS" == "true" ]; then
               CURRENT_STEP="DATABASE_MIGRATION"
-              echo "[Step 4/7] Running database migrations against shadow schema natively..."
-              
+              echo "[Step 4/6] Running database migrations..."
               (echo "SET search_path TO public_shadow;"; cat sql/init_schema.sql) | psql $PSQL_ARGS
 
               FILES=$($FIND_BIN sql/migrations -regextype posix-extended -regex ".*/[0-9]{8}_[0-9]+.*\.sql" | sort)
               for FILE in $FILES; do
                 FILENAME=$(basename "$FILE")
-                
                 ALREADY_RUN=$(psql $PSQL_ARGS -A -c "SELECT 1 FROM public_shadow.schema_migrations WHERE filename='$FILENAME' AND status='completed';")
                 if [ "$ALREADY_RUN" == "1" ]; then continue; fi
                 
-                echo "Executing migration on shadow data natively: $FILENAME"
                 psql $PSQL_ARGS -c "INSERT INTO public_shadow.schema_migrations (filename, status) VALUES ('$FILENAME', 'pending') ON CONFLICT (filename) DO UPDATE SET status='pending', started_at=NOW(), ended_at=NULL;"
-                
                 (echo "SET search_path TO public_shadow;"; cat "$FILE") | psql $PSQL_ARGS
                 psql $PSQL_ARGS -c "UPDATE public_shadow.schema_migrations SET ended_at=NOW(), status='completed' WHERE filename='$FILENAME';"
               done
 
-              echo "Reinforcing application schema access privileges..."
               psql $PSQL_ARGS -c "
                 GRANT USAGE ON SCHEMA public_shadow TO recipe_app_user; 
                 GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE ON ALL TABLES IN SCHEMA public_shadow TO recipe_app_user; 
                 GRANT SELECT, USAGE ON ALL SEQUENCES IN SCHEMA public_shadow TO recipe_app_user;
-              "
-
-              echo "Migrations successful! Performing instant atomic schema swap..."
-              psql $PSQL_ARGS -c "
-                BEGIN;
-                  ALTER SCHEMA public RENAME TO public_old;
-                  ALTER SCHEMA public_shadow RENAME TO public;
-                COMMIT;
-              "
-            else
-              echo "[Step 4/7] SKIPPED: Schema update logic is not required for this revision deployment."
+                BEGIN; ALTER SCHEMA public RENAME TO public_old; ALTER SCHEMA public_shadow RENAME TO public; COMMIT;"
             fi
 
-            CURRENT_STEP="BUILD"
-            echo "[Step 5/7] Building WAR file"
-            $MVN_BIN clean package -DskipTests
-
             CURRENT_STEP="DEPLOYMENT"
-            echo "[Step 6/7] Deploying versioned WAR and triggering isolated context reload..."
+            echo "[Step 5/6] Deploying pre-compiled versioned WAR file..."
             VERSION_NAME="${{ vars.PROD_DEPLOY_NAME }}##${TAG_NAME}.war"
             BUILD_WAR="${{ vars.PROD_APP_PATH }}/target/${{ vars.PROD_APP_NAME }}.war"
-            cp "$BUILD_WAR" "${{ vars.PROD_DEPLOY_PATH }}/$VERSION_NAME"
             
+            cp "$BUILD_WAR" "${{ vars.PROD_DEPLOY_PATH }}/$VERSION_NAME"
             touch "${{ vars.PROD_DEPLOY_PATH }}/$VERSION_NAME"
 
             CURRENT_STEP="FINAL_CLEANUP"
-            echo "[Step 7/7] Cleaning up environment..."
+            echo "[Step 6/6] Cleaning up environment..."
             $GIT_BIN checkout .
-            $MVN_BIN clean
+            rm -f "$BUILD_WAR"
             echo "--- Deployment of $TAG_NAME completed successfully! ---"
