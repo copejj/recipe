@@ -8,8 +8,10 @@
     <!-- Shared Navigation Header Fragment -->
     <div th:replace="~{fragments/layout :: header}"></div>
 
-    <!-- Main Centralized Error Display Card -->
-    <main class="page-card auth-layout" style="text-align: center; margin-top: 80px; margin-bottom: 80px;">
+    <!-- Thymeleaf will dynamically evaluate your developer permission flag and swap out the layout sizing classes on compilation -->
+    <main class="page-card" th:classappend="${showTechnicalDetails} ? 'other-layout' : 'auth-layout'"
+        style="text-align: center; margin-top: 80px; margin-bottom: 80px;">
+
 
         <!-- Large Error Visual Indicator -->
         <div style="font-size: 4rem; font-weight: 800; color: #dc3545; margin-bottom: 10px;" th:text="${errorCode}">
@@ -24,6 +26,51 @@
         <!-- Dynamic Action Navigation Buttons -->
         <div style="display: flex; gap: 12px; justify-content: center;">
             <a th:href="@{/}" class="btn btn--primary" style="width: auto; padding: 10px 24px;">Go Home</a>
+        </div>
+
+        <!-- Admin/Developer Debug Dashboard Fragment -->
+        <!-- This container block is completely hidden from public eyes and won't exist in the HTML if viewed by surface clients -->
+        <div th:if="${showTechnicalDetails}" class="admin-debug-panel"
+            style="text-align: left; background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 1.5rem; margin-top: 2rem; border-radius: 4px; font-family: monospace;">
+
+            <h4
+                style="margin-top: 0; border-bottom: 1px solid #721c24; padding-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                <span>🔒 Admin Debug Dashboard</span>
+                <span
+                    style="font-size: 0.8rem; background: #721c24; color: #fff; padding: 2px 6px; border-radius: 3px;">can_view_errors
+                    active</span>
+            </h4>
+
+            <p><strong>Exception Message:</strong> <span th:text="${errorMessage}">Summary message text...</span>
+            </p>
+
+            <!-- NATIVE ACCORDION CONTEXT TOGGLE -->
+            <!-- The 'details' tag defaults to closed. Clicking the 'summary' acts as your open/close toggle switch automatically -->
+            <details style="margin-top: 1rem; cursor: pointer;">
+
+                <summary
+                    style="font-weight: bold; padding: 0.5rem 0; outline: none; user-select: none; color: #721c24;">
+                    ▶ Click to toggle Terminal Console Stack Trace Dump
+                </summary>
+
+                <!-- THE SCROLLABLE FRAME: Renders beautifully inside the accordion fold -->
+                <pre th:text="${stackTrace}" style="display: block; 
+                            max-height: 350px; 
+                            overflow: auto; 
+                            background-color: #212529; 
+                            color: #f8f9fa; 
+                            padding: 1rem; 
+                            margin-top: 0.5rem;
+                            border-radius: 4px; 
+                            font-size: 0.85rem; 
+                            line-height: 1.4rem; 
+                            white-space: pre; 
+                            word-break: normal; 
+                            cursor: text;
+                            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);">
+                </pre>
+
+            </details>
         </div>
 
     </main>

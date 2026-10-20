@@ -52,9 +52,13 @@
             </table>
         </div>
 
-        <p class="auth-footer-text" style="text-align: left;">
-            <a th:href="@{/admin/users}" class="auth-link">← Back to User Management</a>
-        </p>
+        <div class="form-actions-footer"
+            style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-top: 20px; border-top: 1px solid var(--color-border);">
+
+            <div class="modal-actions-footer" style="display: flex; gap: 12px;">
+                <a th:href="@{/admin/users}" class="btn btn--cancel">Back</a>
+            </div>
+        </div>
 
         <div th:replace="~{fragments/modals :: create_role_modal}"></div>
     </main>

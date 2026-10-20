@@ -74,7 +74,7 @@
                     <button type="submit" class="btn btn--primary btn--submit">Save</button>
                 </div>
 
-                <div th:if="${targetUser.publicId != null}">
+                <div th:if="${canDelete and targetUser.publicId != null}">
                     <button type="submit" form="deleteUser" class="btn inline-delete-btn" data-confirmed="false"
                         style="background-color: #ffffff; color: #dc3545; border: 2px solid #dc3545; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s ease-in-out; font-size: 0.95rem;">
                         Delete

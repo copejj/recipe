@@ -63,8 +63,16 @@ public class UserRoleController {
                 .filter(role -> getRoleRankValue(role.getRoleName()) < loggedInAdminMaxRank)
                 .collect(java.util.stream.Collectors.toList()); // <-- Fixed clean termination point
 
+        // 4. Calculate functional deletion capability flag
+        boolean canDelete = false;
+        if (loggedInUser != null) {
+            canDelete = loggedInUser.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("can_delete_users"));
+        }
+
         model.addAttribute("targetUser", targetUser);
         model.addAttribute("assignableRoles", assignableRoles);
+        model.addAttribute("canDelete", canDelete); // Passed directly to HTML
 
         return "admin/users/edit"; // Points to templates/admin/user-edit.html
     }
