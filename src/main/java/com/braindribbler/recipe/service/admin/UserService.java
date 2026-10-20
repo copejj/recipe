@@ -47,4 +47,19 @@ public class UserService {
         }
         userRepository.deleteByPublicId(publicId);
     }
+
+    /**
+     * Locates a system user by their public UUID.
+     * Throws an IllegalArgumentException if no match is found.
+     */
+    @Transactional(readOnly = true)
+    public User getUserByPublicId(UUID publicId) {
+        if (publicId == null) {
+            throw new IllegalArgumentException("The provided public identifier cannot be null.");
+        }
+
+        return userRepository.findByPublicId(publicId)
+                .orElseThrow(
+                        () -> new IllegalArgumentException("No chef registry record matches identifier: " + publicId));
+    }
 }

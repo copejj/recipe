@@ -30,28 +30,6 @@ public class UserController {
         this.userService = userService;
     }
 
-    /*
-     * @GetMapping
-     * public String showUserManagementDashboard(Model
-     * model, @AuthenticationPrincipal UserDetails loggedInUser) {
-     * List<User> chefs = userRepository.findAll();
-     * 
-     * // Calculate the logged-in admin's highest rank score
-     * int adminMaxRank = 0;
-     * User admin =
-     * userRepository.findByUserAuthEmail(loggedInUser.getUsername()).orElse(null);
-     * if (admin != null && admin.getRoles() != null) {
-     * adminMaxRank = getHighestRoleRank(admin.getRoles());
-     * }
-     * 
-     * model.addAttribute("chefs", chefs);
-     * model.addAttribute("loggedInAdminRank", adminMaxRank); // 🔑 Inject the rank
-     * score into the page context
-     * 
-     * return "admin/users/list"; // Points to templates/admin/users/list.html
-     * }
-     */
-
     @GetMapping
     public String showUserManagementDashboard(Model model, @AuthenticationPrincipal UserDetails loggedInUser) {
         // Delegate all database fetch and calculation logic to the service
@@ -70,12 +48,31 @@ public class UserController {
      */
     @PostMapping("/delete/{publicId}")
     @PreAuthorize("hasAuthority('can_delete_users')")
-    public String deleteUser(@PathVariable("publicId") UUID publicId, RedirectAttributes redirectAttributes) {
+    public String deleteUser(
+            @PathVariable("publicId") UUID publicId,
+            @AuthenticationPrincipal UserDetails loggedInUser,
+            RedirectAttributes redirectAttributes) {
         try {
+            // 1. Calculate active operating authority constraints
+            int adminMaxRank = userService.getHighestRoleRankForUserEmail(loggedInUser.getUsername());
+
+            // 2. Fetch the metadata configuration context of the target account
+            User targetUser = userService.getUserByPublicId(publicId);
+
+            // 3. Defensive Validation: Enforce structural business boundaries
+            if (targetUser.getHighestRoleRankValue() >= adminMaxRank) {
+                redirectAttributes.addFlashAttribute("errorMessage",
+                        "Access Denied: You cannot delete a user with an equal or higher administrative rank tier.");
+                return "redirect:/admin/users";
+            }
+
+            // 4. Safe structural execution path
             userService.deleteUserByPublicId(publicId);
-            redirectAttributes.addFlashAttribute("successMessage", "User deleted successfully.");
+            redirectAttributes.addFlashAttribute("successMessage", "Chef account removed from registry successfully.");
+
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error deleting user: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Error handling data deletion requests: " + e.getMessage());
         }
         return "redirect:/admin/users";
     }
