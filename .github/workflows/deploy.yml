@@ -158,20 +158,48 @@ jobs:
               echo "[Step 3/6] SKIPPED: Database matches production schema history state perfectly. Leaving database alone."
             fi
 
-            if [ "$RUN_DB_STEPS" == "true" ]; then
+                        if [ "$RUN_DB_STEPS" == "true" ]; then
               CURRENT_STEP="DATABASE_MIGRATION"
               echo "[Step 4/6] Running database migrations..."
+              
+              # 1. First Pass: Scan and list out all incoming scripts to be run
+              echo "--------------------------------------------------"
+              echo "Found new scripts:"
+              
+              FILES_FOUND="false"
+              FILES=$($FIND_BIN sql/migrations -regextype posix-extended -regex ".*/[0-9]{8}_[0-9]+.*\.sql" | sort)
+              for FILE in $FILES; do
+                FILENAME=$(basename "$FILE")
+                ALREADY_RUN=$(psql $PSQL_ARGS -A -c "SELECT 1 FROM public.schema_migrations WHERE filename='$FILENAME' AND status='completed';")
+                if [ "$ALREADY_RUN" != "1" ]; then
+                  echo "  -> $FILENAME"
+                  FILES_FOUND="true"
+                fi
+              done
+              
+              if [ "$FILES_FOUND" == "false" ]; then
+                echo "  (None - running base structural schema init rules only)"
+              fi
+              echo "--------------------------------------------------"
+
+              # 2. Execute base layout schemas natively inside the isolated shadow space
+              echo "Initializing core schema layout definitions..."
               (echo "SET search_path TO public_shadow;"; cat sql/init_schema.sql) | psql $PSQL_ARGS
 
-              FILES=$($FIND_BIN sql/migrations -regextype posix-extended -regex ".*/[0-9]{8}_[0-9]+.*\.sql" | sort)
+              # 3. Second Pass: Loop through and execute the unapplied delta files
               for FILE in $FILES; do
                 FILENAME=$(basename "$FILE")
                 ALREADY_RUN=$(psql $PSQL_ARGS -A -c "SELECT 1 FROM public_shadow.schema_migrations WHERE filename='$FILENAME' AND status='completed';")
                 if [ "$ALREADY_RUN" == "1" ]; then continue; fi
                 
+                # Active running log indicator
+                echo "[RUNNING] Executing migration script natively: $FILENAME"
+                
                 psql $PSQL_ARGS -c "INSERT INTO public_shadow.schema_migrations (filename, status) VALUES ('$FILENAME', 'pending') ON CONFLICT (filename) DO UPDATE SET status='pending', started_at=NOW(), ended_at=NULL;"
                 (echo "SET search_path TO public_shadow;"; cat "$FILE") | psql $PSQL_ARGS
                 psql $PSQL_ARGS -c "UPDATE public_shadow.schema_migrations SET ended_at=NOW(), status='completed' WHERE filename='$FILENAME';"
+                
+                echo "[SUCCESS] Completed: $FILENAME"
               done
 
               psql $PSQL_ARGS -c "
@@ -180,7 +208,6 @@ jobs:
                 GRANT SELECT, USAGE ON ALL SEQUENCES IN SCHEMA public_shadow TO recipe_app_user;
                 BEGIN; ALTER SCHEMA public RENAME TO public_old; ALTER SCHEMA public_shadow RENAME TO public; COMMIT;"
             else
-              # RESTORED MESSAGE:
               echo "[Step 4/6] SKIPPED: Schema update logic is not required for this revision deployment."
             fi
 

@@ -1,0 +1,5 @@
+BEGIN;
+
+DROP TABLE IF EXISTS pipeline_test_table CASCADE;
+
+COMMIT;
