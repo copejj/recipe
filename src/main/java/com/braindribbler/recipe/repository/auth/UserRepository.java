@@ -11,6 +11,8 @@ import java.util.UUID;
 public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByPublicId(UUID publicId);
 
+    boolean existsByUserAuthEmail(String email);
+
     @Query("SELECT u FROM User u " +
             "JOIN FETCH u.userAuth ua " +
             "LEFT JOIN FETCH u.roles " +
