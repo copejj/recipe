@@ -1,6 +1,5 @@
 package com.braindribbler.recipe.service.auth;
 
-import com.braindribbler.recipe.domain.auth.Role;
 import com.braindribbler.recipe.repository.auth.RoleRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;

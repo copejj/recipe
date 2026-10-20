@@ -27,6 +27,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.test_tag || github.event.release.tag_name }}
+          # ADD THESE TWO LINES to bring down your repository tag history:
+          fetch-depth: 0
+          fetch-tags: true
 
       - name: Set up JDK & Maven Environment
         uses: actions/setup-java@v4
@@ -36,7 +39,7 @@ jobs:
           cache: 'maven'
 
       - name: Build WAR File
-        run: mvn clean package -DskipTests
+        run: mvn clean package -DskipTests -Dgit.branch="${{ github.event.inputs.test_tag || github.event.release.tag_name }}"
 
       - name: Upload WAR Artifact
         uses: actions/upload-artifact@v4
@@ -150,6 +153,9 @@ jobs:
                     FOR r IN (SELECT sequencename FROM pg_sequences WHERE schemaname = 'public_shadow') LOOP EXECUTE 'ALTER SEQUENCE public_shadow.' || quote_ident(r.sequencename) || ' OWNER TO $DB_USER;'; END LOOP;
                 END \$\$;"
               rm -f /tmp/live_full_snapshot.sql /tmp/shadow_full_snapshot.sql
+            else
+              # RESTORED MESSAGE:
+              echo "[Step 3/6] SKIPPED: Database matches production schema history state perfectly. Leaving database alone."
             fi
 
             if [ "$RUN_DB_STEPS" == "true" ]; then
@@ -173,6 +179,9 @@ jobs:
                 GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE ON ALL TABLES IN SCHEMA public_shadow TO recipe_app_user; 
                 GRANT SELECT, USAGE ON ALL SEQUENCES IN SCHEMA public_shadow TO recipe_app_user;
                 BEGIN; ALTER SCHEMA public RENAME TO public_old; ALTER SCHEMA public_shadow RENAME TO public; COMMIT;"
+            else
+              # RESTORED MESSAGE:
+              echo "[Step 4/6] SKIPPED: Schema update logic is not required for this revision deployment."
             fi
 
             CURRENT_STEP="DEPLOYMENT"

@@ -31,7 +31,7 @@ public class RoleManagementController {
 
     @GetMapping
     public String listRoles(Model model) {
-        model.addAttribute("roles", roleRepository.findAll());
+        model.addAttribute("roles", roleRepository.findAllByOrderByRoleRankDesc());
         model.addAttribute("allPermissions", permissionRepository.findAll());
         return "admin/roles/list";
     }

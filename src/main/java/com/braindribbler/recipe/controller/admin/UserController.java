@@ -1,8 +1,6 @@
 package com.braindribbler.recipe.controller.admin;
 
-import com.braindribbler.recipe.domain.auth.Role;
 import com.braindribbler.recipe.domain.auth.User;
-import com.braindribbler.recipe.repository.auth.UserRepository;
 import com.braindribbler.recipe.service.admin.UserService;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @Controller

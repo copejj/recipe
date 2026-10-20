@@ -4,9 +4,14 @@ import com.braindribbler.recipe.domain.recipe.Measurement;
 import com.braindribbler.recipe.service.recipe.RecipeService;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.info.GitProperties;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 import java.util.HashMap;
@@ -16,8 +21,11 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalAdvice {
 
+    // Thread-safe centralized logger instance for the recipe platform engine
+    private static final Logger logger = LoggerFactory.getLogger(GlobalAdvice.class);
+
     private final GitProperties gitProperties;
-    private final RecipeService recipeService; // Injected data service handle
+    private final RecipeService recipeService;
 
     // Unified constructor handling both dependencies gracefully
     GlobalAdvice(GitProperties gitProperties, RecipeService recipeService) {
@@ -58,10 +66,9 @@ public class GlobalAdvice {
             List<Map<String, Object>> flatMatrix = measurementsPool.stream().map(m -> {
                 Map<String, Object> map = new HashMap<>();
                 map.put("unitName", m.getUnitName());
-                map.put("pluralName", m.getPluralName()); // Already added!
+                map.put("pluralName", m.getPluralName());
 
-                // ADD THIS LINE: Maps your new database floor value into the JavaScript JSON
-                // output array
+                // Maps your new database floor value into the JavaScript JSON output array
                 map.put("minPromotionFloor",
                         m.getMinPromotionFloor() != null ? m.getMinPromotionFloor().doubleValue() : 0.85);
 
@@ -77,5 +84,69 @@ public class GlobalAdvice {
 
             model.addAttribute("globalMeasurementsPool", flatMatrix);
         }
+    }
+
+    /**
+     * Globally catches manual rank violations or Spring Security access checks
+     * across all controllers.
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public String handleGlobalAccessDenied(AccessDeniedException ex, Model model) {
+        // Log as warning since it's an unauthorized client attempt, not a code crash
+        logger.warn("Security boundary infraction caught by global monitor: {}", ex.getMessage());
+
+        model.addAttribute("errorCode", "403");
+        model.addAttribute("errorTitle", "Access Denied");
+        model.addAttribute("errorMessage",
+                "Security Boundary Violation: You do not possess the necessary rank credentials to alter this user registry profile.");
+        model.addAttribute("showTechnicalDetails", false); // Keep 403s simple on-screen
+
+        return "error"; // Resolves to templates/error.html
+    }
+
+    /**
+     * Globally catches deep server infrastructure breaks (such as failing database
+     * lookups,
+     * null pointer bugs, or cascade constraint failures).
+     */
+    @ExceptionHandler(Exception.class)
+    public String handleGlobalBackendCrashes(Exception ex, Authentication authentication, Model model) {
+        // Capture the full structural trace stack context safely within the
+        // infrastructure logs
+        logger.error("CRITICAL ENGINE FAULT INTERCEPTED: ", ex);
+
+        model.addAttribute("errorCode", "500");
+        model.addAttribute("errorTitle", "Kitchen System Failure");
+
+        boolean isDeveloper = false;
+        if (authentication != null) {
+            // Assess authority pool dynamically for your developer viewing permission
+            // string
+            isDeveloper = authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("can_view_errors"));
+        }
+
+        if (isDeveloper) {
+            // Personnel in the developer role group get to see technical debugging strings
+            // directly in UI
+            model.addAttribute("errorMessage",
+                    "Developer Diagnostics [" + ex.getClass().getSimpleName() + "]: " + ex.getMessage());
+            model.addAttribute("showTechnicalDetails", true);
+
+            // EXTRACT THE FULL STACK TRACE LOG AS A STRING:
+            java.io.StringWriter sw = new java.io.StringWriter();
+            java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+            ex.printStackTrace(pw);
+            String fullTraceText = sw.toString();
+
+            model.addAttribute("stackTrace", fullTraceText); // Sent straight to Thymeleaf
+        } else {
+            // Public standard accounts receive clean, secure error templates
+            model.addAttribute("errorMessage",
+                    "Our kitchen server encountered an unexpected breakdown inside the recipe data core. Engineers have been logged into the terminal to investigate.");
+            model.addAttribute("showTechnicalDetails", false);
+        }
+
+        return "error"; // Resolves to templates/error.html
     }
 }
