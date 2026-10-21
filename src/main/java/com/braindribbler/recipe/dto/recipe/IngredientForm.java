@@ -7,6 +7,25 @@ public class IngredientForm {
     private Integer measurementId;
     private BigDecimal amount;
     private String ingredientNote;
+    private boolean isVerified;
+
+    public boolean isVerified() {
+        return isVerified;
+    }
+
+    public void setVerified(boolean isVerified) {
+        this.isVerified = isVerified;
+    }
+
+    private Integer createdByUserId;
+
+    public Integer getCreatedByUserId() {
+        return createdByUserId;
+    }
+
+    public void setCreatedByUserId(Integer createdByUserId) {
+        this.createdByUserId = createdByUserId;
+    }
 
     public IngredientForm() {
     }

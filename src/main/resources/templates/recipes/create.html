@@ -220,14 +220,43 @@
             </div>
 
             <!-- Kitchen Unit Track (Classification) Selector -->
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label for="quickIngredientClassification"
-                    style="display: block; margin-bottom: 5px; font-weight: bold;">Ingredient Classification:</label>
-                <select id="quickIngredientClassification" class="form-input" style="width: 100%;" required>
-                    <!-- Separates the programmatic name from the readable text description -->
-                    <option th:each="enumType : ${classifications}" th:value="${enumType.name()}"
-                        th:text="${enumType.name() + ' (' + enumType.description + ')'}"></option>
-                </select>
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--color-text-dark);">
+                    Ingredient Type & Sizing Rules:
+                </label>
+
+                <!-- Hidden input to bind the value for the form submission seamlessly -->
+                <input type="hidden" id="quickIngredientClassification" name="classification" value="SOLID" />
+
+                <!-- Visual Interactive Grid Option Blocks -->
+                <div class="classification-selector-grid"
+                    style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+
+                    <!-- SOLID SELECTION BLOCK -->
+                    <button type="button" class="class-selector-card active" data-value="SOLID"
+                        style="border: 2px solid #198754; background: #f4fbf7; padding: 0.75rem; border-radius: 6px; text-align: left; cursor: pointer; transition: all 0.2s;">
+                        <div style="font-weight: bold; color: #198754; margin-bottom: 4px;">SOLID</div>
+                        <div style="font-size: 0.75rem; color: #555; line-height: 1rem;">Whole amounts, count variables,
+                            slices, pieces, cloves, packages.</div>
+                    </button>
+
+                    <!-- WET SELECTION BLOCK -->
+                    <button type="button" class="class-selector-card" data-value="WET"
+                        style="border: 2px solid #dee2e6; background: #fff; padding: 0.75rem; border-radius: 6px; text-align: left; cursor: pointer; transition: all 0.2s;">
+                        <div style="font-weight: bold; color: #0dcaf0; margin-bottom: 4px;">WET / LIQUID</div>
+                        <div style="font-size: 0.75rem; color: #555; line-height: 1rem;">Fluids using Cups, Teaspoons,
+                            Pints, Quarts, Gallons, Fluid Ounces.</div>
+                    </button>
+
+                    <!-- DRY SELECTION BLOCK -->
+                    <button type="button" class="class-selector-card" data-value="DRY"
+                        style="border: 2px solid #dee2e6; background: #fff; padding: 0.75rem; border-radius: 6px; text-align: left; cursor: pointer; transition: all 0.2s;">
+                        <div style="font-weight: bold; color: #ffc107; margin-bottom: 4px;">DRY VOLUME</div>
+                        <div style="font-size: 0.75rem; color: #555; line-height: 1rem;">Powders, spices, or grains
+                            using Teaspoons, Tablespoons, Cups, Pounds.</div>
+                    </button>
+
+                </div>
             </div>
 
             <!-- Grocery Category Selection Dropdown Field -->

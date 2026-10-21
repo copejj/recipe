@@ -89,9 +89,71 @@ $(document).ready(function () {
         activeSelectDropdown = $(this).siblings(".ingredients-container").find(".ingredient-row:last-child select").first();
         $("#quickIngredientName").val("");
         $("#quickGroceryCategoryId").val("");
-        $("#quickIngredientClassification").val("SOLID"); // Reset dropdown state to SOLID default
+
+        // Reset interactive cards layout back to SOLID defaults on load
+        $("#quickIngredientClassification").val("SOLID");
+        $(".class-selector-card").removeClass("active").css({ "border-color": "#dee2e6", "background": "#ffffff" });
+        $('.class-selector-card[data-value="SOLID"]').addClass("active").css({ "border-color": "#198754", "background": "#f4fbf7" });
+
         $("#modal-feedback-msg").hide().text("");
         if (modal) modal.showModal();
+    });
+
+    // Using $(document).on ensures dynamically cloned or repainted buttons respond instantly!
+    $(document).on("click", ".open-inline-edit-btn", function () {
+        var $btn = $(this);
+        var targetId = $btn.data("id");
+
+        // Safety Guard: If the row is brand new and has no ID yet, alert the user to choose an item
+        if (!targetId || targetId === "") {
+            // Find the closest select dropdown value in this row to see if they picked something
+            targetId = $btn.closest(".ingredient-row").find("select").first().val();
+        }
+
+        if (!targetId || targetId === "") {
+            showToast("Please select an ingredient from the dropdown list before editing.", false);
+            return;
+        }
+
+        var inlineModal = document.getElementById("inlineEditIngredientModal");
+        $rowSelectDropdownToSync = $btn.closest(".ingredient-row").find("select").first();
+
+        // Perform the standard asynchronous GET fetch request
+        $.ajax({
+            url: "/ingredients/edit/" + targetId,
+            type: "GET",
+            headers: { "X-Requested-With": "XMLHttpRequest" }, // Tells your controller to return the small fragment
+            success: function (htmlSnippet) {
+                $("#inline-edit-loading-anchor").html(htmlSnippet);
+                if (inlineModal) inlineModal.showModal();
+            },
+            error: function (xhr) {
+                console.error("Modal Fetch Failed:", xhr.status);
+                showToast("Could not open the editor panel. Ensure the ingredient belongs to you.", false);
+            }
+        });
+    });
+
+    // Handle interactive selection card clicks inside the popup window grid
+    $(document).on("click", ".class-selector-card", function (e) {
+        e.preventDefault();
+        var $clickedCard = $(this);
+        var chosenValue = $clickedCard.data("value");
+
+        // Sync configuration state with hidden form input value field
+        $("#quickIngredientClassification").val(chosenValue);
+
+        // Reset all cards styling rules to default
+        $(".class-selector-card").css({ "border-color": "#dee2e6", "background": "#ffffff" });
+
+        // Apply highlighted focus properties depending on active choice category tracks
+        if (chosenValue === "SOLID") {
+            $clickedCard.css({ "border-color": "#198754", "background": "#f4fbf7" });
+        } else if (chosenValue === "WET") {
+            $clickedCard.css({ "border-color": "#0dcaf0", "background": "#f0faff" });
+        } else if (chosenValue === "DRY") {
+            $clickedCard.css({ "border-color": "#ffc107", "background": "#fffdf2" });
+        }
     });
 
     $("#closeQuickIngBtn").click(function () {

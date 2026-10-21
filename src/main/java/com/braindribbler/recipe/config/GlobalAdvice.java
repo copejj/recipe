@@ -87,6 +87,28 @@ public class GlobalAdvice {
     }
 
     /**
+     * Catches harmless 404 missing resource exceptions (like favicon.ico or
+     * chrome-devtools requests)
+     * and handles them cleanly without flooding terminal screens with 500 error
+     * stack traces.
+     */
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public String handleMissingStaticResources(org.springframework.web.servlet.resource.NoResourceFoundException ex,
+            Model model) {
+        // Log as a light trace warning text message instead of a loud structural error
+        // dump
+        logger.warn("Static resource routing missed: {}", ex.getMessage());
+
+        model.addAttribute("errorCode", "404");
+        model.addAttribute("errorTitle", "Resource Not Found");
+        model.addAttribute("errorMessage",
+                "The specific static asset, file, or image path requested could not be located on the server.");
+        model.addAttribute("showTechnicalDetails", false);
+
+        return "error"; // Directs to templates/error.html
+    }
+
+    /**
      * Globally catches manual rank violations or Spring Security access checks
      * across all controllers.
      */

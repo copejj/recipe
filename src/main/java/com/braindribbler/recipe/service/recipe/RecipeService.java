@@ -163,6 +163,12 @@ public class RecipeService {
                         inf.setMeasurementId(
                                 si.getMeasurement() != null ? si.getMeasurement().getMeasurementId() : null);
                         inf.setIngredientNote(si.getIngredientNote());
+
+                        if (si.getIngredient() != null) {
+                            inf.setVerified(si.getIngredient().getIsVerified());
+                            inf.setCreatedByUserId(si.getIngredient().getCreatedByUserId());
+                        }
+
                         sf.getIngredients().add(inf);
                     }
                 }
