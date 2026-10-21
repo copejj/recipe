@@ -89,41 +89,80 @@ public class IngredientController {
     }
 
     @GetMapping("/edit/{id}")
-    public String editMyFreshIngredientForm(@PathVariable("id") Integer id, Model model,
+    public String editMyFreshIngredientForm(@PathVariable("id") Integer id,
+            @RequestHeader(value = "X-Requested-With", required = false) String requestedWith,
+            Model model,
             @AuthenticationPrincipal RecipeUserDetails currentUser) {
+
         if (currentUser == null)
             return "redirect:/login";
 
         Ingredient ingredient = ingredientService.getIngredientById(id);
 
-        // Security Check: Only allow if unverified AND owned by the requester
-        if (ingredient.getIsVerified()
-                || !ingredient.getCreatedByUserId().equals(currentUser.getUserProfile().getUserId())) {
+        Integer authorId = ingredient.getCreatedByUserId();
+        Integer loggedInUid = currentUser.getUserProfile().getUserId();
+
+        if (ingredient.getIsVerified() || authorId == null || !authorId.equals(loggedInUid)) {
+            if ("XMLHttpRequest".equals(requestedWith)) {
+                throw new org.springframework.security.access.AccessDeniedException(
+                        "You do not own this ingredient record.");
+            }
             return "redirect:/search?unauthorized";
         }
 
-        // Fetch grocery categories pool to populate the dropdown selection form
-        List<GroceryCategory> categories = ingredientService.getAllGroceryCategories();
-
+        // Fetch your reference layout arrays
         model.addAttribute("ingredient", ingredient);
-        model.addAttribute("categories", categories);
-        return "ingredients/edit";
+        model.addAttribute("categories", ingredientService.getAllGroceryCategories());
+
+        // --- FIXED PATHWAYS MATCHING YOUR TEMPLATES DIRECTORY ---
+        if ("XMLHttpRequest".equals(requestedWith)) {
+            // Points cleanly to templates/ingredients/my-fresh.html and pulls out your form
+            // sub-fragment
+            return "ingredients/my-fresh :: modalEditForm";
+        }
+
+        // Standard fallback path if an admin browses to the URL outside the modal loop
+        return "ingredients/my-fresh";
     }
 
-    // 3. POST: Save the updated ingredient name and classification updates securely
+    /**
+     * Reuses your core data-update method for BOTH standard browser loops and
+     * asynchronous AJAX requests.
+     * Maps to: POST /ingredients/edit/{id}
+     */
     @PostMapping("/edit/{id}")
-    public String updateMyFreshIngredient(@PathVariable("id") Integer id,
+    public ResponseEntity<?> updateMyFreshIngredient(@PathVariable("id") Integer id,
             @RequestParam("ingredientName") String name,
             @RequestParam("groceryCategoryId") Integer categoryId,
             @RequestParam("classification") String classification,
+            @RequestHeader(value = "X-Requested-With", required = false) String requestedWith, // Detects AJAX calls
             @AuthenticationPrincipal RecipeUserDetails currentUser) {
-        if (currentUser == null)
-            return "redirect:/login";
 
-        ingredientService.updateUserSubmittedIngredient(id, name, categoryId, classification,
-                currentUser.getUserProfile().getUserId());
+        if (currentUser == null) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Session expired."));
+        }
 
-        return "redirect:/ingredients/my-fresh?success";
+        try {
+            // Run your existing service validation and updates seamlessly
+            ingredientService.updateUserSubmittedIngredient(id, name, categoryId, classification,
+                    currentUser.getUserProfile().getUserId());
+
+            // --- REUSABLE RESPONDER ROUTING LINK ---
+            if ("XMLHttpRequest".equals(requestedWith)) {
+                // If it's an AJAX post from the modal loop, pass clean JSON back to the
+                // JavaScript engine
+                return ResponseEntity.ok(Map.of(
+                        "success", true,
+                        "ingredientId", id,
+                        "ingredientName", name,
+                        "classification", classification.toUpperCase()));
+            }
+
+            // Fallback for standard standalone form submissions
+            return ResponseEntity.status(302).header("Location", "/ingredients/my-fresh?success").build();
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        }
     }
-
 }

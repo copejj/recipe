@@ -8,8 +8,6 @@ public class StepForm {
     private List<IngredientForm> ingredients = new ArrayList<>();
 
     public StepForm() {
-        // Initialize with one blank ingredient entry per step
-        this.ingredients.add(new IngredientForm());
     }
 
     // Getters and Setters...

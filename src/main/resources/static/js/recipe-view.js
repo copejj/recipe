@@ -108,15 +108,23 @@ $(document).ready(function () {
                     return m.baseTypeId === baseTypeId && m.isMetric === targetMetricFlag;
                 });
 
-                // Dry backing tracks ignore specific larger fluid items
-                if (baseTypeId === 1 && classification === "DRY") {
-                    var restrictedIds = [4, 6, 7, 9]; // fl oz, pt, qt, gal
+                // --- ROBUST CLASSIFICATION-DRIVEN FILTERING ---
+                // Prevents dry ingredients from accessing liquid volume units dynamically
+                if (classification === "DRY") {
+                    // Filter down to units explicitly configured for dry scaling (Teaspoon, Tablespoon, Cup)
+                    // This dynamically removes Pints, Quarts, Gallons, and Fluid Ounces regardless of database IDs
                     candidates = candidates.filter(function (m) {
-                        return !restrictedIds.includes(m.measurementId);
+                        var nameLower = m.unitName.toLowerCase();
+                        return nameLower.includes("teaspoon") ||
+                            nameLower.includes("tablespoon") ||
+                            nameLower.includes("cup");
                     });
+                } else if (classification === "WET") {
+                    // Wet ingredients should also gracefully restrict dry-exclusive scaling steps if required
+                    // Otherwise they retain access to teaspoons, cups, pints, quarts, gallons
                 }
 
-                // Sort largest unit rank descending
+                // Sort largest unit rank descending (Gallon -> Quart -> Pint -> Cup -> Tbsp -> Tsp)
                 candidates.sort(function (a, b) { return b.scalingRank - a.scalingRank; });
 
                 // Find baseline fallback matching system
