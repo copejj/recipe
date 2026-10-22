@@ -24,7 +24,7 @@ jobs:
           echo "TAG_NAME=$TAG" >> $GITHUB_OUTPUT
 
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
         with:
           ref: ${{ github.event.inputs.test_tag || github.event.release.tag_name }}
           fetch-depth: 0
@@ -41,7 +41,7 @@ jobs:
         run: mvn clean package -DskipTests -Dgit.branch="${{ github.event.inputs.test_tag || github.event.release.tag_name }}"
 
       - name: Upload WAR Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.4.3
         with:
           name: application-war
           path: target/${{ vars.PROD_APP_NAME }}.war
@@ -53,7 +53,7 @@ jobs:
       TAG_NAME: ${{ needs.build-application.outputs.tag_name }}
     steps:
       - name: Download WAR Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4.1.8
         with:
           name: application-war
           path: .
