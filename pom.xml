@@ -134,6 +134,11 @@
 				</executions>
 				<configuration>
 					<generateGitPropertiesFile>true</generateGitPropertiesFile>
+					<!-- CRITICAL ADDITIONS BELOW: -->
+					<generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+					<failOnNoGitDirectory>false</failOnNoGitDirectory>
+					<injectAllReactorProjects>true</injectAllReactorProjects>
+					<skipPoms>false</skipPoms>
 				</configuration>
 			</plugin>
 		</plugins>
