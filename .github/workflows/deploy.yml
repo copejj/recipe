@@ -1,9 +1,9 @@
-name: Production Deployment
+name: Secure Build and Shadow DB Migration Deploy
 
 on:
   release:
     types: [published]
-  workflow_dispatch:
+  workflow_dispatch: 
     inputs:
       test_tag:
         description: 'Tag to use for testing (e.g. v1.0.0-test)'
@@ -11,7 +11,7 @@ on:
         default: 'testing'
 
 jobs:
-  # --- JOB 1: FAIL FAST BUILD ---
+  # --- JOB 1: SECURE CLOUD COMPILATION (OFF-SERVER) ---
   build-application:
     runs-on: ubuntu-24.04
     outputs:
@@ -30,6 +30,12 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - name: Extract Short Hash and Clean Version
+        id: git-info
+        run: |
+          # Get the 7-character short hash
+          echo "SHORT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
       - name: Set up JDK & Maven Environment
         uses: actions/setup-java@v5
         with:
@@ -37,29 +43,33 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Build WAR File
-        run: mvn clean package -DskipTests -Dgit.branch="${{ github.event.inputs.test_tag || github.event.release.tag_name }}"
+      - name: Build WAR File Off-Server
+        # Injects version tags directly into Thymeleaf variables
+        run: |
+          mvn clean package -DskipTests \
+            -Dgit.branch="${{ steps.determine-tag.outputs.TAG_NAME }}" \
+            -Dgit.commit.id.abbrev="${{ steps.git-info.outputs.SHORT_HASH }}"
 
-      - name: Upload WAR Artifact
+      - name: Upload WAR Artifact to GitHub Cloud
         uses: actions/upload-artifact@v4.4.3
         with:
-          name: application-war
+          name: deployment-war-package
           path: target/${{ vars.PROD_APP_NAME }}.war
-  # --- JOB 2: DEPLOYMENT & DATABASE ---
+  # --- JOB 2: REMOTE DEPLOYMENT & SHADOW DB MIGRATIONS ---
   deploy-to-production:
     needs: build-application
     runs-on: ubuntu-24.04
     env:
       TAG_NAME: ${{ needs.build-application.outputs.tag_name }}
     steps:
-      - name: Download WAR Artifact
+      - name: Download Pre-Built WAR Artifact
         uses: actions/download-artifact@v4.1.8
         with:
-          name: application-war
+          name: deployment-war-package
           path: .
 
-      # Transfer the pre-compiled WAR file over to the server target directory safely
-      - name: Copy WAR to Production
+      # Securely transfer the asset over without compiling anything on your target environment
+      - name: Copy WAR over to Server Target Staging Path
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ vars.PROD_HOST }}
@@ -69,7 +79,7 @@ jobs:
           source: "${{ vars.PROD_APP_NAME }}.war"
           target: "${{ vars.PROD_APP_PATH }}/target/"
 
-      - name: Execute Remote Deployment & DB Changes
+      - name: Execute Zero-Downtime Deployment & DB Migration
         uses: appleboy/ssh-action@v1.2.0
         env:
           DB_NAME: ${{ secrets.DB_NAME }}
@@ -85,7 +95,7 @@ jobs:
           envs: DB_NAME,DB_USER,DB_PASS,DB_HOST,TAG_NAME
           script: |
             CURRENT_STEP="INITIALIZATION"
-            echo "[Step 1/6] --- Starting Deployment for $TAG_NAME ---"
+            echo "[Step 1/6] --- Starting Safe Deployment Flow for $TAG_NAME ---"
             
             GIT_BIN="/usr/bin/git"
             FIND_BIN="/usr/bin/find"
@@ -134,7 +144,7 @@ jobs:
                 fi
               done
             fi
-                        if [ "$RUN_DB_STEPS" == "true" ]; then
+            if [ "$RUN_DB_STEPS" == "true" ]; then
               CURRENT_STEP="DATABASE_BACKUP"
               echo "[Step 3/6] Changes detected! Preparing isolated shadow schema..."
               psql $PSQL_ARGS -c "DROP SCHEMA IF EXISTS public_old CASCADE; DROP SCHEMA IF EXISTS public_shadow CASCADE;"
@@ -216,4 +226,3 @@ jobs:
             $GIT_BIN checkout .
             rm -f "$BUILD_WAR"
             echo "--- Deployment of $TAG_NAME completed successfully! ---"
-
