@@ -13,7 +13,7 @@ on:
 jobs:
   # --- JOB 1: FAIL FAST BUILD ---
   build-application:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       tag_name: ${{ steps.determine-tag.outputs.TAG_NAME }}
     steps:
@@ -27,12 +27,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.test_tag || github.event.release.tag_name }}
-          # ADD THESE TWO LINES to bring down your repository tag history:
           fetch-depth: 0
           fetch-tags: true
 
       - name: Set up JDK & Maven Environment
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'
@@ -46,11 +45,10 @@ jobs:
         with:
           name: application-war
           path: target/${{ vars.PROD_APP_NAME }}.war
-
   # --- JOB 2: DEPLOYMENT & DATABASE ---
   deploy-to-production:
     needs: build-application
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       TAG_NAME: ${{ needs.build-application.outputs.tag_name }}
     steps:
@@ -136,8 +134,7 @@ jobs:
                 fi
               done
             fi
-
-            if [ "$RUN_DB_STEPS" == "true" ]; then
+                        if [ "$RUN_DB_STEPS" == "true" ]; then
               CURRENT_STEP="DATABASE_BACKUP"
               echo "[Step 3/6] Changes detected! Preparing isolated shadow schema..."
               psql $PSQL_ARGS -c "DROP SCHEMA IF EXISTS public_old CASCADE; DROP SCHEMA IF EXISTS public_shadow CASCADE;"
@@ -154,15 +151,13 @@ jobs:
                 END \$\$;"
               rm -f /tmp/live_full_snapshot.sql /tmp/shadow_full_snapshot.sql
             else
-              # RESTORED MESSAGE:
               echo "[Step 3/6] SKIPPED: Database matches production schema history state perfectly. Leaving database alone."
             fi
 
-                        if [ "$RUN_DB_STEPS" == "true" ]; then
+            if [ "$RUN_DB_STEPS" == "true" ]; then
               CURRENT_STEP="DATABASE_MIGRATION"
               echo "[Step 4/6] Running database migrations..."
               
-              # 1. First Pass: Scan and list out all incoming scripts to be run
               echo "--------------------------------------------------"
               echo "Found new scripts:"
               
@@ -182,17 +177,14 @@ jobs:
               fi
               echo "--------------------------------------------------"
 
-              # 2. Execute base layout schemas natively inside the isolated shadow space
               echo "Initializing core schema layout definitions..."
               (echo "SET search_path TO public_shadow;"; cat sql/init_schema.sql) | psql $PSQL_ARGS
 
-              # 3. Second Pass: Loop through and execute the unapplied delta files
               for FILE in $FILES; do
                 FILENAME=$(basename "$FILE")
                 ALREADY_RUN=$(psql $PSQL_ARGS -A -c "SELECT 1 FROM public_shadow.schema_migrations WHERE filename='$FILENAME' AND status='completed';")
                 if [ "$ALREADY_RUN" == "1" ]; then continue; fi
                 
-                # Active running log indicator
                 echo "[RUNNING] Executing migration script natively: $FILENAME"
                 
                 psql $PSQL_ARGS -c "INSERT INTO public_shadow.schema_migrations (filename, status) VALUES ('$FILENAME', 'pending') ON CONFLICT (filename) DO UPDATE SET status='pending', started_at=NOW(), ended_at=NULL;"
@@ -224,3 +216,4 @@ jobs:
             $GIT_BIN checkout .
             rm -f "$BUILD_WAR"
             echo "--- Deployment of $TAG_NAME completed successfully! ---"
+
