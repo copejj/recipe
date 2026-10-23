@@ -87,14 +87,14 @@ jobs:
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASS: ${{ secrets.DB_PASS }}
           DB_HOST: ${{ secrets.DB_HOST }}
-          APP_USER: ${{ secrets.DB_APP_USER }} # 🔒 Secret username injected into the environment
+          APP_USER: ${{ secrets.DB_APP_USER }}
           TAG_NAME: ${{ env.TAG_NAME }}
         with:
           host: ${{ vars.PROD_HOST }}
           port: ${{ secrets.SSH_PRIVATE_PORT }}
           username: ${{ secrets.SSH_PRIVATE_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: DB_NAME,DB_USER,DB_PASS,DB_HOST,APP_USER,TAG_NAME # 🏷️ Envs array updated to pass APP_USER
+          envs: DB_NAME,DB_USER,DB_PASS,DB_HOST,APP_USER,TAG_NAME
           script: |
             CURRENT_STEP="INITIALIZATION"
             echo "[Step 1/6] --- Starting Safe Deployment Flow for $TAG_NAME ---"
