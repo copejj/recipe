@@ -24,7 +24,7 @@ jobs:
           echo "TAG_NAME=$TAG" >> $GITHUB_OUTPUT
 
       - name: Checkout Code
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.test_tag || github.event.release.tag_name }}
           fetch-depth: 0
@@ -87,14 +87,14 @@ jobs:
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASS: ${{ secrets.DB_PASS }}
           DB_HOST: ${{ secrets.DB_HOST }}
-          APP_USER: ${{ secrets.DB_APP_USER }}
+          APP_USER: ${{ secrets.DB_APP_USER }} 
           TAG_NAME: ${{ env.TAG_NAME }}
         with:
           host: ${{ vars.PROD_HOST }}
           port: ${{ secrets.SSH_PRIVATE_PORT }}
           username: ${{ secrets.SSH_PRIVATE_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: DB_NAME,DB_USER,DB_PASS,DB_HOST,APP_USER,TAG_NAME
+          envs: DB_NAME,DB_USER,DB_PASS,DB_HOST,APP_USER,TAG_NAME 
           script: |
             CURRENT_STEP="INITIALIZATION"
             echo "[Step 1/6] --- Starting Safe Deployment Flow for $TAG_NAME ---"
