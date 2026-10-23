@@ -291,8 +291,12 @@ public class RecipeService {
             return Collections.emptyList();
         }
 
-        boolean isLoggedIn = (loggedInUser != null);
-        Integer currentUserId = isLoggedIn ? loggedInUser.getUserId() : null;
+        boolean isLoggedIn = false;
+        Integer currentUserId = null;
+        if (loggedInUser != null) {
+            isLoggedIn = true;
+            currentUserId = loggedInUser.getUserId();
+        }
 
         // References your ingredient density lookup method
         return recipeRepository.searchRecipesByIngredientsList(ingredientIds, isLoggedIn, currentUserId);
@@ -305,8 +309,12 @@ public class RecipeService {
     @Transactional(readOnly = true)
     public List<Recipe> getGeneralBrowsingPool(User loggedInUser) {
 
-        boolean isLoggedIn = (loggedInUser != null);
-        Integer currentUserId = isLoggedIn ? loggedInUser.getUserId() : null;
+        boolean isLoggedIn = false;
+        Integer currentUserId = null;
+        if (loggedInUser != null) {
+            isLoggedIn = true;
+            currentUserId = loggedInUser.getUserId();
+        }
 
         // FIXED: Pointing directly to your clean visibility query method
         return recipeRepository.findAllPublicOrOwned(isLoggedIn, currentUserId);

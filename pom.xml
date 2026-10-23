@@ -5,8 +5,8 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.0.2</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<version>4.1.2</version>
+		<relativePath/> 
 	</parent>
 	<groupId>com.braindribbler</groupId>
 	<artifactId>recipe</artifactId>
@@ -130,15 +130,19 @@
 						<goals>
 							<goal>revision</goal>
 						</goals>
+						<phase>initialize</phase>
 					</execution>
 				</executions>
 				<configuration>
 					<generateGitPropertiesFile>true</generateGitPropertiesFile>
-					<!-- CRITICAL ADDITIONS BELOW: -->
 					<generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
 					<failOnNoGitDirectory>false</failOnNoGitDirectory>
 					<injectAllReactorProjects>true</injectAllReactorProjects>
 					<skipPoms>false</skipPoms>
+					<gitDescribe>
+						<tags>true</tags>
+					</gitDescribe>
+					<useBranchNameFromBuildEnvironment>false</useBranchNameFromBuildEnvironment>
 				</configuration>
 			</plugin>
 		</plugins>

@@ -1,7 +1,6 @@
 package com.braindribbler.recipe.controller.recipe;
 
 import com.braindribbler.recipe.domain.auth.User;
-import com.braindribbler.recipe.domain.recipe.GroceryCategory;
 import com.braindribbler.recipe.domain.recipe.Ingredient;
 import com.braindribbler.recipe.domain.recipe.IngredientClassification;
 import com.braindribbler.recipe.security.RecipeUserDetails;

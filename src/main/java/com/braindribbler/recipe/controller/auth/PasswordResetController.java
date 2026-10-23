@@ -6,12 +6,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.UUID;
 
 @Controller
+@RequestMapping("/password") // Extracts the common parent path
 public class PasswordResetController {
 
     private final PasswordManagementService passwordService;
@@ -23,14 +25,14 @@ public class PasswordResetController {
         this.passwordService = passwordService;
     }
 
-    // 1. Display Forgot Password Request Form
-    @GetMapping("/password/forgot")
+    // 1. Display Forgot Password Request Form -> Maps to /password/forgot
+    @GetMapping("/forgot")
     public String showForgotPasswordForm() {
         return "auth/password/forgot";
     }
 
-    // 2. Process Request and Dispatch Email safely
-    @PostMapping("/password/forgot")
+    // 2. Process Request and Dispatch Email safely -> Maps to /password/forgot
+    @PostMapping("/forgot")
     public String handleForgotPassword(@RequestParam("email") String email, RedirectAttributes redirectAttributes) {
         // Runs the transactional generation and safely try-catches the Mailgun engine
         passwordService.initiatePasswordReset(email, appApiHost);
@@ -39,18 +41,19 @@ public class PasswordResetController {
         // enumeration sniffing
         redirectAttributes.addFlashAttribute("successMessage",
                 "If an account matches that address, a secure reset link has been dispatched to your inbox.");
-        return "redirect:/password/forgot";
+        return "redirect:/password/forgot"; // Keeping your full redirect path intact
     }
 
-    // 3. Display Reset Password Form (Landing page from Mailgun URL link click)
-    @GetMapping("/password/reset")
+    // 3. Display Reset Password Form -> Maps to /password/reset
+    @GetMapping("/reset")
     public String showResetPasswordForm(@RequestParam("token") UUID token, Model model) {
         model.addAttribute("token", token);
         return "auth/password/reset";
     }
 
-    // 4. Process Form Payload and Commit New Password Hash
-    @PostMapping("/password/reset")
+    // 4. Process Form Payload and Commit New Password Hash -> Maps to
+    // /password/reset
+    @PostMapping("/reset")
     public String handleResetPassword(@RequestParam("token") UUID token,
             @RequestParam("password") String password,
             @RequestParam("confirmPassword") String confirmPassword,
@@ -74,7 +77,7 @@ public class PasswordResetController {
         if (!success) {
             redirectAttributes.addFlashAttribute("errorMessage",
                     "The recovery link is invalid or has expired. Please request a new one.");
-            return "redirect:/password/forgot";
+            return "redirect:/password/forgot"; // Keeping your full redirect path intact
         }
 
         redirectAttributes.addFlashAttribute("success", "true"); // Passes param.success payload cleanly into login view

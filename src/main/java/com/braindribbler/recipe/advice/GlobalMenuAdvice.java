@@ -1,4 +1,4 @@
-package com.braindribbler.recipe.controller.auth;
+package com.braindribbler.recipe.advice;
 
 import com.braindribbler.recipe.domain.auth.MenuItem;
 import org.springframework.security.core.Authentication;
@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
-public class GlobalNavigationAdvice {
+public class GlobalMenuAdvice {
 
     @ModelAttribute("globalMenuItems")
     public List<MenuItem> addGlobalMenuToModel() {
@@ -74,31 +74,5 @@ public class GlobalNavigationAdvice {
         }
 
         return menuItems;
-    }
-
-    /**
-     * Extracts the custom display name field from the authenticated principal.
-     */
-    private String resolveDisplayName(Authentication auth) {
-        Object principal = auth.getPrincipal();
-
-        // 1. Direct match with your RecipeUserDetails class
-        if (principal instanceof com.braindribbler.recipe.security.RecipeUserDetails recipeUser) {
-            if (recipeUser.getUserProfile() != null) {
-                return recipeUser.getUserProfile().getDisplayName();
-            }
-        }
-
-        // 2. Fallback to standard UserDetails username if structured differently
-        if (principal instanceof org.springframework.security.core.userdetails.UserDetails userDetails) {
-            return userDetails.getUsername();
-        }
-
-        // 3. Absolute bare-minimum fallback string
-        if (auth.getName() != null && !auth.getName().isEmpty()) {
-            return auth.getName();
-        }
-
-        return "My Account";
     }
 }

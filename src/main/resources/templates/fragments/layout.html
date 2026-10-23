@@ -64,10 +64,13 @@
     <!-- Unified Footer Fragment -->
     <footer th:fragment="footer" class="main-footer">
         <div class="footer-container">
-            <p>&copy; 2026 Braindribbler Recipes. All rights reserved.</p>
-            <p th:if="${showGitInfo}" class="footer-git-info">
-                Version: <span th:text="${gitBranch}">main</span> (<span th:text="${gitHash}">abcdefg</span>)
+            <p>&copy; <span th:text="${#temporals.year(#temporals.createNow())}">2024</span>
+                Brain Dribbler Recipes. All rights reserved.
             </p>
+        </div>
+        <p th:if="${showGitInfo}" class="footer-git-info">
+            Version: <span th:text="${gitBranch}">main</span> (<span th:text="${gitHash}">abcd123</span>)
+        </p>
         </div>
     </footer>
 
