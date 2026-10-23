@@ -1,11 +1,13 @@
 package com.braindribbler.recipe.advice;
 
+import com.braindribbler.recipe.config.EnvironmentConfig;
 import com.braindribbler.recipe.domain.recipe.Measurement;
 import com.braindribbler.recipe.service.recipe.RecipeService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.info.GitProperties;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -23,6 +25,9 @@ import java.util.Map;
 @ControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class GlobalAdvice {
+
+    @Value("${app.config.environment}")
+    private EnvironmentConfig currentEnv;
 
     // Thread-safe centralized logger instance for the recipe platform engine
     private static final Logger logger = LoggerFactory.getLogger(GlobalAdvice.class);
@@ -44,13 +49,26 @@ public class GlobalAdvice {
             String branch = gitProperties.getBranch();
             String fullHash = gitProperties.get("commit.id");
             String shortHash = gitProperties.getShortCommitId();
+            String describe = gitProperties.get("commit.id.describe");
 
-            String displayVersion;
+            String displayVersion = "Unknown";
 
-            if (branch != null && branch.equals(fullHash)) {
-                displayVersion = (tag != null && !tag.isEmpty()) ? tag : shortHash;
+            if (currentEnv == EnvironmentConfig.DEV) {
+                // --- LOCAL DEV SUITE ROUTING ---
+                if (branch != null && !branch.isEmpty() && !branch.equals(fullHash)) {
+                    displayVersion = branch; // Force your branch name (e.g., version-info)
+                } else if (shortHash != null && !shortHash.isEmpty()) {
+                    displayVersion = shortHash; // Fallback to short hash if detached
+                }
             } else {
-                displayVersion = (branch != null) ? branch : "unknown";
+                // --- NON DEV SUITE ROUTING ---
+                if (tag != null && !tag.isEmpty()) {
+                    displayVersion = tag; // Always prioritize the release tag (e.g., v1.1.86)
+                } else if (describe != null && !describe.isEmpty()) {
+                    displayVersion = describe; // Fall back to the full describe pattern
+                } else {
+                    displayVersion = shortHash; // Ultimate production safety fallback
+                }
             }
 
             model.addAttribute("gitBranch", displayVersion);

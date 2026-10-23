@@ -130,15 +130,19 @@
 						<goals>
 							<goal>revision</goal>
 						</goals>
+						<phase>initialize</phase>
 					</execution>
 				</executions>
 				<configuration>
 					<generateGitPropertiesFile>true</generateGitPropertiesFile>
-					<!-- CRITICAL ADDITIONS BELOW: -->
 					<generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
 					<failOnNoGitDirectory>false</failOnNoGitDirectory>
 					<injectAllReactorProjects>true</injectAllReactorProjects>
 					<skipPoms>false</skipPoms>
+					<gitDescribe>
+						<tags>true</tags>
+					</gitDescribe>
+					<useBranchNameFromBuildEnvironment>false</useBranchNameFromBuildEnvironment>
 				</configuration>
 			</plugin>
 		</plugins>
