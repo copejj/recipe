@@ -1,4 +1,4 @@
-package com.braindribbler.recipe.config;
+package com.braindribbler.recipe.advice;
 
 import com.braindribbler.recipe.domain.recipe.Measurement;
 import com.braindribbler.recipe.service.recipe.RecipeService;
@@ -7,6 +7,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.info.GitProperties;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.ui.Model;
@@ -19,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 @ControllerAdvice
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class GlobalAdvice {
 
     // Thread-safe centralized logger instance for the recipe platform engine
@@ -34,7 +37,8 @@ public class GlobalAdvice {
     }
 
     @ModelAttribute
-    public void addBuildVersionToModel(Model model) {
+    public void addSiteInfo(Model model) {
+
         if (gitProperties != null) {
             String tag = gitProperties.get("closest.tag.name");
             String branch = gitProperties.getBranch();
