@@ -44,14 +44,15 @@ jobs:
           cache: 'maven'
 
       - name: Build WAR File Off-Server
-        # Injects version tags directly into Thymeleaf variables
         run: |
           mvn clean package -DskipTests \
             -Dgit.branch="${{ steps.determine-tag.outputs.TAG_NAME }}" \
-            -Dgit.commit.id.abbrev="${{ steps.git-info.outputs.SHORT_HASH }}"
+            -Dgit.commit.id.abbrev="${{ steps.git-info.outputs.SHORT_HASH }}" \
+            -Dgit.closest.tag.name="${{ steps.determine-tag.outputs.TAG_NAME }}" \
+            -Dgit.commit.id.describe="${{ steps.determine-tag.outputs.TAG_NAME }}"
 
       - name: Upload WAR Artifact to GitHub Cloud
-        uses: actions/upload-artifact@v4.4.3
+        uses: actions/upload-artifact@v6
         with:
           name: deployment-war-package
           path: target/${{ vars.PROD_APP_NAME }}.war
@@ -62,8 +63,8 @@ jobs:
     env:
       TAG_NAME: ${{ needs.build-application.outputs.tag_name }}
     steps:
-      - name: Download Pre-Built WAR Artifact
-        uses: actions/download-artifact@v4.1.8
+      - name: Download Artifacts
+        uses: actions/download-artifact@v7
         with:
           name: deployment-war-package
           path: .
@@ -86,13 +87,14 @@ jobs:
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASS: ${{ secrets.DB_PASS }}
           DB_HOST: ${{ secrets.DB_HOST }}
+          APP_USER: ${{ secrets.DB_APP_USER }} # 🔒 Secret username injected into the environment
           TAG_NAME: ${{ env.TAG_NAME }}
         with:
           host: ${{ vars.PROD_HOST }}
           port: ${{ secrets.SSH_PRIVATE_PORT }}
           username: ${{ secrets.SSH_PRIVATE_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: DB_NAME,DB_USER,DB_PASS,DB_HOST,TAG_NAME
+          envs: DB_NAME,DB_USER,DB_PASS,DB_HOST,APP_USER,TAG_NAME # 🏷️ Envs array updated to pass APP_USER
           script: |
             CURRENT_STEP="INITIALIZATION"
             echo "[Step 1/6] --- Starting Safe Deployment Flow for $TAG_NAME ---"
@@ -204,10 +206,11 @@ jobs:
                 echo "[SUCCESS] Completed: $FILENAME"
               done
 
+              # Using the new $APP_USER system environment variable safely inside PostgreSQL
               psql $PSQL_ARGS -c "
-                GRANT USAGE ON SCHEMA public_shadow TO recipe_app_user; 
-                GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE ON ALL TABLES IN SCHEMA public_shadow TO recipe_app_user; 
-                GRANT SELECT, USAGE ON ALL SEQUENCES IN SCHEMA public_shadow TO recipe_app_user;
+                GRANT USAGE ON SCHEMA public_shadow TO $APP_USER; 
+                GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE ON ALL TABLES IN SCHEMA public_shadow TO $APP_USER; 
+                GRANT SELECT, USAGE ON ALL SEQUENCES IN SCHEMA public_shadow TO $APP_USER;
                 BEGIN; ALTER SCHEMA public RENAME TO public_old; ALTER SCHEMA public_shadow RENAME TO public; COMMIT;"
             else
               echo "[Step 4/6] SKIPPED: Schema update logic is not required for this revision deployment."
