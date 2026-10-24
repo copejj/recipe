@@ -52,10 +52,11 @@ jobs:
             -Dgit.commit.id.describe="${{ steps.determine-tag.outputs.TAG_NAME }}"
 
       - name: Upload WAR Artifact to GitHub Cloud
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: deployment-war-package
-          path: target/${{ vars.PROD_APP_NAME }}.war
+          path: target/*.war 
+
   # --- JOB 2: REMOTE DEPLOYMENT & SHADOW DB MIGRATIONS ---
   deploy-to-production:
     needs: build-application
@@ -64,7 +65,7 @@ jobs:
       TAG_NAME: ${{ needs.build-application.outputs.tag_name }}
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: deployment-war-package
           path: .
