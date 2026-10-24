@@ -52,10 +52,11 @@ jobs:
             -Dgit.commit.id.describe="${{ steps.determine-tag.outputs.TAG_NAME }}"
 
       - name: Upload WAR Artifact to GitHub Cloud
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: deployment-war-package
-          path: target/${{ vars.PROD_APP_NAME }}.war
+          path: target/*.war 
+
   # --- JOB 2: REMOTE DEPLOYMENT & SHADOW DB MIGRATIONS ---
   deploy-to-production:
     needs: build-application
@@ -64,7 +65,7 @@ jobs:
       TAG_NAME: ${{ needs.build-application.outputs.tag_name }}
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: deployment-war-package
           path: .
@@ -216,7 +217,7 @@ jobs:
               echo "[Step 4/6] SKIPPED: Schema update logic is not required for this revision deployment."
             fi
 
-            CURRENT_STEP="DEPLOYMENT"
+            CURRENT_STEP="TOMCAT DEPLOYMENT"
             echo "[Step 5/6] Deploying pre-compiled versioned WAR file..."
             VERSION_NAME="${{ vars.PROD_DEPLOY_NAME }}##${TAG_NAME}.war"
             BUILD_WAR="${{ vars.PROD_APP_PATH }}/target/${{ vars.PROD_APP_NAME }}.war"
