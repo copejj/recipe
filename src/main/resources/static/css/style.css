@@ -1614,3 +1614,132 @@ nav.header-nav span.dropdown-caret {
     transition: transform 0.2s ease;
     /* Preps the arrow if you want to flip it on open */
 }
+
+/* Threat Blacklist Dashboard Actions & Control Blocks */
+.blacklist-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 14px;
+}
+
+.blacklist-table th,
+.blacklist-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: middle;
+
+    /* --- NEW: Enforces clean text breaking strictly on word spaces --- */
+    white-space: normal;
+    word-break: keep-all;
+    /* Prevents breaking words in the middle of a string */
+    overflow-wrap: break-word;
+    /* Gracefully drops long text blocks to a new line on spaces */
+}
+
+.blacklist-actions-cell {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.blacklist-btn-action {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 4px;
+    text-decoration: none !important;
+    text-align: center;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s ease-in-out;
+    white-space: nowrap;
+}
+
+.blacklist-btn-edit {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.blacklist-btn-edit:hover {
+    background: #bae6fd;
+}
+
+.blacklist-btn-delete {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.blacklist-btn-delete:hover {
+    background: #fecaca;
+}
+
+/* ==========================================================================
+   Media Query: Mobile Breakpoints Layout Re-shaping (Under 768px)
+   ========================================================================== */
+@media screen and (max-width: 768px) {
+
+    /* --- NEW: Force Action buttons to wrap vertically under each other --- */
+    .blacklist-actions-cell {
+        flex-direction: column;
+        /* Switches layout axis from side-by-side to stacked */
+        align-items: stretch;
+        /* Spreads buttons out to occupy identical mobile column boundaries */
+        gap: 6px;
+        /* Provides a comfortable touch-target separation path vertical gap */
+        width: 100%;
+    }
+
+    .blacklist-btn-action {
+        padding: 8px 10px;
+        font-size: 11px;
+        text-align: center;
+        width: 100%;
+        /* Forces buttons to match width when stacked */
+        box-sizing: border-box;
+    }
+}
+
+/* Primary Action Control Buttons */
+.blacklist-btn-primary {
+    display: inline-block;
+    background: #dc2626;
+    /* Crimson alert red for immediate recognition */
+    color: #ffffff !important;
+    /* Forces crisp white text over any layout constraints */
+    text-decoration: none !important;
+    /* Scrubs away standard text underlines */
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 4px;
+    border: none;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    white-space: nowrap;
+}
+
+.blacklist-btn-primary:hover {
+    background: #b91c1c;
+    /* Darker red on hover */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.blacklist-btn-primary:active {
+    background: #991b1b;
+    /* Deepest pressed red configuration */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Ensure it spans the entire container block comfortably when viewed on mobile phones */
+@media screen and (max-width: 768px) {
+    .blacklist-btn-primary {
+        width: 100%;
+        padding: 12px 14px;
+        /* Slightly larger tap area for phone screens */
+        box-sizing: border-box;
+    }
+}

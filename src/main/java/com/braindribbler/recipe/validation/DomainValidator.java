@@ -1,15 +1,16 @@
 package com.braindribbler.recipe.validation;
 
-import com.braindribbler.recipe.repository.auth.BlacklistedDomainRepository;
+import com.braindribbler.recipe.repository.auth.BlacklistRepository;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
 public class DomainValidator implements ConstraintValidator<ValidDomain, String> {
 
-    private final BlacklistedDomainRepository domainRepository;
+    private final BlacklistRepository blacklistRepository;
 
-    DomainValidator(BlacklistedDomainRepository domainRepository) {
-        this.domainRepository = domainRepository;
+    // Updated constructor variable naming scheme to match your generic structure
+    DomainValidator(BlacklistRepository blacklistRepository) {
+        this.blacklistRepository = blacklistRepository;
     }
 
     @Override
@@ -20,13 +21,16 @@ public class DomainValidator implements ConstraintValidator<ValidDomain, String>
 
         String lowerCaseEmail = email.toLowerCase().trim();
 
-        // Extract the domain part after the @ symbol
+        // Basic syntax routing gatekeeper check
         if (!lowerCaseEmail.contains("@")) {
             return false;
         }
-        String domain = lowerCaseEmail.substring(lowerCaseEmail.indexOf("@") + 1);
 
-        // Instantly verify against live database records
-        return !domainRepository.existsByDomainName(domain);
+        // Extract the domain part after the @ symbol
+        String domain = lowerCaseEmail.substring(lowerCaseEmail.indexOf("@") + 1).trim();
+
+        // Instantly verify if the extracted domain pattern is blacklisted
+        // This invokes your refactored existsByPattern() method cleanly
+        return !blacklistRepository.existsByPattern(domain);
     }
 }
