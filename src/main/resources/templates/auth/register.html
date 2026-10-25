@@ -58,6 +58,12 @@
                 </div>
             </div>
 
+            <!-- Honeypot Security Trap (Invisible to humans, irresistible to bots) -->
+            <div style="display: none !important;" aria-hidden="true">
+                <label for="website">Please leave this field entirely blank:</label>
+                <input type="text" id="website" name="website" autocomplete="off" tabindex="-1" value="" />
+            </div>
+
             <!-- Execution Processing Control -->
             <button type="submit" class="btn btn--primary">Sign Up</button>
 
