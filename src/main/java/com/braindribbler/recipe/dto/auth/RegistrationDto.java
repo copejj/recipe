@@ -1,5 +1,7 @@
 package com.braindribbler.recipe.dto.auth;
 
+import com.braindribbler.recipe.validation.ValidDomain;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -8,6 +10,7 @@ public class RegistrationDto {
 
     @NotBlank(message = "Email address is required.")
     @Email(message = "Please enter a valid email address.")
+    @ValidDomain
     private String email;
 
     @NotBlank(message = "Password is required.")
