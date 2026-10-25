@@ -8,6 +8,8 @@ import jakarta.validation.Valid;
 
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class AuthController {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
     private final UserRegistrationService userRegistrationService;
 
     public AuthController(UserRegistrationService userRegistrationService) {
@@ -42,16 +45,27 @@ public class AuthController {
     public String registerUserAccount(
             @Valid @ModelAttribute("registrationDto") RegistrationDto registrationDto,
             BindingResult result,
+            @RequestParam(value = "website", required = false) String honeypot,
             Model model) {
 
-        // 1. If any JSR-303 field validation criteria fail, instantly reject and return
-        // the form
+        // 1. Honeypot check: If the hidden 'website' field contains data, drop the
+        // request instantly.
+        // We mock a successful registration redirect to trick the script into believing
+        // it passed.
+        if (honeypot != null && !honeypot.isBlank()) {
+            log.warn("Honeypot triggered! Suppressed automated registration attempt from address: {}",
+                    registrationDto.getEmail());
+            return "redirect:/login?success";
+        }
+
+        // 2. If any JSR-303 field validation criteria fail (including @ValidDomain),
+        // instantly reject and return the form
         if (result.hasErrors()) {
             return "auth/register";
         }
 
         try {
-            // 2. Map DTO input strings directly to your core service transaction layer
+            // 3. Map DTO input strings directly to your core service transaction layer
             User newUser = userRegistrationService.registerNewUser(
                     registrationDto.getEmail(),
                     registrationDto.getPassword(),
@@ -63,14 +77,15 @@ public class AuthController {
 
             userRegistrationService.sendVerificationEmail(newUser);
 
-            // 3. Redirect back to login with a URL success flag
+            // 4. Redirect back to login with a URL success flag
             return "redirect:/login?success";
 
         } catch (IllegalArgumentException e) {
-            // 4. Catch domain errors (like duplicate emails) and bind them back as global
+            // 5. Catch domain errors (like duplicate emails) and bind them back as global
             // form fields
             result.rejectValue("email", "error.registrationDto", e.getMessage());
-            return "register";
+            return "auth/register"; // Fixed minor typo here from "register" to ensure it hits your correct
+                                    // subdirectory path
         }
     }
 
