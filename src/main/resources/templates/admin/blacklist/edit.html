@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org" lang="en">
+
+<head th:replace="~{fragments/layout :: html_head('Threat Entry Workspace - Braindribbler')}"></head>
+
+<body>
+    <!-- Shared Navigation Header Fragment -->
+    <div th:replace="~{fragments/layout :: header}"></div>
+
+    <main class="page-card">
+        <!-- FIXED: Re-added matching system titles infrastructure classes -->
+        <h1 class="page-title"
+            th:text="${itemId == 0} ? 'Register New Blacklist Threat Rule' : 'Modify Security Blacklist Entry'">Threat
+            Workspace</h1>
+        <p class="page-subtitle">Configure strict application protection protocols to shield database queries and system
+            interfaces from malicious agents.</p>
+
+        <form th:action="@{/admin/blacklist/save}" th:object="${item}" method="POST"
+            style="display: flex; gap: 30px; flex-wrap: wrap; margin-top: 30px;">
+
+            <input type="hidden" name="itemId" th:value="${itemId}" />
+            <input type="hidden" th:field="*{id}" />
+
+            <!-- LEFT COLUMN: Input Control Box -->
+            <div
+                style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 6px; border: 1px solid #e2e8f0; height: fit-content;">
+                <div style="margin-bottom: 20px;">
+                    <label
+                        style="display:block; font-weight:600; margin-bottom:8px; font-size:14px; color:#475569;">Target
+                        Threat Pattern</label>
+                    <input type="text" th:field="*{pattern}" required placeholder="e.g. 198.12.69.94 or badbot.info"
+                        style="width:100%; box-sizing: border-box; padding:10px; border-radius:4px; border:1px solid #cbd5e1; font-size:14px;" />
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label
+                        style="display:block; font-weight:600; margin-bottom:8px; font-size:14px; color:#475569;">Enforcement
+                        Reason / Notes</label>
+                    <input type="text" th:field="*{reason}"
+                        placeholder="e.g. Credential stuffing probes logged on login page"
+                        style="width:100%; box-sizing: border-box; padding:10px; border-radius:4px; border:1px solid #cbd5e1; font-size:14px;" />
+                </div>
+
+                <div style="display:flex; gap:15px; margin-top:30px;">
+                    <button type="submit" class="blacklist-btn-add"
+                        th:style="${itemId == 0} ? 'background:#dc2626; padding:10px 16px; color:white; border:none; border-radius:4px; font-weight:600; cursor:pointer;' : 'background:#2563eb; padding:10px 16px; color:white; border:none; border-radius:4px; font-weight:600; cursor:pointer;'"
+                        th:text="${itemId == 0} ? 'Ban Target Pattern' : 'Save Changes'">Save Threat</button>
+                    <a th:href="@{/admin/blacklist}"
+                        style="padding:10px 14px; background:#e2e8f0; color:#334155; text-decoration:none; border-radius:4px; font-weight:600; font-size:14px;">Cancel</a>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: Documentation Panel -->
+            <div
+                style="width: 380px; background: #f8fafc; padding: 25px; border-radius: 6px; border: 1px solid #cbd5e1; box-sizing: border-box;">
+                <h3
+                    style="margin-top: 0; color: #0f172a; font-size: 16px; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px;">
+                    Ban Formatting Documentation</h3>
+                <p style="font-size: 13px; color: #475569; line-height: 1.5;">The security firewall engine dynamically
+                    parses entries based on syntax configuration formatting rules:</p>
+
+                <ul style="padding-left: 20px; font-size: 13px; color: #334155; line-height: 1.8;">
+                    <li><strong>Single IP Address:</strong> Enter literal numeric targets (e.g.,
+                        <code>198.12.69.94</code>). Used by filters to instantly drop requests from that machine.</li>
+                    <li><strong>Network Subnet Range:</strong> Append CIDR notations (e.g.,
+                        <code>198.46.154.0/23</code>). Blocks large chunks of rotating adjacent server addresses owned
+                        by budget hosts.</li>
+                    <li><strong>Email Domains:</strong> Input clean root strings (e.g., <code>formtests.info</code>).
+                        Utilized by <code>DomainValidator</code> during user account signups to block spam boxes.</li>
+                </ul>
+
+                <div
+                    style="margin-top: 15px; padding: 10px; background: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 4px;">
+                    <span
+                        style="font-size: 11px; font-weight: bold; color: #b45309; text-transform: uppercase; display: block; margin-bottom: 2px;">Automated
+                        Rule Logging</span>
+                    <p style="margin: 0; font-size: 12px; color: #78350f;">The type categorization badge string ("IP",
+                        "SUBNET", "DOMAIN") will be calculated automatically by the server upon submission.</p>
+                </div>
+            </div>
+        </form>
+    </main>
+
+    <!-- Shared Footer Fragment -->
+    <div th:replace="~{fragments/layout :: footer}"></div>
+</body>
+
+</html>

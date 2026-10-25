@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
+
+<!-- This fragment executes and establishes your browser window tab title text parameters -->
+
+<head th:replace="~{fragments/layout :: html_head('Malicious Threat Blacklist Registry - Braindribbler')}"></head>
+
+<body style="overflow-x: hidden; width: 100%; margin: 0; padding: 0;">
+    <!-- Shared Navigation Header Fragment -->
+    <div th:replace="~{fragments/layout :: header}"></div>
+
+    <!-- Anchored onto page-card to pull down your unified application spacing definitions -->
+    <main class="page-card">
+
+        <div
+            style="display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; flex-wrap: wrap; margin-bottom: 25px; margin-top: 20px;">
+            <p class="page-subtitle" style="margin: 0; max-width: 700px;">
+                Manage global server firewall security exceptions, block compromised router IP blocks, and intercept
+                automated registration spam networks.
+            </p>
+            <a th:target="_self" th:href="@{/admin/blacklist/add}" class="blacklist-btn-primary">+ Add New Entry</a>
+        </div>
+
+        <!-- Administrative Management Data Table Grid -->
+        <div class="admin-table-wrapper">
+            <table class="blacklist-table">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Action</th>
+                        <th style="width: 35%;">Pattern Block</th>
+                        <th style="width: 15%;">Target Type</th>
+                        <th class="blacklist-col-reason" style="width: 25%;">Enforcement Reason</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="item : ${blacklist}">
+                        <td class="blacklist-actions-cell">
+                            <a class="blacklist-btn-action blacklist-btn-edit"
+                                th:href="@{/admin/blacklist/edit/{id}(id=${item.id})}">Edit</a>
+                            <form th:action="@{/admin/blacklist/delete/{id}(id=${item.id})}" method="POST"
+                                style="margin:0; padding:0;"
+                                onsubmit="return confirm('Are you sure you want to remove this restriction rule?');">
+                                <button type="submit" class="blacklist-btn-action blacklist-btn-delete">Lift</button>
+                            </form>
+                        </td>
+                        <td><strong th:text="${item.pattern}">198.12.69.94</strong></td>
+                        <td>
+                            <span th:text="${item.type}"
+                                th:class="'blacklist-badge blacklist-badge-' + ${#strings.toLowerCase(item.type)}">IP</span>
+                        </td>
+                        <td class="blacklist-col-reason"
+                            th:text="${item.reason != null && !item.reason.blank} ? ${item.reason} : 'No details provided'">
+                            Reason notes</td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(blacklist)}">
+                        <td colspan="4" style="text-align: center; color: #64748b; padding: 30px;">No threats currently
+                            blacklisted in the system database registry.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Shared Footer Fragment -->
+    <div th:replace="~{fragments/layout :: footer}"></div>
+</body>
+
+</html>

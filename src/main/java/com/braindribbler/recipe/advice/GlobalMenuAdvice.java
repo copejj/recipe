@@ -54,6 +54,7 @@ public class GlobalMenuAdvice {
 
             if (authorities.contains("can_manage_users")) {
                 adminChildren.add(new MenuItem("Users Panel", "/admin/users"));
+                adminChildren.add(new MenuItem("Blacklist Panel", "/admin/blacklist"));
                 adminChildren.add(new MenuItem("Login History", "/admin/login-history"));
             }
             if (authorities.contains("can_manage_roles")) {
