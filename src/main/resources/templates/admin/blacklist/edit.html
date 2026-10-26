@@ -36,7 +36,6 @@
 
                 <div class="form-actions-group">
                     <th:block th:replace="~{fragments/actions :: saveBtn(itemId=${itemId})}"></th:block>
-
                     <a th:replace="~{fragments/actions :: cancelLink(targetUrl=@{/admin/blacklist})}"></a>
                 </div>
             </div>
@@ -70,7 +69,7 @@
 
     <!-- Shared Footer Fragment -->
     <div th:replace="~{fragments/layout :: footer}"></div>
-    <link rel="stylesheet" type="text/css" th:href="@{/css/admin/blacklist.css}" />
+    <link rel="stylesheet" type="text/css" th:href="@{/css/admin/edit.css}" />
 </body>
 
 </html>

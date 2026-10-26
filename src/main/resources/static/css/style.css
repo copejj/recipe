@@ -1743,3 +1743,29 @@ nav.header-nav span.dropdown-caret {
         box-sizing: border-box;
     }
 }
+
+/* Custom table actions padding alignment indicators */
+.matrix-col-actions {
+    text-align: left;
+}
+
+/* Consolidated matrix view footer panel spacing blocks */
+.form-actions-footer {
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding-top: 20px;
+    border-top: 1px solid var(--color-border, #e2e8f0);
+}
+
+.modal-actions-footer {
+    display: flex;
+    gap: 12px;
+}
+
+/* Center alignment utility hook */
+.text-center {
+    text-align: center;
+}

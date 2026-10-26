@@ -50,3 +50,41 @@
     background-color: var(--color-danger, #e74c3c);
     color: #ffffff;
 }
+
+/* Shared layout for all specialized action buttons */
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 4px;
+    text-decoration: none;
+    height: 34px;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* Primary blue update variant */
+.btn-action--primary {
+    background-color: #2563eb;
+    color: #ffffff;
+    border: 1px solid transparent;
+}
+
+.btn-action--primary:hover {
+    background-color: #1d4ed8;
+}
+
+/* Neutral grey cancel variant */
+.btn-action--cancel {
+    background-color: #e2e8f0;
+    color: #334155;
+    border: 1px solid transparent;
+}
+
+.btn-action--cancel:hover {
+    background-color: #cbd5e1;
+}

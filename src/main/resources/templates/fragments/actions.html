@@ -30,6 +30,12 @@
         Delete
     </button>
 
+    <!-- Delete Confirm Button -->
+    <button th:fragment="deleteCfmBtn(formId)" type="submit" th:form="${formId}" data-confirmed="false"
+        class="btn btn-action btn-action--delete inline-delete-btn">
+        Delete
+    </button>
+
     <!-- Locked Badge -->
     <span th:fragment="lockedBadge" class="badge-locked">
         Locked
