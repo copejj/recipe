@@ -53,8 +53,7 @@ public class GroceryCategoryManagementController {
         return "redirect:/admin/categories?updated=true";
     }
 
-    // FIXED: Uses standard spring data repository methods to delete by ID safely
-    @GetMapping("/delete/{id}")
+    @PostMapping("/delete/{id}")
     public String removeCategory(@PathVariable("id") Integer id) {
         try {
             groceryCategoryService.deleteCategory(id);
