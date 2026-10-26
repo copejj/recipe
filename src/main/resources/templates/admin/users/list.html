@@ -16,10 +16,6 @@
         <!-- Administrative Management Data Table Grid -->
         <div class="admin-table-wrapper">
 
-            <!-- 
-               THE FIX: We pass the table structure directly inline. 
-               This completely protects ${item} fields from early evaluation!
-            -->
             <div th:replace="~{fragments/datatable :: genericTable(
                 tableId='chefRegistryTable',
                 dataList=${chefs},

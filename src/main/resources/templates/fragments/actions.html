@@ -44,6 +44,23 @@
         Cancel
     </a>
 
+    <!-- Unpublish / Retract Button -->
+    <button th:fragment="unpublishBtn(targetFormId)" type="submit" th:form="${targetFormId}"
+        class="btn-action btn-action--cancel">
+        Unpublish
+    </button>
+
+    <!-- Unpublish Confirmation Button Component with Dynamic Message -->
+    <button th:fragment="unpublishConfBtn(targetFormId, confirmMessage)" type="submit" th:form="${targetFormId}"
+        class="btn-action btn-action--cancel" th:onclick="return confirm([[${confirmMessage}]]);">
+        Unpublish
+    </button>
+
+    <!-- Delete Confirmation Button Component with Dynamic Message -->
+    <button th:fragment="deleteConfBtn(targetFormId, confirmMessage)" type="submit" th:form="${targetFormId}"
+        class="btn btn-action btn-action--delete" th:onclick="return confirm([[${confirmMessage}]]);">
+        Delete
+    </button>
 
 </body>
 
