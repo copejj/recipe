@@ -107,12 +107,8 @@
                             th:data-href="@{/view/{publicId}(publicId=${recipe.publicId})}" style="cursor: pointer;">
 
                             <td style="text-align: center; vertical-align: middle;">
-                                <!-- Explicit View button for PC/Mac visibility -->
-                                <a th:href="@{/view/{publicId}(publicId=${recipe.publicId})}"
-                                    class="btn btn--primary btn-view"
-                                    style="padding: 6px 12px; font-size: 0.85rem; width: auto; text-decoration: none; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; height: 32px; box-sizing: border-box;">
-                                    View
-                                </a>
+                                <a
+                                    th:replace="~{fragments/actions :: viewLink(targetUrl=@{/view/{publicId}(publicId=${recipe.publicId})})}"></a>
                             </td>
 
                             <td>
