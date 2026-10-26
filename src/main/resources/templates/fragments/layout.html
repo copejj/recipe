@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0/css/select2.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0/js/select2.min.js"></script>
 
+    <link rel="stylesheet" type="text/css" th:href="@{/css/fragments/actions.css}" />
 </head>
 
 <body>
@@ -27,29 +28,21 @@
             </h3>
 
             <nav class="header-nav">
-                <!-- Loop through the globally provided list -->
                 <th:block th:each="item : ${globalMenuItems}">
-
-                    <!-- If item has child links, render it as a Dropdown Menu Block -->
                     <div class="nav-dropdown" th:if="${item.hasChildren()}">
                         <button type="button" class="nav-button nav-link nav-link--cta">
                             <span th:text="${item.label}">Dropdown Title</span>
                             <span class="dropdown-caret">▼</span>
                         </button>
-
                         <div class="dropdown-menu">
                             <a th:each="child : ${item.children}" th:href="@{${child.url}}" class="dropdown-item"
                                 th:text="${child.label}">Child Option</a>
                         </div>
                     </div>
-
-                    <!-- If item is a normal standalone link, render standard tag -->
                     <a th:if="${!item.hasChildren()}" th:href="@{${item.url}}" class="nav-link"
                         th:text="${item.label}">Standard Link</a>
-
                 </th:block>
 
-                <!-- Keep your structural Sign Out button outside the loop for styling layout parity -->
                 <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="nav-logout-form">
                     <button type="submit" class="nav-button nav-button--cta">
                         Sign Out
@@ -60,7 +53,6 @@
         </div>
     </header>
 
-
     <!-- Unified Footer Fragment -->
     <footer th:fragment="footer" class="main-footer">
         <div class="footer-container">
@@ -68,12 +60,11 @@
                 Brain Dribbler Recipes. All rights reserved.
             </p>
         </div>
+        <!-- Structural fix: Closed duplicate extra loose container div here -->
         <p th:if="${showGitInfo}" class="footer-git-info">
             Version: <span th:text="${gitBranch}">main</span> (<span th:text="${gitHash}">abcd123</span>)
         </p>
-        </div>
     </footer>
-
 </body>
 
 </html>

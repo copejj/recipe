@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org">
+
+<head></head>
+
+<body>
+
+    <!-- Generalized Data Table Fragment -->
+    <div th:fragment="genericTable(tableId, dataList, headerTemplate, rowTemplate)" class="table-responsive-wrapper"
+        style="margin-top: 24px;">
+
+        <link rel="stylesheet" type="text/css" th:href="@{/css/fragments/datatable.css}" />
+        <script type="text/javascript" th:src="@{/js/fragments/datatable.js}"></script>
+
+
+        <table th:id="${tableId}" class="dataTable stripe hover row-border">
+            <thead>
+                <!-- Dynamically inserts the headers passed from the parent component -->
+                <tr th:replace="${headerTemplate}"></tr>
+            </thead>
+            <tbody>
+                <!-- Iterates through the generalized collection -->
+                <th:block th:each="item : ${dataList}">
+                    <!-- Dynamically inserts the row configuration, passing the current iteration item -->
+                    <th:block th:replace="${rowTemplate}"></th:block>
+                </th:block>
+
+                <!-- Fallback empty state handling -->
+                <tr th:if="${#lists.isEmpty(dataList)}">
+                    <td colspan="100%" style="text-align: center; padding: 24px; color: var(--color-text-muted);">
+                        No data available in table.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- 2. Self-Contained Initialization Script -->
+        <script th:inline="javascript">
+            $(document).ready(function () {
+                // Thymeleaf safely injects the exact tableId string here at runtime
+                var targetTableId = /*[[${tableId}]]*/ 'genericTable';
+
+                $('#' + targetTableId).DataTable({
+                    "paging": true,
+                    "searching": true,
+                    "ordering": true,
+                    "info": true,
+                    "pageLength": 10,
+                    "language": {
+                        "emptyTable": "No data available in table"
+                    },
+                    // Clean UX Fix: Prevents the script from trying to sort your first column (the Edit buttons)
+                    "columnDefs": [
+                        { "orderable": false, "targets": 0 }
+                    ]
+                });
+            });
+        </script>
+
+    </div>
+
+</body>
+
+</html>

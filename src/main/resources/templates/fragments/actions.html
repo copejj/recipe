@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org">
+
+<head></head>
+
+<body>
+    <!-- Edit buttons -->
+    <a th:fragment="editLink(targetUrl)" th:href="${targetUrl}"
+        class="btn btn-action btn-action--edit btn-action-bypass">
+        Edit
+    </a>
+
+    <button th:fragment="editBtn" type="button" class="btn btn-action btn-action--edit btn-action-bypass">
+        Edit
+    </button>
+
+    <button th:fragment="editSubmit" type="submit" class="btn btn-action btn-action--edit btn-action-bypass">
+        Save Changes
+    </button>
+
+
+    <!-- View Button -->
+    <a th:fragment="viewLink(targetUrl)" th:href="${targetUrl}"
+        class="btn btn-action btn-action--view btn-action-bypass">
+        View
+    </a>
+
+    <!-- Delete Button -->
+    <button th:fragment="deleteBtn" type="submit" class="btn btn-action btn-action--delete">
+        Delete
+    </button>
+
+    <!-- Locked Badge -->
+    <span th:fragment="lockedBadge" class="badge-locked">
+        Locked
+    </span>
+    <!-- Add inside templates/fragments/actions.html -->
+
+    <!-- Save Button -->
+    <button th:fragment="saveBtn(itemId)" type="submit" class="btn btn-action"
+        th:classappend="${itemId == 0} ? 'btn-action--danger' : 'btn-action--primary'">
+        Save
+    </button>
+
+    <!-- Cancel Button -->
+    <a th:fragment="cancelLink(targetUrl)" th:href="${targetUrl}" class="btn btn-action btn-action--cancel">
+        Cancel
+    </a>
+
+
+</body>
+
+</html>

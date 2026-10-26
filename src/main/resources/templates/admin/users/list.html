@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://thymeleaf.org" lang="en">
 
-<head th:replace="~{fragments/layout :: html_head('User Management - Braindribbler')}"></head>
+<head th:replace="~{fragments/layout :: html_head('User Management')}"></head>
 
 <body>
 
@@ -15,8 +15,20 @@
 
         <!-- Administrative Management Data Table Grid -->
         <div class="admin-table-wrapper">
-            <table class="admin-matrix-table">
-                <thead>
+
+            <!-- 
+               THE FIX: We pass the table structure directly inline. 
+               This completely protects ${item} fields from early evaluation!
+            -->
+            <div th:replace="~{fragments/datatable :: genericTable(
+                tableId='chefRegistryTable',
+                dataList=${chefs},
+                headerTemplate=~{::chefHeaders},
+                rowTemplate=~{::chefRow}
+            )}">
+
+                <!-- Define Header Structure -->
+                <th:block th:fragment="chefHeaders">
                     <tr>
                         <th></th>
                         <th>Display Name</th>
@@ -25,42 +37,41 @@
                         <th>Verification Status</th>
                         <th>Account Status</th>
                     </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="chef : ${chefs}">
-                        <td>
-                            <a th:if="${chef.highestRoleRankValue < loggedInAdminRank}"
-                                th:href="@{/admin/users/edit/{id}(id=${chef.publicId})}"
-                                class="btn btn--primary btn--table-action">
-                                Edit
-                            </a>
+                </th:block>
 
-                            <!-- Optional: Display a locked badge if they cannot modify it -->
-                            <span th:if="${chef.highestRoleRankValue >= loggedInAdminRank}" class="badge-locked">
-                                System Locked
-                            </span>
-                        </td>
-                        <td class="role-name-cell" th:text="${chef.displayName}">SousChefJane</td>
-                        <td th:text="${chef.userAuth != null ? chef.userAuth.email : 'N/A'}">chef@braindribbler.com</td>
-                        <td th:text="${#temporals.format(chef.createdAt, 'yyyy-MM-dd HH:mm')}">2026-10-08</td>
+                <!-- Define Row Structure -->
+                <th:block th:fragment="chefRow">
+                    <tr>
                         <td>
-                            <span th:if="${chef.userAuth != null && chef.userAuth.verified}"
+                            <th:block th:if="${item.highestRoleRankValue < loggedInAdminRank}">
+                                <a
+                                    th:replace="~{fragments/actions :: editLink(targetUrl=@{/admin/users/edit/{id}(id=${item.publicId})})}"></a>
+                            </th:block>
+
+                            <th:block th:if="${item.highestRoleRankValue >= loggedInAdminRank}">
+                                <span th:replace="~{fragments/actions :: lockedBadge}"></span>
+                            </th:block>
+                        </td>
+                        <td class="role-name-cell" th:text="${item.displayName}">SousChefJane</td>
+                        <td th:text="${item.userAuth != null ? item.userAuth.email : 'N/A'}">chef@braindribbler.com</td>
+                        <td th:text="${#temporals.format(item.createdAt, 'yyyy-MM-dd HH:mm')}">2026-10-08</td>
+                        <td>
+                            <span th:if="${item.userAuth != null && item.userAuth.verified}"
                                 class="status-text--verified">Verified</span>
-                            <span th:if="${chef.userAuth == null || !chef.userAuth.verified}"
+                            <span th:if="${item.userAuth == null || !item.userAuth.verified}"
                                 class="status-text--pending">Pending Link</span>
                         </td>
                         <td>
-                            <span th:if="${chef.disabledAt == null}" class="status-text--active">Active</span>
-                            <span th:if="${chef.disabledAt != null}" class="status-text--banned">Inactive</span>
+                            <span th:if="${item.disabledAt == null}" class="status-text--active">Active</span>
+                            <span th:if="${item.disabledAt != null}" class="status-text--banned">Inactive</span>
                         </td>
                     </tr>
-                </tbody>
-            </table>
+                </th:block>
+
+            </div>
+
         </div>
     </main>
-
-    <!-- Shared Footer Fragment -->
-    <div th:replace="~{fragments/layout :: footer}"></div>
 
 </body>
 

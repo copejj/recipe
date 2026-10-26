@@ -1,0 +1,29 @@
+/* Target DataTables 3.1.3 Flexbox column headers */
+.dt-container table.dataTable thead>tr>th div.dt-column-header,
+.dt-container table.dataTable thead>tr>td div.dt-column-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    height: auto;
+    min-height: min-content;
+}
+
+/* Force layout text to align cleanly on the left wall */
+.dt-container table.dataTable thead>tr>th div.dt-column-title,
+.dt-container table.dataTable thead>tr>td div.dt-column-title {
+    text-align: left;
+    flex-grow: 1;
+    white-space: normal;
+    overflow: visible;
+}
+
+/* Pin the standalone icon carat container to the right edge */
+.dt-container table.dataTable thead>tr>th .dt-column-order,
+.dt-container table.dataTable thead>tr>td .dt-column-order {
+    position: relative;
+    margin-left: auto;
+    order: 2;
+    align-self: center;
+}

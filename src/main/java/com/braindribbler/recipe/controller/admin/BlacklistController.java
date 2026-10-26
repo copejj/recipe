@@ -25,7 +25,7 @@ public class BlacklistController {
     public String showListView(Model model) {
         // Fetch and append the active database list directly to the rendering model
         model.addAttribute("blacklist", blacklistService.getAllItems());
-        return "admin/blacklist/view";
+        return "admin/blacklist/list";
     }
 
     @GetMapping("/add")

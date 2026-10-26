@@ -1,0 +1,130 @@
+/* Core Workspace Form Dual Column Grid Wrapper Layout */
+.workspace-form {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin-top: 30px;
+}
+
+/* Left Column - Input Control Panel */
+.form-panel-main {
+    flex: 1;
+    min-width: 300px;
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    height: fit-content;
+}
+
+/* Right Column - Side Documentation Bar Layout Panel */
+.form-panel-docs {
+    width: 380px;
+    background: #f8fafc;
+    padding: 25px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    box-sizing: border-box;
+}
+
+/* Control Groupings Spacing Contexts */
+.form-field-group {
+    margin-bottom: 20px;
+}
+
+.form-field-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #475569;
+}
+
+.form-field-group input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #cbd5e1;
+    font-size: 14px;
+}
+
+.form-actions-group {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+/* Documentation Content Typography */
+.form-panel-docs h3 {
+    margin-top: 0;
+    color: #0f172a;
+    font-size: 16px;
+    border-bottom: 1px solid #cbd5e1;
+    padding-bottom: 8px;
+}
+
+.form-panel-docs p {
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.5;
+}
+
+.form-panel-docs ul {
+    padding-left: 20px;
+    font-size: 13px;
+    color: #334155;
+    line-height: 1.8;
+}
+
+/* Callout Info Notification Panel */
+.docs-callout-warning {
+    margin-top: 15px;
+    padding: 10px;
+    background: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    border-radius: 4px;
+}
+
+.docs-callout-warning .callout-title {
+    font-size: 11px;
+    font-weight: bold;
+    color: #b45309;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.docs-callout-warning p {
+    margin: 0;
+    font-size: 12px;
+    color: #78350f;
+}
+
+/* Reusable Button Modifier Color overrides */
+.btn-action--primary {
+    background-color: #2563eb;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-action--danger {
+    background-color: #dc2626;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-action--cancel {
+    background-color: #e2e8f0;
+    color: #334155;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 14px;
+}
