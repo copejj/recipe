@@ -5,40 +5,40 @@
 
 <body>
 
+    <!-- Shared Navigation Header Fragment -->
     <div th:replace="~{fragments/layout :: header}"></div>
 
     <main class="page-card auth-layout">
 
-        <h1 class="page-title" style="text-align: center;" th:text="'Edit ' + ${role.roleName}">Edit Role</h1>
-        <p class="page-subtitle" style="text-align: center;" th:text="${role.description}">Role description details</p>
+        <h1 class="page-title text-center" th:text="'Edit ' + ${role.roleName}">Edit Role</h1>
+        <p class="page-subtitle text-center" th:text="${role.description}">Role description details</p>
 
         <form th:action="@{/admin/roles/edit/{id}(id=${role.roleId})}" method="post">
+            <div class="form-panel-main">
 
-            <div class="form-group form-group--last">
-                <label class="form-label">Toggle Active Authorities</label>
+                <div class="form-group form-group--last">
+                    <label class="form-label">Toggle Active Authorities</label>
 
-                <div class="permission-checkbox-grid">
-                    <div th:each="perm : ${allPermissions}" class="permission-checkbox-card">
+                    <div class="permission-checkbox-grid">
+                        <div th:each="perm : ${allPermissions}" class="permission-checkbox-card">
 
-                        <input type="checkbox" name="permissionIds" th:value="${perm.permissionId}"
-                            th:id="'perm-' + ${perm.permissionId}" th:checked="${role.permissions.contains(perm)}" />
+                            <input type="checkbox" name="permissionIds" th:value="${perm.permissionId}"
+                                th:id="'perm-' + ${perm.permissionId}"
+                                th:checked="${role.permissions.contains(perm)}" />
 
-                        <div class="permission-checkbox-details">
-                            <label th:for="'perm-' + ${perm.permissionId}"
-                                th:text="${perm.permissionName}">can_manage_users</label>
-                            <small th:text="${perm.description}">Grants access to administration parameters.</small>
+                            <div class="permission-checkbox-details">
+                                <label th:for="'perm-' + ${perm.permissionId}"
+                                    th:text="${perm.permissionName}">can_manage_users</label>
+                                <small th:text="${perm.description}">Grants access to administration parameters.</small>
+                            </div>
+
                         </div>
-
                     </div>
                 </div>
-            </div>
 
-            <div class="form-actions-footer"
-                style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-top: 20px; border-top: 1px solid var(--color-border);">
-
-                <div class="modal-actions-footer" style="display: flex; gap: 12px;">
-                    <a th:href="@{/admin/roles}" class="btn btn--cancel">Cancel</a>
-                    <button type="submit" class="btn btn--primary">Save</button>
+                <div class="form-actions-group">
+                    <th:block th:replace="~{fragments/actions :: saveBtn(itemId=${role.roleId})}"></th:block>
+                    <a th:replace="~{fragments/actions :: cancelLink(targetUrl=@{/admin/roles})}"></a>
                 </div>
             </div>
 
@@ -47,6 +47,7 @@
     </main>
 
     <div th:replace="~{fragments/layout :: footer}"></div>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/admin/edit.css}" />
 
 </body>
 

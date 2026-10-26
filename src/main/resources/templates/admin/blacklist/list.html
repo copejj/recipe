@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
+
+<!-- Head routing handles loading core libraries and the global actions.css structure -->
+
+<head th:replace="~{fragments/layout :: html_head('Malicious Threat Blacklist Registry - Braindribbler')}"></head>
+
+<body>
+
+    <!-- Shared Navigation Header Fragment -->
+    <div th:replace="~{fragments/layout :: header}"></div>
+
+    <main class="page-card">
+
+        <!-- Unified header utility block wrapper -->
+        <div class="dashboard-header-group">
+            <p class="page-subtitle">
+                Manage global server firewall security exceptions, block compromised router IP blocks, and intercept
+                automated registration spam networks.
+            </p>
+            <a th:target="_self" th:href="@{/admin/blacklist/add}"
+                class="btn btn-action btn-action--edit btn-action--header-cta">+ Add New Entry</a>
+        </div>
+
+        <!-- Administrative Management Data Table Grid -->
+        <div class="admin-table-wrapper">
+
+            <!-- CENTRALIZED DATATABLE COMPONENT INJECTION -->
+            <div th:replace="~{fragments/datatable :: genericTable(
+                tableId='blacklistRegistryTable', 
+                dataList=${blacklist}, 
+                headerTemplate=~{::blacklistHeaders}, 
+                rowTemplate=~{::blacklistRows}
+            )}">
+
+                <!-- Table Headers Structural Slot -->
+                <th:block th:fragment="blacklistHeaders">
+                    <tr>
+                        <th class="blacklist-col-actions">Action</th>
+                        <th>Pattern Block</th>
+                        <th>Target Type</th>
+                        <th class="blacklist-col-reason">Enforcement Reason</th>
+                    </tr>
+                </th:block>
+
+                <!-- Table Rows Data Slot -->
+                <th:block th:fragment="blacklistRows">
+                    <tr>
+                        <td class="blacklist-actions-cell">
+                            <div class="admin-btn-group">
+
+                                <!-- Centralized Reusable Edit Button Fragment Call -->
+                                <a
+                                    th:replace="~{fragments/actions :: editLink(targetUrl=@{/admin/blacklist/edit/{id}(id=${item.id})})}"></a>
+
+                                <!-- Native Local Form Wrapper targeting the plain button fragment -->
+                                <form th:action="@{/admin/blacklist/delete/{id}(id=${item.id})}" method="POST"
+                                    class="btn-action-form"
+                                    onsubmit="return confirm('Are you sure you want to remove this restriction rule?');">
+
+                                    <!-- Injects just the stylized button element natively with zero compilation risks -->
+                                    <button th:replace="~{fragments/actions :: deleteBtn}"></button>
+
+                                </form>
+
+                            </div>
+                        </td>
+                        <td><strong th:text="${item.pattern}">198.12.69.94</strong></td>
+                        <td>
+                            <!-- Clean inline context badge modifier rules -->
+                            <span th:text="${item.type}"
+                                th:class="'blacklist-badge blacklist-badge-' + ${#strings.toLowerCase(item.type)}">IP</span>
+                        </td>
+                        <td class="blacklist-col-reason"
+                            th:text="${item.reason != null && !item.reason.blank} ? ${item.reason} : 'No details provided'">
+                            Reason notes
+                        </td>
+                    </tr>
+                </th:block>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Shared Footer Fragment -->
+    <div th:replace="~{fragments/layout :: footer}"></div>
+</body>
+
+</html>

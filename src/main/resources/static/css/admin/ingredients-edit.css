@@ -1,0 +1,64 @@
+/* Card boundary container parameters */
+.form-card {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 24px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background-color: var(--color-bg-card);
+}
+
+/* Master Form Spacing Engine */
+.ingredient-entry-form {
+    margin-top: 24px;
+}
+
+.form-field-group {
+    margin-bottom: 20px;
+}
+
+.form-field-group--extended {
+    margin-bottom: 24px;
+}
+
+/* Typography Label Alignment Rules */
+.form-field-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.form-field-group .form-input {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+/* Execution Footer Action Box Tray */
+.form-actions-tray {
+    display: flex;
+    gap: 12px;
+}
+
+.form-actions-tray .btn-submit {
+    background-color: var(--color-primary);
+    color: white;
+    width: auto;
+    padding: 10px 20px;
+    font-weight: 700;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
+
+.form-actions-tray .btn-cancel {
+    background-color: #e9ecef;
+    color: var(--color-text-dark);
+    text-decoration: none;
+    width: auto;
+    padding: 10px 20px;
+    border-radius: 6px;
+    text-align: center;
+    border: 1px solid var(--color-border);
+    box-sizing: border-box;
+}

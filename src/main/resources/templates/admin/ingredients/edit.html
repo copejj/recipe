@@ -5,13 +5,14 @@
     <th:block
         th:replace="~{fragments/layout :: html_head(${ingredient.ingredientId != null} ? 'Edit Ingredient' : 'Add New Ingredient')}">
     </th:block>
+    <!-- External Ingredient Form Rules Link - Render Blocking to prevent FOUC -->
+    <link rel="stylesheet" th:href="@{/css/admin/ingredients-edit.css}" />
 </head>
 
 <body>
     <header th:replace="~{fragments/layout :: header}"></header>
 
-    <main class="page-card"
-        style="max-width: 600px; margin: 40px auto; padding: 24px; border: 1px solid var(--color-border); border-radius: 8px; background-color: var(--color-bg-card);">
+    <main class="page-card form-card">
         <h1 class="page-title"
             th:text="${ingredient.ingredientId != null} ? 'Modify Ingredient Profile' : 'Add Master Ingredient'">Add
             Master Ingredient</h1>
@@ -22,23 +23,19 @@
         <!-- Dynamic Action Route Binding Switch -->
         <form
             th:action="${ingredient.ingredientId != null} ? @{/admin/ingredients/edit/{id}(id=${ingredient.ingredientId})} : @{/admin/ingredients/add}"
-            method="post" style="margin-top: 24px;">
+            method="post" class="ingredient-entry-form">
 
             <!-- FIELD 1: INGREDIENT MASTER NAME -->
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label class="form-label" for="ingredientName"
-                    style="display:block; margin-bottom:6px; font-weight:600;">Ingredient Master Name</label>
+            <div class="form-field-group">
+                <label for="ingredientName">Ingredient Master Name</label>
                 <input type="text" id="ingredientName" name="ingredientName" th:value="${ingredient.ingredientName}"
-                    class="form-input" style="width:100%; padding:10px;" required />
+                    class="form-input" required />
             </div>
 
-            <!-- FIELD 2: SCALING TRACK CLASSIFICATION DROPDOWN (FIXED WEIGHT) -->
-            <div class="form-group" style="margin-bottom: 24px;">
-                <label class="form-label" for="classification"
-                    style="display:block; margin-bottom:6px; font-weight:600;">Scaling Track Classification</label>
-                <!-- REMOVED font-weight: 600; below to balance the look with the other fields -->
-                <select id="classification" name="classification" class="form-input" style="width:100%; padding:10px;"
-                    required>
+            <!-- FIELD 2: SCALING TRACK CLASSIFICATION DROPDOWN -->
+            <div class="form-field-group field-group--extended">
+                <label for="classification">Scaling Track Classification</label>
+                <select id="classification" name="classification" class="form-input" required>
                     <!-- Loops dynamically over the classifications exposed globally via the controller -->
                     <option th:each="enumType : ${classifications}" th:value="${enumType.name()}"
                         th:text="${enumType.name() + ' — (' + enumType.description + ')'}"
@@ -48,11 +45,9 @@
             </div>
 
             <!-- FIELD 3: GROCERY SECTION CATEGORY -->
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label class="form-label" for="groceryCategoryId"
-                    style="display:block; margin-bottom:6px; font-weight:600;">Grocery Section Category</label>
-                <select id="groceryCategoryId" name="groceryCategoryId" class="form-input"
-                    style="width:100%; padding:10px;" required>
+            <div class="form-field-group">
+                <label for="groceryCategoryId">Grocery Section Category</label>
+                <select id="groceryCategoryId" name="groceryCategoryId" class="form-input" required>
                     <option value="">-- Select Category Section --</option>
                     <option th:each="cat : ${groceryCategories}" th:value="${cat.groceryCategoryId}"
                         th:text="${cat.categoryName}"
@@ -62,14 +57,15 @@
             </div>
 
             <!-- ACTIONS FOOTER BUTTON GRID -->
-            <div style="display: flex; gap: 12px;">
-                <button type="submit" class="btn"
-                    style="background-color: var(--color-primary); color: white; width: auto; padding: 10px 20px; font-weight:700; border-radius:6px; border:none; cursor:pointer;"
-                    th:text="${ingredient.ingredientId != null} ? 'Save Global Changes' : 'Create Global Master'">Save
-                    Global Changes</button>
-                <a th:href="@{/admin/ingredients/list}" class="btn"
-                    style="background-color: #e9ecef; color: var(--color-text-dark); text-decoration: none; width: auto; padding: 10px 20px; border-radius: 6px; text-align: center; border:1px solid var(--color-border);">Cancel</a>
+            <div class="form-actions-tray">
+                <!-- Swaps in your primary save action button, passing the ID tracking check -->
+                <button
+                    th:replace="~{fragments/actions :: saveBtn(itemId=${ingredient.ingredientId != null ? ingredient.ingredientId : 0})}">Save</button>
+
+                <!-- Swaps in your neutral cancel link redirection action button -->
+                <a th:replace="~{fragments/actions :: cancelLink(targetUrl=@{/admin/ingredients/list})}">Cancel</a>
             </div>
+
         </form>
     </main>
 

@@ -1,0 +1,83 @@
+/* Core action button layouts */
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1;
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: all 0.2s ease-in-out;
+    height: 32px;
+}
+
+/* Warm Amber/Yellow theme for editing/modifying */
+.btn-action--edit {
+    color: #b45309;
+    /* Dark Amber Text */
+    background-color: #fef3c7;
+    /* Soft Warm Yellow BG */
+    border: 1px solid #fde68a;
+}
+
+.btn-action--edit:hover {
+    color: #78350f;
+    background-color: #fde68a;
+    /* Deepens slightly on hover */
+    border-color: #fcd34d;
+}
+
+/* Informational Cool Blue theme for viewing details */
+.btn-action--view {
+    color: #1d4ed8;
+    /* Deep Blue Text */
+    background-color: #dbeafe;
+    /* Soft Ice Blue BG */
+    border: 1px solid #bfdbfe;
+}
+
+.btn-action--view:hover {
+    color: #1e40af;
+    background-color: #bfdbfe;
+    /* Deepens slightly on hover */
+    border-color: #93c5fd;
+}
+
+/* Delete button theme modifiers */
+.btn-action--delete {
+    color: var(--color-danger, #e74c3c);
+    background-color: var(--color-bg-body, #ffffff);
+    border: 1px solid var(--color-danger, #e74c3c);
+}
+
+.btn-action--delete:hover {
+    color: #ffffff;
+    background-color: var(--color-danger, #e74c3c);
+    border-color: var(--color-danger, #e74c3c);
+}
+
+/* Primary solid blue update variant (Save Changes / Submit) */
+.btn-action--primary {
+    color: #ffffff;
+    background-color: #2563eb;
+    border: 1px solid transparent;
+}
+
+.btn-action--primary:hover {
+    background-color: #1d4ed8;
+}
+
+/* Neutral grey cancel variant */
+.btn-action--cancel {
+    color: #334155;
+    background-color: #e2e8f0;
+    border: 1px solid transparent;
+}
+
+.btn-action--cancel:hover {
+    background-color: #cbd5e1;
+}

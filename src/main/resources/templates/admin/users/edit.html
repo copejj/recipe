@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" lang="en">
+<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
 
 <head th:replace="~{fragments/layout :: html_head('Modify Access - Braindribbler')}"></head>
 
@@ -13,10 +13,9 @@
         <form th:action="@{/admin/users/edit/{publicId}/roles(publicId=${targetUser.publicId})}" method="post">
 
             <!-- SECTION 1: ACCOUNT STATUS INACTIVE TOGGLE -->
-            <div sec:authorize="hasAuthority('can_manage_users')" class="form-group"
-                style="border-bottom: 1px solid var(--color-border); padding-bottom: 20px; margin-bottom: 24px;">
+            <div sec:authorize="hasAuthority('can_manage_users')" class="form-group status-toggle-group">
                 <label class="form-label">System Account Status</label>
-                <div class="permission-checkbox-card" style="background-color: var(--color-bg-body);">
+                <div class="permission-checkbox-card profile-state-card">
 
                     <!-- Renamed parameter to inactiveStatus -->
                     <input type="checkbox" name="inactiveStatus" id="accountInactive"
@@ -66,19 +65,17 @@
                 </div>
             </div>
 
-            <div class="form-actions-footer"
-                style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-top: 20px; border-top: 1px solid var(--color-border);">
+            <!-- COMPONENT CONSOLIDATION: Replaced inline styles with structural wrapper rules and standard fragments -->
+            <div class="form-actions-footer action-bar-split">
 
-                <div class="modal-actions-footer" style="display: flex; gap: 12px;">
-                    <a th:href="@{/admin/users}" class="btn btn--cancel">Cancel</a>
-                    <button type="submit" class="btn btn--primary btn--submit">Save</button>
+                <div class="modal-actions-footer custom-action-gap">
+                    <button
+                        th:replace="~{fragments/actions :: saveBtn(itemId=${targetUser.disabledAt == null ? 1 : 0})}"></button>
+                    <a th:replace="~{fragments/actions :: cancelLink(targetUrl=@{/admin/users})}"></a>
                 </div>
 
                 <div th:if="${canDelete and targetUser.publicId != null}">
-                    <button type="submit" form="deleteUser" class="btn inline-delete-btn" data-confirmed="false"
-                        style="background-color: #ffffff; color: #dc3545; border: 2px solid #dc3545; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s ease-in-out; font-size: 0.95rem;">
-                        Delete
-                    </button>
+                    <button th:replace="~{fragments/actions :: deleteCfmBtn(formId='deleteUser')}"></button>
                 </div>
             </div>
         </form>
@@ -92,7 +89,8 @@
 
     <div th:replace="~{fragments/layout :: footer}"></div>
 
-    <script th:src="@{/js/admin-user-form.js}"></script>
+    <script th:src="@{/js/admin/user-form.js}"></script>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/admin/edit.css}" />
 </body>
 
 </html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org">
+
+<head></head>
+
+<body>
+    <!-- Edit buttons -->
+    <a th:fragment="editLink(targetUrl)" th:href="${targetUrl}"
+        class="btn btn-action btn-action--edit btn-action-bypass">
+        Edit
+    </a>
+
+    <!-- View Button -->
+    <a th:fragment="viewLink(targetUrl)" th:href="${targetUrl}"
+        class="btn btn-action btn-action--view btn-action-bypass">
+        View
+    </a>
+
+    <!-- Delete Button -->
+    <button th:fragment="deleteBtn" type="submit" class="btn btn-action btn-action--delete">
+        Delete
+    </button>
+
+    <!-- Delete Confirm Button -->
+    <button th:fragment="deleteCfmBtn(formId)" type="submit" th:form="${formId}" data-confirmed="false"
+        class="btn btn-action btn-action--delete inline-delete-btn">
+        Delete
+    </button>
+
+    <!-- Locked Badge -->
+    <span th:fragment="lockedBadge" class="badge-locked">
+        Locked
+    </span>
+    <!-- Add inside templates/fragments/actions.html -->
+
+    <!-- Save Button -->
+    <button th:fragment="saveBtn(itemId)" type="submit" class="btn btn-action"
+        th:classappend="${itemId == 0} ? 'btn-action--danger' : 'btn-action--primary'">
+        Save
+    </button>
+
+    <!-- Cancel Button -->
+    <a th:fragment="cancelLink(targetUrl)" th:href="${targetUrl}" class="btn btn-action btn-action--cancel">
+        Cancel
+    </a>
+
+    <!-- Unpublish / Retract Button -->
+    <button th:fragment="unpublishBtn(targetFormId)" type="submit" th:form="${targetFormId}"
+        class="btn-action btn-action--cancel">
+        Unpublish
+    </button>
+
+    <!-- Unpublish Confirmation Button Component with Dynamic Message -->
+    <button th:fragment="unpublishConfBtn(targetFormId, confirmMessage)" type="submit" th:form="${targetFormId}"
+        class="btn-action btn-action--cancel" th:onclick="return confirm([[${confirmMessage}]]);">
+        Unpublish
+    </button>
+
+    <!-- Delete Confirmation Button Component with Dynamic Message -->
+    <button th:fragment="deleteConfBtn(targetFormId, confirmMessage)" type="submit" th:form="${targetFormId}"
+        class="btn btn-action btn-action--delete" th:onclick="return confirm([[${confirmMessage}]]);">
+        Delete
+    </button>
+
+</body>
+
+</html>

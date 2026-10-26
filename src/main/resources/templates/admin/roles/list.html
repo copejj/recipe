@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html xmlns:th="http://thymeleaf.org" lang="en">
 
+<!-- Explicitly routing layout dependencies via your global component baseline configuration -->
+
 <head th:replace="~{fragments/layout :: html_head('Role Matrix - Braindribbler')}"></head>
 
 <body>
 
+    <!-- Shared Navigation Header Fragment -->
     <div th:replace="~{fragments/layout :: header}"></div>
 
     <main class="page-card">
@@ -15,48 +18,64 @@
                 <h1 class="page-title">Role & Authority Matrix</h1>
                 <p class="page-subtitle">Manage global security tiers and permissions</p>
             </div>
+            <!-- Standardized clean button styling blueprint integration -->
             <div class="admin-btn-group">
-                <button type="button" class="btn btn--primary btn--admin-small" onclick="openModal('roleModal')">+ Add
-                    New Role</button>
+                <button type="button" class="btn btn-action btn-action--primary btn-action--header-cta"
+                    onclick="openModal('roleModal')">+ Add New Role</button>
             </div>
         </div>
 
         <div class="admin-table-wrapper">
-            <table class="admin-matrix-table">
-                <thead>
+
+            <!-- CENTRALIZED DATATABLE COMPONENT INJECTION -->
+            <div th:replace="~{fragments/datatable :: genericTable(
+                tableId='roleMatrixTable', 
+                dataList=${roles}, 
+                headerTemplate=~{::matrixHeaders}, 
+                rowTemplate=~{::matrixRows}
+            )}">
+
+                <!-- Table Headers Slot (FIXED: Action shifted to the far left) -->
+                <th:block th:fragment="matrixHeaders">
                     <tr>
+                        <th class="matrix-col-actions">Actions</th>
                         <th>Role Name</th>
                         <th>Description</th>
                         <th>Assigned Permissions</th>
-                        <th class="actions-cell">Actions</th>
                     </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="role : ${roles}">
-                        <td class="role-name-cell" th:text="${role.roleName}">ROLE_ADMIN</td>
-                        <td th:text="${role.description}">Administrative access</td>
+                </th:block>
+
+                <!-- Table Rows Slot -->
+                <th:block th:fragment="matrixRows">
+                    <tr>
+                        <td class="matrix-actions-cell">
+                            <div class="admin-btn-group">
+                                <!-- Reusable Edit Action Component Call replacing loose 'Modify Options' link -->
+                                <a
+                                    th:replace="~{fragments/actions :: editLink(targetUrl=@{/admin/roles/edit/{id}(id=${item.roleId})})}"></a>
+                            </div>
+                        </td>
+                        <td class="role-name-cell" th:text="${item.roleName}">ROLE_ADMIN</td>
+                        <td th:text="${item.description}">Administrative access</td>
                         <td>
                             <div class="badge-container">
-                                <span th:each="perm : ${role.permissions}" class="badge-permission"
+                                <span th:each="perm : ${item.permissions}" class="badge-permission"
                                     th:text="${perm.permissionName}">can_manage_users</span>
-                                <span th:if="${role.permissions.empty}" class="badge-permission--none">No
+                                <span th:if="${item.permissions.empty}" class="badge-permission--none">No
                                     permissions</span>
                             </div>
                         </td>
-                        <td class="actions-cell">
-                            <a th:href="@{/admin/roles/edit/{id}(id=${role.roleId})}" class="auth-link">Modify
-                                Options</a>
-                        </td>
                     </tr>
-                </tbody>
-            </table>
+                </th:block>
+
+            </div>
+
         </div>
 
-        <div class="form-actions-footer"
-            style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-top: 20px; border-top: 1px solid var(--color-border);">
-
-            <div class="modal-actions-footer" style="display: flex; gap: 12px;">
-                <a th:href="@{/admin/users}" class="btn btn--cancel">Back</a>
+        <!-- Cleansed Footer Controls (FIXED: Zero inline style attributes remaining) -->
+        <div class="form-actions-footer">
+            <div class="modal-actions-footer">
+                <a th:replace="~{fragments/actions :: cancelLink(targetUrl=@{/admin/users})}"></a>
             </div>
         </div>
 

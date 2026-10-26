@@ -1,12 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-
-    // 1. Initialize 'My Recipes' Table with auto-width tracking deactivated
-    $('#myRecipesTable').DataTable({
-        "bAutoWidth": false,
-        "responsive": false
-    });
-
-    // 2. Row tapping navigation listener execution block
+    // Row tapping navigation listener execution block
     const myRecipesTable = document.getElementById("myRecipesTable");
     if (myRecipesTable) {
         myRecipesTable.addEventListener("click", function (event) {

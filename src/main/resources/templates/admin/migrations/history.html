@@ -21,64 +21,76 @@
 
         <!-- STATE B: THE TABLE CONTEXT EXISTS (PRODUCTION & IMPORTED DATA VIEW) -->
         <div th:if="${tableExists}" class="admin-table-wrapper">
-            <table class="admin-matrix-table">
-                <thead>
+
+            <!-- IMPLEMENTATION: Matching your inline fragment block structure exactly -->
+            <div th:replace="~{fragments/datatable :: genericTable(
+                tableId='migrationsTable', 
+                dataList=${migrations}, 
+                headerTemplate=~{::migrationHeaders}, 
+                rowTemplate=~{::migrationRow}
+            )}">
+
+                <!-- Define Header Structure -->
+                <th:block th:fragment="migrationHeaders">
                     <tr>
                         <th>ID</th>
                         <th>Migration Script Filename</th>
-                        <th>Execution Status</th>
+                        <th>Status</th>
                         <th>Started At</th>
                         <th>Ended At</th>
-                        <th>Error Tracking Logs</th>
+                        <th>Errors</th>
                     </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="row : ${migrations}">
-                        <!-- Lowercase map keys match the raw PostgreSQL column map array output -->
-                        <td class="audit-font-monospace" th:text="${row.get('id')}">1</td>
-                        <td class="role-name-cell audit-font-monospace" th:text="${row.get('filename')}">V1__init.sql
+                </th:block>
+
+                <!-- Define Row Structure -->
+                <th:block th:fragment="migrationRow">
+                    <tr>
+                        <td class="audit-font-monospace" th:text="${item.get('id')}">1</td>
+                        <td class="role-name-cell audit-font-monospace" th:text="${item.get('filename')}">V1__init.sql
                         </td>
                         <td>
                             <span
-                                th:if="${row.get('status') != null && (row.get('status').toString() == 'completed' || row.get('status').toString() == 'success')}"
+                                th:if="${item.get('status') != null && (item.get('status').toString() == 'completed' || item.get('status').toString() == 'success')}"
                                 class="migration-badge migration-badge--success">Success</span>
-                            <span th:if="${row.get('status') != null && row.get('status').toString() == 'pending'}"
+                            <span th:if="${item.get('status') != null && item.get('status').toString() == 'pending'}"
                                 class="migration-badge migration-badge--pending">Pending</span>
-                            <span th:if="${row.get('status') != null && row.get('status').toString() == 'failed'}"
+                            <span th:if="${item.get('status') != null && item.get('status').toString() == 'failed'}"
                                 class="migration-badge migration-badge--failed">Failed</span>
 
                             <span
-                                th:if="${row.get('status') != null && row.get('status').toString() != 'completed' && row.get('status').toString() != 'success' && row.get('status').toString() != 'pending' && row.get('status').toString() != 'failed'}"
+                                th:if="${item.get('status') != null && item.get('status').toString() != 'completed' && item.get('status').toString() != 'success' && item.get('status').toString() != 'pending' && item.get('status').toString() != 'failed'}"
                                 class="migration-badge migration-badge--pending"
-                                th:text="${row.get('status').toString()}">Status</span>
+                                th:text="${item.get('status').toString()}">Status</span>
 
                             <!-- Fallback if status metadata is null -->
-                            <span th:if="${row.get('status') == null}"
+                            <span th:if="${item.get('status') == null}"
                                 class="migration-badge migration-badge--pending">Pending</span>
                         </td>
-                        <!-- Legacy Timestamp Map Formatting via native #dates helper to prevent SpEL exceptions -->
                         <td class="footer-git-info"
-                            th:text="${row.get('started_at') != null ? #dates.format(row.get('started_at'), 'yyyy-MM-dd HH:mm:ss') : 'N/A'}">
+                            th:text="${item.get('started_at') != null ? #dates.format(item.get('started_at'), 'yyyy-MM-dd HH:mm:ss') : 'N/A'}">
                             2026-10-11 18:00:00</td>
                         <td class="footer-git-info"
-                            th:text="${row.get('ended_at') != null ? #dates.format(row.get('ended_at'), 'yyyy-MM-dd HH:mm:ss') : 'N/A'}">
+                            th:text="${item.get('ended_at') != null ? #dates.format(item.get('ended_at'), 'yyyy-MM-dd HH:mm:ss') : 'N/A'}">
                             2026-10-11 18:01:00</td>
                         <td class="audit-log-failure">
-                            <span th:if="${row.get('error_message') != null}"
+                            <span th:if="${item.get('error_message') != null}"
                                 class="audit-log-failure--active audit-font-monospace"
-                                th:text="${row.get('error_message')}">Syntax Error Log</span>
-                            <span th:if="${row.get('error_message') == null}"
+                                th:text="${item.get('error_message')}">Syntax Error Log</span>
+                            <span th:if="${item.get('error_message') == null}"
                                 class="audit-log-failure--empty">None</span>
                         </td>
                     </tr>
-                </tbody>
-            </table>
+                </th:block>
+
+            </div>
+
         </div>
     </main>
 
     <!-- Shared Footer Fragment -->
     <div th:replace="~{fragments/layout :: footer}"></div>
 
+    <script th:src="@{/js/admin/migrations.js}"></script>
 </body>
 
 </html>
