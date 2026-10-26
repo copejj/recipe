@@ -1,99 +1,79 @@
 <!DOCTYPE html>
 <html xmlns:th="http://thymeleaf.org" lang="en">
 
-<head th:replace="~{fragments/layout :: html_head(${recipe.title})}"></head>
+<head>
+    <th:block th:replace="~{fragments/layout :: html_head(${recipe.title})}"></th:block>
+    <!-- External Recipe Layout View Rules Link - Render Blocking to prevent FOUC -->
+    <link rel="stylesheet" th:href="@{/css/recipes/recipe-view.css}" />
+</head>
 
-<body>
+<body style="overflow-x: hidden; width: 100%; margin: 0; padding: 0;">
     <header th:replace="~{fragments/layout :: header}"></header>
 
     <main class="page-card">
-        <!-- 1. JUMBO IDENTITY HEADER WITH LIVE SCALING CONTROLLERS -->
-        <div
-            style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
 
-            <div
-                style="display: flex; flex-direction: column; gap: 12px; width: 100%; margin-bottom: 24px; box-sizing: border-box;">
+        <!-- JUMBO IDENTITY HEADER WITH LIVE SCALING CONTROLLERS -->
+        <div class="recipe-header-container">
 
-                <h1 th:text="${recipe.title}"
-                    style="margin: 0; font-size: 2.25rem; color: var(--color-text-dark); line-height: 1.2; font-weight: 700;">
-                    Tasty Recipe Title
-                </h1>
+            <div class="recipe-title-block">
+                <h1 th:text="${recipe.title}">Tasty Recipe Title</h1>
 
-                <div
-                    style="display: flex; flex-direction: row; flex-wrap: wrap; justify-content: flex-start; align-items: center; gap: 12px; width: 100%; box-sizing: border-box;">
-
-                    <div style="font-size: 0.95rem; color: var(--color-text-muted); white-space: nowrap;">
-                        Created by <span th:text="${recipe.user.displayName}"
-                            style="font-weight: 600; color: var(--color-text-dark);">Author</span>
+                <div class="recipe-meta-tray">
+                    <div class="recipe-meta-author">
+                        Created by <span th:text="${recipe.user.displayName}">Author</span>
                     </div>
 
+                    <!-- ACTION 1: CENTRAL EDIT LINK -->
                     <th:block th:if="${canEdit}">
-                        <a th:href="@{/recipes/edit/{id}(id=${recipe.recipeId})}" class="btn"
-                            style="width: auto; padding: 6px 14px; font-size: 0.85rem; font-weight: 700; background-color: var(--color-profile-dark-btn); color: white; border-radius: 6px; text-decoration: none; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; height: 32px; white-space: nowrap; box-sizing: border-box;">
-                            Edit
-                        </a>
+                        <a
+                            th:replace="~{fragments/actions :: editLink(targetUrl=@{/recipes/edit/{id}(id=${recipe.recipeId})})}"></a>
                     </th:block>
 
+                    <!-- ACTION 2: CENTRAL UNPUBLISH CONFIRMATION CONTROLLER -->
+                    <!-- Swapped from deleteConfBtn to unpublishConfBtn for neutral formatting state -->
                     <th:block th:if="${canHide}">
-                        <!-- Safely maps /view/{UUID}/hide OR /recipes/view/{id}/hide depending on which field is present -->
-                        <form th:action="${recipe.publicId != null} 
+                        <button th:replace="~{fragments/actions :: unpublishConfBtn(
+                            targetFormId='hideRecipeForm',
+                            confirmMessage='Are you sure you want to make this recipe private?'
+                        )}"></button>
+
+                        <form id="hideRecipeForm" th:action="${recipe.publicId != null} 
                             ? @{/view/{id}/hide(id=${recipe.publicId})} 
-                            : @{/recipes/view/{id}/hide(id=${recipe.recipeId})}" method="post"
-                            style="display: inline-flex; margin: 0;">
-                            <button type="submit" class="btn"
-                                style="cursor: pointer; padding: 6px 14px; font-size: 0.85rem; font-weight: 700; background-color: var(--color-alert-danger, #d9534f); color: white; border: none; border-radius: 6px; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; height: 32px; white-space: nowrap; box-sizing: border-box; font-family: inherit;">
-                                Make Private
-                            </button>
+                            : @{/recipes/view/{id}/hide(id=${recipe.recipeId})}" method="post" style="display: none;">
                         </form>
                     </th:block>
-
                 </div>
             </div>
 
-
-
             <!-- SYSTEM MODE AND SERVINGS MULTIPLIER BUTTON GROUP PANELS -->
-            <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+            <div class="recipe-control-widgets">
 
                 <!-- US Imperial ⇄ Metric Switcher Component Widget -->
-                <div
-                    style="background-color: var(--color-bg-card); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--color-border); display: flex; align-items: center; gap: 10px;">
-                    <span style="font-weight: 700; font-size: 0.9rem; color: var(--color-text-dark);">System:</span>
-                    <div class="system-toggle-wrapper"
-                        style="display: flex; border: 1px solid var(--color-border-input, #ccc); border-radius: 6px; overflow: hidden; background-color: #f8f9fa;">
+                <div class="widget-card-panel">
+                    <span>System:</span>
+                    <div class="system-toggle-wrapper">
                         <button type="button" id="system-imperial-btn" class="system-toggle-btn active"
-                            data-system="imperial"
-                            style="border: none; padding: 6px 14px; font-size: 0.85rem; font-weight: 700; cursor: pointer; background-color: var(--color-primary); color: white; transition: all 0.2s;">Imperial</button>
-                        <button type="button" id="system-metric-btn" class="system-toggle-btn" data-system="metric"
-                            style="border: none; padding: 6px 14px; font-size: 0.85rem; font-weight: 600; cursor: pointer; background-color: transparent; color: var(--color-text-muted); transition: all 0.2s;">Metric</button>
+                            data-system="imperial">Imperial</button>
+                        <button type="button" id="system-metric-btn" class="system-toggle-btn"
+                            data-system="metric">Metric</button>
                     </div>
                 </div>
 
                 <!-- Live Servings Input Scaler -->
-                <div
-                    style="background-color: var(--color-bg-card); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--color-border); display: flex; align-items: center; gap: 10px;">
-                    <label for="servings-scaler"
-                        style="font-weight: 700; font-size: 0.9rem; color: var(--color-text-dark); margin: 0;">
-                        Servings:</label>
+                <div class="widget-card-panel">
+                    <label for="servings-scaler">Servings:</label>
                     <input type="number" id="servings-scaler" th:value="${recipe.servings}"
                         th:data-original-servings="${recipe.servings}" min="1" step="1" onfocus="this.select()"
-                        style="width: 70px; padding: 6px; border-radius: 4px; border: 1px solid var(--color-border-input); font-weight: bold; text-align: center;" />
+                        class="servings-input-spinner" />
                 </div>
             </div>
         </div>
 
         <!-- VIEW PANEL TABS SWITCH NAVIGATION HEADER BAR -->
-        <div class="view-mode-tabs"
-            style="display: flex; gap: 8px; margin-bottom: 30px; border-bottom: 2px solid var(--color-border); padding-bottom: 10px;">
-            <button type="button" class="tab-btn active" data-target="overview-panel"
-                style="padding: 10px 20px; font-weight: 700; border: none; background: none; cursor: pointer; color: var(--color-primary); border-bottom: 3px solid var(--color-primary); margin-bottom: -13px; font-size: 1rem;">
-                Recipe Overview</button>
-            <button type="button" class="tab-btn" data-target="prep-panel"
-                style="padding: 10px 20px; font-weight: 600; border: none; background: none; cursor: pointer; color: var(--color-text-muted); font-size: 1rem;">
-                Recipe Preparation</button>
-            <button type="button" class="tab-btn" data-target="shopping-panel"
-                style="padding: 10px 20px; font-weight: 600; border: none; background: none; cursor: pointer; color: var(--color-text-muted); font-size: 1rem;">
-                Shopping List</button>
+        <div class="view-mode-tabs">
+            <button type="button" class="tab-btn active" data-target="overview-panel">Recipe Overview</button>
+            <button type="button" class="tab-btn" data-target="prep-panel">Recipe Preparation</button>
+            <button type="button" class="tab-btn" data-target="shopping-panel">Shopping List</button>
         </div>
 
         <!-- MODULAR DISPLAY LAYOUT CHANNELS -->
@@ -113,7 +93,6 @@
 
     <footer th:replace="~{fragments/layout :: footer}"></footer>
 
-    <!-- 🌐 DATA BOOTSTRAP HOOK LAYER: Runs only on profile view sheets -->
     <script th:inline="javascript">
         window.MEASUREMENT_MATRIX = /*[[${globalMeasurementsPool}]]*/[];
     </script>
