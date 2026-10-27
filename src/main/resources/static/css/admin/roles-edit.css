@@ -1,0 +1,144 @@
+/* ==========================================================================
+   ROLE EDIT COMPONENT CONSOLE & PERMISSIONS PIPELINE
+   ========================================================================== */
+
+main.page-card--roles {
+    max-width: 720px;
+    margin: 40px auto;
+}
+
+.role-edit-form {
+    width: 100%;
+}
+
+.permissions-management-section {
+    margin-top: 32px;
+    margin-bottom: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--color-border, #dee2e6);
+}
+
+.permissions-management-section h3 {
+    margin-top: 0;
+    margin-bottom: 6px;
+    font-size: 1.25rem;
+}
+
+.section-helper-text {
+    font-size: 0.9rem;
+    color: var(--color-text-muted, #6c757d);
+    margin-bottom: 20px;
+}
+
+/* 
+   Main Grid Container Structure:
+   Arranges rows vertically with uniform space divisions.
+*/
+.permissions-grid-pipeline {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+/* Individual Flex row items matching your exact horizontal design rules */
+.permission-item-row {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 14px;
+    background-color: var(--color-bg-card, #ffffff);
+    border: 1px solid var(--color-border, #dee2e6);
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+/* Enforces the native checkbox selection targets to stay on their line */
+.permission-checkbox-cell {
+    flex: 0 0 auto;
+    padding-top: 3px;
+    /* Visual cross alignment balancing with labels */
+}
+
+.permission-native-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+/* 
+   DESKTOP DEFAULT CONTENT CELL PIPELINE:
+   Keeps authority name and details side-by-side cleanly.
+*/
+.permission-content-cell {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 12px;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.permission-label-name {
+    font-weight: 600;
+    color: var(--color-text-dark, #212529);
+    font-size: 0.95rem;
+    flex-shrink: 0;
+    /* Ensures the permission system tag never breaks down */
+}
+
+.permission-label-desc {
+    color: var(--color-text-muted, #6c757d);
+    font-size: 0.875rem;
+    white-space: normal;
+    word-break: break-word;
+}
+
+/* Left-Aligned Control Buttons Layout Track overrides */
+.form-actions-left-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    margin-top: 24px;
+}
+
+.form-actions-left-row>*,
+.form-actions-left-row form {
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+}
+
+/* ==========================================================================
+   PORTRAIT MOBILE OPTIMIZATIONS (BELOW 576px SCREEN BOUNDARIES)
+   Shape-shifts layout to push explanations directly underneath permission labels.
+   ========================================================================== */
+@media screen and (max-width: 576px) {
+
+    .permission-item-row {
+        gap: 12px;
+        padding: 12px;
+    }
+
+    /* 
+       SHAPE-SHIFT INTERFACE:
+       Forces row content elements into a clean, vertical stack layout column.
+       The explanation tag drops safely below the primary action name.
+    */
+    .permission-content-cell {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .permission-label-desc {
+        font-size: 0.825rem;
+        line-height: 1.4;
+    }
+}

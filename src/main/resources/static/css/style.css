@@ -542,7 +542,7 @@ table.dataTable tbody td:first-child {
 }
 
 .admin-btn-group {
-    display: flex;
+    display: inline-flex;
     gap: 10px;
 }
 
@@ -574,7 +574,7 @@ dialog.admin-modal h3 {
 
 .modal-actions-footer {
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: 10px;
 }
 
@@ -594,6 +594,11 @@ dialog.admin-modal h3 {
 
 .status-text--active {
     color: var(--color-success-raw);
+    font-weight: 600;
+}
+
+.status-text--banned {
+    color: var(--color-danger-raw);
     font-weight: 600;
 }
 
@@ -763,31 +768,6 @@ textarea {
 
 /* 6. Permanent Deletion Button Target */
 
-/* ==========================================================================
-   PORTRAIT PHONE SCREEN OPTIMIZATIONS (BELOW 576px)
-   Organizes items into a clean, easy-to-use 3-line input block
-   ========================================================================== */
-@media (max-width: 576px) {
-    .ingredient-row {
-        background-color: var(--color-bg-card);
-        padding: 14px;
-        border-radius: 8px;
-        border: 1px solid var(--color-border);
-        gap: 12px;
-    }
-
-    /* LINE 1: Force ingredient dropdown to occupy its own line */
-    .ingredient-row>select {
-        flex: 1 1 100%;
-        width: 100%;
-    }
-
-    /* Sub-wrapper spans 100% of the space below the dropdown */
-
-    /* LINE 2: Split Amount and Units 50/50 across the second row */
-
-    /* LINE 3: Notes spans the width, leaving just enough room for the delete button */
-}
 
 /* ==========================================================================
    14. SEARCH ENGINE & MODERN INITIALIZATION LAYOUT PATCHES

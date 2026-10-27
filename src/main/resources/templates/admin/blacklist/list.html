@@ -37,16 +37,16 @@
                 <th:block th:fragment="blacklistHeaders">
                     <tr>
                         <th class="blacklist-col-actions">Action</th>
-                        <th>Pattern Block</th>
-                        <th>Target Type</th>
-                        <th class="blacklist-col-reason">Enforcement Reason</th>
+                        <th>Pattern</th>
+                        <th>Type</th>
+                        <th class="blacklist-col-reason">Reason</th>
                     </tr>
                 </th:block>
 
                 <!-- Table Rows Data Slot -->
                 <th:block th:fragment="blacklistRows">
                     <tr>
-                        <td class="blacklist-actions-cell">
+                        <td data-label="Action" class="blacklist-actions-cell">
                             <div class="admin-btn-group">
 
                                 <!-- Centralized Reusable Edit Button Fragment Call -->
@@ -65,13 +65,13 @@
 
                             </div>
                         </td>
-                        <td><strong th:text="${item.pattern}">198.12.69.94</strong></td>
-                        <td>
+                        <td data-label="Pattern"><strong th:text="${item.pattern}">198.12.69.94</strong></td>
+                        <td data-label="Type">
                             <!-- Clean inline context badge modifier rules -->
                             <span th:text="${item.type}"
                                 th:class="'blacklist-badge blacklist-badge-' + ${#strings.toLowerCase(item.type)}">IP</span>
                         </td>
-                        <td class="blacklist-col-reason"
+                        <td data-label="Reason" class="blacklist-col-reason"
                             th:text="${item.reason != null && !item.reason.blank} ? ${item.reason} : 'No details provided'">
                             Reason notes
                         </td>

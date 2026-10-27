@@ -1,53 +1,77 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" lang="en">
+<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
 
-<head th:replace="~{fragments/layout :: html_head('Modify Permissions - Braindribbler')}"></head>
+<head>
+    <th:block th:replace="~{fragments/layout :: html_head('Modify Role Tiers - Braindribbler')}"></th:block>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/admin/roles-edit.css}" />
+</head>
 
 <body>
 
-    <!-- Shared Navigation Header Fragment -->
     <div th:replace="~{fragments/layout :: header}"></div>
 
-    <main class="page-card auth-layout">
+    <main class="page-card">
+        <h1 class="page-title"
+            th:text="${role.roleId == null} ? 'Create Global Security Role' : 'Modify Security Role Tier'">
+            Edit Role
+        </h1>
+        <p class="page-subtitle">
+            Assign functional authority parameters and adjust platform access access tokens for this application user
+            tier.
+        </p>
 
-        <h1 class="page-title text-center" th:text="'Edit ' + ${role.roleName}">Edit Role</h1>
-        <p class="page-subtitle text-center" th:text="${role.description}">Role description details</p>
+        <form th:action="@{/admin/roles/edit/{id}(id=${role.roleId})}" th:object="${role}" method="POST"
+            class="role-edit-form">
+            <input type="hidden" th:field="*{roleId}" />
 
-        <form th:action="@{/admin/roles/edit/{id}(id=${role.roleId})}" method="post">
-            <div class="form-panel-main">
+            <!-- Core Text Inputs -->
+            <div class="form-group">
+                <label class="form-label">Role System Identifier</label>
+                <input type="text" class="form-input" th:field="*{roleName}" required
+                    placeholder="e.g. ROLE_MODERATOR" />
+            </div>
 
-                <div class="form-group form-group--last">
-                    <label class="form-label">Toggle Active Authorities</label>
+            <div class="form-group--last">
+                <label class="form-label">Role Purpose / Description</label>
+                <input type="text" class="form-input" th:field="*{description}"
+                    placeholder="e.g. Can manage recipe categories and reviews" />
+            </div>
 
-                    <div class="permission-checkbox-grid">
-                        <div th:each="perm : ${allPermissions}" class="permission-checkbox-card">
+            <!-- Permission Selection Framework Console -->
+            <div class="permissions-management-section">
+                <h3>Assigned Operational Permissions</h3>
+                <p class="section-helper-text">Select individual functional boundaries explicitly granted to this system
+                    security profile:</p>
 
+                <div class="permissions-grid-pipeline">
+                    <!-- Iterates over available database authority items -->
+                    <div th:each="perm : ${allPermissions}" class="permission-item-row">
+                        <div class="permission-checkbox-cell">
                             <input type="checkbox" name="permissionIds" th:value="${perm.permissionId}"
                                 th:id="'perm-' + ${perm.permissionId}"
                                 th:checked="${role.permissions.contains(perm)}" />
-
-                            <div class="permission-checkbox-details">
-                                <label th:for="'perm-' + ${perm.permissionId}"
-                                    th:text="${perm.permissionName}">can_manage_users</label>
-                                <small th:text="${perm.description}">Grants access to administration parameters.</small>
-                            </div>
-
                         </div>
-                    </div>
-                </div>
 
-                <div class="form-actions-group">
-                    <th:block th:replace="~{fragments/actions :: saveBtn(itemId=${role.roleId})}"></th:block>
-                    <a th:replace="~{fragments/actions :: cancelLink(targetUrl=@{/admin/roles})}"></a>
+                        <div class="permission-checkbox-details">
+                            <label th:for="'perm-' + ${perm.permissionId}"
+                                th:text="${perm.permissionName}">can_manage_users</label>
+                            <small th:text="${perm.description}">Grants access to administration parameters.</small>
+                        </div>
+
+                    </div>
                 </div>
             </div>
 
-        </form>
+            <!-- Unified Left-Aligned Action Control Buttons Pipeline -->
+            <div class="form-actions-left-row">
+                <th:block th:replace="~{fragments/actions :: saveBtn(itemId=${role.roleId})}"></th:block>
+                <th:block th:replace="~{fragments/actions :: cancelLink(targetUrl=@{/admin/roles})}"></th:block>
+            </div>
 
+        </form>
     </main>
 
     <div th:replace="~{fragments/layout :: footer}"></div>
-    <link rel="stylesheet" type="text/css" th:href="@{/css/admin/edit.css}" />
 
 </body>
 
