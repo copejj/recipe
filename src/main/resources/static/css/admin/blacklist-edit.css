@@ -1,0 +1,75 @@
+/* ==========================================================================
+   Threat Workspace Narrow Framework Layout Configurations
+   ========================================================================== */
+
+/* Overrides the main component wrapper limits to narrow the card frame */
+main.page-card--narrow {
+    max-width: 640px;
+    margin: 40px auto;
+}
+
+.workspace-form-narrow {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    width: 100%;
+}
+
+.form-panel-main {
+    width: 100%;
+}
+
+/* Left-Aligned Action Button Layout Pipeline */
+.form-actions-left-row {
+    display: flex;
+    flex-direction: row;
+    /* Holds elements on a single horizontal axis */
+    flex-wrap: nowrap;
+    /* Prevents line breaks */
+    justify-content: flex-start;
+    /* Groups items flush against the left edge */
+    align-items: center;
+    gap: 12px;
+    /* Clean spacing gutter between buttons */
+    width: 100%;
+    margin-top: 24px;
+}
+
+/* Adjust inline alignment defaults for buttons and forms inside the row */
+.form-actions-left-row>*,
+.form-actions-left-row form {
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+}
+
+/* Stacked Context Documentation Box */
+.form-panel-docs-stacked {
+    background-color: var(--color-bg-body);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 10px;
+}
+
+.form-panel-docs-stacked h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 1.1rem;
+}
+
+.form-panel-docs-stacked .docs-list {
+    padding-left: 20px;
+    margin-bottom: 16px;
+}
+
+.form-panel-docs-stacked .docs-list li {
+    margin-bottom: 6px;
+    font-size: 0.875rem;
+}
+
+/* Clean Alert Subtext Formatting Overrides */
+.form-panel-docs-stacked .alert-text-fallback {
+    margin: 0;
+    font-size: 0.85rem;
+}

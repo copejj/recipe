@@ -3,7 +3,11 @@
 
 <!-- Explicitly routing layout dependencies via your global component baseline configuration -->
 
-<head th:replace="~{fragments/layout :: html_head('Role Matrix - Braindribbler')}"></head>
+
+<head>
+    <th:block th:replace="~{fragments/layout :: html_head('Role Matrix - Braindribbler')}"></th:block>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/admin/roles-list.css}" />
+</head>
 
 <body>
 
@@ -35,7 +39,7 @@
                 rowTemplate=~{::matrixRows}
             )}">
 
-                <!-- Table Headers Slot (FIXED: Action shifted to the far left) -->
+                <!-- Table Headers Slot -->
                 <th:block th:fragment="matrixHeaders">
                     <tr>
                         <th class="matrix-col-actions">Actions</th>
@@ -45,19 +49,20 @@
                     </tr>
                 </th:block>
 
-                <!-- Table Rows Slot -->
+                <!-- Table Rows Slot Blueprint Block -->
                 <th:block th:fragment="matrixRows">
                     <tr>
-                        <td class="matrix-actions-cell">
+                        <!-- data-label markers mapping your desktop header text exactly -->
+                        <td class="matrix-actions-cell" data-label="Actions">
                             <div class="admin-btn-group">
-                                <!-- Reusable Edit Action Component Call replacing loose 'Modify Options' link -->
-                                <a
-                                    th:replace="~{fragments/actions :: editLink(targetUrl=@{/admin/roles/edit/{id}(id=${item.roleId})})}"></a>
+                                <th:block
+                                    th:replace="~{fragments/actions :: editLink(targetUrl=@{/admin/roles/edit/{id}(id=${item.roleId})})}">
+                                </th:block>
                             </div>
                         </td>
-                        <td class="role-name-cell" th:text="${item.roleName}">ROLE_ADMIN</td>
-                        <td th:text="${item.description}">Administrative access</td>
-                        <td>
+                        <td class="role-name-cell" data-label="Role Name" th:text="${item.roleName}">ROLE_ADMIN</td>
+                        <td data-label="Description" th:text="${item.description}">Administrative access</td>
+                        <td data-label="Permissions">
                             <div class="badge-container">
                                 <span th:each="perm : ${item.permissions}" class="badge-permission"
                                     th:text="${perm.permissionName}">can_manage_users</span>
@@ -67,7 +72,6 @@
                         </td>
                     </tr>
                 </th:block>
-
             </div>
 
         </div>
@@ -83,6 +87,7 @@
     </main>
 
     <div th:replace="~{fragments/layout :: footer}"></div>
+    <script type="text/javascript" th:src="@{/js/admin/roles-list.js}"></script>
 
     <script>
         // Native browser overlay engine controls
