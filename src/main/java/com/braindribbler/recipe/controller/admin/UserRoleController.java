@@ -2,8 +2,10 @@ package com.braindribbler.recipe.controller.admin;
 
 import com.braindribbler.recipe.domain.auth.Role;
 import com.braindribbler.recipe.domain.auth.User;
+import com.braindribbler.recipe.dto.recipe.RecipeStats;
 import com.braindribbler.recipe.repository.auth.RoleRepository;
 import com.braindribbler.recipe.repository.auth.UserRepository;
+import com.braindribbler.recipe.repository.recipe.RecipeRepository;
 import com.braindribbler.recipe.service.auth.RoleRankCache;
 
 import org.springframework.security.access.AccessDeniedException;
@@ -29,12 +31,14 @@ public class UserRoleController {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final RoleRankCache roleRankCache;
+    private final RecipeRepository recipeRepository;
 
     public UserRoleController(UserRepository userRepository, RoleRepository roleRepository,
-            RoleRankCache roleRankCache) {
+            RoleRankCache roleRankCache, RecipeRepository recipeRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.roleRankCache = roleRankCache;
+        this.recipeRepository = recipeRepository;
     }
 
     /**
@@ -61,7 +65,7 @@ public class UserRoleController {
         // admin's rank
         List<Role> assignableRoles = roleRepository.findAll().stream()
                 .filter(role -> getRoleRankValue(role.getRoleName()) < loggedInAdminMaxRank)
-                .collect(java.util.stream.Collectors.toList()); // <-- Fixed clean termination point
+                .collect(java.util.stream.Collectors.toList());
 
         // 4. Calculate functional deletion capability flag
         boolean canDelete = false;
@@ -70,11 +74,17 @@ public class UserRoleController {
                     .anyMatch(a -> a.getAuthority().equals("can_delete_users"));
         }
 
+        // --- 3. FETCH THE COMPREHENSIVE RECIPE COUNTS FROM POSTGRES ---
+        RecipeStats recipeStats = recipeRepository.getRecipeStatsByUserId(targetUser.getUserId());
+
         model.addAttribute("targetUser", targetUser);
         model.addAttribute("assignableRoles", assignableRoles);
-        model.addAttribute("canDelete", canDelete); // Passed directly to HTML
+        model.addAttribute("canDelete", canDelete);
 
-        return "admin/users/edit"; // Points to templates/admin/user-edit.html
+        // --- 4. ATTACH THE STATS OBJECT TO THE THYMELEAF MODEL ---
+        model.addAttribute("recipeStats", recipeStats);
+
+        return "admin/users/edit";
     }
 
     /**
