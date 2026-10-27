@@ -1,83 +1,149 @@
 <!DOCTYPE html>
 <html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
 
-<head th:replace="~{fragments/layout :: html_head('Modify Access - Braindribbler')}"></head>
+<head th:replace="~{fragments/layout :: html_head('Modify Access - Braindribbler')}">
+</head>
 
 <body>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/admin/users-edit.css}" />
     <div th:replace="~{fragments/layout :: header}"></div>
 
     <main class="page-card other-layout">
         <h1 class="page-title">Manage Permissions</h1>
         <p class="page-subtitle" th:text="'Modifying role clusters for: ' + ${targetUser.displayName}"></p>
 
-        <form th:action="@{/admin/users/edit/{publicId}/roles(publicId=${targetUser.publicId})}" method="post">
+        <!-- Dynamic Grid Wrap Layout Structure -->
+        <form th:action="@{/admin/users/edit/{publicId}/roles(publicId=${targetUser.publicId})}" method="post"
+            class="workspace-form">
 
-            <!-- SECTION 1: ACCOUNT STATUS INACTIVE TOGGLE -->
-            <div sec:authorize="hasAuthority('can_manage_users')" class="form-group status-toggle-group">
-                <label class="form-label">System Account Status</label>
-                <div class="permission-checkbox-card profile-state-card">
+            <!-- LEFT COLUMN: INPUT CONTROL PANEL -->
+            <div class="form-panel-main">
 
-                    <!-- Renamed parameter to inactiveStatus -->
-                    <input type="checkbox" name="inactiveStatus" id="accountInactive"
-                        th:checked="${targetUser.disabledAt != null}" />
+                <!-- SECTION: ASIGNABLE ROLES CHECKBOXES MATRIX -->
+                <div class="form-field-group">
+                    <label class="form-label">Assignable Roles</label>
 
-                    <div class="permission-checkbox-details">
-                        <label for="accountInactive">Set Profile to Inactive</label>
-                        <small th:if="${targetUser.disabledAt == null}">Account is active. Checking this will restrict
-                            system login immediately.</small>
+                    <div class="permission-checkbox-grid">
+                        <div th:each="role : ${assignableRoles}" class="permission-checkbox-card">
 
-                        <!-- Auditing Display Label -->
-                        <div th:if="${targetUser.disabledAt != null}" class="form-error-msg">
-                            <span>Account is currently <strong>Inactive</strong>.</span><br />
-                            <small
-                                th:text="'Disabled on: ' + ${#temporals.format(targetUser.disabledAt, 'yyyy-MM-dd HH:mm')}"></small><br />
-                            <small th:if="${targetUser.disabledBy != null}"
-                                th:text="'Disabled by: ' + ${targetUser.disabledBy.displayName} + ' (' + ${targetUser.disabledBy.userAuth.email} + ')'">
-                            </small>
+                            <!-- SECURITY PROTECTION: Disable baseline role checkbox -->
+                            <input type="checkbox" name="selectedRoles" th:value="${role.roleId}"
+                                th:id="'role_' + ${role.roleId}"
+                                th:checked="${targetUser.roles.contains(role) || role.roleName == 'ROLE_USER'}"
+                                th:disabled="${role.roleName == 'ROLE_USER'}" />
+
+                            <!-- Hidden fallback context data input link -->
+                            <input type="hidden" th:if="${role.roleName == 'ROLE_USER'}" name="selectedRoles"
+                                th:value="${role.roleId}" />
+
+                            <div class="permission-checkbox-details">
+                                <label th:for="'role_' + ${role.roleId}" th:text="${role.roleName}"></label>
+                                <small
+                                    th:text="${role.description != null ? role.description : 'Grants access to this group layer.'}"></small>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- SECTION 2: ASIGNABLE ROLES CHECKBOXES MATRIX -->
-            <div class="form-group form-group--last">
-                <label class="form-label">Assignable Roles</label>
-
-                <div class="permission-checkbox-grid">
-                    <div th:each="role : ${assignableRoles}" class="permission-checkbox-card">
-
-                        <!-- SECURITY PROTECTION: Disable the checkbox if it is the baseline user role -->
-                        <input type="checkbox" name="selectedRoles" th:value="${role.roleId}"
-                            th:id="'role_' + ${role.roleId}"
-                            th:checked="${targetUser.roles.contains(role) || role.roleName == 'ROLE_USER'}"
-                            th:disabled="${role.roleName == 'ROLE_USER'}" />
-
-                        <!-- Keep a hidden fallback input so the browser still transmits the ROLE_USER ID back to Java if disabled -->
-                        <input type="hidden" th:if="${role.roleName == 'ROLE_USER'}" name="selectedRoles"
-                            th:value="${role.roleId}" />
-
-                        <div class="permission-checkbox-details">
-                            <label th:for="'role_' + ${role.roleId}" th:text="${role.roleName}"></label>
-                            <small
-                                th:text="${role.description != null ? role.description : 'Grants access to this group layer.'}"></small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- COMPONENT CONSOLIDATION: Replaced inline styles with structural wrapper rules and standard fragments -->
-            <div class="form-actions-footer action-bar-split">
-
-                <div class="modal-actions-footer custom-action-gap">
+                <!-- FORM COMPONENT FOOTER -->
+                <div class="form-actions-group">
                     <button
                         th:replace="~{fragments/actions :: saveBtn(itemId=${targetUser.disabledAt == null ? 1 : 0})}"></button>
                     <a th:replace="~{fragments/actions :: cancelLink(targetUrl=@{/admin/users})}"></a>
-                </div>
 
-                <div th:if="${canDelete and targetUser.publicId != null}">
-                    <button th:replace="~{fragments/actions :: deleteCfmBtn(formId='deleteUser')}"></button>
+                    <div th:if="${canDelete and targetUser.publicId != null}" style="margin-left: auto;">
+                        <button th:replace="~{fragments/actions :: deleteCfmBtn(formId='deleteUser')}"></button>
+                    </div>
                 </div>
             </div>
+            <!-- RIGHT COLUMN: SIDE DOCUMENTATION BAR LAYOUT PANEL -->
+            <div class="form-panel-docs">
+                <h3>Account Profile &amp; Stats</h3>
+
+                <!-- USER DETAILS SUMMARY TABLE -->
+                <table class="user-stats-table">
+                    <tbody>
+                        <tr>
+                            <th>First Name</th>
+                            <td th:text="${targetUser.firstName != null ? targetUser.firstName : 'N/A'}">John</td>
+                        </tr>
+                        <tr>
+                            <th>Last Name</th>
+                            <td th:text="${targetUser.lastName != null ? targetUser.lastName : 'N/A'}">Doe</td>
+                        </tr>
+                        <tr>
+                            <th>Display Name</th>
+                            <td th:text="${targetUser.displayName != null ? targetUser.displayName : 'N/A'}">johndoe123
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Email Address</th>
+                            <td class="text-break"
+                                th:text="${targetUser.userAuth?.email != null ? targetUser.userAuth.email : 'N/A'}">
+                                john.doe@example.com</td>
+                        </tr>
+                        <tr>
+                            <th>Last Login</th>
+                            <td
+                                th:text="${targetUser.userAuth?.lastLogin != null ? #temporals.format(targetUser.userAuth.lastLogin, 'yyyy-MM-dd HH:mm') : 'Never'}">
+                                2026-10-26 14:32</td>
+                        </tr>
+                        <tr>
+                            <th>Recipes</th>
+                            <td>
+                                <div class="recipe-metric-badge-grid">
+                                    <div class="metric-tag tag--total" title="Total Recipes Created">
+                                        <span class="metric-label">Total</span>
+                                        <span class="metric-value"
+                                            th:text="${recipeStats != null ? recipeStats.total : 0}">0</span>
+                                    </div>
+                                    <div class="metric-tag tag--public" title="Publicly Searchable Recipes">
+                                        <span class="metric-label">Public</span>
+                                        <span class="metric-value"
+                                            th:text="${recipeStats != null ? recipeStats.publicCount : 0}">0</span>
+                                    </div>
+                                    <div class="metric-tag tag--shared" title="Direct Link Shared / Unlisted">
+                                        <span class="metric-label">Shared</span>
+                                        <span class="metric-value"
+                                            th:text="${recipeStats != null ? recipeStats.sharedCount : 0}">0</span>
+                                    </div>
+                                    <div class="metric-tag tag--private" title="Private Draft Recipes">
+                                        <span class="metric-label">Private</span>
+                                        <span class="metric-value"
+                                            th:text="${recipeStats != null ? recipeStats.privateCount : 0}">0</span>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- CONTEXT COMPONENT: ACCOUNT STATUS INACTIVE TOGGLE -->
+                <div sec:authorize="hasAuthority('can_manage_users')" class="form-field-group"
+                    style="margin-top: 25px;">
+                    <label class="form-label">System Account Status</label>
+                    <div class="permission-checkbox-card profile-state-card">
+                        <input type="checkbox" name="inactiveStatus" id="accountInactive"
+                            th:checked="${targetUser.disabledAt != null}" />
+                        <div class="permission-checkbox-details">
+                            <label for="accountInactive">Set Profile to Inactive</label>
+                            <small th:if="${targetUser.disabledAt == null}">Account is active. Checking this will
+                                restrict system login immediately.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AUDITING CONTEXT DISPLAY COMPONENT -->
+                <div th:if="${targetUser.disabledAt != null}" class="docs-callout-warning">
+                    <span class="callout-title">Account Inactive</span>
+                    <p th:text="'Disabled on: ' + ${#temporals.format(targetUser.disabledAt, 'yyyy-MM-dd HH:mm')}"></p>
+                    <p th:if="${targetUser.disabledBy != null}"
+                        th:text="'By: ' + ${targetUser.disabledBy.displayName} + ' (' + ${targetUser.disabledBy.userAuth.email} + ')'">
+                    </p>
+                </div>
+            </div>
+
+
         </form>
 
         <!-- THE FUNCTIONAL EXTERNAL ACTION TARGET -->
@@ -90,7 +156,6 @@
     <div th:replace="~{fragments/layout :: footer}"></div>
 
     <script th:src="@{/js/admin/user-form.js}"></script>
-    <link rel="stylesheet" type="text/css" th:href="@{/css/admin/edit.css}" />
 </body>
 
 </html>

@@ -155,3 +155,142 @@
     border-color: #bd2130 !important;
     box-shadow: 0 0 8px rgba(220, 53, 69, 0.4);
 }
+
+/* Layout rule to structure checkboxes and text labels cleanly inline */
+.permission-checkbox-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.permission-checkbox-card {
+    display: flex;
+    align-items: flex-start;
+    /* Keeps checkbox level with the first row text */
+    gap: 12px;
+    /* Horizontal space context padding link wrapper */
+    padding: 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background-color: #ffffff;
+    transition: background-color 0.2s ease;
+}
+
+.permission-checkbox-card:hover {
+    background-color: #f8fafc;
+}
+
+/* Structural tweak forcing individual checkboxes to maintain geometry properties */
+.permission-checkbox-card input[type="checkbox"] {
+    margin-top: 2px;
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.permission-checkbox-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.permission-checkbox-details label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    cursor: pointer;
+    margin: 0;
+}
+
+.permission-checkbox-details small {
+    font-size: 13px;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+/* User Stats Table Structure */
+.user-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 13px;
+}
+
+.user-stats-table th {
+    text-align: left;
+    padding: 10px 8px;
+    color: #475569;
+    font-weight: 600;
+    border-bottom: 1px solid #e2e8f0;
+    width: 35%;
+    vertical-align: top;
+}
+
+.user-stats-table td {
+    padding: 10px 8px;
+    color: #0f172a;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: middle;
+}
+
+.user-stats-table .text-break {
+    word-break: break-all;
+}
+
+/* Recipe Metric Badges Grid */
+.recipe-metric-badge-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+}
+
+.metric-tag {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    border: 1px solid transparent;
+}
+
+.metric-tag .metric-label {
+    text-transform: uppercase;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.metric-tag .metric-value {
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.6);
+    padding: 1px 5px;
+    border-radius: 3px;
+}
+
+/* Contextual Badge Color Variance Classes */
+.tag--total {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #334155;
+}
+
+.tag--public {
+    background-color: #ecfdf5;
+    border-color: #a7f3d0;
+    color: #065f46;
+}
+
+.tag--shared {
+    background-color: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1e40af;
+}
+
+.tag--private {
+    background-color: #fff7ed;
+    border-color: #fed7aa;
+    color: #9a3412;
+}

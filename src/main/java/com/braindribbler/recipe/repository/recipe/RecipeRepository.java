@@ -1,6 +1,7 @@
 package com.braindribbler.recipe.repository.recipe;
 
 import com.braindribbler.recipe.domain.recipe.Recipe;
+import com.braindribbler.recipe.dto.recipe.RecipeStats;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -41,4 +42,17 @@ public interface RecipeRepository extends JpaRepository<Recipe, Integer> {
                         @Param("ingredientIds") List<Integer> ingredientIds,
                         @Param("isLoggedIn") boolean isLoggedIn,
                         @Param("currentUserId") Integer currentUserId);
+
+        // 3. Clean JPQL Aggregate Constructor query with COALESCE fallback wrappers
+        @Query("SELECT new com.braindribbler.recipe.dto.recipe.RecipeStats(" +
+                        "  CAST(COUNT(r) AS integer), " +
+                        "  CAST(COALESCE(SUM(CASE WHEN r.recipeVisibility.recipeVisibilityId = 1 THEN 1 ELSE 0 END), 0) AS integer), "
+                        +
+                        "  CAST(COALESCE(SUM(CASE WHEN r.recipeVisibility.recipeVisibilityId = 3 THEN 1 ELSE 0 END), 0) AS integer), "
+                        +
+                        "  CAST(COALESCE(SUM(CASE WHEN r.recipeVisibility.recipeVisibilityId = 2 THEN 1 ELSE 0 END), 0) AS integer)"
+                        +
+                        ") " +
+                        "FROM Recipe r WHERE r.user.userId = :userId")
+        RecipeStats getRecipeStatsByUserId(@Param("userId") Integer userId);
 }
