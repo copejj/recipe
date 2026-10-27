@@ -26,9 +26,9 @@
                 <!-- Define Header Structure -->
                 <th:block th:fragment="chefHeaders">
                     <tr>
-                        <th></th>
-                        <th>Display Name</th>
-                        <th>Email Address</th>
+                        <th>Action</th>
+                        <th>Display</th>
+                        <th>Email</th>
                         <th>Created At</th>
                         <th>Verification Status</th>
                         <th>Account Status</th>
@@ -38,7 +38,7 @@
                 <!-- Define Row Structure -->
                 <th:block th:fragment="chefRow">
                     <tr>
-                        <td>
+                        <td data-label="Action">
                             <th:block th:if="${item.highestRoleRankValue < loggedInAdminRank}">
                                 <a
                                     th:replace="~{fragments/actions :: editLink(targetUrl=@{/admin/users/edit/{id}(id=${item.publicId})})}"></a>
@@ -48,16 +48,19 @@
                                 <span th:replace="~{fragments/actions :: lockedBadge}"></span>
                             </th:block>
                         </td>
-                        <td class="role-name-cell" th:text="${item.displayName}">SousChefJane</td>
-                        <td th:text="${item.userAuth != null ? item.userAuth.email : 'N/A'}">chef@braindribbler.com</td>
-                        <td th:text="${#temporals.format(item.createdAt, 'yyyy-MM-dd HH:mm')}">2026-10-08</td>
-                        <td>
+                        <td data-label="Display" class="role-name-cell" th:text="${item.displayName}">SousChefJane
+                        </td>
+                        <td data-label="Email" th:text="${item.userAuth != null ? item.userAuth.email : 'N/A'}">
+                            chef@braindribbler.com</td>
+                        <td data-label="Created At" th:text="${#temporals.format(item.createdAt, 'yyyy-MM-dd HH:mm')}">
+                            2026-10-08</td>
+                        <td data-label="Verification Status">
                             <span th:if="${item.userAuth != null && item.userAuth.verified}"
                                 class="status-text--verified">Verified</span>
                             <span th:if="${item.userAuth == null || !item.userAuth.verified}"
                                 class="status-text--pending">Pending Link</span>
                         </td>
-                        <td>
+                        <td data-label="Account Status">
                             <span th:if="${item.disabledAt == null}" class="status-text--active">Active</span>
                             <span th:if="${item.disabledAt != null}" class="status-text--banned">Inactive</span>
                         </td>

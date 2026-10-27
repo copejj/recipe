@@ -1,0 +1,53 @@
+/* ==========================================================================
+   ROLE MATRIX CUSTOM DISPLAY WIDTHS & CONTENT WRAPPING
+   ========================================================================== */
+
+#roleMatrixTable {
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#roleMatrixTable th.matrix-col-actions,
+#roleMatrixTable td.matrix-actions-cell {
+    width: 5rem;
+    vertical-align: middle;
+}
+
+#roleMatrixTable th.role-name-cell,
+#roleMatrixTable td.role-name-cell {
+    width: 20rem;
+    vertical-align: middle;
+    font-size: .75rem;
+}
+
+#roleMatrixTable th:nth-child(3),
+#roleMatrixTable td:nth-child(3) {
+    width: 25%;
+    white-space: normal;
+    word-break: break-word;
+}
+
+#roleMatrixTable th:nth-child(4),
+#roleMatrixTable td:nth-child(4) {
+    width: 45%;
+}
+
+#roleMatrixTable .badge-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px 8px;
+    width: 100%;
+}
+
+#roleMatrixTable .badge-permission {
+    display: inline-block;
+    white-space: nowrap;
+}
+
+#roleMatrixTable .badge-permission--none {
+    color: var(--color-text-muted);
+    font-style: italic;
+    font-size: 0.875rem;
+}

@@ -41,8 +41,8 @@
             <!-- Table Headers Slot -->
             <tr th:fragment="recipeHeaders">
                 <th style="text-align: left; width: 15%;">Actions</th>
-                <th>Recipe Title</th>
-                <th>Description Summary</th>
+                <th>Title</th>
+                <th>Summary</th>
                 <th style="width: 12%;">Servings</th>
                 <th style="width: 15%;">Visibility</th>
             </tr>
@@ -50,7 +50,7 @@
             <!-- Table Rows Slot (Uses 'item' context variable populated by the fragment) -->
             <tr th:fragment="recipeRows" th:data-href="@{/recipes/view/{id}(id=${item.recipeId})}"
                 style="cursor: pointer;">
-                <td class="actions-cell">
+                <td data-label="Actions" class="actions-cell">
                     <div class="admin-btn-group" style="display: inline-flex; gap: 6px;">
                         <a
                             th:replace="~{fragments/actions :: editLink(targetUrl=@{/recipes/edit/{id}(id=${item.recipeId})})}"></a>
@@ -58,17 +58,18 @@
                             th:replace="~{fragments/actions :: viewLink(targetUrl=@{/recipes/view/{id}(id=${item.recipeId})})}"></a>
                     </div>
                 </td>
-                <td>
+                <td data-label="Title">
                     <strong th:text="${item.title}"
                         style="font-weight: 700; color: var(--color-text-dark); font-size: 1.05rem; display: block;">
                         Title </strong>
                 </td>
-                <td th:text="${item.description != null && !item.description.isEmpty() ? item.description : 'No description provided.'}"
+                <td data-label="Summary"
+                    th:text="${item.description != null && !item.description.isEmpty() ? item.description : 'No description provided.'}"
                     style="color: var(--color-text-muted); font-size: 0.9rem;"> Description </td>
-                <td data-label="Servings:">
+                <td data-label="Servings">
                     <span th:text="${item.servings != null ? item.servings : '—'}">4</span> ppl
                 </td>
-                <td data-label="Visibility:">
+                <td data-label="Visibility">
                     <span class="badge-permission"
                         th:text="${item.recipeVisibility != null ? item.recipeVisibility.visibilityName : 'Public'}"
                         style="padding: 4px 8px; font-size: 0.8rem; border-radius: 4px; background-color: var(--color-bg-disabled, #eee); color: var(--color-text-dark);">Public</span>

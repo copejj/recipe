@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
 
-<head th:replace="~{fragments/layout :: html_head('Add New Recipe')}"></head>
+<head>
+    <th:block th:replace="~{fragments/layout :: html_head('Add New Recipe')}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/recipes/create.css}" />
+</head>
 
 <body>
-    <div id="form-toast-notification"
-        style="position: fixed; top: 24px; right: 24px; min-width: 300px; padding: 16px 20px; border-radius: 8px; color: white; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 100000; display: flex; align-items: center; gap: 12px; transform: translateY(-20px); opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.25);">
-        <span id="toast-icon" style="font-size: 1.25rem;"></span>
+    <!-- Global Event Form Toast Feedback Notification Element -->
+    <div id="form-toast-notification" class="toast-notification">
+        <span id="toast-icon" class="toast-icon-badge"></span>
         <span id="toast-message"></span>
     </div>
 
@@ -19,7 +22,7 @@
         <form th:action="@{/recipes/create}" th:object="${recipeForm}" method="post" id="recipeForm">
             <input type="hidden" id="recipeId" th:field="*{recipeId}" />
 
-            <!-- Global Recipe Metadata -->
+            <!-- Global Recipe Metadata Fields -->
             <div class="form-group">
                 <label class="form-label" for="title">Recipe Title</label>
                 <input type="text" th:field="*{title}" class="form-input" placeholder="e.g., Grandma's Sourdough Bread"
@@ -32,12 +35,13 @@
                     placeholder="Briefly describe the dish's background or tasting notes..."></textarea>
             </div>
 
-            <div style="display: flex; gap: 16px;">
-                <div class="form-group" style="flex: 1;">
+            <!-- Metadata Metrics Layout Split Row Grid -->
+            <div class="metadata-split-row">
+                <div class="form-group input-flexible-fill">
                     <label class="form-label" for="servings">Servings Count</label>
                     <input type="number" th:field="*{servings}" class="form-input" min="1" required />
                 </div>
-                <div class="form-group" style="flex: 1;">
+                <div class="form-group input-flexible-fill">
                     <label class="form-label" for="recipeVisibilityId">Privacy & Visibility Setting</label>
                     <select th:field="*{recipeVisibilityId}" class="form-input" required>
                         <option value="">-- Choose Visibility --</option>
@@ -47,57 +51,45 @@
                 </div>
             </div>
 
-            <hr class="dashboard-divider" style="margin: 30px 0;" />
+            <hr class="dashboard-divider section-break-divider" />
 
             <!-- Dynamic Interactive Timeline Section -->
             <h2>Instructions & Ingredients Blueprint</h2>
             <div id="steps-container">
 
                 <!-- Step Card Master Template Row Block -->
-                <div th:each="step, stepStat : *{steps}" class="step-card form-group"
-                    th:data-step-index="${stepStat.index}"
-                    style="border: 1px solid var(--color-border); padding: 24px; border-radius: 8px; margin-bottom: 24px; background-color: var(--color-bg-card); position: relative;">
+                <div th:each="step, stepStat : *{steps}" class="step-card form-group template-step-card-blueprint"
+                    th:data-step-index="${stepStat.index}">
 
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                        <h3 style="margin: 0; font-size: 1.25rem; color: var(--color-primary);">Step <span
-                                class="step-number-label" th:text="${stepStat.count}">1</span></h3>
-                        <button type="button" class="btn remove-step-btn"
-                            style="width: auto; padding: 6px 12px; font-size: 0.8rem; background-color: var(--color-danger-raw); color: white; display: none;">Remove
-                            Step</button>
+                    <div class="step-card-header-bar">
+                        <h3 class="step-card-main-title">Step <span class="step-number-label"
+                                th:text="${stepStat.count}">1</span></h3>
+                        <button type="button" class="btn remove-step-btn btn-danger-action-pill">Remove Step</button>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Instructions</label>
-                        <!-- FIXED: Added data-auto-grow identifier, manual resizing remains fully functional -->
                         <textarea th:field="*{steps[__${stepStat.index}__].instructionText}" class="form-input" rows="2"
                             data-auto-grow
                             placeholder="Describe the culinary tasks for this step (e.g., Whisk eggs and sugar until pale)..."
                             required></textarea>
                     </div>
 
-                    <!-- Locate this container inside templates/recipes/create.html -->
-                    <div class="ingredients-section"
-                        style="margin-top: 18px; padding-left: 20px; border-left: 3px solid var(--color-primary);">
-                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
-                            <label class="form-label" style="color: var(--color-text-dark); margin: 0;">Ingredients
-                                Needed for this Step</label>
-                            <button type="button" class="open-quick-ing-btn"
-                                style="background: none; border: none; color: var(--color-primary); cursor: pointer; font-size: 0.85rem; font-weight: 600; padding: 0;">✨
-                                Missing an ingredient?</button>
+                    <div class="ingredients-section timeline-ingredients-scope-box">
+                        <div class="ingredients-section-header-alignment">
+                            <label class="form-label label-inline-reset">Ingredients Needed for this Step</label>
+                            <button type="button" class="open-quick-ing-btn embedded-modal-trigger-link">✨ Missing an
+                                ingredient?</button>
                         </div>
 
                         <div class="ingredients-container">
-                            <!-- FIXED: ONLY generate rows if we are in EDIT MODE and have saved data. Fresh steps start empty! -->
                             <th:block th:if="${isEditMode and step.ingredients != null}">
-                                <div th:each="ing, ingStat : ${step.ingredients}" class="ingredient-row"
-                                    th:data-ing-index="${ingStat.index}"
-                                    style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                                <div th:each="ing, ingStat : ${step.ingredients}"
+                                    class="ingredient-row row-flex-alignment-grid" th:data-ing-index="${ingStat.index}">
 
-                                    <!-- 1. ADJUSTED INGREDIENT SELECT dropdown with custom classification tracking data attributes -->
                                     <select
                                         th:name="|steps[${stepStat.index}].ingredients[${ingStat.index}].ingredientId|"
-                                        class="form-input" style="flex: 2.5;" required>
+                                        class="form-input select-width-weight-large" required>
                                         <option value="">-- Choose Ingredient --</option>
                                         <option th:each="i : ${allIngredients}" th:value="${i.ingredientId}"
                                             th:text="${i.ingredientName}"
@@ -105,19 +97,18 @@
                                             th:data-classification="${i.classification.name()}"></option>
                                     </select>
 
-                                    <!-- Amount input field wrapper (STAYS AS IS) -->
                                     <div class="amount-wrapper">
                                         <input type="number" step="0.25"
                                             th:name="|steps[${stepStat.index}].ingredients[${ingStat.index}].amount|"
-                                            th:value="${ing.amount}" class="form-input amount-input"
-                                            placeholder="Amount" style="width: 100%;" required />
+                                            th:value="${ing.amount}"
+                                            class="form-input amount-input input-forced-full-width" placeholder="Amount"
+                                            required />
                                         <div class="fraction-bubble"></div>
                                     </div>
 
-                                    <!-- 2. ADJUSTED MEASUREMENT SELECT dropdown with detailed conversion specifications metadata attributes -->
                                     <select
                                         th:name="|steps[${stepStat.index}].ingredients[${ingStat.index}].measurementId|"
-                                        class="form-input" style="flex: 1.5;" required>
+                                        class="form-input select-width-weight-medium" required>
                                         <option value="">-- Unit --</option>
                                         <option th:each="m : ${measurements}" th:value="${m.measurementId}"
                                             th:text="${m.unitName}"
@@ -127,31 +118,22 @@
                                         </option>
                                     </select>
 
-                                    <!-- Ingredient Note field wrapper (STAYS AS IS) -->
                                     <input type="text"
                                         th:name="|steps[${stepStat.index}].ingredients[${ingStat.index}].ingredientNote|"
-                                        th:value="${ing.ingredientNote}" class="form-input"
-                                        placeholder="Note (e.g., melted, chilled)" style="flex: 2;" />
+                                        th:value="${ing.ingredientNote}" class="form-input select-width-weight-large"
+                                        placeholder="Note (e.g., melted, chilled)" />
 
-                                    <!-- Row Removal button wrapper (STAYS AS IS) -->
-                                    <button type="button" class="btn remove-ing-btn"
-                                        style="width: auto; padding: 10px 14px; font-size: 1rem; margin: 0; background-color: #e9ecef; color: var(--color-text-dark); border: 1px solid var(--color-border-input); border-radius: 6px;">×</button>
+                                    <button type="button" class="btn remove-ing-btn btn-square-row-dismiss">×</button>
                                 </div>
                             </th:block>
                         </div>
-
-
-                        <!-- HIGH-VISIBILITY DESIGN: Button styled with an accent border and hover color weights -->
-                        <button type="button" class="btn add-ingredient-btn"
-                            style="width: auto; padding: 8px 16px; font-size: 0.85rem; font-weight: 700; background-color: #f8f9fa; border: 2px solid var(--color-primary); color: var(--color-primary); margin-top: 6px; border-radius: 6px; transition: all 0.2s ease;">
+                        <button type="button" class="btn add-ingredient-btn btn-high-visibility-accent">
                             ➕ Add Ingredient to Step
                         </button>
                     </div>
 
-                    <!-- Add this component block at the very bottom line inside your *{steps} loop card wrapper container in create.html -->
-                    <div style="text-align: center; margin-top: 14px; margin-bottom: -14px;">
-                        <button type="button" class="insert-step-here-btn"
-                            style="background-color: transparent; border: 1px dashed var(--color-primary); color: var(--color-primary); padding: 4px 12px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; cursor: pointer; transition: all 0.2s ease;">
+                    <div class="timeline-step-insertion-point-wrapper">
+                        <button type="button" class="btn insert-step-here-btn btn-dashed-insertion-action">
                             ➕ Insert a New Step
                         </button>
                     </div>
@@ -159,154 +141,115 @@
 
             </div>
 
-            <hr class="dashboard-divider" style="margin: 30px 0;" />
+            <hr class="dashboard-divider section-break-divider" />
 
-            <div class="form-group" style="margin-bottom: 24px;">
-                <label class="form-label" for="recipeNote"
-                    style="font-weight: 700; color: var(--color-text-dark);">General Recipe Notes</label>
+            <div class="form-group global-recipe-notes-margin-box">
+                <label class="form-label label-bold-dark-theme" for="recipeNote">General Recipe Notes</label>
                 <textarea th:field="*{recipeNote}" class="form-input" rows="3"
                     placeholder="Optional notes about presentation templates, pairing ideas, or storage parameters..."></textarea>
             </div>
 
-            <!-- Global Timeline Action Controllers -->
-            <div class="form-actions-footer"
-                style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-top: 20px; border-top: 1px solid var(--color-border);">
-
-                <!-- Left Side: Standard Save Operations -->
-                <div style="display: flex; gap: 12px;">
+            <!-- Global Timeline Action Buttons Footer Bar Container -->
+            <div class="form-actions-footer application-form-footer-action-bar">
+                <div class="footer-save-operations-left-cluster">
                     <button type="button" id="save-stay-btn" class="btn">Save Recipe</button>
-                    <button type="button" id="finish-view-btn" class="btn btn--primary"
-                        style="white-space: nowrap;">Finish & View Recipe</button>
+                    <button type="button" id="finish-view-btn"
+                        class="btn btn--primary explicit-text-nowrap-bound">Finish & View Recipe</button>
                 </div>
 
-                <!-- Right Side: Clean Conditional Delete Action -->
                 <div th:if="${recipeForm.recipeId != null}">
-                    <button type="submit" form="deleteForm" class="btn inline-delete-btn" data-confirmed="false"
-                        style="background-color: #ffffff; color: #dc3545; border: 2px solid #dc3545; padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s ease-in-out; font-size: 0.95rem;">
+                    <button type="submit" form="deleteForm" class="btn inline-delete-btn btn-outline-danger-action-card"
+                        data-confirmed="false">
                         Delete Recipe
                     </button>
                 </div>
-
             </div>
         </form>
 
-        <!-- THE FUNCTIONAL EXTERNAL ACTION TARGET -->
         <form th:if="${recipeForm.recipeId != null}" id="deleteForm"
-            th:action="@{/recipes/delete/{id}(id=${recipeForm.recipeId})}" method="post" class="delete-recipe-form"
-            style="display: none;">
-        </form>
+            th:action="@{/recipes/delete/{id}(id=${recipeForm.recipeId})}" method="post"
+            class="delete-recipe-form hidden-element-pool"></form>
     </main>
 
-    <!-- Native HTML5 Dialog Component for Quick Adding Missing Ingredients -->
+    <!-- Native HTML5 Dialog Interactive Component Layer -->
     <dialog id="quickIngredientModal" class="admin-modal">
         <h3>Suggest a Missing Ingredient</h3>
-        <p style="font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 20px;">
+        <p class="modal-descriptive-subtitle">
             Can't find your ingredient? Type it below to instantly add it to your selection drop-downs.
             It will be saved as unverified until approved by a content moderator.
         </p>
 
-        <!-- Error/Success feedback block inside the modal -->
-        <div id="modal-feedback-msg" class="form-error-msg" style="display: none; margin-bottom: 12px;"></div>
+        <div id="modal-feedback-msg" class="form-error-msg hidden-element-pool modal-spacing-bottom-medium"></div>
 
-        <!-- Inside <dialog id="quickIngredientModal"> ... -->
         <form id="quickIngredientForm" method="dialog">
-
-            <!-- Ingredient Name Input Field -->
-            <div class="form-group" style="margin-bottom: 15px;">
-                <label for="quickIngredientName"
-                    style="display: block; margin-bottom: 5px; font-weight: bold;">Ingredient Name:</label>
-                <input type="text" id="quickIngredientName" class="form-input" style="width: 100%;" required
+            <div class="form-group modal-spacing-bottom-medium">
+                <label for="quickIngredientName" class="modal-input-bold-heading-label">Ingredient Name:</label>
+                <input type="text" id="quickIngredientName" class="form-input input-forced-full-width" required
                     placeholder="e.g., Heavy Cream" />
             </div>
 
-            <!-- Kitchen Unit Track (Classification) Selector -->
-            <div class="form-group" style="margin-bottom: 1.5rem;">
-                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--color-text-dark);">
+            <div class="form-group modal-classification-group-wrapper">
+                <label class="modal-classification-section-label">
                     Ingredient Type & Sizing Rules:
                 </label>
 
-                <!-- Hidden input to bind the value for the form submission seamlessly -->
                 <input type="hidden" id="quickIngredientClassification" name="classification" value="SOLID" />
 
-                <!-- Visual Interactive Grid Option Blocks -->
-                <div class="classification-selector-grid"
-                    style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
-
-                    <!-- SOLID SELECTION BLOCK -->
-                    <button type="button" class="class-selector-card active" data-value="SOLID"
-                        style="border: 2px solid #198754; background: #f4fbf7; padding: 0.75rem; border-radius: 6px; text-align: left; cursor: pointer; transition: all 0.2s;">
-                        <div style="font-weight: bold; color: #198754; margin-bottom: 4px;">SOLID</div>
-                        <div style="font-size: 0.75rem; color: #555; line-height: 1rem;">Whole amounts, count variables,
-                            slices, pieces, cloves, packages.</div>
+                <div class="modal-classification-three-column-grid">
+                    <button type="button" class="class-selector-card active selector-card-solid" data-value="SOLID">
+                        <div class="heading-solid">SOLID</div>
+                        <div class="card-description-body-text">Whole amounts, count variables, slices, pieces, cloves,
+                            packages.</div>
                     </button>
 
-                    <!-- WET SELECTION BLOCK -->
-                    <button type="button" class="class-selector-card" data-value="WET"
-                        style="border: 2px solid #dee2e6; background: #fff; padding: 0.75rem; border-radius: 6px; text-align: left; cursor: pointer; transition: all 0.2s;">
-                        <div style="font-weight: bold; color: #0dcaf0; margin-bottom: 4px;">WET / LIQUID</div>
-                        <div style="font-size: 0.75rem; color: #555; line-height: 1rem;">Fluids using Cups, Teaspoons,
-                            Pints, Quarts, Gallons, Fluid Ounces.</div>
+                    <button type="button" class="class-selector-card selector-card-wet" data-value="WET">
+                        <div class="card-heading-wet">WET / LIQUID</div>
+                        <div class="card-description-body-text">Fluids using Cups, Teaspoons, Pints, Quarts, Gallons,
+                            Fluid Ounces.</div>
                     </button>
 
-                    <!-- DRY SELECTION BLOCK -->
-                    <button type="button" class="class-selector-card" data-value="DRY"
-                        style="border: 2px solid #dee2e6; background: #fff; padding: 0.75rem; border-radius: 6px; text-align: left; cursor: pointer; transition: all 0.2s;">
-                        <div style="font-weight: bold; color: #ffc107; margin-bottom: 4px;">DRY VOLUME</div>
-                        <div style="font-size: 0.75rem; color: #555; line-height: 1rem;">Powders, spices, or grains
-                            using Teaspoons, Tablespoons, Cups, Pounds.</div>
+                    <button type="button" class="class-selector-card selector-card-dry" data-value="DRY">
+                        <div class="card-heading-dry">DRY VOLUME</div>
+                        <div class="card-description-body-text">Powders, spices, or grains using Teaspoons, Tablespoons,
+                            Cups, Pounds.</div>
                     </button>
-
                 </div>
             </div>
 
-            <!-- Grocery Category Selection Dropdown Field -->
-            <div class="form-group" style="margin-bottom: 15px;">
-                <label for="quickGroceryCategoryId"
-                    style="display: block; margin-bottom: 5px; font-weight: bold;">Grocery Category:</label>
-                <select id="quickGroceryCategoryId" class="form-input" style="width: 100%;" required>
+            <div class="form-group modal-spacing-bottom-medium">
+                <label for="quickGroceryCategoryId" class="modal-input-bold-heading-label">Grocery Category:</label>
+                <select id="quickGroceryCategoryId" class="form-input input-forced-full-width" required>
                     <option value="" disabled selected>-- Select Aisle --</option>
-                    <!-- Corrected attribute variable target layout reference list matching controller metadata model mapping name -->
                     <option th:each="cat : ${groceryCategories}" th:value="${cat.groceryCategoryId}"
                         th:text="${cat.categoryName}"></option>
                 </select>
             </div>
 
-            <!-- Error/Feedback Container Message Window -->
-            <div id="modal-feedback-msg"
-                style="display: none; margin-bottom: 15px; font-size: 0.9rem; font-weight: bold;"></div>
-
-            <!-- Modal Form Lower Control Bar Options Buttons Layout Wrapper -->
-            <div class="modal-actions" style="display: flex; justify-content: flex-end; gap: 10px;">
-                <button type="button" id="closeQuickIngBtn" class="btn btn-secondary"
-                    style="background-color: #e9ecef; color: #495057;">Cancel</button>
-                <button type="submit" class="btn btn-primary" style="background-color: #007bff; color: white;">Add
-                    Ingredient</button>
+            <div class="modal-actions modal-footer-alignment-row">
+                <button type="button" id="closeQuickIngBtn"
+                    class="btn btn-secondary btn-modal-dismiss-grey">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-modal-submit-blue">Add Ingredient</button>
             </div>
         </form>
     </dialog>
 
-    <footer th:replace="~{fragments/layout :: footer}"></footer>
-
-    <script th:src="@{/js/recipe-form.js}"></script>
-
-    <!-- Hidden Master Options templates for clean jQuery cloning -->
-    <div style="display: none;" aria-hidden="true">
-
-        <select id="ingredient-options-pool" style="display:none;">
+    <div class="hidden-element-pool" aria-hidden="true">
+        <select id="ingredient-options-pool" class="hidden-element-pool">
             <option value="">-- Choose Ingredient --</option>
             <option th:each="ing : ${allIngredients}" th:value="${ing.ingredientId}" th:text="${ing.ingredientName}"
                 th:data-classification="${ing.classification.name()}"></option>
         </select>
 
-        <select id="measurement-options-pool" style="display:none;">
+        <select id="measurement-options-pool" class="hidden-element-pool">
             <option value="">-- Unit --</option>
             <option th:each="m : ${measurements}" th:value="${m.measurementId}" th:text="${m.unitName}"
                 th:data-base-type="${m.baseTypeId}" th:data-unit-id="${m.measurementId}"
-                th:data-is-metric="${m.isMetric}" th:data-scaling-rank="${m.scalingRank}">
-            </option>
+                th:data-is-metric="${m.isMetric}" th:data-scaling-rank="${m.scalingRank}"></option>
         </select>
-
     </div>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <script th:src="@{/js/recipe-form.js}"></script>
 </body>
 
 </html>

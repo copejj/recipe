@@ -1,0 +1,459 @@
+/* ==========================================================================
+   Recipe Creation Layout Stylesheet - Part 1
+   Path: src/main/resources/static/css/recipes/create.css
+   ========================================================================== */
+
+/* Toast UI Message Overlay System Component */
+.toast-notification {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    min-width: 300px;
+    padding: 16px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transform: translateY(-20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.25);
+}
+
+.toast-icon-badge {
+    font-size: 1.25rem;
+}
+
+/* Metadata & Form Grid Utilities Layout rules */
+.metadata-split-row {
+    display: flex;
+    gap: 16px;
+}
+
+.input-flexible-fill {
+    flex: 1;
+}
+
+.section-break-divider {
+    margin: 30px 0;
+}
+
+/* Master Step Cards Blueprint Nodes */
+.template-step-card-blueprint {
+    border: 1px solid var(--color-border);
+    padding: 24px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    background-color: var(--color-bg-card);
+    position: relative;
+}
+
+.step-card-header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.step-card-main-title {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--color-primary);
+}
+
+.btn-danger-action-pill {
+    width: auto;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    background-color: var(--color-danger-raw);
+    color: white;
+    display: none;
+    /* Managed dynamically via JavaScript */
+}
+
+/* Timeline Ingredient Section Scope Container Wrappers */
+.timeline-ingredients-scope-box {
+    margin-top: 18px;
+    padding-left: 20px;
+    border-left: 3px solid var(--color-primary);
+}
+
+.ingredients-section-header-alignment {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.label-inline-reset {
+    color: var(--color-text-dark);
+    margin: 0;
+}
+
+.embedded-modal-trigger-link {
+    background: none;
+    border: none;
+    color: var(--color-primary);
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0;
+}
+
+/* ==========================================================================
+   Recipe Creation Layout Stylesheet - Part 2
+   Path: src/main/resources/static/css/recipes/create.css
+   ========================================================================== */
+
+/* Ingredient Grid Array Row Node Layout Allocation Formulas */
+.row-flex-alignment-grid {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.select-width-weight-large {
+    flex: 2;
+}
+
+.select-width-weight-large:first-of-type {
+    flex: 2.5;
+}
+
+.select-width-weight-medium {
+    flex: 1.5;
+}
+
+.input-forced-full-width {
+    width: 100%;
+}
+
+.btn-square-row-dismiss {
+    width: auto;
+    padding: 10px 14px;
+    font-size: 1rem;
+    margin: 0;
+    background-color: #e9ecef;
+    color: var(--color-text-dark);
+    border: 1px solid var(--color-border-input);
+    border-radius: 6px;
+}
+
+.timeline-step-insertion-point-wrapper {
+    text-align: center;
+    margin-top: 14px;
+    margin-bottom: -14px;
+}
+
+.btn-high-visibility-accent,
+.btn-dashed-insertion-action {
+    background-color: transparent;
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 15rem;
+}
+
+/* Footer Section Action Frameworks */
+.global-recipe-notes-margin-box {
+    margin-bottom: 24px;
+}
+
+.label-bold-dark-theme {
+    font-weight: 700;
+    color: var(--color-text-dark);
+}
+
+.application-form-footer-action-bar {
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding-top: 20px;
+    border-top: 1px solid var(--color-border);
+}
+
+.footer-save-operations-left-cluster {
+    display: flex;
+    gap: 12px;
+}
+
+.explicit-text-nowrap-bound {
+    white-space: nowrap;
+}
+
+.btn-outline-danger-action-card {
+    background-color: #ffffff;
+    color: #dc3545;
+    border: 2px solid #dc3545;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    font-size: 0.95rem;
+}
+
+/* Modal Windows UI Structure Layout Subsystems */
+.modal-descriptive-subtitle {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    margin-bottom: 20px;
+}
+
+.modal-spacing-bottom-medium {
+    margin-bottom: 15px;
+}
+
+.modal-input-bold-heading-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.modal-classification-group-wrapper {
+    margin-bottom: 1.5rem;
+}
+
+.modal-classification-section-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--color-text-dark);
+}
+
+.modal-classification-three-column-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+/* Classification Active Option Subcards Configurations */
+.class-selector-card {
+    padding: 0.75rem;
+    border-radius: 6px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid #dee2e6;
+    background: #fff;
+}
+
+.class-selector-card .card-description-body-text {
+    font-size: 0.75rem;
+    color: #555;
+    line-height: 1rem;
+}
+
+/* Active State Custom Color Modifiers */
+.class-selector-card.active.selector-card-solid {
+    border: 2px solid #198754;
+    background: #f4fbf7;
+}
+
+.class-selector-card .heading-solid {
+    font-weight: bold;
+    color: #198754;
+    margin-bottom: 4px;
+}
+
+.class-selector-card.active.selector-card-wet {
+    border: 2px solid #0dcaf0;
+    background: #f0fafd;
+}
+
+.class-selector-card .card-heading-wet {
+    font-weight: bold;
+    color: #0dcaf0;
+    margin-bottom: 4px;
+}
+
+.class-selector-card.active.selector-card-dry {
+    border: 2px solid #ffc107;
+    background: #fffdf4;
+}
+
+.class-selector-card .card-heading-dry {
+    font-weight: bold;
+    color: #ffc107;
+    margin-bottom: 4px;
+}
+
+/* Dialog Action Footer Layout Node System Elements */
+.modal-operation-feedback-line {
+    display: none;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.modal-footer-alignment-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn-modal-dismiss-grey {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.btn-modal-submit-blue {
+    background-color: #007bff;
+    color: white;
+}
+
+/* Global Hidden Pipeline Objects Container */
+.hidden-element-pool {
+    display: none !important;
+}
+
+/* ==========================================================================
+   Mobile Responsive Alignment Rules (Select2 Ingredient Layout Override)
+   ========================================================================== */
+@media screen and (max-width: 600px) {
+
+    /* 1. Force the row wrapper to break lines, overriding the inline style declaration */
+    .template-step-card-blueprint .ingredient-row {
+        flex-wrap: wrap;
+        gap: 12px 8px;
+        border-bottom: 1px dashed var(--color-border);
+        padding-bottom: 16px;
+        margin-bottom: 16px !important;
+    }
+
+    .template-step-card-blueprint .ingredient-row:last-of-type {
+        border-bottom: none;
+        padding-bottom: 0;
+        margin-bottom: 10px !important;
+    }
+
+    /* LINE 1: Select2 Main Container Box Wrapper -> 100% full width layout */
+    .template-step-card-blueprint .ingredient-row .select2-container {
+        flex: 0 0 100%;
+        width: 100%;
+    }
+
+    /* LINE 2: Amount field block wrapper container node -> 50% split width space */
+    .template-step-card-blueprint .ingredient-row .amount-wrapper {
+        width: calc(50% - 4px);
+    }
+
+    /* LINE 2: Unit drop-down selection box input -> 50% split width space */
+    .template-step-card-blueprint .ingredient-row select.select-width-weight-medium {
+        flex: 0 0 calc(50% - 4px);
+        width: calc(50% - 4px);
+    }
+
+    /* LINE 3: Notes input string field box container -> stretch and claim remainder space */
+    .template-step-card-blueprint .ingredient-row input[type="text"] {
+        flex: 1;
+        width: auto;
+    }
+
+    /* LINE 3: Deletion dismiss target button action -> snap fit to the far right */
+    .template-step-card-blueprint .ingredient-row .btn-square-row-dismiss {
+        flex: 0 0 auto;
+        width: auto;
+        padding: 10px 16px;
+    }
+}
+
+/* ==========================================================================
+   SELECT2 UNIFICATION OVERRIDES (Forces 42px Match With Theme Inputs)
+   ========================================================================== */
+
+/* 1. Reset the outer selection layout box container constraints */
+.ingredient-row .select2-container--default .select2-selection--single {
+    height: 42px !important;
+    padding: 0 !important;
+    border: 1px solid var(--color-border-input) !important;
+    border-radius: 6px !important;
+    background-color: var(--color-bg-card) !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* 2. Unify the text label container layout inner alignments */
+.ingredient-row .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 40px !important;
+    /* Total container block height minus borders */
+    padding-left: 14px !important;
+    /* Matches your .form-input 14px padding */
+    padding-right: 30px !important;
+    color: var(--color-text-dark) !important;
+    font-size: 1rem !important;
+    width: 100% !important;
+}
+
+/* 3. Center and realign the select arrow caret wrapper drop block */
+.ingredient-row .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 40px !important;
+    /* Matches rendering line boundary heights */
+    top: 0 !important;
+    right: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* 4. Fix baseline focus ring glowing behaviors matching standard inputs */
+.ingredient-row .select2-container--default.select2-container--focus .select2-selection--single {
+    border-color: var(--color-primary) !important;
+    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15) !important;
+    outline: none !important;
+}
+
+.ingredient-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+    background-color: #e0f5dc;
+    padding: .5em;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 9px;
+}
+
+/* ==========================================================================
+   HIGH-CONTRAST TYPOGRAPHY OVERRIDES (Improves Form Text Legibility)
+   ========================================================================== */
+
+/* 1. Target standard inputs, textareas, and select elements */
+.select2-container--default .select2-selection--single .select2-selection__placeholder,
+.template-step-card-blueprint .ingredient-row input,
+.template-step-card-blueprint .ingredient-row select,
+.template-step-card-blueprint textarea {
+    color: var(--color-text-dark) !important;
+    font-weight: 500 !important;
+    /* Slightly boosts weight for better rendering on low-res screens */
+}
+
+/* 2. Target Select2's active selection label */
+.template-step-card-blueprint .ingredient-row .select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: var(--color-text-dark) !important;
+    font-weight: 500 !important;
+}
+
+/* 3. Darken the unselected option items inside the Select2 dropdown box lists */
+.select2-container--default .select2-results__option {
+    color: var(--color-text-dark);
+}
+
+/* 4. Darken field placeholder text helper strings slightly for better visibility */
+.template-step-card-blueprint .form-input::placeholder {
+    color: #555555 !important;
+    /* Noticeably darker than standard browser muted gray */
+    opacity: 1;
+    /* Fixes browser-specific placeholder opacity clamping */
+}

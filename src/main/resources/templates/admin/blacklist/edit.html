@@ -1,75 +1,76 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
 
-<!-- FIXED: Uses the overloaded function to inject workspace.css safely -->
-
-<head th:replace="~{fragments/layout :: html_head('Threat Entry Workspace - Braindribbler')}"> </head>
+<head>
+    <th:block th:replace="~{fragments/layout :: html_head('Threat Entry Workspace - Braindribbler')}"></th:block>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/admin/blacklist-edit.css}" />
+</head>
 
 <body>
-    <!-- Shared Navigation Header Fragment -->
+
     <div th:replace="~{fragments/layout :: header}"></div>
 
     <main class="page-card">
         <h1 class="page-title"
-            th:text="${itemId == 0} ? 'Register New Blacklist Threat Rule' : 'Modify Security Blacklist Entry'">Threat
-            Workspace</h1>
-        <p class="page-subtitle">Configure strict application protection protocols to shield database queries and system
-            interfaces from malicious agents.</p>
+            th:text="${itemId == 0} ? 'Register New Blacklist Threat Rule' : 'Modify Security Blacklist Entry'">
+            Threat Workspace
+        </h1>
+        <p class="page-subtitle">
+            Configure strict application protection protocols to shield database queries and system interfaces.
+        </p>
 
-        <form th:action="@{/admin/blacklist/save}" th:object="${item}" method="POST" class="workspace-form">
+        <form th:action="@{/admin/blacklist/save}" th:object="${item}" method="POST" class="workspace-form-narrow">
 
             <input type="hidden" name="itemId" th:value="${itemId}" />
             <input type="hidden" th:field="*{id}" />
 
-            <!-- LEFT COLUMN: Input Control Box -->
+            <!-- Input Fields Area -->
             <div class="form-panel-main">
-                <div class="form-field-group">
-                    <label>Target Threat Pattern</label>
-                    <input type="text" th:field="*{pattern}" required placeholder="e.g. 198.12.69.94 or badbot.info" />
+                <div class="form-group">
+                    <label class="form-label">Target Threat Pattern</label>
+                    <input type="text" class="form-input" th:field="*{pattern}" required
+                        placeholder="e.g. 198.12.69.94 or badbot.info" />
                 </div>
 
-                <div class="form-field-group">
-                    <label>Enforcement Reason / Notes</label>
-                    <input type="text" th:field="*{reason}"
+                <div class="form-group--last">
+                    <label class="form-label">Enforcement Reason / Notes</label>
+                    <input type="text" class="form-input" th:field="*{reason}"
                         placeholder="e.g. Credential stuffing probes logged on login page" />
                 </div>
 
-                <div class="form-actions-group">
+                <!-- Left-Aligned Action Cluster -->
+                <div class="form-actions-left-row">
                     <th:block th:replace="~{fragments/actions :: saveBtn(itemId=${itemId})}"></th:block>
-                    <a th:replace="~{fragments/actions :: cancelLink(targetUrl=@{/admin/blacklist})}"></a>
+                    <th:block th:replace="~{fragments/actions :: cancelLink(targetUrl=@{/admin/blacklist})}"></th:block>
                 </div>
             </div>
 
-            <!-- RIGHT COLUMN: Documentation Panel -->
-            <div class="form-panel-docs">
-                <h3>Ban Formatting Documentation</h3>
-                <p>The security firewall engine dynamically parses entries based on syntax configuration formatting
-                    rules:</p>
-
-                <ul>
-                    <li><strong>Single IP Address:</strong> Enter literal numeric targets (e.g.,
-                        <code>198.12.69.94</code>). Used by filters to instantly drop requests from that machine.
+            <!-- Context Documentation Panel -->
+            <div class="form-panel-docs-stacked">
+                <h3>Ban Formatting Rules</h3>
+                <ul class="docs-list">
+                    <li><strong>Single IP Address:</strong> Drops explicit machine matches (e.g.,
+                        <code>198.12.69.94</code>).
                     </li>
-                    <li><strong>Network Subnet Range:</strong> Append CIDR notations (e.g.,
-                        <code>198.46.154.0/23</code>). Blocks large chunks of rotating adjacent server addresses owned
-                        by budget hosts.
+                    <li><strong>Network Subnet Range:</strong> Blocks whole adjacent blocks via CIDR (e.g.,
+                        <code>198.46.154.0/23</code>).
                     </li>
-                    <li><strong>Email Domains:</strong> Input clean root strings (e.g., <code>formtests.info</code>).
-                        Utilized by <code>DomainValidator</code> during user account signups to block spam boxes.</li>
+                    <li><strong>Email Domains:</strong> Rejects junk signups at validation (e.g.,
+                        <code>formtests.info</code>).
+                    </li>
                 </ul>
 
-                <div class="docs-callout-warning">
-                    <span class="callout-title">Automated Rule Logging</span>
-                    <p>The type categorization badge string ("IP", "SUBNET", "DOMAIN") will be calculated automatically
-                        by the server upon submission.</p>
+                <div class="alert alert--info">
+                    <p class="alert-text-fallback"><strong>Note:</strong> The categorization badge type is computed
+                        automatically upon submission.</p>
                 </div>
             </div>
+
         </form>
     </main>
 
-    <!-- Shared Footer Fragment -->
     <div th:replace="~{fragments/layout :: footer}"></div>
-    <link rel="stylesheet" type="text/css" th:href="@{/css/admin/edit.css}" />
+
 </body>
 
 </html>

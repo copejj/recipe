@@ -27,3 +27,84 @@
     order: 2;
     align-self: center;
 }
+
+/* ==========================================================================
+   UNIVERSAL DATA TABLES PORTRAIT MOBILE OVERRIDES (STACKED CARDS ENGINE)
+   ========================================================================== */
+@media screen and (max-width: 768px) {
+
+    /* 1. Break the table grid and wrapper bounds */
+    .table-responsive-wrapper table.dataTable {
+        display: block !important;
+        width: 100% !important;
+        border: none !important;
+        table-layout: auto !important;
+        /* Overrides desktop fixed layouts */
+    }
+
+    /* 2. Hide traditional horizontal desktop headers entirely from view */
+    .table-responsive-wrapper table.dataTable thead {
+        display: none !important;
+    }
+
+    /* 3. Convert rows and row bodies into clean fluid stacks */
+    .table-responsive-wrapper table.dataTable tbody,
+    .table-responsive-wrapper table.dataTable tbody tr {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    /* 4. Shape each table row into an independent card block */
+    .table-responsive-wrapper table.dataTable tbody tr {
+        background-color: var(--color-bg-card, #ffffff);
+        border: 1px solid var(--color-border, #dee2e6) !important;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        padding: 16px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        box-sizing: border-box;
+    }
+
+    /* 5. Convert standard cells into full-width vertical block layouts */
+    .table-responsive-wrapper table.dataTable tbody td {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        justify-content: flex-start !important;
+        width: 100% !important;
+        padding: 8px 0 !important;
+        border: none !important;
+        box-sizing: border-box;
+        text-align: left !important;
+    }
+
+    /* 
+       6. DYNAMIC LABEL INJECTION:
+       Reads the 'data-label' attribute from the HTML and prints it as a bold 
+       header column inside the mobile card view.
+    */
+    .table-responsive-wrapper table.dataTable tbody td[data-label]::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: var(--color-text-muted, #6c757d);
+        display: inline-block;
+        width: 110px;
+        /* Fixed inline column label track width */
+        flex-shrink: 0;
+        /* Prevents label text from crushing down */
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* 7. Specific font sizing adjustment for role names inside mobile view cards */
+    .table-responsive-wrapper table.dataTable tbody td.role-name-cell {
+        font-size: 0.9rem !important;
+        /* Slightly scales up the compressed .75rem size for mobile legibility */
+    }
+
+    /* 8. Fix background styling striping for DataTables on mobile cards */
+    .table-responsive-wrapper table.dataTable.stripe tbody tr:nth-child(odd) {
+        background-color: var(--color-bg-card, #ffffff) !important;
+    }
+}
