@@ -100,7 +100,7 @@
                                     <!-- 1. ASYNC APPROVE TRIGGER BUTTON -->
                                     <button type="button" class="btn async-approve-btn btn-verify-approve"
                                         th:data-id="${ing.getIngredientId()}">
-                                        Approve
+                                        Verify
                                     </button>
 
                                     <!-- 2. ASYNC MERGE TRIGGER CONTROL BOX -->
@@ -114,11 +114,21 @@
                                             <option value="">-- Merge Into... --</option>
                                             <option th:each="verified : ${verifiedIngredients}"
                                                 th:if="${verified.ingredientId != ing.getIngredientId()}"
-                                                th:value="${verified.ingredientId}"
-                                                th:text="${verified.ingredientName}">
+                                                th:value="${verified.ingredientId}" th:text="${verified.ingredientName}"
+                                                th:selected="${conflictMap != null and conflictMap.get(ing.getIngredientId()) == verified.ingredientId}">
+                                                <!-- ◄ AUTO-SELECTS NATIVE MATCHES -->
                                             </option>
                                         </select>
                                     </div>
+
+
+                                    <!-- 3. ASYNC LOCK & HIDE TRIGGER BUTTON -->
+                                    <button type="button" class="btn async-lock-btn btn-dismiss-merge"
+                                        th:data-id="${ing.getIngredientId()}"
+                                        style="background-color: var(--color-bg-body); color: var(--color-text-muted); border-color: var(--color-border);">
+                                        Lock
+                                    </button>
+
                                 </div>
                             </td>
                         </tr>
