@@ -4,7 +4,7 @@
 <head>
     <th:block th:replace="~{fragments/layout :: html_head(${recipe.title})}"></th:block>
     <!-- External Recipe Layout View Rules Link - Render Blocking to prevent FOUC -->
-    <link rel="stylesheet" th:href="@{/css/recipes/recipe-view.css}" />
+    <link rel="stylesheet" th:href="@{/css/recipes/view.css}" />
 </head>
 
 <body style="overflow-x: hidden; width: 100%; margin: 0; padding: 0;">
@@ -96,7 +96,7 @@
     <script th:inline="javascript">
         window.MEASUREMENT_MATRIX = /*[[${globalMeasurementsPool}]]*/[];
     </script>
-    <script th:src="@{/js/recipe-view.js}"></script>
+    <script th:src="@{/js/recipes/view.js}"></script>
 </body>
 
 </html>
