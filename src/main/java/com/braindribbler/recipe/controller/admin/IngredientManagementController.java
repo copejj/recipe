@@ -35,14 +35,29 @@ public class IngredientManagementController {
     }
 
     /**
-     * Renders the master ingredient moderation dashboard panel view
+     * Renders the master ingredient moderation dashboard panel view with
+     * auto-matching conflict detection.
      */
     @GetMapping
     public String showModerationDashboard(Model model) {
         List<PendingIngredientProjection> pendingQueue = ingredientService.getUnverifiedIngredients();
+
+        // Maps pending ingredient IDs to their matching verified master record IDs
+        java.util.Map<Integer, Integer> conflictMap = new java.util.HashMap<>();
+
+        for (PendingIngredientProjection pending : pendingQueue) {
+            ingredientService.getVerifiedIngredientByCanonicalName(pending.getIngredientName())
+                    .ifPresent(verified -> conflictMap.put(pending.getIngredientId(), verified.getIngredientId()));
+        }
+
         model.addAttribute("pendingIngredients", pendingQueue);
         model.addAttribute("verifiedIngredients", ingredientService.getAllIngredientsSorted(null));
         model.addAttribute("groceryCategories", ingredientService.getAllGroceryCategories());
+
+        // ◄ NEW: Injects the calculated conflict map directly into the Thymeleaf view
+        // context
+        model.addAttribute("conflictMap", conflictMap);
+
         return "admin/ingredients/queue";
     }
 
@@ -194,6 +209,25 @@ public class IngredientManagementController {
             return "redirect:/admin/ingredients/list?retracted=true";
         } catch (Exception e) {
             return "redirect:/admin/ingredients/list?error=retractFailed";
+        }
+    }
+
+    /**
+     * Handles asynchronous requests to hide an ingredient from the moderation queue
+     * and lock it from user edits.
+     */
+    @PostMapping("/lock/{id}")
+    @ResponseBody
+    public ResponseEntity<?> lockAndHideUserIngredient(@PathVariable("id") Integer ingredientId) {
+        try {
+            ingredientService.lockAndHideIngredient(ingredientId);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Ingredient hidden and locked successfully!"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", e.getMessage()));
         }
     }
 }

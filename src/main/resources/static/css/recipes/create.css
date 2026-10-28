@@ -315,7 +315,7 @@
 
 /* Global Hidden Pipeline Objects Container */
 .hidden-element-pool {
-    display: none !important;
+    display: none;
 }
 
 /* ==========================================================================
@@ -329,13 +329,12 @@
         gap: 12px 8px;
         border-bottom: 1px dashed var(--color-border);
         padding-bottom: 16px;
-        margin-bottom: 16px !important;
+        margin-bottom: 16px;
     }
 
     .template-step-card-blueprint .ingredient-row:last-of-type {
         border-bottom: none;
-        padding-bottom: 0;
-        margin-bottom: 10px !important;
+        margin-bottom: 10px;
     }
 
     /* LINE 1: Select2 Main Container Box Wrapper -> 100% full width layout */
@@ -367,6 +366,10 @@
         width: auto;
         padding: 10px 16px;
     }
+
+    .ingredients-container {
+        padding-bottom: 1rem;
+    }
 }
 
 /* ==========================================================================
@@ -375,43 +378,43 @@
 
 /* 1. Reset the outer selection layout box container constraints */
 .ingredient-row .select2-container--default .select2-selection--single {
-    height: 42px !important;
-    padding: 0 !important;
-    border: 1px solid var(--color-border-input) !important;
-    border-radius: 6px !important;
-    background-color: var(--color-bg-card) !important;
-    display: flex !important;
-    align-items: center !important;
+    height: 42px;
+    padding: 0;
+    border: 1px solid var(--color-border-input);
+    border-radius: 6px;
+    background-color: var(--color-bg-card);
+    display: flex;
+    align-items: center;
 }
 
 /* 2. Unify the text label container layout inner alignments */
 .ingredient-row .select2-container--default .select2-selection--single .select2-selection__rendered {
-    line-height: 40px !important;
+    line-height: 40px;
     /* Total container block height minus borders */
-    padding-left: 14px !important;
+    padding-left: 14px;
     /* Matches your .form-input 14px padding */
-    padding-right: 30px !important;
-    color: var(--color-text-dark) !important;
-    font-size: 1rem !important;
-    width: 100% !important;
+    padding-right: 30px;
+    color: var(--color-text-dark);
+    font-size: 1rem;
+    width: 100%;
 }
 
 /* 3. Center and realign the select arrow caret wrapper drop block */
 .ingredient-row .select2-container--default .select2-selection--single .select2-selection__arrow {
-    height: 40px !important;
+    height: 40px;
     /* Matches rendering line boundary heights */
-    top: 0 !important;
-    right: 8px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    top: 0;
+    right: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* 4. Fix baseline focus ring glowing behaviors matching standard inputs */
 .ingredient-row .select2-container--default.select2-container--focus .select2-selection--single {
-    border-color: var(--color-primary) !important;
-    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15) !important;
-    outline: none !important;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15);
+    outline: none;
 }
 
 .ingredient-row {
@@ -419,7 +422,7 @@
     gap: 10px;
     align-items: center;
     margin-bottom: 10px;
-    background-color: #e0f5dc;
+    background-color: rgba(0, 0, 0, 0.15);
     padding: .5em;
     border: 1px solid rgba(0, 0, 0, 0.15);
     border-radius: 9px;
@@ -434,15 +437,15 @@
 .template-step-card-blueprint .ingredient-row input,
 .template-step-card-blueprint .ingredient-row select,
 .template-step-card-blueprint textarea {
-    color: var(--color-text-dark) !important;
-    font-weight: 500 !important;
+    color: var(--color-text-dark);
+    font-weight: 500;
     /* Slightly boosts weight for better rendering on low-res screens */
 }
 
 /* 2. Target Select2's active selection label */
 .template-step-card-blueprint .ingredient-row .select2-container--default .select2-selection--single .select2-selection__rendered {
-    color: var(--color-text-dark) !important;
-    font-weight: 500 !important;
+    color: var(--color-text-dark);
+    font-weight: 500;
 }
 
 /* 3. Darken the unselected option items inside the Select2 dropdown box lists */
@@ -452,7 +455,7 @@
 
 /* 4. Darken field placeholder text helper strings slightly for better visibility */
 .template-step-card-blueprint .form-input::placeholder {
-    color: #555555 !important;
+    color: #555555;
     /* Noticeably darker than standard browser muted gray */
     opacity: 1;
     /* Fixes browser-specific placeholder opacity clamping */

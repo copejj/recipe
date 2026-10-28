@@ -54,6 +54,7 @@ $(document).ready(function () {
                     // Smooth row teardown visual sequence animation
                     $("#ing-row-" + ingredientId).fadeOut(300, function () {
                         $(this).remove();
+                        checkQueueCount(); // ◄ ADDED: Updates the page layout if empty
                     });
                 } else {
                     alert(response.message || "Approval process failure encountered.");
@@ -97,4 +98,37 @@ $(document).ready(function () {
             }
         });
     });
+
+    // Asynchronous Lock & Hide Action Hook Handler
+    $(document).on("click", ".async-lock-btn", function (e) {
+        e.preventDefault();
+        var button = $(this);
+        var ingredientId = button.attr("data-id");
+        var targetRow = $("#ing-row-" + ingredientId);
+
+        if (!confirm("Are you sure you want to hide this suggestion and lock it from further user editing?")) {
+            return;
+        }
+
+        $.ajax({
+            url: '/admin/ingredients/lock/' + ingredientId,
+            type: 'POST',
+            success: function (response) {
+                if (response.success) {
+                    // Smoothly remove the row and check if the queue is now empty
+                    targetRow.fadeOut(300, function () {
+                        $(this).remove();
+                        checkQueueCount();
+                    });
+                    showToast(response.message);
+                } else {
+                    showToast(response.message || "Failed to lock ingredient.", true);
+                }
+            },
+            error: function () {
+                showToast("A processing error disrupted the lock pipeline.", true);
+            }
+        });
+    });
+
 });
