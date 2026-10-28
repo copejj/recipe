@@ -457,3 +457,51 @@
     opacity: 1;
     /* Fixes browser-specific placeholder opacity clamping */
 }
+
+/* Rainbow text animation cycling through a spectrum */
+@keyframes rainbowTextCycle {
+    0% {
+        color: #ff0000;
+        transform: scale(1.05);
+    }
+
+    /* Red */
+    17% {
+        color: #ffa500;
+    }
+
+    /* Orange */
+    33% {
+        color: #ffff00;
+    }
+
+    /* Yellow */
+    50% {
+        color: #008000;
+    }
+
+    /* Green */
+    67% {
+        color: #0000ff;
+    }
+
+    /* Blue */
+    83% {
+        color: #4b0082;
+    }
+
+    /* Indigo */
+    100% {
+        color: inherit;
+        transform: scale(1);
+    }
+
+    /* Smoothly back to normal */
+}
+
+/* Helper class to apply the animation */
+.animate-rainbow-trigger {
+    animation: rainbowTextCycle 1.5s ease-in-out;
+    display: inline-block;
+    /* Ensures the transform scale works perfectly on text/buttons */
+}
