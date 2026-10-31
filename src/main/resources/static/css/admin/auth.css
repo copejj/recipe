@@ -1,0 +1,55 @@
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-wrapper .form-input {
+    width: 100%;
+    padding-right: 40px;
+}
+
+.password-toggle-btn {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    color: #666;
+    font-size: 16px;
+}
+
+.profile-form-block {
+    margin-bottom: 40px;
+}
+
+.device-management-box {
+    background-color: #fafafa;
+    border: 1px solid #eee;
+    padding: 20px;
+    border-radius: 6px;
+}
+
+.device-management-text {
+    color: #555;
+    font-size: 14px;
+    margin-top: 0;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.btn--terminate-sessions {
+    background-color: #d9534f;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.btn--terminate-sessions:hover {
+    background-color: #c9302c;
+}

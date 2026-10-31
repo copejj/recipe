@@ -1,84 +1,89 @@
 <!DOCTYPE html>
 <html xmlns:th="http://thymeleaf.org" lang="en">
 
-<head th:replace="~{fragments/layout :: html_head('Register - Braindribbler')}"></head>
+<head>
+    <th:block th:replace="~{fragments/layout :: html_head('Register - Braindribbler')}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/admin/auth.css}" />
+</head>
 
 <body>
 
-    <!-- Shared Header Fragment -->
     <div th:replace="~{fragments/layout :: header}"></div>
 
-    <!-- Main Centralized Registration Card aligned with your design layout -->
     <main class="page-card auth-layout">
-
         <h1 class="page-title" style="text-align: center;">Create Account</h1>
         <p class="page-subtitle" style="text-align: center; margin-bottom: 20px;">Join our community of chefs</p>
 
-        <!-- Form Binding connected to your RegistrationDto backend model -->
         <form th:action="@{/register}" th:object="${registrationDto}" method="post">
 
             <!-- Field 1: Email Address -->
             <div class="form-group">
                 <label for="email" class="form-label">Email Address</label>
-                <input type="email" id="email" th:field="*{email}" class="form-input" required
-                    placeholder="chef@braindribbler.com" />
-                <!-- Field-Specific Backend Error Message -->
+                <input type="email" id="email" th:field="*{email}" class="form-input" required placeholder="chef@braindribbler.com" />
                 <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="form-error-msg"></div>
             </div>
 
             <!-- Field 2: Password -->
             <div class="form-group">
                 <label for="password" class="form-label">Password</label>
-                <input type="password" id="password" th:field="*{password}" class="form-input" required
-                    placeholder="••••••••" />
+                <div class="password-wrapper">
+                    <input type="password" id="password" name="password" th:field="*{password}" class="form-input" required placeholder="••••••••" autocomplete="new-password" />
+                    <button type="button" onclick="togglePasswordVisibility('password', this)" class="password-toggle-btn" aria-label="Show password">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
                 <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="form-error-msg"></div>
             </div>
 
-            <!-- Field 3: First Name -->
+            <!-- Field 3: Confirm Password -->
+            <div class="form-group">
+                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="confirmPassword" name="confirmPassword" th:field="*{confirmPassword}" class="form-input" required placeholder="••••••••" autocomplete="new-password" />
+                    <button type="button" onclick="togglePasswordVisibility('confirmPassword', this)" class="password-toggle-btn" aria-label="Show password">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+                <div th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}" class="form-error-msg"></div>
+            </div>
+
+            <!-- Field 4: First Name -->
             <div class="form-group">
                 <label for="firstName" class="form-label">First Name</label>
-                <input type="text" id="firstName" th:field="*{firstName}" class="form-input" required
-                    placeholder="Jane" />
+                <input type="text" id="firstName" th:field="*{firstName}" class="form-input" required placeholder="Jane" />
                 <div th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}" class="form-error-msg"></div>
             </div>
 
-            <!-- Field 4: Last Name -->
+            <!-- Field 5: Last Name -->
             <div class="form-group">
                 <label for="lastName" class="form-label">Last Name</label>
                 <input type="text" id="lastName" th:field="*{lastName}" class="form-input" required placeholder="Doe" />
                 <div th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}" class="form-error-msg"></div>
             </div>
 
-            <!-- Field 5: Display Name -->
+            <!-- Field 6: Display Name -->
             <div class="form-group form-group--last">
                 <label for="displayName" class="form-label">Display Name</label>
-                <input type="text" id="displayName" th:field="*{displayName}" class="form-input" required
-                    placeholder="SousChefJane" />
-                <div th:if="${#fields.hasErrors('displayName')}" th:errors="*{displayName}" class="form-error-msg">
-                </div>
+                <input type="text" id="displayName" th:field="*{displayName}" class="form-input" required placeholder="SousChefJane" />
+                <div th:if="${#fields.hasErrors('displayName')}" th:errors="*{displayName}" class="form-error-msg"></div>
             </div>
 
-            <!-- Honeypot Security Trap (Invisible to humans, irresistible to bots) -->
+            <!-- Honeypot Trap -->
             <div style="display: none !important;" aria-hidden="true">
                 <label for="website">Please leave this field entirely blank:</label>
                 <input type="text" id="website" name="website" autocomplete="off" tabindex="-1" value="" />
             </div>
 
-            <!-- Execution Processing Control -->
             <button type="submit" class="btn btn--primary">Sign Up</button>
-
         </form>
 
-        <!-- Secondary Workflow Link Options -->
         <p class="auth-footer-text">
             Already have an account? <a th:href="@{/login}" class="auth-link">Sign in here</a>
         </p>
-
     </main>
 
-    <!-- Shared Footer Fragment -->
     <div th:replace="~{fragments/layout :: footer}"></div>
 
+    <script th:src="@{/js/admin/auth.js}"></script>
 </body>
-
 </html>
