@@ -207,6 +207,10 @@ main {
     margin-top: 6px;
 }
 
+.local-time {
+    font-size: 0.75rem;
+}
+
 /* ==========================================================================
    5. CENTRAL UI COMPONENTS (FORMS, INPUTS & BUTTONS)
    ========================================================================== */
@@ -512,6 +516,8 @@ table.dataTable tbody td:first-child {
     font-size: 0.8rem;
     white-space: nowrap;
     color: var(--color-text-muted);
+    margin: auto;
+    text-align: center;
 }
 
 /* ==========================================================================

@@ -45,13 +45,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Inside your auditTable tbody tr loop -->
                     <tr th:each="log : ${rawLogs}">
 
-                        <!-- 1. Timestamp (Stays as is) -->
-                        <td th:text="${log.loginAt}">2026-10-09T15:38:00Z</td>
+                        <td th:data-order="${log.loginAt}">
+                            <span th:class="${log.loginAt != null ? 'local-time' : ''}"
+                                th:datetime="${log.loginAt}"
+                                th:text="${log.loginAt != null ? log.loginAt : 'N/A'}">
+                                2026-10-11 18:01:00
+                            </span>
+                        </td>
 
-                        <!-- 2. User ID Column -->
                         <td class="audit-user-id audit-font-monospace">
                             <span th:if="${log.userId != null}" th:text="${log.userId}"
                                 class="clickable-audit-filter user-filter-trigger"

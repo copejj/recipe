@@ -29,7 +29,7 @@
                         <th>Action</th>
                         <th>Display</th>
                         <th>Email</th>
-                        <th>Created At</th>
+                        <th>Last Login</th>
                         <th>Verification Status</th>
                         <th>Account Status</th>
                     </tr>
@@ -40,20 +40,23 @@
                     <tr>
                         <td data-label="Action">
                             <th:block th:if="${item.highestRoleRankValue < loggedInAdminRank}">
-                                <a
-                                    th:replace="~{fragments/actions :: editLink(targetUrl=@{/admin/users/edit/{id}(id=${item.publicId})})}"></a>
+                                <a th:replace="~{fragments/actions :: editLink(targetUrl=@{/admin/users/edit/{id}(id=${item.publicId})})}"></a>
                             </th:block>
 
                             <th:block th:if="${item.highestRoleRankValue >= loggedInAdminRank}">
                                 <span th:replace="~{fragments/actions :: lockedBadge}"></span>
                             </th:block>
                         </td>
-                        <td data-label="Display" class="role-name-cell" th:text="${item.displayName}">SousChefJane
+                        <td data-label="Display" class="role-name-cell" th:text="${item.displayName}">SousChefJane </td>
+                        <td data-label="Email" th:text="${item.userAuth != null ? item.userAuth.email : 'N/A'}">chef@braindribbler.com</td>
+                        <td data-label="Last Login" th:data-order="${item.userAuth?.lastLogin}">
+                            <span data-label="lastLogin" 
+                                class="local-time" 
+                                th:datetime="${item.userAuth?.lastLogin}" 
+                                th:text="${item.userAuth?.lastLogin}"> 
+                                2026-10-08 15:30
+                            </span>
                         </td>
-                        <td data-label="Email" th:text="${item.userAuth != null ? item.userAuth.email : 'N/A'}">
-                            chef@braindribbler.com</td>
-                        <td data-label="Created At" th:text="${#temporals.format(item.createdAt, 'yyyy-MM-dd HH:mm')}">
-                            2026-10-08</td>
                         <td data-label="Verification Status">
                             <span th:if="${item.userAuth != null && item.userAuth.verified}"
                                 class="status-text--verified">Verified</span>

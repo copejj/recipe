@@ -66,12 +66,20 @@
                             <span th:if="${item.get('status') == null}"
                                 class="migration-badge migration-badge--pending">Pending</span>
                         </td>
-                        <td class="footer-git-info"
-                            th:text="${item.get('started_at') != null ? #dates.format(item.get('started_at'), 'yyyy-MM-dd HH:mm:ss') : 'N/A'}">
-                            2026-10-11 18:00:00</td>
-                        <td class="footer-git-info"
-                            th:text="${item.get('ended_at') != null ? #dates.format(item.get('ended_at'), 'yyyy-MM-dd HH:mm:ss') : 'N/A'}">
-                            2026-10-11 18:01:00</td>
+                        <td th:data-order="${item.get('started_at')}">
+                            <span th:class="${item.get('started_at') != null ? 'local-time' : ''}"
+                                th:datetime="${item.get('started_at')}"
+                                th:text="${item.get('started_at') != null ? item.get('started_at') : 'N/A'}">
+                                2026-10-11 18:00:00
+                            </span>
+                        </td>
+                        <td th:data-order="${item.get('ended_at')}">
+                            <span th:class="${item.get('ended_at') != null ? 'local-time' : ''}"
+                                th:datetime="${item.get('ended_at')}"
+                                th:text="${item.get('ended_at') != null ? item.get('ended_at') : 'N/A'}">
+                                2026-10-11 18:01:00
+                            </span>
+                        </td>
                         <td class="audit-log-failure">
                             <span th:if="${item.get('error_message') != null}"
                                 class="audit-log-failure--active audit-font-monospace"
