@@ -23,7 +23,7 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public List<User> getAllUsers() {
-        return userRepository.findAll();
+        return userRepository.findAllWithAuth();
     }
 
     /**

@@ -83,10 +83,20 @@
                                 john.doe@example.com</td>
                         </tr>
                         <tr>
+                            <th>Created At</th>
+                            <td th:class="local-time"
+                                th:datetime="${targetUser.createdAt}"
+                                th:text="${targetUser.createdAt}">
+                                2026-10-26 14:32
+                            </td>
+                        </tr>
+                        <tr>
                             <th>Last Login</th>
-                            <td
-                                th:text="${targetUser.userAuth?.lastLogin != null ? #temporals.format(targetUser.userAuth.lastLogin, 'yyyy-MM-dd HH:mm') : 'Never'}">
-                                2026-10-26 14:32</td>
+                            <td th:class="${targetUser.userAuth?.lastLogin != null ? 'local-time' : ''}"
+                                th:datetime="${targetUser.userAuth?.lastLogin}"
+                                th:text="${targetUser.userAuth?.lastLogin != null ? targetUser.userAuth.lastLogin : 'Never'}">
+                                2026-10-26 14:32
+                            </td>
                         </tr>
                         <tr>
                             <th>Recipes</th>
