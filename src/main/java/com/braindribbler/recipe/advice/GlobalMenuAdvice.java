@@ -20,7 +20,6 @@ public class GlobalMenuAdvice {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         // 1. Handle Guest User (Not authenticated or anonymous)
-        // Inside your guest user conditional check:
         if (auth == null || !auth.isAuthenticated() ||
                 auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken) {
             menuItems.add(new MenuItem("Home", "/"));
@@ -45,7 +44,7 @@ public class GlobalMenuAdvice {
             userChildren.add(new MenuItem("Create New Recipe", "/recipes/create"));
             userChildren.add(new MenuItem("My Recipes", "/recipes/my-list"));
             userChildren.add(new MenuItem("My Profile", "/profile"));
-
+            
             // Map the complete Recipes Parent Dropdown
             menuItems.add(new MenuItem("My Stuff", userChildren));
 

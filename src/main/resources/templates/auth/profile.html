@@ -1,7 +1,11 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 
-<head th:replace="~{fragments/layout :: html_head('My Profile - Braindribbler')}"></head>
+<head>
+    <th:block th:replace="~{fragments/layout :: html_head('My Profile - Braindribbler')}"></th:block>
+    <!-- Include separate auth layout styling for visibility toggles -->
+    <link rel="stylesheet" th:href="@{/css/admin/auth.css}" />
+</head>
 
 <body>
     <div th:replace="~{fragments/layout :: header}"></div>
@@ -17,7 +21,7 @@
 
         <!-- SECTION 1: Personal Details Form -->
         <h3 class="profile-section-title">Personal Details</h3>
-        <form th:action="@{/profile/details/update}" method="post" style="margin-bottom: 40px;">
+        <form th:action="@{/profile/details/update}" method="post" class="profile-form-block">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
             <div class="form-group">
@@ -45,28 +49,61 @@
 
         <!-- SECTION 2: Password Modification Form -->
         <h3 class="profile-section-title">Security Settings</h3>
-        <form th:action="@{/profile/password/change}" method="post">
+        <form th:action="@{/profile/password/change}" method="post" class="profile-form-block">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
             <div class="form-group">
                 <label for="currentPassword" class="form-label">Current Password</label>
-                <input type="password" id="currentPassword" name="currentPassword" class="form-input" required
-                    placeholder="••••••••" />
+                <div class="password-wrapper">
+                    <input type="password" id="currentPassword" name="currentPassword" class="form-input" required
+                        placeholder="••••••••" autocomplete="current-password" />
+                    <button type="button" onclick="togglePasswordVisibility('currentPassword', this)" class="password-toggle-btn" aria-label="Show password">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
             </div>
             <div class="form-group">
                 <label for="newPassword" class="form-label">New Password</label>
-                <input type="password" id="newPassword" name="newPassword" class="form-input" required
-                    placeholder="••••••••" minlength="8" />
+                <div class="password-wrapper">
+                    <input type="password" id="newPassword" name="newPassword" class="form-input" required
+                        placeholder="••••••••" minlength="8" autocomplete="new-password" />
+                    <button type="button" onclick="togglePasswordVisibility('newPassword', this)" class="password-toggle-btn" aria-label="Show password">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
             </div>
             <div class="form-group">
                 <label for="confirmPassword" class="form-label">Confirm New Password</label>
-                <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" required
-                    placeholder="••••••••" minlength="8" />
+                <div class="password-wrapper">
+                    <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" required
+                        placeholder="••••••••" minlength="8" autocomplete="new-password" />
+                    <button type="button" onclick="togglePasswordVisibility('confirmPassword', this)" class="password-toggle-btn" aria-label="Show password">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
             </div>
             <button type="submit" class="btn btn--primary profile-password-btn">Update Password</button>
         </form>
+
+        <!-- SECTION 3: Device Management (Logout All) -->
+        <h3 class="profile-section-title">Device Sessions</h3>
+        <div class="device-management-box">
+            <p class="device-management-text">
+                Logged into your account on a public computer or lost a device? Terminating your sessions logs out every device currently using your account (including this one).
+            </p>
+            <form th:action="@{/account/logout-all}" method="post" onsubmit="return confirm('Are you sure you want to log out of all devices? You will be signed out immediately.');">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button type="submit" class="btn btn--terminate-sessions">
+                    Log Out of All Devices
+                </button>
+            </form>
+        </div>
+
     </main>
     <div th:replace="~{fragments/layout :: footer}"></div>
+
+    <!-- Link our script engine logic safely near the end of the body node -->
+    <script th:src="@{/js/admin/auth.js}"></script>
 </body>
 
 </html>
