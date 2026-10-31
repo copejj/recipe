@@ -48,44 +48,42 @@ public class AuthController {
             @RequestParam(value = "website", required = false) String honeypot,
             Model model) {
 
-        // 1. Honeypot check: If the hidden 'website' field contains data, drop the
-        // request instantly.
-        // We mock a successful registration redirect to trick the script into believing
-        // it passed.
+        // 1. Honeypot check
         if (honeypot != null && !honeypot.isBlank()) {
             log.warn("Honeypot triggered! Suppressed automated registration attempt from address: {}",
                     registrationDto.getEmail());
             return "redirect:/login?success";
         }
 
-        // 2. If any JSR-303 field validation criteria fail (including @ValidDomain),
-        // instantly reject and return the form
+        // NEW ADDITION: Check if password values are distinct from one another
+        if (registrationDto.getPassword() != null && registrationDto.getConfirmPassword() != null) {
+            if (!registrationDto.getPassword().equals(registrationDto.getConfirmPassword())) {
+                result.rejectValue("confirmPassword", "error.registrationDto", "Passwords do not match.");
+            }
+        }
+
+        // 2. If any validation criteria fail, return the registration form cleanly
         if (result.hasErrors()) {
             return "auth/register";
         }
 
         try {
-            // 3. Map DTO input strings directly to your core service transaction layer
+            // 3. Map DTO input strings directly to your core service layer
             User newUser = userRegistrationService.registerNewUser(
                     registrationDto.getEmail(),
                     registrationDto.getPassword(),
                     registrationDto.getFirstName(),
                     registrationDto.getLastName(),
                     registrationDto.getDisplayName(),
-                    null // Passing null defaults standard signups to ROLE_USER inside the service layer
+                    null
             );
 
             userRegistrationService.sendVerificationEmail(newUser);
-
-            // 4. Redirect back to login with a URL success flag
             return "redirect:/login?success";
 
         } catch (IllegalArgumentException e) {
-            // 5. Catch domain errors (like duplicate emails) and bind them back as global
-            // form fields
             result.rejectValue("email", "error.registrationDto", e.getMessage());
-            return "auth/register"; // Fixed minor typo here from "register" to ensure it hits your correct
-                                    // subdirectory path
+            return "auth/register";
         }
     }
 
