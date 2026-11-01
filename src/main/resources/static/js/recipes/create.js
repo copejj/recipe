@@ -1,4 +1,4 @@
-/**
+    /**
  * Recipes Dynamic Form Processing Engine - Module 1
  * Handles setup and row addition/removal frameworks.
  */
@@ -40,12 +40,10 @@ $(document).ready(function () {
     });
 
     // --- MID-TIMELINE ELEMENT INSERTION SYSTEM ---
-    // Handler 1: Insert a new step at the absolute top of the page
     $(document).on("click", "#insert-step-top-btn", function (e) {
         e.preventDefault();
         var firstCard = $("#steps-container .step-card").first();
         
-        // Temporarily destroy select2 on the first row to clone safely
         firstCard.find(".ingredient-row select:first-child").each(function () {
             if ($(this).hasClass("select2-hidden-accessible")) { $(this).select2("destroy"); }
         });
@@ -56,13 +54,10 @@ $(document).ready(function () {
         clone.find("input[type='hidden']").remove();
         clone.find(".ingredients-container").empty();
 
-        // Snap clone to the very beginning of the steps layout container
         $("#steps-container").prepend(clone);
-        
         reindexForm();
     });
 
-    // Handler 2: Insert a new step directly underneath an existing step card
     $(document).on("click", ".insert-step-here-btn", function (e) {
         e.preventDefault();
         var firstCard = $("#steps-container .step-card").first();
@@ -88,7 +83,6 @@ $(document).ready(function () {
         var ingredientOptions = $('#ingredient-options-pool').html();
         var measurementOptions = $('#measurement-options-pool').html();
 
-        // CLEANED: All hardcoded styles replaced with standard semantic classes
         var newRowHtml =
             '<div class="ingredient-row row-flex-alignment-grid">' +
             '<select class="form-input select-width-weight-large" required>' + ingredientOptions + '</select>' +
@@ -120,7 +114,6 @@ $(document).ready(function () {
         $("#quickGroceryCategoryId").val("");
         $("#quickIngredientClassification").val("SOLID");
         
-        // CLEANED: Inline styling adjustments replaced entirely with CSS modifications
         $(".class-selector-card").removeClass("active");
         $('.class-selector-card[data-value="SOLID"]').addClass("active");
         
@@ -156,13 +149,12 @@ $(document).ready(function () {
         e.preventDefault();
         var chosenValue = $(this).data("value");
         $("#quickIngredientClassification").val(chosenValue);
-        
-        // CLEANED: Direct element color styling moved completely out to CSS classes
         $(".class-selector-card").removeClass("active");
         $(this).addClass("active");
     });
 
     $("#closeQuickIngBtn").click(function () { if (modal) modal.close(); });
+
     // --- REAL-TIME VALIDATION ENGINE ---
     function validateStepIngredients() {
         $(".ingredient-row").removeClass("row-error-highlight");
@@ -359,11 +351,30 @@ $(document).ready(function () {
 
     // --- DELETION SAFETY ENGINE ---
     $(document).on("submit", ".delete-recipe-form", function (e) {
-        var $form = $(this); var $btn = $('button[form="' + ($form.attr("id") || "deleteForm") + '"]').length ? $('button[form="' + ($form.attr("id") || "deleteForm") + '"]') : $(".inline-delete-btn");
+        var $form = $(this); 
+        var $btn = $('button[form="' + ($form.attr("id") || "deleteForm") + '"]').length ? 
+                   $('button[form="' + ($form.attr("id") || "deleteForm") + '"]') : 
+                   $(".inline-delete-btn");
+                   
         if ($btn.length && $btn.attr("data-confirmed") === "false") {
             e.preventDefault();
-            $btn.attr("data-confirmed", "true").html("Are you sure? This cannot be recovered!").addClass("btn-danger-critical");
-            setTimeout(function () { if ($btn.attr("data-confirmed") === "true") $btn.attr("data-confirmed", "false").html("Delete Recipe").removeClass("btn-danger-critical"); }, 5000);
+            
+            var originalText = $btn.html();
+            $btn.data("original-label", originalText);
+            
+            $btn.attr("data-confirmed", "true")
+                 .html("Are you sure? This cannot be recovered!")
+                 .addClass("btn-danger-critical");
+                 
+            setTimeout(function () { 
+                if ($btn.attr("data-confirmed") === "true") {
+                    var savedText = $btn.data("original-label");
+                    
+                    $btn.attr("data-confirmed", "false")
+                         .html(savedText)
+                         .removeClass("btn-danger-critical"); 
+                }
+            }, 5000);
             return false;
         }
         return true;
@@ -502,21 +513,62 @@ $(document).ready(function () {
         $("#draft-restore-alert-banner").slideUp();
     }
 
-    // 4. Initial Check Boot: Detect draft on page reload
+    // --- 4. Initial Check Boot: Detect draft on page reload ---
+        // --- INITIAL DRAFT MONITOR INITIALIZER ---
     var rawDraft = localStorage.getItem(STORAGE_KEY);
-    if (rawDraft && !$("#recipeId").val()) { // Only offer restore if creating a BRAND NEW recipe
+    if (rawDraft) {
         var parsedDraft = JSON.parse(rawDraft);
-        var dateString = new Date(parsedDraft.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        $("#draft-time-placeholder").text(dateString);
-        $("#draft-restore-alert-banner").slideDown();
-
-        $(document).on("click", "#confirm-restore-btn", function() {
-            restoreRecipeDraft(parsedDraft);
-            $("#draft-restore-alert-banner").slideUp();
+        
+        // 🌟 NEW SAFETY CHECK: Find out what recipe ID is in the saved draft vs the page DOM
+        var currentFormId = $("#recipeId").val() || "";
+        var draftFormId = "";
+        
+        // Find the recipeId parameter hidden inside the serialized formData payload
+        $.each(parsedDraft.formData, function(i, field) {
+            if (field.name === "recipeId") {
+                draftFormId = field.value || "";
+            }
         });
 
-        $(document).on("click", "#dismiss-restore-btn", function() {
-            clearRecipeDraft();
-        });
+        // 🌟 ONLY proceed if we are making a brand new recipe OR editing the exact same recipe ID
+        if (currentFormId === draftFormId) {
+            var hasSubstantiveContent = false;
+            var totalIngredientsCount = 0;
+
+            if (parsedDraft.structure) {
+                $.each(parsedDraft.structure, function(i, stepStruct) {
+                    totalIngredientsCount += (stepStruct.ingredientCount || 0);
+                });
+            }
+
+            $.each(parsedDraft.formData, function(i, field) {
+                if (field.value && field.value.trim() !== "") {
+                    if (field.name === "title" || field.name === "description" || field.name.includes("instructionText")) {
+                        hasSubstantiveContent = true;
+                    }
+                }
+            });
+
+            // Show the banner if there's real modified content waiting
+            if (hasSubstantiveContent || totalIngredientsCount > 0) {
+                var dateString = new Date(parsedDraft.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                $("#draft-time-placeholder").text(dateString);
+                $("#draft-restore-alert-banner").css("display", "flex").hide().fadeIn();
+
+                $(document).on("click", "#confirm-restore-btn", function() {
+                    restoreRecipeDraft(parsedDraft);
+                    $("#draft-restore-alert-banner").slideUp();
+                });
+
+                $(document).on("click", "#dismiss-restore-btn", function() {
+                    clearRecipeDraft();
+                });
+            } else {
+                localStorage.removeItem(STORAGE_KEY);
+            }
+        } else {
+            // If the draft belongs to a completely different recipe, leave it alone (or wipe it if you want a clean slate)
+            console.log("Draft ignored: belongs to a different recipe session.");
+        }
     }
 });

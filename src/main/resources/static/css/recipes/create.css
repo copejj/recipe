@@ -175,25 +175,6 @@
     color: var(--color-text-dark);
 }
 
-.application-form-footer-action-bar {
-    margin-top: 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    padding-top: 20px;
-    border-top: 1px solid var(--color-border);
-}
-
-.footer-save-operations-left-cluster {
-    display: flex;
-    gap: 12px;
-}
-
-.explicit-text-nowrap-bound {
-    white-space: nowrap;
-}
-
 .btn-outline-danger-action-card {
     background-color: #ffffff;
     color: #dc3545;
@@ -288,41 +269,6 @@
 .btn-modal-submit-blue { background-color: #007bff; color: white; }
 .hidden-element-pool { display: none; }
 
-/* Mobile Responsive Adaptive Optimization Constraints */
-@media screen and (max-width: 600px) {
-    .template-step-card-blueprint .ingredient-row {
-        flex-wrap: wrap;
-        gap: 12px 8px;
-        border-bottom: 1px dashed var(--color-border);
-        padding-bottom: 16px;
-        margin-bottom: 16px;
-    }
-    .template-step-card-blueprint .ingredient-row:last-of-type {
-        border-bottom: none;
-        margin-bottom: 10px;
-    }
-    .template-step-card-blueprint .ingredient-row .select2-container {
-        flex: 0 0 100%;
-        width: 100%;
-    }
-    .template-step-card-blueprint .ingredient-row .amount-wrapper {
-        width: calc(50% - 4px);
-    }
-    .template-step-card-blueprint .ingredient-row select.select-width-weight-medium {
-        flex: 0 0 calc(50% - 4px);
-        width: calc(50% - 4px);
-    }
-    .template-step-card-blueprint .ingredient-row input[type="text"] {
-        flex: 1;
-        width: auto;
-    }
-    .template-step-card-blueprint .ingredient-row .btn-square-row-dismiss {
-        flex: 0 0 auto;
-        width: auto;
-        padding: 10px 16px;
-    }
-}
-
 /* Select2 Form Theme Unification Layout System Overrides */
 .ingredient-row .select2-container--default .select2-selection--single {
     height: 42px;
@@ -376,4 +322,87 @@
 .animate-rainbow-trigger {
     animation: rainbowTextCycle 1.5s ease-in-out;
     display: inline-block;
+}
+
+/* Sticky Action Navigation Footer Bar Panel Component */
+.application-form-footer-action-bar {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100; /* Keeps it layered above scrolling inputs and textareas */
+    background-color: var(--color-bg-card, #ffffff); /* Solid background blocks text scrolling underneath */
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.08); /* Soft shadow creates visual separation from content */
+    margin-top: 30px;
+    padding: 16px 24px; /* Balanced padding keeping it compact and unintrusive */
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    box-sizing: border-box; /* Prevents padding from breaking width boundaries */
+}
+.footer-save-operations-left-cluster {
+    display: flex;
+    gap: 12px;
+}
+.explicit-text-nowrap-bound {
+    white-space: nowrap;
+}
+
+/* ==========================================================================
+   CONSOLIDATED Mobile Responsive Adaptive Optimization Constraints
+   ========================================================================== */
+@media screen and (max-width: 600px) {
+    /* 1. Ingredient Rows Stacking Overrides */
+    .template-step-card-blueprint .ingredient-row {
+        flex-wrap: wrap;
+        gap: 12px 8px;
+        border-bottom: 1px dashed var(--color-border);
+        padding-bottom: 16px;
+        margin-bottom: 16px;
+    }
+    .template-step-card-blueprint .ingredient-row:last-of-type {
+        border-bottom: none;
+        margin-bottom: 10px;
+    }
+    .template-step-card-blueprint .ingredient-row .select2-container {
+        flex: 0 0 100%;
+        width: 100%;
+    }
+    .template-step-card-blueprint .ingredient-row .amount-wrapper {
+        width: calc(50% - 4px);
+    }
+    .template-step-card-blueprint .ingredient-row select.select-width-weight-medium {
+        flex: 0 0 calc(50% - 4px);
+        width: calc(50% - 4px);
+    }
+    .template-step-card-blueprint .ingredient-row input[type="text"] {
+        flex: 1;
+        width: auto;
+    }
+    .template-step-card-blueprint .ingredient-row .btn-square-row-dismiss {
+        flex: 0 0 auto;
+        width: auto;
+        padding: 10px 16px;
+    }
+
+    /* 2. Un-smash the LocalStorage Notification Banner for Portrait Layouts */
+    #draft-restore-alert-banner {
+        flex-direction: column !important; /* Forces buttons below text */
+        align-items: flex-start !important; /* Left-aligns content neatly */
+        gap: 16px !important; /* Creates a comfortable breathing room cushion */
+        padding: 16px !important;
+    }
+    #draft-restore-alert-banner > div:last-child {
+        width: 100%; /* Stretches the action button cluster wrapper */
+        display: flex;
+        gap: 12px;
+    }
+    #draft-restore-alert-banner button {
+        flex: 1; /* Automatically balances both buttons to a perfect 50/50 split target width */
+        text-align: center;
+        padding: 10px 14px !important; /* Thickens target zones for thumb touches */
+        font-size: 0.95rem !important;
+    }
 }
