@@ -8,7 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-@RequestMapping("/admin/recipes/metadata/categories")
+@RequestMapping("/admin/metadata/recipes/categories") // ◄ EXACT FOLDER MATCH
 @PreAuthorize("hasAuthority('can_moderate_recipe_metadata')")
 public class RecipeCategoryController {
 
@@ -18,44 +18,39 @@ public class RecipeCategoryController {
         this.recipeCategoryService = recipeCategoryService;
     }
 
-    // 1. Render Admin Dashboard List
     @GetMapping
     public String showCategoryDashboard(Model model) {
         model.addAttribute("categories", recipeCategoryService.getAllCategories());
         model.addAttribute("newCategory", new RecipeCategory()); 
-        return "admin/recipes/metadata/categories/dashboard";
+        return "admin/metadata/recipes/categories/dashboard";
     }
 
-    // 2. Process Add Category Form
     @PostMapping("/add")
     public String addNewCategory(@ModelAttribute("newCategory") RecipeCategory category) {
         if (category.getName() != null && !category.getName().trim().isEmpty()) {
             recipeCategoryService.saveCategory(category);
         }
-        return "redirect:/admin/recipes/metadata/categories";
+        return "redirect:/admin/metadata/recipes/categories";
     }
 
-    // 3. Render Edit View Panel
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable("id") Integer id, Model model) {
         RecipeCategory category = recipeCategoryService.getCategoryById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid Category Id:" + id));
         model.addAttribute("category", category);
-        return "admin/recipes/metadata/categories/edit";
+        return "admin/metadata/recipes/categories/edit";
     }
 
-    // 4. Process Modification Updates
     @PostMapping("/update/{id}")
     public String updateCategory(@PathVariable("id") Integer id, @ModelAttribute("category") RecipeCategory category) {
         category.setRecipeCategoryId(id);
         recipeCategoryService.saveCategory(category);
-        return "redirect:/admin/recipes/metadata/categories";
+        return "redirect:/admin/metadata/recipes/categories";
     }
 
-    // 5. Delete Taxonomy Node
     @GetMapping("/delete/{id}")
     public String deleteCategory(@PathVariable("id") Integer id) {
         recipeCategoryService.deleteCategoryById(id);
-        return "redirect:/admin/recipes/metadata/categories";
+        return "redirect:/admin/metadata/recipes/categories";
     }
 }

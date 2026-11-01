@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/admin/recipes/metadata")
+@RequestMapping("/admin/metadata") // ◄ EXACT FOLDER MATCH
 @PreAuthorize("hasAuthority('can_moderate_recipe_metadata')")
 public class RecipeMetadataController {
 
@@ -21,9 +21,6 @@ public class RecipeMetadataController {
         this.recipeCategoryService = recipeCategoryService;
     }
 
-    /**
-     * Renders the high-level Unified Executive Metrics Control Dashboard Center
-     */
     @GetMapping
     public String showExecutiveDashboard(Model model) {
         int pendingItems = ingredientService.getUnverifiedIngredients().size();
@@ -36,6 +33,6 @@ public class RecipeMetadataController {
         model.addAttribute("categoryCount", groceryAisles);
         model.addAttribute("recipeCategoriesCount", recipeCategoriesCount);
 
-        return "admin/recipes/metadata/dashboard";
+        return "admin/metadata/dashboard";
     }
 }

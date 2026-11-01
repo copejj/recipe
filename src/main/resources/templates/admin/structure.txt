@@ -1,0 +1,16 @@
+src/main/resources/templates/admin/metadata/dashboard.html             <-- Central Metadata Landing Hub
+src/main/resources/templates/admin/metadata/recipes/
+src/main/resources/templates/admin/metadata/recipes/categories/
+src/main/resources/templates/admin/metadata/recipes/categories/dashboard.html         <-- Recipe Categories Main Management Table
+src/main/resources/templates/admin/metadata/recipes/categories/edit.html              <-- Edit Recipe Category Name Panel
+src/main/resources/templates/admin/metadata/ingredients/
+src/main/resources/templates/admin/metadata/ingredients/queue.html             <-- Moderation & Conflict Queue 
+src/main/resources/templates/admin/metadata/ingredients/list.html              <-- Master Inventory Inventory Table
+src/main/resources/templates/admin/metadata/ingredients/edit.html              <-- Add/Edit Ingredient Form
+src/main/resources/templates/admin/metadata/ingredients/grocery-categories/list.html              <-- Grocery Aisles & Sort Weight List
+src/main/resources/templates/recipes/
+src/main/resources/templates/recipes/create.html                        <-- Recipe Entry Form (with Category dropdown)
+src/main/resources/templates/recipes/view.html                          <-- Public Profile Detail Page
+src/main/resources/templates/recipes/my-list.html                        <-- Scoped Creator Personal Dashboard
+src/main/resources/templates/recipes/search/
+src/main/resources/templates/recipes/search/dashboard.html                 <-- Platform Search Engine (Filter by Cat/Ing)
