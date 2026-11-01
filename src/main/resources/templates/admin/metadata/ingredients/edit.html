@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 
 <head>
     <th:block
@@ -22,7 +22,7 @@
 
         <!-- Dynamic Action Route Binding Switch -->
         <form
-            th:action="${ingredient.ingredientId != null} ? @{/admin/ingredients/edit/{id}(id=${ingredient.ingredientId})} : @{/admin/ingredients/add}"
+            th:action="${ingredient.ingredientId != null} ? @{/admin/metadata/ingredients/edit/{id}(id=${ingredient.ingredientId})} : @{/admin/metadata/ingredients/add}"
             method="post" class="ingredient-entry-form">
 
             <!-- FIELD 1: INGREDIENT MASTER NAME -->
@@ -63,7 +63,7 @@
                     th:replace="~{fragments/actions :: saveBtn(itemId=${ingredient.ingredientId != null ? ingredient.ingredientId : 0})}">Save</button>
 
                 <!-- Swaps in your neutral cancel link redirection action button -->
-                <a th:replace="~{fragments/actions :: cancelLink(targetUrl=@{/admin/ingredients/list})}">Cancel</a>
+                <a th:replace="~{fragments/actions :: cancelLink(targetUrl=@{/admin/metadata/ingredients/list})}">Cancel</a>
             </div>
 
         </form>

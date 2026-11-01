@@ -20,7 +20,7 @@ public class RecipeCategoryService {
 
     @Transactional(readOnly = true)
     public List<RecipeCategory> getAllCategories() {
-        return recipeCategoryRepository.findAll();
+        return recipeCategoryRepository.findAllByOrderByNameAsc();
     }
 
     @Transactional(readOnly = true)

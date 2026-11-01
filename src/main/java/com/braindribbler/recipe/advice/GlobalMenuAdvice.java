@@ -65,7 +65,7 @@ public class GlobalMenuAdvice {
 
             // ◄ UPDATED TO MATCH EXPLICIT METADATA REQUEST PATH
             if (authorities.contains("can_moderate_recipe_metadata")) {
-                adminChildren.add(new MenuItem("Recipe Metadata Panel", "/admin/metadata"));
+                adminChildren.add(new MenuItem("Recipe Admin", "/admin/metadata"));
             }
 
             // Only append the System Admin dropdown if the user has technical access rights

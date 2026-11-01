@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
+
+<head>
+    <th:block th:replace="~{fragments/layout :: html_head('Recipe Categories Management')}"></th:block>
+    <!-- We can reuse your existing admin category list stylesheet configuration rules -->
+    <link rel="stylesheet" th:href="@{/css/admin/categories-list.css}" />
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <main class="page-card categories-main">
+
+        <!-- UNIFIED RESPONSIVE HEADER GRID -->
+        <div class="header-grid">
+            <div class="header-title-block">
+                <h1 class="page-title">Recipe Category Management</h1>
+                <p class="page-subtitle">Configure, populate, and maintain overarching meal courses, dietary preferences, and lifestyle taxonomy nodes.</p>
+            </div>
+
+            <div class="action-tray">
+                <a th:href="@{/admin/metadata}" class="btn btn-secondary">← Metadata Dashboard</a>
+            </div>
+
+            <!-- Inline Fast Add Form Deck Controller -->
+            <form th:action="@{/admin/metadata/recipes/categories/add}" th:object="${newCategory}" method="post" style="width: 100%; margin: 0; box-sizing: border-box;">
+                <div class="add-category-bar">
+                    <div class="input-wrapper--name" style="flex: 1;">
+                        <input type="text" th:field="*{name}" class="form-input" placeholder="New Category Name (e.g., Breakfast & Brunch, Keto, Vegan)" required />
+                    </div>
+                    <button type="submit" class="btn btn--primary">+ Add Category</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Feedback Alert Status Toasts -->
+        <div th:if="${param.created}" class="alert-toast alert-toast--success">
+            New recipe category node injected into lookup definitions successfully!
+        </div>
+        <div th:if="${param.updated}" class="alert-toast alert-toast--success">
+            ✏️ Category label details updated successfully!
+        </div>
+        <div th:if="${param.deleted}" class="alert-toast alert-toast--deleted">
+            🗑️ Category successfully dropped from lookup taxonomy.
+        </div>
+
+        <!-- DATA MATRIX DATA GRID -->
+        <div class="admin-table-wrapper">
+            <div th:replace="~{fragments/datatable :: genericTable(
+                tableId='masterRecipeCategoriesTable',
+                dataList=${categories},
+                headerTemplate=~{::categoryHeaders},
+                rowTemplate=~{::categoryRow}
+            )}">
+
+                <!-- Define Header Structure -->
+                <th:block th:fragment="categoryHeaders">
+                    <tr class="categories-header-row">
+                        <th style="width: 20%; text-align: left;">Actions</th>
+                        <th style="width: 65%; text-align: left;">Recipe Category Name</th>
+                    </tr>
+                </th:block>
+
+                <!-- Define Row Structure -->
+                <th:block th:fragment="categoryRow">
+                    <tr class="categories-data-row">
+
+                        <!-- Column 1: Core Action Fragments -->
+                        <td>
+                            <div class="row-actions-deck">
+                                <!-- ACTION 1: CENTRAL EDIT LINK LINKAGE -->
+                                <a th:replace="~{fragments/actions :: editLink(targetUrl=@{/admin/metadata/recipes/categories/edit/{id}(id=${item.recipeCategoryId})})}"></a>
+
+                                <!-- ACTION 2: DEDICATED CONFIRMATION DELETE ACTION BUTTON -->
+                                <button th:replace="~{fragments/actions :: deleteConfBtn(
+                                    targetFormId='deleteRecipeCatForm-' + ${item.recipeCategoryId},
+                                    confirmMessage='Are you sure you want to permanently drop this recipe category label taxonomy entry? This cannot be undone.'
+                                )}"></button>
+                            </div>
+
+                            <!-- Isolated Safe Zone Form Placement -->
+                            <form th:id="'deleteRecipeCatForm-' + ${item.recipeCategoryId}"
+                                  th:action="@{/admin/metadata/recipes/categories/delete/{id}(id=${item.recipeCategoryId})}"
+                                  method="get"
+                                  style="display:none; width:0; height:0; margin:0; padding:0; position:absolute;">
+                            </form>
+                        </td>
+
+                        <!-- Column 2: Display Node Content Value -->
+                        <td>
+                            <strong class="category-title-text" th:text="${item.name}">Breakfast</strong>
+                        </td>
+
+                    </tr>
+                </th:block>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Shared Footer Fragment -->
+    <div th:replace="~{fragments/layout :: footer}"></div>
+    
+    <!-- JavaScript asset initializes generic DataTable behaviors automatically -->
+    <script th:src="@{/js/admin/categories-list.js}"></script>
+</body>
+
+</html>

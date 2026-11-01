@@ -22,7 +22,7 @@ public class RecipeCategoryController {
     public String showCategoryDashboard(Model model) {
         model.addAttribute("categories", recipeCategoryService.getAllCategories());
         model.addAttribute("newCategory", new RecipeCategory()); 
-        return "admin/metadata/recipes/categories/dashboard";
+        return "admin/metadata/recipes/categories/list";
     }
 
     @PostMapping("/add")

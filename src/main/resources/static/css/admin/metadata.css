@@ -1,0 +1,78 @@
+.metadata-dashboard {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 24px;
+}
+
+.dashboard-header {
+    margin-bottom: 24px;
+}
+
+.dashboard-title {
+    margin-top: 0;
+    margin-bottom: 6px;
+}
+
+.dashboard-subtitle {
+    margin: 0;
+}
+
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 32px;
+}
+
+.status-item {
+    border: 1px solid var(--color-border);
+    padding: 20px;
+    border-radius: 8px;
+    background-color: var(--color-bg-card);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.status-icon {
+    font-size: 2.5rem;
+}
+
+.status-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.status-label {
+    display: block;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.status-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 4px 0;
+    color: var(--color-text-dark);
+}
+
+.status-link {
+    font-size: 0.85rem;
+    text-decoration: none;
+    font-weight: 600;
+    color: var(--color-primary);
+}
+
+/* Alert States for dynamic evaluation triggers */
+.status-item.needs-attention {
+    border-color: var(--color-danger-border);
+    background-color: var(--color-danger-bg);
+}
+
+.status-link.alert-link {
+    color: var(--color-danger-raw);
+}

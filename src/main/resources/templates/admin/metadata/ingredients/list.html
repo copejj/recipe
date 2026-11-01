@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org" lang="en">
 
 <head>
     <th:block th:replace="~{fragments/layout :: html_head('Master Ingredient Inventory')}"></th:block>
@@ -23,9 +23,9 @@
 
             <!-- BOTTOM PANEL: Action Buttons Tray -->
             <div class="action-tray">
-                <a th:href="@{/admin/ingredients/dashboard}" class="btn btn-secondary">← Ingredients Dashboard</a>
-                <a th:href="@{/admin/ingredients/add}" class="btn btn--primary">+ Add Ingredient</a>
-                <a th:href="@{/admin/categories}" class="btn btn-category-manager">🛒 Manage Grocery Categories</a>
+                <a th:href="@{/admin/metadata}" class="btn btn-secondary">← Metadata Dashboard</a>
+                <a th:href="@{/admin/metadata/ingredients/add}" class="btn btn--primary">+ Add Ingredient</a>
+                <a th:href="@{/admin/metadata/ingredients/grocery-categories}" class="btn btn-category-manager">🛒 Manage Grocery Categories</a>
             </div>
         </div>
 
@@ -64,16 +64,13 @@
                 </th:block>
 
                 <!-- Define Row Structure -->
-
-                <!-- Define Row Structure -->
                 <th:block th:fragment="ingredientRow">
                     <tr class="ingredients-data-row">
                         <!-- Column 1: Core Action Fragments -->
                         <td>
                             <div class="row-actions-deck">
                                 <!-- ACTION 1: CENTRAL EDIT LINK -->
-                                <a
-                                    th:replace="~{fragments/actions :: editLink(targetUrl=@{/admin/ingredients/edit/{id}(id=${item.ingredientId})})}"></a>
+                                <a th:replace="~{fragments/actions :: editLink(targetUrl=@{/admin/metadata/ingredients/edit/{id}(id=${item.ingredientId})})}"></a>
 
                                 <!-- ACTION 2: DEDICATED UNPUBLISH CONFIRMATION CONTROLLER -->
                                 <button th:replace="~{fragments/actions :: unpublishConfBtn(
@@ -90,10 +87,10 @@
 
                             <!-- Safe Zone Form Placement: Completely isolated from layout styling constraints -->
                             <form th:id="'retractForm-' + ${item.ingredientId}"
-                                th:action="@{/admin/ingredients/retract/{id}(id=${item.ingredientId})}" method="post"
+                                th:action="@{/admin/metadata/ingredients/retract/{id}(id=${item.ingredientId})}" method="post"
                                 style="display:none; width:0; height:0; margin:0; padding:0; position:absolute;"></form>
                             <form th:id="'deleteForm-' + ${item.ingredientId}"
-                                th:action="@{/admin/ingredients/delete/{id}(id=${item.ingredientId})}" method="post"
+                                th:action="@{/admin/metadata/ingredients/delete/{id}(id=${item.ingredientId})}" method="post"
                                 style="display:none; width:0; height:0; margin:0; padding:0; position:absolute;"></form>
                         </td>
 

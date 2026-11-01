@@ -42,6 +42,9 @@ $(document).ready(function () {
         $('#fridgeInventoryList').append(listItemHtml);
         $('.select2-quick-add').val('').trigger('change');
         syncHiddenFormInputs();
+        
+        // ◄ AUTO-SUBMIT FORM ON INGREDIENT ADD FOR REACTIVE SEARCH EXPERIENCE
+        $('#searchForm').submit(); 
     });
 
     // Handle removal clicks on individual list badges
@@ -51,6 +54,14 @@ $(document).ready(function () {
         delete selectedIngredients[targetId];
         $listItem.remove();
         syncHiddenFormInputs();
+        
+        // ◄ AUTO-SUBMIT FORM ON INGREDIENT REMOVAL
+        $('#searchForm').submit(); 
+    });
+
+    // ◄ NEW: INSTANTLY RETRIGGER UNIFIED SEARCH UPON CATEGORY SELECTION DEVIATION
+    $(document).on('change', '#recipeCategoryFilterSelect', function () {
+        $('#searchForm').submit();
     });
 
     // Maps active cache identifiers to hidden input tags
@@ -62,7 +73,6 @@ $(document).ready(function () {
             $container.append(hiddenInput);
         });
     }
-
 
     $('#generalIndexTable').DataTable({
         "bAutoWidth": false, // Stops inline pixel injection 
