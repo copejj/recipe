@@ -1,7 +1,7 @@
 package com.braindribbler.recipe.controller.admin;
 
 import com.braindribbler.recipe.domain.recipe.Ingredient;
-import com.braindribbler.recipe.domain.recipe.IngredientClassification; // ◄ NEW
+import com.braindribbler.recipe.domain.recipe.IngredientClassification;
 import com.braindribbler.recipe.dto.recipe.PendingIngredientProjection;
 import com.braindribbler.recipe.service.recipe.IngredientService;
 
@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-@RequestMapping("/admin/ingredients")
-@PreAuthorize("hasAuthority('can_moderate_ingredients')")
+@RequestMapping("/admin/recipes/metadata/ingredients")
+@PreAuthorize("hasAuthority('can_moderate_recipe_metadata')")
 public class IngredientController {
 
     private final IngredientService ingredientService;
@@ -31,7 +31,7 @@ public class IngredientController {
      */
     @ModelAttribute
     public void addManagementMetadata(Model model) {
-        model.addAttribute("classifications", IngredientClassification.values()); // ◄ NEW GLOBAL ATTRIBUTE
+        model.addAttribute("classifications", IngredientClassification.values());
     }
 
     /**
@@ -53,9 +53,6 @@ public class IngredientController {
         model.addAttribute("pendingIngredients", pendingQueue);
         model.addAttribute("verifiedIngredients", ingredientService.getAllIngredientsSorted(null));
         model.addAttribute("groceryCategories", ingredientService.getAllGroceryCategories());
-
-        // ◄ NEW: Injects the calculated conflict map directly into the Thymeleaf view
-        // context
         model.addAttribute("conflictMap", conflictMap);
 
         return "admin/ingredients/queue";
@@ -71,11 +68,8 @@ public class IngredientController {
             @PathVariable("id") Integer ingredientId,
             @RequestParam(value = "updatedName", required = false) String updatedName,
             @RequestParam(value = "updatedCategoryId", required = false) Integer updatedCategoryId,
-            @RequestParam(value = "classification", defaultValue = "SOLID") String classificationStr) { // ◄ NEW
-                                                                                                        // PARAMETER
+            @RequestParam(value = "classification", defaultValue = "SOLID") String classificationStr) {
         try {
-            // Update your service layer method definition to accept this classification
-            // enum parameter!
             IngredientClassification classification = IngredientClassification.valueOf(classificationStr.toUpperCase());
             ingredientService.approveAndModifyIngredient(ingredientId, updatedName, updatedCategoryId, classification);
             return ResponseEntity.ok(Map.of("success", true, "message", "Ingredient verified successfully!"));
@@ -128,15 +122,13 @@ public class IngredientController {
     public String updateIngredient(@PathVariable("id") Integer id,
             @RequestParam("ingredientName") String ingredientName,
             @RequestParam("groceryCategoryId") Integer groceryCategoryId,
-            @RequestParam("classification") String classificationStr) { // ◄ NEW PARAMETER
+            @RequestParam("classification") String classificationStr) {
         try {
             IngredientClassification classification = IngredientClassification.valueOf(classificationStr.toUpperCase());
-            // Update your service layer method definition to accept this classification
-            // enum parameter!
             ingredientService.approveAndModifyIngredient(id, ingredientName, groceryCategoryId, classification);
-            return "redirect:/admin/ingredients/list?updated=true";
+            return "redirect:/admin/recipes/metadata/ingredients/list?updated=true";
         } catch (Exception e) {
-            return "redirect:/admin/ingredients/list?error=updateFailed";
+            return "redirect:/admin/recipes/metadata/ingredients/list?error=updateFailed";
         }
     }
 
@@ -147,28 +139,12 @@ public class IngredientController {
     public String deleteIngredient(@PathVariable("id") Integer id) {
         try {
             ingredientService.deleteIngredientById(id);
-            return "redirect:/admin/ingredients/list?deleted=true";
+            return "redirect:/admin/recipes/metadata/ingredients/list?deleted=true";
         } catch (IllegalStateException e) {
-            return "redirect:/admin/ingredients/list?error=inUse";
+            return "redirect:/admin/recipes/metadata/ingredients/list?error=inUse";
         } catch (Exception e) {
-            return "redirect:/admin/ingredients/list?error=deleteFailed";
+            return "redirect:/admin/recipes/metadata/ingredients/list?error=deleteFailed";
         }
-    }
-
-    /**
-     * Renders the high-level Executive Metrics Control Dashboard Center
-     */
-    @GetMapping("/dashboard")
-    public String showExecutiveDashboard(Model model) {
-        int pendingItems = ingredientService.getUnverifiedIngredients().size();
-        int verifiedItems = ingredientService.getAllIngredientsSorted(null).size();
-        int groceryAisles = ingredientService.getAllGroceryCategories().size();
-
-        model.addAttribute("pendingCount", pendingItems);
-        model.addAttribute("totalCount", verifiedItems);
-        model.addAttribute("categoryCount", groceryAisles);
-
-        return "admin/ingredients/dashboard";
     }
 
     /**
@@ -187,15 +163,13 @@ public class IngredientController {
     @PostMapping("/add")
     public String manuallyCreateIngredient(@RequestParam("ingredientName") String name,
             @RequestParam("groceryCategoryId") Integer categoryId,
-            @RequestParam("classification") String classificationStr) { // ◄ NEW PARAMETER
+            @RequestParam("classification") String classificationStr) {
         try {
             IngredientClassification classification = IngredientClassification.valueOf(classificationStr.toUpperCase());
-            // Update your service layer method definition to accept this classification
-            // enum parameter!
             ingredientService.registerVerifiedIngredient(name, categoryId, classification);
-            return "redirect:/admin/ingredients/list?created=true";
+            return "redirect:/admin/recipes/metadata/ingredients/list?created=true";
         } catch (Exception e) {
-            return "redirect:/admin/ingredients/list?error=createFailed";
+            return "redirect:/admin/recipes/metadata/ingredients/list?error=createFailed";
         }
     }
 
@@ -206,9 +180,9 @@ public class IngredientController {
     public String retractApprovedIngredient(@PathVariable("id") Integer id) {
         try {
             ingredientService.retractIngredientFromGlobalPool(id);
-            return "redirect:/admin/ingredients/list?retracted=true";
+            return "redirect:/admin/recipes/metadata/ingredients/list?retracted=true";
         } catch (Exception e) {
-            return "redirect:/admin/ingredients/list?error=retractFailed";
+            return "redirect:/admin/recipes/metadata/ingredients/list?error=retractFailed";
         }
     }
 
