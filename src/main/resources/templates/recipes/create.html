@@ -19,6 +19,16 @@
         <h1 th:text="${isEditMode ?: false} ? 'Edit Your Recipe' : 'Create New Recipe'">Recipe Stuff</h1>
         <p class="page-subtitle">Map out your instructions and attach step-scoped ingredients with exact quantities.</p>
 
+        <div id="draft-restore-alert-banner" style="display: none; background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 14px 20px; border-radius: 6px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+            <div>
+                <strong>💾 Unsaved Draft Found!</strong> We found an unsaved recipe draft from earlier today at <span id="draft-time-placeholder"></span>. Would you like to pick up where you left off?
+            </div>
+            <div style="display: flex; gap: 10px; flex-shrink: 0;">
+                <button type="button" id="confirm-restore-btn" class="btn" style="background-color: #ffc107; color: #212529; padding: 6px 14px; font-size: 0.9rem;">Yes, Restore Draft</button>
+                <button type="button" id="dismiss-restore-btn" class="btn" style="background-color: transparent; border: 1px solid #856404; color: #856404; padding: 6px 14px; font-size: 0.9rem;">Discard</button>
+            </div>
+        </div>
+
         <form th:action="@{/recipes/create}" th:object="${recipeForm}" method="post" id="recipeForm">
             <input type="hidden" id="recipeId" th:field="*{recipeId}" />
 
