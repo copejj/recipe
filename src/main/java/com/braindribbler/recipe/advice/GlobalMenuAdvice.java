@@ -63,8 +63,9 @@ public class GlobalMenuAdvice {
                 adminChildren.add(new MenuItem("Migration History", "/admin/migrations"));
             }
 
-            if (authorities.contains("can_moderate_ingredients")) {
-                adminChildren.add(new MenuItem("Ingredient Dashboard", "/admin/ingredients/dashboard"));
+            // ◄ UPDATED TO MATCH EXPLICIT METADATA REQUEST PATH
+            if (authorities.contains("can_moderate_recipe_metadata")) {
+                adminChildren.add(new MenuItem("Recipe Admin", "/admin/metadata"));
             }
 
             // Only append the System Admin dropdown if the user has technical access rights

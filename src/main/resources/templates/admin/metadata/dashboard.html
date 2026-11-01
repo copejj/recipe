@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org" lang="en">
+
+<head th:replace="~{fragments/layout :: html_head('Recipe Metadata Administration Hub')}"></head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <main class="page-card metadata-dashboard">
+        
+        <div class="dashboard-header">
+            <h1 class="page-title dashboard-title">Recipe Metadata Control Center</h1>
+            <p class="page-subtitle dashboard-subtitle">High-level system health metrics, global database distributions, and centralized taxonomy gateways.</p>
+        </div>
+
+        <!-- METRICS EXECUTIVE OVERVIEW WIDGET DATA GRID -->
+        <div class="status-grid">
+
+
+            <!-- CARD 1: RECIPE CATEGORY METRICS -->
+            <div class="status-item">
+                <span class="status-icon">🍽️</span>
+                <div class="status-info">
+                    <span class="status-label">Recipe Categories</span>
+                    <span class="status-value">
+                        <span th:text="${recipeCategoriesCount}">0</span> Course Types
+                    </span>
+                    <a th:href="@{/admin/metadata/recipes/categories}" class="status-link">Manage Recipe Categories →</a>
+                </div>
+            </div>
+
+            <!-- CARD 2: MASTER INVENTORY DICTIONARY STATISTICS -->
+            <div class="status-item">
+                <span class="status-icon">📊</span>
+                <div class="status-info">
+                    <span class="status-label">Public Ingredients</span>
+                    <span class="status-value">
+                        <span th:text="${totalCount}">0</span> Active Ingredients
+                    </span>
+                    <a th:href="@{/admin/metadata/ingredients/list}" class="status-link">Manage Ingredients List →</a>
+                </div>
+            </div>
+
+            <!-- CARD 3: GROCERY CATEGORY MAP METRICS -->
+            <div class="status-item">
+                <span class="status-icon">🛒</span>
+                <div class="status-info">
+                    <span class="status-label">Grocery Categories</span>
+                    <span class="status-value">
+                        <span th:text="${categoryCount}">0</span> Active Aisles
+                    </span>
+                    <a th:href="@{/admin/metadata/ingredients/grocery-categories}" class="status-link">Manage Store Aisles →</a>
+                </div>
+            </div>
+
+            <!-- CARD 4: PENDING INGESTION QUEUE MODAL HUB -->
+            <div class="status-item" th:classappend="${pendingCount > 0} ? 'needs-attention' : ''">
+                <span class="status-icon">🌿</span>
+                <div class="status-info">
+                    <span class="status-label">Ingredient Verification</span>
+                    <span class="status-value">
+                        <span th:text="${pendingCount}">0</span> Items Waiting
+                    </span>
+                    <a th:href="@{/admin/metadata/ingredients}"
+                       class="status-link"
+                       th:classappend="${pendingCount > 0} ? 'alert-link' : ''">Moderate Ingestion Queue →</a>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" lang="en">
+
+<head>
+    <th:block th:replace="~{fragments/layout :: html_head('Edit Recipe Category')}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/admin/ingredients-edit.css}" />
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <main class="page-card form-card">
+        <h1 class="page-title">Modify Category Node Label</h1>
+        <p class="page-subtitle">Update global system lookup properties or fix structural errors for this recipe category taxonomy definition element.</p>
+
+        <form th:action="@{/admin/metadata/recipes/categories/update/{id}(id=${category.recipeCategoryId})}"
+              th:object="${category}" method="post" class="ingredient-entry-form">
+
+            <!-- FIELD 2: CATEGORY UNIQUE STRING LABELLING INPUT BOX -->
+            <div class="form-field-group">
+                <label for="categoryName">Updated Category Label Name</label>
+                <input type="text" id="categoryName" th:field="*{name}" class="form-input" required />
+            </div>
+
+            <!-- ACTIONS FOOTER BUTTON SECTIONS GRID -->
+            <div class="form-actions-tray">
+                <button th:replace="~{fragments/actions :: saveBtn(itemId=${category.recipeCategoryId})}">Save Changes</button>
+                <a th:replace="~{fragments/actions :: cancelLink(targetUrl=@{/admin/metadata/recipes/categories})}">Cancel</a>
+            </div>
+
+        </form>
+    </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+
+</html>

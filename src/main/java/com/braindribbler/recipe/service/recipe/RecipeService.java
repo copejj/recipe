@@ -16,21 +16,24 @@ import java.util.UUID;
 
 @Service
 public class RecipeService {
-
     private final RecipeRepository recipeRepository;
     private final IngredientRepository ingredientRepository;
     private final MeasurementRepository measurementRepository;
     private final RecipeVisibilityRepository visibilityRepository;
+    private final RecipeCategoryRepository recipeCategoryRepository; 
 
     public RecipeService(RecipeRepository recipeRepository,
             IngredientRepository ingredientRepository,
             MeasurementRepository measurementRepository,
-            RecipeVisibilityRepository visibilityRepository) {
+            RecipeVisibilityRepository visibilityRepository,
+            RecipeCategoryRepository recipeCategoryRepository) {
         this.recipeRepository = recipeRepository;
         this.ingredientRepository = ingredientRepository;
         this.measurementRepository = measurementRepository;
         this.visibilityRepository = visibilityRepository;
+        this.recipeCategoryRepository = recipeCategoryRepository;
     }
+
 
     @Transactional(readOnly = true)
     public long getRecipeCountByUserId(Integer userId) {
@@ -50,6 +53,11 @@ public class RecipeService {
     @Transactional(readOnly = true)
     public List<RecipeVisibility> getAllVisibilities() {
         return visibilityRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Recipe> getRecipesByCategoryId(Integer recipeCategoryId) {
+        return recipeRepository.findByRecipeCategory_RecipeCategoryId(recipeCategoryId);
     }
 
     /**
@@ -145,7 +153,10 @@ public class RecipeService {
         form.setServings(recipe.getServings());
         form.setRecipeNote(recipe.getRecipeNote());
         form.setRecipeVisibilityId(
-                recipe.getRecipeVisibility() != null ? recipe.getRecipeVisibility().getRecipeVisibilityId() : null);
+            recipe.getRecipeVisibility() != null ? recipe.getRecipeVisibility().getRecipeVisibilityId() : null);
+
+        form.setRecipeCategoryId(
+            recipe.getRecipeCategory() != null ? recipe.getRecipeCategory().getRecipeCategoryId() : null);
 
         form.getSteps().clear();
 
@@ -221,6 +232,13 @@ public class RecipeService {
         if (form.getRecipeVisibilityId() != null) {
             recipe.setRecipeVisibility(visibilityRepository.findById(form.getRecipeVisibilityId())
                     .orElseThrow(() -> new EntityNotFoundException("Visibility profile missing")));
+        }
+
+        if (form.getRecipeCategoryId() != null) {
+            recipe.setRecipeCategory(recipeCategoryRepository.findById(form.getRecipeCategoryId())
+                    .orElseThrow(() -> new EntityNotFoundException("Selected recipe category mapping missing")));
+        } else {
+            recipe.setRecipeCategory(null); // Allows unsetting or keeping it optional
         }
 
         // 3. Rebuild the cascading timeline steps array cleanly

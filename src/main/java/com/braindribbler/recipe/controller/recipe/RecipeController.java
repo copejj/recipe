@@ -29,6 +29,7 @@ import com.braindribbler.recipe.domain.recipe.RecipeStepIngredient;
 import com.braindribbler.recipe.dto.recipe.RecipeForm;
 import com.braindribbler.recipe.security.RecipeUserDetails;
 import com.braindribbler.recipe.service.recipe.IngredientService;
+import com.braindribbler.recipe.service.recipe.RecipeCategoryService;
 import com.braindribbler.recipe.service.recipe.RecipeService;
 import com.braindribbler.recipe.util.RecipeUtility;
 
@@ -39,10 +40,12 @@ public class RecipeController {
 
     private final RecipeService recipeService;
     private final IngredientService ingredientService;
+    private final RecipeCategoryService recipeCategoryService;
 
-    public RecipeController(RecipeService recipeService, IngredientService ingredientService) {
+    public RecipeController(RecipeService recipeService, IngredientService ingredientService, RecipeCategoryService recipeCategoryService) {
         this.recipeService = recipeService;
         this.ingredientService = ingredientService;
+        this.recipeCategoryService = recipeCategoryService;
     }
 
     @GetMapping("/")
@@ -267,6 +270,7 @@ public class RecipeController {
 
         User userEntity = (currentUser != null) ? currentUser.getUserProfile() : null;
 
+        model.addAttribute("recipeCategories", recipeCategoryService.getAllCategories());
         model.addAttribute("allIngredients", ingredientService.getAllIngredientsSorted(userEntity));
         model.addAttribute("measurements", recipeService.getAllMeasurements());
         model.addAttribute("visibilities", recipeService.getAllVisibilities());

@@ -16,16 +16,15 @@
         <div class="header-grid">
             <div class="header-title-block">
                 <h1 class="page-title">Grocery Category Management</h1>
-                <p class="page-subtitle">Organize and weigh store aisle display sequencing vectors to future-proof smart
-                    sorting shopping lists.</p>
+                <p class="page-subtitle">Organize and weigh store aisle display sequencing vectors to future-proof smart sorting shopping lists.</p>
             </div>
 
             <div class="action-tray">
-                <a th:href="@{/admin/ingredients/list}" class="btn btn-secondary">← Ingredients List</a>
+                <a th:href="@{/admin/metadata/ingredients/list}" class="btn btn-secondary">← Ingredients List</a>
             </div>
 
             <!-- Inline Fast Add Form Deck Controller -->
-            <form th:action="@{/admin/categories/add}" method="post"
+            <form th:action="@{/admin/metadata/ingredients/grocery-categories/add}" method="post"
                 style="width: 100%; margin: 0; box-sizing: border-box;">
                 <div class="add-category-bar">
                     <div class="input-wrapper--name">
@@ -54,7 +53,7 @@
 
         <!-- DATA REPLACEMENT INDEX GRID MATRIX (DATATABLE SWAP) -->
         <div class="admin-table-wrapper">
-            <form th:action="@{/admin/categories/save-all}" th:object="${formWrapper}" method="post"
+            <form th:action="@{/admin/metadata/ingredients/grocery-categories/save-all}" th:object="${formWrapper}" method="post"
                 style="width: 100%; margin: 0; box-sizing: border-box;">
 
                 <div th:replace="~{fragments/datatable :: genericTable(
@@ -73,7 +72,7 @@
                         </tr>
                     </th:block>
 
-                    <!-- Define Row Structure (Fixed: Removed the broken out-of-scope stat reference) -->
+                    <!-- Define Row Structure -->
                     <th:block th:fragment="categoryRow">
                         <tr class="categories-data-row">
 
@@ -86,13 +85,13 @@
                                     )}"></button>
                                 </div>
                                 <form th:id="'deleteCatForm-' + ${item.groceryCategoryId}"
-                                    th:action="@{/admin/categories/delete/{id}(id=${item.groceryCategoryId})}"
+                                    th:action="@{/admin/metadata/ingredients/grocery-categories/delete/{id}(id=${item.groceryCategoryId})}"
                                     method="post"
                                     style="display:none; width:0; height:0; margin:0; padding:0; position:absolute;">
                                 </form>
                             </td>
 
-                            <!-- Column 2: Sequence display order weight input (Fixed using dynamic names for Spring collection binding) -->
+                            <!-- Column 2: Sequence display order weight input -->
                             <td>
                                 <span style="display: none;" th:text="${item.displayOrder}">0</span>
 
@@ -107,7 +106,6 @@
                                     form="bulkOrderForm" required />
                             </td>
 
-
                             <td>
                                 <span style="display: none;" th:text="${item.categoryName}">Category</span>
                                 <strong class="category-title-text" th:text="${item.categoryName}">Produce</strong>
@@ -115,7 +113,6 @@
 
                         </tr>
                     </th:block>
-
 
                 </div>
 

@@ -1,4 +1,3 @@
-
 $(document).ready(function () {
     // Eagerly inject CSRF header authorization parameters into all AJAX requests
     $(document).ajaxSend(function (e, xhr, options) {
@@ -33,28 +32,22 @@ $(document).ready(function () {
         // Dynamic element ID lookups matching your template output variables precisely
         var updatedNameText = $("#ing-name-input-" + ingredientId).val();
         var updatedCategoryIdVal = $("#ing-category-select-" + ingredientId).val();
-        var selectedClassificationTrack = $("#ing-classification-select-" + ingredientId).val(); // ◄ NEW
-
-        // Spring Security CSRF lookup hooks layout configuration rules block
-        var token = document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN='))?.split('=')[1];
+        var selectedClassificationTrack = $("#ing-classification-select-" + ingredientId).val();
 
         $.ajax({
-            url: '/admin/ingredients/approve/' + ingredientId,
+            url: '/admin/metadata/ingredients/approve/' + ingredientId, // ◄ UPDATED REQUEST PATH
             type: 'POST',
             data: {
                 updatedName: updatedNameText,
                 updatedCategoryId: updatedCategoryIdVal,
-                classification: selectedClassificationTrack // ◄ NEW: Maps cleanly to controller parameters mapping
-            },
-            beforeSend: function (xhr) {
-                if (token) xhr.setRequestHeader("X-XSRF-TOKEN", decodeURIComponent(token));
+                classification: selectedClassificationTrack
             },
             success: function (response) {
                 if (response.success) {
                     // Smooth row teardown visual sequence animation
                     $("#ing-row-" + ingredientId).fadeOut(300, function () {
                         $(this).remove();
-                        checkQueueCount(); // ◄ ADDED: Updates the page layout if empty
+                        checkQueueCount();
                     });
                 } else {
                     alert(response.message || "Approval process failure encountered.");
@@ -78,7 +71,7 @@ $(document).ready(function () {
         }
 
         $.ajax({
-            url: '/admin/ingredients/merge',
+            url: '/admin/metadata/ingredients/merge', // ◄ UPDATED REQUEST PATH
             type: 'POST',
             data: {
                 duplicateId: duplicateId,
@@ -111,7 +104,7 @@ $(document).ready(function () {
         }
 
         $.ajax({
-            url: '/admin/ingredients/lock/' + ingredientId,
+            url: '/admin/metadata/ingredients/lock/' + ingredientId, // ◄ UPDATED REQUEST PATH
             type: 'POST',
             success: function (response) {
                 if (response.success) {
