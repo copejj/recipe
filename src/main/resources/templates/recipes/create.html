@@ -42,7 +42,7 @@
                     <input type="number" th:field="*{servings}" class="form-input" min="1" required />
                 </div>
 
-                <!-- ➡️ CENTRALIZED RECIPE CATEGORY TAXONOMY DROPDOWN -->
+                <!-- CENTRALIZED RECIPE CATEGORY TAXONOMY DROPDOWN -->
                 <div class="form-group input-flexible-fill">
                     <label class="form-label" for="recipeCategoryId">Recipe Category</label>
                     <select th:field="*{recipeCategoryId}" class="form-input" required>
@@ -63,11 +63,15 @@
                 </div>
             </div>
 
-
             <hr class="dashboard-divider section-break-divider" />
-
             <!-- Dynamic Interactive Timeline Section -->
             <h2>Instructions & Ingredients Blueprint</h2>
+            <div class="timeline-step-insertion-point-wrapper" style="margin-bottom: 24px;">
+                <button type="button" id="insert-step-top-btn" class="btn btn-dashed-insertion-action">
+                    ➕ Insert a New Step
+                </button>
+            </div>
+
             <div id="steps-container">
 
                 <!-- Step Card Master Template Row Block -->
@@ -91,14 +95,13 @@
                     <div class="ingredients-section timeline-ingredients-scope-box">
                         <div class="ingredients-section-header-alignment">
                             <label class="form-label label-inline-reset">Ingredients Needed for this Step</label>
-                            <button type="button" class="open-quick-ing-btn embedded-modal-trigger-link">✨ Missing an
-                                ingredient?</button>
+                            <button type="button" class="open-quick-ing-btn embedded-modal-trigger-link">✨ Missing an ingredient?</button>
                         </div>
 
                         <div class="ingredients-container">
                             <th:block th:if="${isEditMode and step.ingredients != null}">
                                 <div th:each="ing, ingStat : ${step.ingredients}"
-                                    class="ingredient-row row-flex-alignment-grid" th:data-ing-index="${ingStat.index}">
+                                    class="ingredient-row" th:data-ing-index="${ingStat.index}">
 
                                     <select
                                         th:name="|steps[${stepStat.index}].ingredients[${ingStat.index}].ingredientId|"
@@ -155,7 +158,6 @@
             </div>
 
             <hr class="dashboard-divider section-break-divider" />
-
             <div class="form-group global-recipe-notes-margin-box">
                 <label class="form-label label-bold-dark-theme" for="recipeNote">General Recipe Notes</label>
                 <textarea th:field="*{recipeNote}" class="form-input" rows="3"
@@ -182,7 +184,7 @@
         <form th:if="${recipeForm.recipeId != null}" id="deleteForm"
             th:action="@{/recipes/delete/{id}(id=${recipeForm.recipeId})}" method="post"
             class="delete-recipe-form hidden-element-pool"></form>
-    </main>
+    </form>
 
     <!-- Native HTML5 Dialog Interactive Component Layer -->
     <dialog id="quickIngredientModal" class="admin-modal">
@@ -211,20 +213,17 @@
                 <div class="modal-classification-three-column-grid">
                     <button type="button" class="class-selector-card active selector-card-solid" data-value="SOLID">
                         <div class="heading-solid">SOLID</div>
-                        <div class="card-description-body-text">Whole amounts, count variables, slices, pieces, cloves,
-                            packages.</div>
+                        <div class="card-description-body-text">Whole amounts, count variables, slices, pieces, cloves, packages.</div>
                     </button>
 
                     <button type="button" class="class-selector-card selector-card-wet" data-value="WET">
                         <div class="card-heading-wet">WET / LIQUID</div>
-                        <div class="card-description-body-text">Fluids using Cups, Teaspoons, Pints, Quarts, Gallons,
-                            Fluid Ounces.</div>
+                        <div class="card-description-body-text">Fluids using Cups, Teaspoons, Pints, Quarts, Gallons, Fluid Ounces.</div>
                     </button>
 
                     <button type="button" class="class-selector-card selector-card-dry" data-value="DRY">
                         <div class="card-heading-dry">DRY VOLUME</div>
-                        <div class="card-description-body-text">Powders, spices, or grains using Teaspoons, Tablespoons,
-                            Cups, Pounds.</div>
+                        <div class="card-description-body-text">Powders, spices, or grains using Teaspoons, Tablespoons, Cups, Pounds.</div>
                     </button>
                 </div>
             </div>

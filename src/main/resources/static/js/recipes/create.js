@@ -40,9 +40,33 @@ $(document).ready(function () {
     });
 
     // --- MID-TIMELINE ELEMENT INSERTION SYSTEM ---
+    // Handler 1: Insert a new step at the absolute top of the page
+    $(document).on("click", "#insert-step-top-btn", function (e) {
+        e.preventDefault();
+        var firstCard = $("#steps-container .step-card").first();
+        
+        // Temporarily destroy select2 on the first row to clone safely
+        firstCard.find(".ingredient-row select:first-child").each(function () {
+            if ($(this).hasClass("select2-hidden-accessible")) { $(this).select2("destroy"); }
+        });
+
+        var clone = firstCard.clone();
+        clone.find("textarea, input").val("");
+        clone.find("select").prop("selectedIndex", 0);
+        clone.find("input[type='hidden']").remove();
+        clone.find(".ingredients-container").empty();
+
+        // Snap clone to the very beginning of the steps layout container
+        $("#steps-container").prepend(clone);
+        
+        reindexForm();
+    });
+
+    // Handler 2: Insert a new step directly underneath an existing step card
     $(document).on("click", ".insert-step-here-btn", function (e) {
         e.preventDefault();
         var firstCard = $("#steps-container .step-card").first();
+        
         firstCard.find(".ingredient-row select:first-child").each(function () {
             if ($(this).hasClass("select2-hidden-accessible")) { $(this).select2("destroy"); }
         });
@@ -64,16 +88,17 @@ $(document).ready(function () {
         var ingredientOptions = $('#ingredient-options-pool').html();
         var measurementOptions = $('#measurement-options-pool').html();
 
+        // CLEANED: All hardcoded styles replaced with standard semantic classes
         var newRowHtml =
-            '<div class="ingredient-row" style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">' +
-            '<select class="form-input" style="flex: 2.5;" required>' + ingredientOptions + '</select>' +
+            '<div class="ingredient-row row-flex-alignment-grid">' +
+            '<select class="form-input select-width-weight-large" required>' + ingredientOptions + '</select>' +
             '<div class="amount-wrapper">' +
-            '<input type="number" step="0.01" class="form-input amount-input" placeholder="Amount" style="width: 100%;" required />' +
+            '<input type="number" step="0.01" class="form-input amount-input input-forced-full-width" placeholder="Amount" required />' +
             '<div class="fraction-bubble"></div>' +
             '</div>' +
-            '<select class="form-input" style="flex: 1.5;" required>' + measurementOptions + '</select>' +
-            '<input type="text" class="form-input" placeholder="Note (e.g., melted, chilled)" style="flex: 2;" />' +
-            '<button type="button" class="btn remove-ing-btn" style="width: auto; padding: 10px 14px; font-size: 1rem; margin: 0; background-color: #e9ecef; color: var(--color-text-dark); border: 1px solid var(--color-border-input); border-radius: 6px;">×</button>' +
+            '<select class="form-input select-width-weight-medium" required>' + measurementOptions + '</select>' +
+            '<input type="text" class="form-input select-width-weight-large" placeholder="Note (e.g., melted, chilled)" />' +
+            '<button type="button" class="btn remove-ing-btn btn-square-row-dismiss">×</button>' +
             '</div>';
 
         container.append($(newRowHtml));
@@ -87,14 +112,18 @@ $(document).ready(function () {
         reindexForm();
         validateStepIngredients();
     });
+
     // --- QUICK INGREDIENT MODAL HANDLERS ---
     $(document).on("click", ".open-quick-ing-btn", function () {
         activeSelectDropdown = $(this).closest('.ingredients-section').find(".ingredients-container .ingredient-row:last-child select").first();
         $("#quickIngredientName").val("");
         $("#quickGroceryCategoryId").val("");
         $("#quickIngredientClassification").val("SOLID");
-        $(".class-selector-card").removeClass("active").css({ "border-color": "#dee2e6", "background": "#ffffff" });
-        $('.class-selector-card[data-value="SOLID"]').addClass("active").css({ "border-color": "#198754", "background": "#f4fbf7" });
+        
+        // CLEANED: Inline styling adjustments replaced entirely with CSS modifications
+        $(".class-selector-card").removeClass("active");
+        $('.class-selector-card[data-value="SOLID"]').addClass("active");
+        
         $("#modal-feedback-msg").hide().text("");
         if (modal) modal.showModal();
     });
@@ -127,53 +156,13 @@ $(document).ready(function () {
         e.preventDefault();
         var chosenValue = $(this).data("value");
         $("#quickIngredientClassification").val(chosenValue);
-        $(".class-selector-card").css({ "border-color": "#dee2e6", "background": "#ffffff" });
-
-        if (chosenValue === "SOLID") $(this).css({ "border-color": "#198754", "background": "#f4fbf7" });
-        else if (chosenValue === "WET") $(this).css({ "border-color": "#0dcaf0", "background": "#f0faff" });
-        else if (chosenValue === "DRY") $(this).css({ "border-color": "#ffc107", "background": "#fffdf2" });
+        
+        // CLEANED: Direct element color styling moved completely out to CSS classes
+        $(".class-selector-card").removeClass("active");
+        $(this).addClass("active");
     });
 
     $("#closeQuickIngBtn").click(function () { if (modal) modal.close(); });
-
-    $("#quickIngredientForm").submit(function (e) {
-        e.preventDefault(); e.stopPropagation();
-        $("#modal-feedback-msg").hide();
-
-        var token = document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN='))?.split('=');
-
-        $.ajax({
-            url: '/ingredients/quick-add',
-            type: 'POST',
-            data: { name: $("#quickIngredientName").val(), groceryCategoryId: $("#quickGroceryCategoryId").val() || null, classification: $("#quickIngredientClassification").val() },
-            beforeSend: function (xhr) {
-                if (token) xhr.setRequestHeader("X-XSRF-TOKEN", decodeURIComponent(token[1]));
-            },
-            success: function (response) {
-                if (response.success) {
-                    $('#ingredient-options-pool').append($('<option>', { value: response.ingredientId, text: response.ingredientName }).attr('data-classification', $("#quickIngredientClassification").val()));
-
-                    var nativePoolOptions = $('#ingredient-options-pool').find('option').not('[value=""]').get();
-                    nativePoolOptions.sort((a, b) => $(a).text().localeCompare($(b).text()));
-                    $('#ingredient-options-pool').empty().append($('#ingredient-options-pool').find('option[value=""]')).append(nativePoolOptions);
-
-                    $(".ingredient-row select:first-child").each(function () {
-                        var val = $(this).val();
-                        $(this).html($('#ingredient-options-pool').html()).val(val).trigger('change.select2');
-                    });
-
-                    if (activeSelectDropdown) {
-                        activeSelectDropdown.val(response.ingredientId).trigger('change');
-                        filterMeasurementsByIngredient(activeSelectDropdown);
-                    }
-                    if (modal) modal.close();
-                } else {
-                    $("#modal-feedback-msg").addClass("error-text").text(response.message || "Failed to add ingredient.").show();
-                }
-            }
-        });
-    });
-
     // --- REAL-TIME VALIDATION ENGINE ---
     function validateStepIngredients() {
         $(".ingredient-row").removeClass("row-error-highlight");
@@ -260,7 +249,7 @@ $(document).ready(function () {
         });
     }
 
-    // --- FORM SUBMISSION LAYER ---
+        // --- FORM SUBMISSION LAYER ---
     $(document).on("click", "#save-stay-btn, #finish-view-btn", function (e) {
         e.preventDefault();
         var clickedButtonId = $(this).attr("id");
@@ -368,15 +357,12 @@ $(document).ready(function () {
     }
 
     // --- DELETION SAFETY ENGINE ---
-    $(document).on("mouseenter", ".inline-delete-btn", function () { if ($(this).attr("data-confirmed") === "false") $(this).css({ "background-color": "#dc3545", "color": "#ffffff" }); });
-    $(document).on("mouseleave", ".inline-delete-btn", function () { if ($(this).attr("data-confirmed") === "false") $(this).css({ "background-color": "#ffffff", "color": "#dc3545" }); });
-
     $(document).on("submit", ".delete-recipe-form", function (e) {
         var $form = $(this); var $btn = $('button[form="' + ($form.attr("id") || "deleteForm") + '"]').length ? $('button[form="' + ($form.attr("id") || "deleteForm") + '"]') : $(".inline-delete-btn");
         if ($btn.length && $btn.attr("data-confirmed") === "false") {
             e.preventDefault();
-            $btn.attr("data-confirmed", "true").html("Are you sure? This cannot be recovered!").css({ "background-color": "#bd2130", "color": "#ffffff", "border-color": "#bd2130", "box-shadow": "0 0 8px rgba(220, 53, 69, 0.4)" });
-            setTimeout(function () { if ($btn.attr("data-confirmed") === "true") $btn.attr("data-confirmed", "false").html("Delete Recipe").css({ "background-color": "#ffffff", "color": "#dc3545", "border-color": "#dc3545", "box-shadow": "none" }); }, 5000);
+            $btn.attr("data-confirmed", "true").html("Are you sure? This cannot be recovered!").addClass("btn-danger-critical");
+            setTimeout(function () { if ($btn.attr("data-confirmed") === "true") $btn.attr("data-confirmed", "false").html("Delete Recipe").removeClass("btn-danger-critical"); }, 5000);
             return false;
         }
         return true;
