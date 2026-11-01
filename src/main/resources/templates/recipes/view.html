@@ -19,8 +19,15 @@
                 <h1 th:text="${recipe.title}">Tasty Recipe Title</h1>
 
                 <div class="recipe-meta-tray">
-                    <div class="recipe-meta-author">
-                        Created by <span th:text="${recipe.user.displayName}">Author</span>
+                    <div class="recipe-meta-attribution-stack">
+                        <div class="recipe-meta-author">
+                            Created by <span th:text="${recipe.user.displayName}">Author</span>
+                        </div>
+
+                        <!-- ➡️ Category element placed directly under the name -->
+                        <div class="recipe-meta-category" th:if="${recipe.recipeCategory != null}">
+                            Category: <span th:text="${recipe.recipeCategory.name}">Course Type</span>
+                        </div>
                     </div>
 
                     <!-- ACTION 1: CENTRAL EDIT LINK -->

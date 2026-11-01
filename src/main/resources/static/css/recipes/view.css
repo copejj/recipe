@@ -154,3 +154,15 @@
     font-weight: 600;
     color: var(--color-text-muted);
 }
+
+.recipe-meta-attribution-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.recipe-meta-category {
+    font-size: 0.88rem;
+    opacity: 0.85;
+    color: var(--text-muted, #6c757d);
+}
