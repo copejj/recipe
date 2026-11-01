@@ -17,11 +17,11 @@ import java.util.Map;
 @Controller
 @RequestMapping("/admin/ingredients")
 @PreAuthorize("hasAuthority('can_moderate_ingredients')")
-public class IngredientManagementController {
+public class IngredientController {
 
     private final IngredientService ingredientService;
 
-    public IngredientManagementController(IngredientService ingredientService) {
+    public IngredientController(IngredientService ingredientService) {
         this.ingredientService = ingredientService;
     }
 

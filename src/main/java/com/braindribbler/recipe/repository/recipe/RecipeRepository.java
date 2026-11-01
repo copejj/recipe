@@ -17,6 +17,9 @@ public interface RecipeRepository extends JpaRepository<Recipe, Integer> {
 
         List<Recipe> findByRecipeVisibilityVisibilityName(String visibilityName);
 
+        List<Recipe> findByRecipeCategory_RecipeCategoryId(Integer recipeCategoryId);
+
+
         // 1. Fetches all comprehensive public/owned recipes for the main feed
         @Query(value = "SELECT r.* FROM recipes r WHERE " +
                         "(" +

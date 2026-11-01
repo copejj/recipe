@@ -10,6 +10,7 @@ public class RecipeForm {
     private Integer servings;
     private String recipeNote;
     private Integer recipeVisibilityId;
+    private Integer recipeCategoryId;
     private List<StepForm> steps = new ArrayList<>();
 
     public RecipeForm() {
@@ -64,6 +65,14 @@ public class RecipeForm {
 
     public void setRecipeVisibilityId(Integer recipeVisibilityId) {
         this.recipeVisibilityId = recipeVisibilityId;
+    }
+
+    public Integer getRecipeCategoryId() {
+        return recipeCategoryId;
+    }
+
+    public void setRecipeCategoryId(Integer recipeCategoryId) {
+        this.recipeCategoryId = recipeCategoryId;
     }
 
     public List<StepForm> getSteps() {

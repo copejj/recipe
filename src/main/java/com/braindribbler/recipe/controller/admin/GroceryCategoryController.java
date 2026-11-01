@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 @RequestMapping("/admin/categories")
 @PreAuthorize("hasAuthority('can_moderate_ingredients')")
-public class GroceryCategoryManagementController {
+public class GroceryCategoryController {
 
     private final GroceryCategoryService groceryCategoryService;
 
-    public GroceryCategoryManagementController(GroceryCategoryService groceryCategoryService) {
+    public GroceryCategoryController(GroceryCategoryService groceryCategoryService) {
         this.groceryCategoryService = groceryCategoryService;
     }
 

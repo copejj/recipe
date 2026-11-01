@@ -35,6 +35,10 @@ public class Recipe {
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "recipe_category_id")
+    private RecipeCategory recipeCategory;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -102,6 +106,14 @@ public class Recipe {
 
     public void setCreatedAt(OffsetDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public RecipeCategory getRecipeCategory() {
+        return recipeCategory;
+    }
+
+    public void setRecipeCategory(RecipeCategory recipeCategory) {
+        this.recipeCategory = recipeCategory;
     }
 
     public User getUser() {
