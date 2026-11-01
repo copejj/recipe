@@ -8,7 +8,7 @@
 </head>
 
 <body>
-    <div th:replace="~{fragments/layout :: header}"></div>
+    <div th:replace="~{fragments/layout :: header}"></div >
 
     <main>
         <div class="page-card">
@@ -29,7 +29,7 @@
                         <div class="filter-column">
                             <label for="recipeCategoryFilterSelect">Filter by Recipe Category</label>
                             <select id="recipeCategoryFilterSelect" name="recipeCategoryId" class="form-input-unified">
-                                <option value="">-- All Categories / View Whole Catalog --</option>
+                                <option value="">-- All Recipes --</option>
                                 <option th:each="cat : ${categoryPool}" 
                                         th:value="${cat.recipeCategoryId}"
                                         th:text="${cat.name}"
@@ -87,39 +87,50 @@
             </div>
 
             <div class="table-responsive-wrapper">
-                <table id="generalIndexTable" class="display">
-                    <thead>
+                
+                <!-- Central DataTables Layout Component Integration Hook -->
+                <div th:replace="~{fragments/datatable :: genericTable(
+                    tableId='generalIndexTable',
+                    dataList=${recipesIndexPool},
+                    headerTemplate=~{::recipeHeaders},
+                    rowTemplate=~{::recipeRow}
+                )}">
+
+                    <!-- 1. Define Header Structure Fragment Layout -->
+                    <th:block th:fragment="recipeHeaders">
                         <tr>
-                            <th>Actions</th>
-                            <th>Recipe Title</th>
-                            <th>Category</th>
-                            <th>Description</th>
+                            <th class="col-actions">Actions</th>
+                            <th class="col-title">Recipe Title</th>
+                            <th class="col-category">Category</th>
+                            <th class="col-description">Description</th>
                         </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="recipe : ${recipesIndexPool}"
-                            th:data-href="@{/view/{publicId}(publicId=${recipe.publicId})}" style="cursor: pointer;">
+                    </th:block>
 
-                            <td class="table-action-cell">
-                                <a th:replace="~{fragments/actions :: viewLink(targetUrl=@{/view/{publicId}(publicId=${recipe.publicId})})}"></a>
+                    <!-- 2. Define Row Structure Fragment Layout -->
+                    <th:block th:fragment="recipeRow">
+                        <tr th:data-href="@{/view/{publicId}(publicId=${item.publicId})}">
+
+                            <td class="table-action-cell" data-label="Actions">
+                                <a th:replace="~{fragments/actions :: viewLink(targetUrl=@{/view/{publicId}(publicId=${item.publicId})})}"></a>
                             </td>
 
-                            <td class="table-title-cell">
-                                <strong th:text="${recipe.title}">Recipe Title</strong>
+                            <td class="table-title-cell" data-label="Recipe Title">
+                                <strong th:text="${item.title}">Recipe Title</strong>
                             </td>
 
-                            <!-- Dynamic Category Tracking Column Badge Element -->
-                            <td>
+                            <td class="table-category-cell" data-label="Category">
                                 <span class="badge-permission table-category-badge" 
-                                      th:text="${recipe.recipeCategory != null ? recipe.recipeCategory.name : 'General'}">General</span>
+                                      th:text="${item.recipeCategory != null ? item.recipeCategory.name : 'General'}">General</span>
                             </td>
 
-                            <td>
-                                <span th:text="${recipe.description != null and recipe.description.length() > 140} ? ${recipe.description.substring(0, 140)} + '...' : ${recipe.description}">Description snippet...</span>
+                            <td class="table-description-cell" data-label="Description">
+                                <span th:text="${item.description != null and item.description.length() > 140} ? ${item.description.substring(0, 140)} + '...' : ${item.description}">Description snippet...</span>
                             </td>
                         </tr>
-                    </tbody>
-                </table>
+                    </th:block>
+
+                </div>
+
             </div>
         </div>
     </main>

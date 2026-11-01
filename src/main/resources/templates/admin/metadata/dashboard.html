@@ -21,7 +21,7 @@
             <div class="status-item">
                 <span class="status-icon">🍽️</span>
                 <div class="status-info">
-                    <span class="status-label">Recipe Taxonomy</span>
+                    <span class="status-label">Recipe Categories</span>
                     <span class="status-value">
                         <span th:text="${recipeCategoriesCount}">0</span> Course Types
                     </span>
@@ -33,7 +33,7 @@
             <div class="status-item">
                 <span class="status-icon">📊</span>
                 <div class="status-info">
-                    <span class="status-label">Global Dictionary</span>
+                    <span class="status-label">Public Ingredients</span>
                     <span class="status-value">
                         <span th:text="${totalCount}">0</span> Active Ingredients
                     </span>
@@ -45,7 +45,7 @@
             <div class="status-item">
                 <span class="status-icon">🛒</span>
                 <div class="status-info">
-                    <span class="status-label">Store Layout Sections</span>
+                    <span class="status-label">Grocery Categories</span>
                     <span class="status-value">
                         <span th:text="${categoryCount}">0</span> Active Aisles
                     </span>
@@ -57,7 +57,7 @@
             <div class="status-item" th:classappend="${pendingCount > 0} ? 'needs-attention' : ''">
                 <span class="status-icon">🌿</span>
                 <div class="status-info">
-                    <span class="status-label">Verification Queue</span>
+                    <span class="status-label">Ingredient Verification</span>
                     <span class="status-value">
                         <span th:text="${pendingCount}">0</span> Items Waiting
                     </span>

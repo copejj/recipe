@@ -1,3 +1,6 @@
+
+/* src/main/resources/static/js/recipes/search-dashboard.js */
+
 $(document).ready(function () {
     var selectedIngredients = {};
 
@@ -43,7 +46,7 @@ $(document).ready(function () {
         $('.select2-quick-add').val('').trigger('change');
         syncHiddenFormInputs();
         
-        // ◄ AUTO-SUBMIT FORM ON INGREDIENT ADD FOR REACTIVE SEARCH EXPERIENCE
+        // AUTO-SUBMIT FORM ON INGREDIENT ADD FOR REACTIVE SEARCH EXPERIENCE
         $('#searchForm').submit(); 
     });
 
@@ -55,11 +58,11 @@ $(document).ready(function () {
         $listItem.remove();
         syncHiddenFormInputs();
         
-        // ◄ AUTO-SUBMIT FORM ON INGREDIENT REMOVAL
+        // AUTO-SUBMIT FORM ON INGREDIENT REMOVAL
         $('#searchForm').submit(); 
     });
 
-    // ◄ NEW: INSTANTLY RETRIGGER UNIFIED SEARCH UPON CATEGORY SELECTION DEVIATION
+    // INSTANTLY RETRIGGER UNIFIED SEARCH UPON CATEGORY SELECTION DEVIATION
     $(document).on('change', '#recipeCategoryFilterSelect', function () {
         $('#searchForm').submit();
     });
@@ -74,18 +77,13 @@ $(document).ready(function () {
         });
     }
 
-    $('#generalIndexTable').DataTable({
-        "bAutoWidth": false, // Stops inline pixel injection 
-        "responsive": false  // Disable default extension if you want pure CSS control
+    // ROW CLICK LISTENER FOR DATA TABLE INTERACTION
+    // Delegated to the document scope to remain fully operational with asynchronous or custom-built DataTables pools
+    $(document).on("click", "#generalIndexTable tbody tr", function (event) {
+        if ($(event.target).closest(".btn-view").length) return;
+        var href = $(this).data("href");
+        if (href) {
+            window.location.href = href;
+        }
     });
-
-    // Your row click tap script from earlier
-    const generalTable = document.getElementById("generalIndexTable");
-    if (generalTable) {
-        generalTable.addEventListener("click", function (event) {
-            if (event.target.closest(".btn-view")) return;
-            const row = event.target.closest("tr");
-            if (row && row.dataset.href) window.location.href = row.dataset.href;
-        });
-    }
 });
