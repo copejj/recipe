@@ -2,10 +2,6 @@ package com.braindribbler.recipe.security.exception;
 
 import org.springframework.security.core.AuthenticationException;
 
-/**
- * Container file for all custom Braindribbler security authentication
- * exceptions.
- */
 public class AuthenticationExceptions {
 
     // Prevent instantiation of the container class

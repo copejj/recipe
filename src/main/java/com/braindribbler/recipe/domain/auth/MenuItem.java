@@ -6,12 +6,21 @@ import java.util.List;
 public class MenuItem {
     private String label;
     private String url;
+    private String className;
     private List<MenuItem> children = new ArrayList<>();
 
     // Simple constructor for flat links
     public MenuItem(String label, String url) {
         this.label = label;
         this.url = url;
+        this.className = "";
+    }
+
+    // Simple constructor for flat links
+    public MenuItem(String label, String url, String className) {
+        this.label = label;
+        this.url = url;
+        this.className = className;
     }
 
     // Constructor for dropdown groups
@@ -28,6 +37,10 @@ public class MenuItem {
 
     public String getUrl() {
         return url;
+    }
+
+    public String getClassName() {
+        return className;
     }
 
     public List<MenuItem> getChildren() {

@@ -1,7 +1,7 @@
-# Recipe Dribbler - Product Specification & System Architecture Blueprint
+# Brain Dribbler Recipes - Product Specification & System Architecture Blueprint
 
 ## System Identification
-* **Application Name:** Recipe Dribbler (Braindribbler Recipes)
+* **Application Name:** Recipe Dribbler (Brain Dribbler Recipes)
 * **Target Stack:** Spring Boot, Spring Security, Thymeleaf, DataTables, jQuery
 * **Document Version:** 1.0.0 (October 2026)
 
