@@ -11,19 +11,24 @@ $(document).ready(function () {
         var $changedSelect = $(this);
         validateStepIngredients();
 
-        if ($changedSelect.is("select:first-child")) {
+        // BUGFIX: Check specifically if the select item has our ingredient dropdown styling weights
+        if ($changedSelect.hasClass("select-width-weight-large")) {
             filterMeasurementsByIngredient($changedSelect);
         }
     });
 
+
     // --- STEP CARD MANAGEMENT ---
     $("#add-step-btn").click(function () {
         var firstCard = $("#steps-container .step-card").first();
-        firstCard.find(".ingredient-row select:first-child").each(function () {
-            if ($(this).hasClass("select2-hidden-accessible")) { $(this).select2("destroy"); }
-        });
-
+        
+        // Clone the card
         var clone = firstCard.clone();
+        
+        clone.find(".select2-container").remove(); 
+        clone.find("select").removeClass("select2-hidden-accessible").removeAttr("data-select2-id");
+
+        // Clear values safely
         clone.find("textarea, input").val("");
         clone.find("select").prop("selectedIndex", 0);
         clone.find("input[type='hidden']").remove();
@@ -44,11 +49,11 @@ $(document).ready(function () {
         e.preventDefault();
         var firstCard = $("#steps-container .step-card").first();
         
-        firstCard.find(".ingredient-row select:first-child").each(function () {
-            if ($(this).hasClass("select2-hidden-accessible")) { $(this).select2("destroy"); }
-        });
-
         var clone = firstCard.clone();
+        
+        clone.find(".select2-container").remove();
+        clone.find("select").removeClass("select2-hidden-accessible").removeAttr("data-select2-id");
+
         clone.find("textarea, input").val("");
         clone.find("select").prop("selectedIndex", 0);
         clone.find("input[type='hidden']").remove();
@@ -62,11 +67,11 @@ $(document).ready(function () {
         e.preventDefault();
         var firstCard = $("#steps-container .step-card").first();
         
-        firstCard.find(".ingredient-row select:first-child").each(function () {
-            if ($(this).hasClass("select2-hidden-accessible")) { $(this).select2("destroy"); }
-        });
-
         var clone = firstCard.clone();
+        
+        clone.find(".select2-container").remove();
+        clone.find("select").removeClass("select2-hidden-accessible").removeAttr("data-select2-id");
+
         clone.find("textarea, input").val("");
         clone.find("select").prop("selectedIndex", 0);
         clone.find("input[type='hidden']").remove();
@@ -84,15 +89,30 @@ $(document).ready(function () {
         var measurementOptions = $('#measurement-options-pool').html();
 
         var newRowHtml =
-            '<div class="ingredient-row row-flex-alignment-grid">' +
-            '<select class="form-input select-width-weight-large" required>' + ingredientOptions + '</select>' +
-            '<div class="amount-wrapper">' +
-            '<input type="number" step="0.01" class="form-input amount-input input-forced-full-width" placeholder="Amount" required />' +
-            '<div class="fraction-bubble"></div>' +
-            '</div>' +
-            '<select class="form-input select-width-weight-medium" required>' + measurementOptions + '</select>' +
-            '<input type="text" class="form-input select-width-weight-large" placeholder="Note (e.g., melted, chilled)" />' +
-            '<button type="button" class="btn remove-ing-btn btn-square-row-dismiss">×</button>' +
+            '<div class="ingredient-row">' +
+            '  <div class="row-lane lane-one">' +
+            '    <select class="form-input select-width-weight-large" required>' + ingredientOptions + '</select>' +
+            '  </div>' +
+            '  <div class="row-lane lane-two">' +
+            '    <div class="amount-wrapper fraction-split-grid">' +
+            '      <input type="hidden" class="combined-decimal-amount" value="" />' +
+            '      <input type="number" min="0" step="1" class="form-input whole-amount-input" placeholder="0" />' +
+            '      <select class="form-input fraction-dropdown-select">' +
+            '        <option value="0">0</option>' +
+            '        <option value="0.125">1/8</option>' +
+            '        <option value="0.25">1/4</option>' +
+            '        <option value="0.333">1/3</option>' +
+            '        <option value="0.5">1/2</option>' +
+            '        <option value="0.667">2/3</option>' +
+            '        <option value="0.75">3/4</option>' +
+            '      </select>' +
+            '    </div>' +
+            '    <select class="form-input select-width-weight-medium" required>' + measurementOptions + '</select>' +
+            '  </div>' +
+            '  <div class="row-lane lane-three">' +
+            '    <input type="text" class="form-input select-width-weight-large" placeholder="Note (e.g., melted, chilled)" />' +
+            '    <button type="button" class="btn remove-ing-btn btn-square-row-dismiss">×</button>' +
+            '  </div>' +
             '</div>';
 
         container.append($(newRowHtml));
@@ -101,7 +121,8 @@ $(document).ready(function () {
 
     $(document).on("click", ".remove-ing-btn", function () {
         var $row = $(this).closest(".ingredient-row");
-        $row.find("select:first-child").select2("destroy");
+        // FIXED: Using broader find selector to ensure Select2 destroys properly inside wrapper divs
+        $row.find("select").first().select2("destroy");
         $row.remove();
         reindexForm();
         validateStepIngredients();
@@ -209,8 +230,16 @@ $(document).ready(function () {
                 var empty = false;
                 if (!skipMetadata) {
                     if (!$row.find("select").eq(0).val()) { $row.find(".select2-container .select2-selection--single").addClass("form-input-error"); empty = true; }
-                    if (!$row.find(".amount-input").val() || parseFloat($row.find(".amount-input").val()) <= 0) { $row.find(".amount-input").addClass("form-input-error"); empty = true; }
-                    if (!$row.find("select").eq(1).val()) { $row.find("select").eq(1).addClass("form-input-error"); empty = true; }
+                    
+                    // Validate Split Inputs: Fail validation if both Whole and Fraction values are set to zero
+                    var wholeVal = parseFloat($row.find(".whole-amount-input").val()) || 0;
+                    var fracVal = parseFloat($row.find(".fraction-dropdown-select").val()) || 0;
+                    if (wholeVal <= 0 && fracVal <= 0) { 
+                        $row.find(".whole-amount-input, .fraction-dropdown-select").addClass("form-input-error"); 
+                        empty = true; 
+                    }
+                    
+                    if (!$row.find("select.select-width-weight-medium").val()) { $row.find("select.select-width-weight-medium").addClass("form-input-error"); empty = true; }
                     if (empty && $row.next(".field-error-msg").length === 0) { isFormValid = false; $row.after('<span class="field-error-msg">⚠️ Incomplete fields.</span>'); }
                 }
             });
@@ -229,8 +258,11 @@ $(document).ready(function () {
                 var $row = $(this);
                 $row.attr("data-ing-index", ingIdx);
                 $row.find("select").eq(0).attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].ingredientId");
-                $row.find("input[type='number']").attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].amount");
-                $row.find("select").eq(1).attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].measurementId");
+                
+                // FIXED: Direct sequential array serialization bound correctly to hidden decimal target fields
+                $row.find(".combined-decimal-amount").attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].amount");
+                
+                $row.find("select.select-width-weight-medium").attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].measurementId");
                 $row.find("input[type='text']").attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].ingredientNote");
                 $row.find(".remove-ing-btn").show();
             });
@@ -241,7 +273,7 @@ $(document).ready(function () {
         });
     }
 
-        // --- FORM SUBMISSION LAYER ---
+    // --- FORM SUBMISSION LAYER ---
     $(document).on("click", "#save-stay-btn, #finish-view-btn", function (e) {
         e.preventDefault();
         var clickedButtonId = $(this).attr("id");
@@ -301,13 +333,14 @@ $(document).ready(function () {
         return (firstPart > 0 ? firstPart + " " : "") + fractionText;
     }
 
-    $(document).on("input.fraction change.fraction focusin.fraction", ".ingredient-row .amount-input", function () {
+    $(document).on("input.fraction change.fraction focusin.fraction", ".ingredient-row .whole-amount-input", function () {
         var str = formatCulinaryFraction($(this).val());
         if (str) { $(this).closest(".amount-wrapper").find(".fraction-bubble").text("🍳 Kitchen Fraction: " + str).parent().addClass("show-bubble"); }
         else { $(this).closest(".amount-wrapper").removeClass("show-bubble"); }
     });
 
-    $(document).on("focusout.fraction", ".ingredient-row .amount-input", function () { $(this).closest(".amount-wrapper").removeClass("show-bubble"); });
+    $(document).on("focusout.fraction", ".ingredient-row .whole-amount-input", function () { $(this).closest(".amount-wrapper").removeClass("show-bubble"); });
+
 
     function showToast(message, isSuccess) {
         var $toast = $("#form-toast-notification");
@@ -319,7 +352,8 @@ $(document).ready(function () {
 
     // --- DYNAMIC UNIT FILTERING ENGINE ---
     function filterMeasurementsByIngredient($ingredientSelect) {
-        var $measurementSelect = $ingredientSelect.closest(".ingredient-row").find("select").eq(1);
+        var $measurementSelect = $ingredientSelect.closest(".ingredient-row").find("select.select-width-weight-medium");
+        
         var classification = $ingredientSelect.find("option:selected").attr("data-classification");
         if (!classification) { $measurementSelect.html($('#measurement-options-pool').html()); return; }
 
@@ -478,12 +512,32 @@ $(document).ready(function () {
             var measurementOptions = $('#measurement-options-pool').html();
 
             for (var j = 0; j < stepStruct.ingredientCount; j++) {
-                var newRowHtml = '<div class="ingredient-row row-flex-alignment-grid">' +
-                    '<select class="form-input select-width-weight-large" required>' + ingredientOptions + '</select>' +
-                    '<div class="amount-wrapper"><input type="number" step="0.01" class="form-input amount-input input-forced-full-width" placeholder="Amount" required /><div class="fraction-bubble"></div></div>' +
-                    '<select class="form-input select-width-weight-medium" required>' + measurementOptions + '</select>' +
-                    '<input type="text" class="form-input select-width-weight-large" placeholder="Note (e.g., melted, chilled)" />' +
-                    '<button type="button" class="btn remove-ing-btn btn-square-row-dismiss">×</button></div>';
+                var newRowHtml = 
+                    '<div class="ingredient-row">' +
+                    '  <div class="row-lane lane-one">' +
+                    '    <select class="form-input select-width-weight-large" required>' + ingredientOptions + '</select>' +
+                    '  </div>' +
+                    '  <div class="row-lane lane-two">' +
+                    '    <div class="amount-wrapper fraction-split-grid">' +
+                    '      <input type="hidden" class="combined-decimal-amount" value="" />' +
+                    '      <input type="number" min="0" step="1" class="form-input whole-amount-input" placeholder="0" />' +
+                    '      <select class="form-input fraction-dropdown-select">' +
+                    '        <option value="0">0</option>' +
+                    '        <option value="0.125">1/8</option>' +
+                    '        <option value="0.25">1/4</option>' +
+                    '        <option value="0.333">1/3</option>' +
+                    '        <option value="0.5">1/2</option>' +
+                    '        <option value="0.667">2/3</option>' +
+                    '        <option value="0.75">3/4</option>' +
+                    '      </select>' +
+                    '    </div>' +
+                    '    <select class="form-input select-width-weight-medium" required>' + measurementOptions + '</select>' +
+                    '  </div>' +
+                    '  <div class="row-lane lane-three">' +
+                    '    <input type="text" class="form-input select-width-weight-large" placeholder="Note (e.g., melted, chilled)" />' +
+                    '    <button type="button" class="btn remove-ing-btn btn-square-row-dismiss">×</button>' +
+                    '  </div>' +
+                    '</div>';
                 ingContainer.append($(newRowHtml));
             }
         });
@@ -496,9 +550,40 @@ $(document).ready(function () {
             if (field.name === "recipeId" || field.name === "actionType") return; // Skip unique system tokens
             
             var $input = $('[name="' + field.name + '"]');
+            
             if ($input.is("select")) {
                 $input.val(field.value).trigger('change.select2');
-            } else {
+            } 
+            // NEW LOGIC LAYER: Intercept the combined amount fields being reloaded
+            else if ($input.hasClass("combined-decimal-amount")) {
+                // Set the actual backend hidden field value
+                $input.val(field.value);
+                
+                var totalAmount = parseFloat(field.value) || 0;
+                var wholePart = Math.floor(totalAmount);
+                var decimalPart = Math.round((totalAmount - wholePart) * 1000) / 1000;
+                
+                // Find adjacent wrapper fields
+                var $wrapper = $input.closest(".amount-wrapper");
+                $wrapper.find(".whole-amount-input").val(wholePart);
+                
+                // Fallback fuzzy selection matching target decimal patterns
+                var targetedOption = "0";
+                if (decimalPart >= 0.08 && decimalPart <= 0.18) targetedOption = "0.125";
+                else if (decimalPart > 0.18 && decimalPart <= 0.29) targetedOption = "0.25";
+                else if (decimalPart > 0.29 && decimalPart <= 0.42) targetedOption = "0.333";
+                else if (decimalPart > 0.42 && decimalPart <= 0.58) targetedOption = "0.5";
+                else if (decimalPart > 0.58 && decimalPart <= 0.71) targetedOption = "0.667";
+                else if (decimalPart > 0.71 && decimalPart <= 0.90) targetedOption = "0.75";
+                else if (decimalPart > 0.90) {
+                    // Edge case handling calculation: Round up if total overflowed closer to next unit
+                    $wrapper.find(".whole-amount-input").val(wholePart + 1);
+                    targetedOption = "0";
+                }
+                
+                $wrapper.find(".fraction-dropdown-select").val(targetedOption);
+            } 
+            else {
                 $input.val(field.value);
             }
         });
@@ -519,7 +604,6 @@ $(document).ready(function () {
     if (rawDraft) {
         var parsedDraft = JSON.parse(rawDraft);
         
-        // 🌟 NEW SAFETY CHECK: Find out what recipe ID is in the saved draft vs the page DOM
         var currentFormId = $("#recipeId").val() || "";
         var draftFormId = "";
         
@@ -530,7 +614,6 @@ $(document).ready(function () {
             }
         });
 
-        // 🌟 ONLY proceed if we are making a brand new recipe OR editing the exact same recipe ID
         if (currentFormId === draftFormId) {
             var hasSubstantiveContent = false;
             var totalIngredientsCount = 0;
@@ -570,5 +653,67 @@ $(document).ready(function () {
             // If the draft belongs to a completely different recipe, leave it alone (or wipe it if you want a clean slate)
             console.log("Draft ignored: belongs to a different recipe session.");
         }
+    }
+
+    // --- REALTIME FRACTION TO DECIMAL SYNCHRONIZATION ENGINE ---
+    var typingSplitTimeout;
+
+    // 1. Handle Whole Input changes on keyup/input with a debounced typing delay
+    $(document).on("input keyup", ".whole-amount-input", function () {
+        var $wrapper = $(this).closest(".amount-wrapper");
+        var $wholeInput = $(this);
+        var $fracSelect = $wrapper.find(".fraction-dropdown-select");
+        
+        // Clear the previous timer on every single keystroke
+        clearTimeout(typingSplitTimeout);
+
+        // Standard ongoing calculation happens immediately so data-binding updates instantly
+        calculateCombinedTotal($wrapper);
+
+        // Set a 750ms delay window. If the user stops typing, parse the decimal split!
+        typingSplitTimeout = setTimeout(function () {
+            var rawWholeVal = $wholeInput.val();
+            
+            if (rawWholeVal.indexOf('.') !== -1) {
+                var combinedNum = parseFloat(rawWholeVal) || 0;
+                var parsedWhole = Math.floor(combinedNum);
+                var decimalRemainder = Math.round((combinedNum - parsedWhole) * 1000) / 1000;
+                
+                // Re-assign just the integer back into the whole box input channel safely
+                $wholeInput.val(parsedWhole !== 0 ? parsedWhole : "");
+                
+                var targetedOption = "0";
+                if (decimalRemainder >= 0.05 && decimalRemainder <= 0.18) targetedOption = "0.125";
+                else if (decimalRemainder > 0.18 && decimalRemainder <= 0.29) targetedOption = "0.25";
+                else if (decimalRemainder > 0.29 && decimalRemainder <= 0.42) targetedOption = "0.333";
+                else if (decimalRemainder > 0.42 && decimalRemainder <= 0.58) targetedOption = "0.5";
+                else if (decimalRemainder > 0.58 && decimalRemainder <= 0.71) targetedOption = "0.667";
+                else if (decimalRemainder > 0.71 && decimalRemainder <= 0.92) targetedOption = "0.75";
+                else if (decimalRemainder > 0.92) {
+                    $wholeInput.val(parsedWhole + 1);
+                    targetedOption = "0";
+                }
+                
+                $fracSelect.val(targetedOption);
+                
+                // Recalculate once more to bind the clean, split total back down to the model
+                calculateCombinedTotal($wrapper);
+            }
+        }, 750); // 750 milliseconds pause threshold
+    });
+
+    // 2. Handle Fraction Selection updates instantly when flipped
+    $(document).on("change", ".fraction-dropdown-select", function () {
+        var $wrapper = $(this).closest(".amount-wrapper");
+        calculateCombinedTotal($wrapper);
+    });
+
+    // Clean calculation utility helper
+    function calculateCombinedTotal($wrapper) {
+        var finalWhole = parseFloat($wrapper.find(".whole-amount-input").val()) || 0;
+        var finalFraction = parseFloat($wrapper.find(".fraction-dropdown-select").val()) || 0;
+        
+        var combinedTotal = (finalWhole + finalFraction).toFixed(3);
+        $wrapper.find(".combined-decimal-amount").val(combinedTotal).trigger('change');
     }
 });
