@@ -212,20 +212,21 @@ div[aria-hidden="true"] select {
    RESTORED ORIGINAL FORM ACTIONS FOOTER BAR (Sticky Layout Component)
    ========================================================================== */
 .application-form-footer-action-bar {
-    position: fixed;
+    position: sticky;
     bottom: 0;
-    left: 0;
     width: 100%;
-    background-color: #ffffff; /* Prevents underlying text from bleeding through */
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08); /* Adds visual separation from content */
+    margin: 0 auto; /* Centers it automatically inside its parent container */
+    background-color: #ffffff; 
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08); 
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 16px;
-    padding: 16px 40px; /* Aligns horizontally with .page-card padding */
+    padding: 16px 40px; 
     box-sizing: border-box;
-    z-index: 9999; /* Keeps it above form cards but below toast alerts */
+    z-index: 9999; 
 }
+
 
 /* Add a safety padding cushion to the main container so content doesn't get buried behind the sticky footer */
 .page-card {
