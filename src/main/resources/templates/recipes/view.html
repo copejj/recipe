@@ -44,10 +44,8 @@
                             confirmMessage='Are you sure you want to make this recipe private?'
                         )}"></button>
 
-                        <form id="hideRecipeForm" th:action="${recipe.publicId != null} 
-                            ? @{/view/{id}/hide(id=${recipe.publicId})} 
-                            : @{/recipes/view/{id}/hide(id=${recipe.recipeId})}" method="post" style="display: none;">
-                        </form>
+                        <!-- Always send to the unified numeric post action route -->
+                        <form id="hideRecipeForm" th:action="@{/recipes/view/{id}/hide(id=${recipe.recipeId})}" method="post" style="display: none;"> </form>
                     </th:block>
                 </div>
             </div>

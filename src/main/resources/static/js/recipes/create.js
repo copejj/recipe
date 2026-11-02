@@ -373,7 +373,7 @@ $(document).ready(function () {
 
             if (classification === "SOLID") matchesTrack = (baseType === 2 || baseType === 3 || (baseType === 4 && unitId !== 19));
             else if (classification === "WET") matchesTrack = (baseType === 1 || baseType === 4);
-            else if (classification === "DRY") matchesTrack = ((baseType === 1 && [1, 2, 3, 5].includes(unitId)) || baseType === 2 || (baseType === 4 && unitId !== 19));
+            else if (classification === "DRY") matchesTrack = ((baseType === 1 && [18, 1, 2, 3, 5].includes(unitId)) || baseType === 2 || (baseType === 4 && unitId !== 19));
 
             if (matchesTrack && (baseType === 1 || baseType === 2) && isMetric) matchesTrack = false;
             if (matchesTrack) validOptionsArray.push($opt);

@@ -181,6 +181,10 @@ public class RecipeUtility {
                         RoundingMode.HALF_UP);
             }
 
+            if (optimizedTargetUnit.equals(originalUnit)) {
+                scaledFinalAmount = totalBaseAmount.divide(originalUnit.getBaseUnitEquivalent(), 4, RoundingMode.HALF_UP);
+            }
+
             // Build out the final clean row mapping object
             RecipeStepIngredient shoppingItem = new RecipeStepIngredient();
             RecipeStepIngredient sample = flatIngredients.stream()
@@ -201,7 +205,6 @@ public class RecipeUtility {
             finalShoppingList.add(shoppingItem);
         }
 
-        // 4. Group maps alphabetically A-Z by aisle category
         // ==========================================================================
         // 4. GROUP & SORT: Order by Grocery Display Order, then Alphabetical A-Z
         // ==========================================================================
