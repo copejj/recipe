@@ -1,41 +1,36 @@
 <!-- templates/recipes/views/list.html -->
-<div th:fragment="list-view">
-    <!-- Category Loop (Matches Controller Map Syntax Perfectly) -->
-    <div th:each="entry : ${shoppingListAggregatedIngredients}" class="shopping-category-section"
-        style="margin-bottom: 24px;">
-        <h4 th:text="${entry.key}"
-            style="color: var(--color-primary); border-bottom: 2px solid var(--color-border); padding-bottom: 4px; margin-bottom: 12px; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 0.5px; font-weight: 700;">
-            Produce</h4>
+<div th:fragment="list-view" class="recipe-view-panel">
+    <!-- Category Loop -->
+    <div th:each="entry : ${shoppingListAggregatedIngredients}" class="shopping-category-section">
+        <h4 class="recipe-panel-heading" th:text="${entry.key}">Produce</h4>
 
-        <ul style="list-style: none; padding: 0; margin: 0;">
-            <li th:each="item : ${entry.value}" class="shopping-item-row"
-                style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.03);">
-                <div style="display: flex; align-items: center; gap: 12px; flex: 2;">
-                    <input type="checkbox" checked="checked" class="shopping-item-checkbox"
-                        style="width: 19px; height: 18px; cursor: pointer; accent-color: var(--color-primary);" />
+        <ul class="recipe-ingredient-list standard-list-reset">
+            <li th:each="item : ${entry.value}" class="recipe-ingredient-row shopping-item-modifier">
+                <div class="shopping-item-content">
+                    <input type="checkbox" checked="checked" class="shopping-item-checkbox" />
 
-                    <span class="shopping-item-text"
-                        style="font-size: 1.05rem; color: var(--color-text-dark); white-space: nowrap;">
-                        <span th:text="${item.ingredient.ingredientName}" style="font-weight: 600;">Chicken Broth</span>
+                    <span class="shopping-item-text">
+                        <span th:text="${item.ingredient.ingredientName}" class="ingredient-name">Chicken Broth</span>
                         -
 
-                        <!-- SIMPLIFIED DATA BINDING CONTRACT ANCHOR WITH ID ATTRIBUTES -->
-                        <strong class="scalable-amount" th:data-base-amount="${item.amount}"
-                            th:data-base-type-id="${item.measurement.baseType.baseTypeId}"
-                            th:data-base-unit-equivalent="${item.measurement.baseUnitEquivalent}"
-                            th:data-original-unit-id="${item.measurement.measurementId}"
-                            th:data-is-promotable="${item.measurement.isPromotable}"
-                            th:data-ingredient-classification="${item.ingredient.classification.name()}"
-                            style="font-weight: 700;"
-                            th:text="${T(com.braindribbler.recipe.util.RecipeUtility).convertDecimalToKitchenFraction(item.amount)}">2</strong>
+                        <strong class="scalable-amount" 
+                                th:data-base-amount="${item.amount}"
+                                th:data-base-type-id="${item.measurement.baseType.baseTypeId}"
+                                th:data-base-unit-equivalent="${item.measurement.baseUnitEquivalent}"
+                                th:data-original-unit-id="${item.measurement.measurementId}"
+                                th:data-is-promotable="${item.measurement.isPromotable}"
+                                th:data-ingredient-classification="${item.ingredient.classification.name()}"
+                                th:text="${T(com.braindribbler.recipe.util.RecipeUtility).convertDecimalToKitchenFraction(item.amount)}">2</strong>
 
-                        <span class="scalable-unit-name" th:data-original-unit-name="${item.measurement.unitName}" 
-                            th:text="${item.measurement.unitName}">Pint</span>
+                        <span class="scalable-unit-name" 
+                              th:data-original-unit-name="${item.measurement.unitName}" 
+                              th:text="${item.measurement.unitName}">Pint</span>
 
-                        <span class="oz-package-preview"
-                            style="color: #6c757d; font-size: 0.9rem; font-weight: 500;"></span>
+                        <span class="oz-package-preview"></span>
                         
-                        <span th:text="${item.ingredientNote}" style="font-weight: 600;">Some Note</span>
+                        <span class="ingredient-note" 
+                            th:if="${item.ingredientNote != null && !#strings.isEmpty(item.ingredientNote)}" 
+                            th:text="' - [' + ${item.ingredientNote} + ']'">Some Note</span>
                     </span>
                 </div>
             </li>
