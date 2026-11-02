@@ -1,63 +1,52 @@
 <!-- templates/recipes/views/overview.html -->
-<div th:fragment="overview-panel">
+<div th:fragment="overview-panel" class="recipe-view-panel">
 
-    <!-- 1. RECIPE HIGH-LEVEL DESCRIPTION SECTION (FULL WIDTH TOP) -->
-    <div style="margin-bottom: 24px;">
-        <p class="recipe-description-text" th:text="${recipe.description}"
-            style="font-size: 1.15rem; line-height: 1.6; font-style: italic; color: var(--color-text-muted); margin-bottom: 12px; margin-top: 0;">
-            Mix, bake, and enjoy!
-        </p>
+    <!-- 1. RECIPE HIGH-LEVEL DESCRIPTION SECTION -->
+    <div class="recipe-description-container">
+        <p class="recipe-description-text" th:text="${recipe.description}">Mix, bake, and enjoy!</p>
     </div>
 
     <!-- 2. COMBINED MASTER INGREDIENTS CHECKLIST SUMMARY BOX -->
-    <div
-        style="margin-bottom: 30px; padding: 24px; background-color: var(--color-bg-card); border-radius: 8px; border: 1px solid var(--color-border); box-sizing: border-box;">
-        <h4
-            style="margin-top: 0; margin-bottom: 16px; font-size: 1.15rem; color: var(--color-text-dark); border-bottom: 1px solid var(--color-border); padding-bottom: 8px;">
-            Ingredient Checklist
-        </h4>
+    <div class="recipe-ingredient-card-panel">
+        <h4 class="recipe-panel-heading">Ingredient Checklist</h4>
 
-        <ul class="responsive-ingredient-grid"
-            style="padding-left: 20px; margin: 0; list-style-type: square; color: var(--color-text-label); line-height: 1.8;">
+        <ul class="recipe-ingredient-list grid-list-modifier">
             <th:block th:each="categoryGroup : ${singleRecipeAggregatedIngredients}">
-                <li th:each="item : ${categoryGroup.value}">
-                    <span class="scalable-amount" th:data-base-amount="${item.amount}"
-                        th:data-base-type-id="${item.measurement.baseType.baseTypeId}"
-                        th:data-base-unit-equivalent="${item.measurement.baseUnitEquivalent}"
-                        th:data-original-unit-id="${item.measurement.measurementId}"
-                        th:data-is-promotable="${item.measurement.isPromotable}"
-                        th:data-ingredient-classification="${item.ingredient.classification.name()}"
-                        th:text="${T(com.braindribbler.recipe.util.RecipeUtility).convertDecimalToKitchenFraction(item.amount)}">1</span>
-                    <span class="scalable-unit-name" th:data-original-unit-name="${item.measurement.unitName}" 
-                        th:text="${item.measurement.unitName}">Cups</span>
-                    <strong th:text="${item.ingredient.ingredientName}">Flour</strong>
+                <li th:each="item : ${categoryGroup.value}" class="recipe-ingredient-row">
+                    <span class="scalable-amount" 
+                          th:data-base-amount="${item.amount}"
+                          th:data-base-type-id="${item.measurement.baseType.baseTypeId}"
+                          th:data-base-unit-equivalent="${item.measurement.baseUnitEquivalent}"
+                          th:data-original-unit-id="${item.measurement.measurementId}"
+                          th:data-is-promotable="${item.measurement.isPromotable}"
+                          th:data-ingredient-classification="${item.ingredient.classification.name()}"
+                          th:text="${T(com.braindribbler.recipe.util.RecipeUtility).convertDecimalToKitchenFraction(item.amount)}">1</span>
+                    <span class="scalable-unit-name" 
+                          th:data-original-unit-name="${item.measurement.unitName}" 
+                          th:text="${item.measurement.unitName}">Cups</span>
+                    <strong class="ingredient-name" th:text="${item.ingredient.ingredientName}">Flour</strong>
                     <span class="oz-package-preview"></span>
+                    
+                    <span class="ingredient-note" 
+                        th:if="${item.ingredientNote != null && !#strings.isEmpty(item.ingredientNote)}" 
+                        th:text="' - [' + ${item.ingredientNote} + ']'">Some Note</span>
                 </li>
             </th:block>
         </ul>
     </div>
 
     <!-- 3. TRADITIONAL CONTINUOUS TIMELINE READING BLOCK -->
-    <!-- FIXED: Wrapped in matching layout constraints (padding left/right 24px) to perfectly level the <h4> left edges -->
-    <div class="overview-steps-timeline"
-        style="margin-bottom: 35px; padding: 0 24px; box-sizing: border-box; width: 100%;">
-        <h4
-            style="color: var(--color-text-dark); font-size: 1.15rem; margin-top: 0; margin-bottom: 16px; border-bottom: 1px solid var(--color-border); padding-bottom: 8px;">
-            Preparation Instructions
-        </h4>
-        <ol
-            style="padding-left: 20px; line-height: 1.75; color: var(--color-text-dark); font-size: 1.05rem; margin: 0;">
-            <li th:each="step : ${recipe.steps}" th:text="${step.instructionText}"
-                style="margin-bottom: 14px; padding-left: 6px;"></li>
+    <div class="overview-steps-timeline">
+        <h4 class="recipe-panel-heading">Preparation Instructions</h4>
+        <ol>
+            <li th:each="step : ${recipe.steps}" th:text="${step.instructionText}"></li>
         </ol>
     </div>
 
-    <!-- 4. GENERAL RECIPE CHEF NOTES FOOTER CARD (ON THE BOTTOM) -->
-    <div th:if="${recipe.recipeNote != null && !recipe.recipeNote.trim().isEmpty()}"
-        style="border: 1px solid var(--color-border); padding: 24px; border-radius: 8px; background-color: var(--color-bg-card); border-top: 4px solid #6c757d; margin-top: 24px; width: 100%; box-sizing: border-box;">
-        <h4 style="margin-top: 0; margin-bottom: 8px; color: var(--color-text-dark); font-size: 1.15rem;">Notes</h4>
-        <p th:text="${recipe.recipeNote}"
-            style="margin: 0; line-height: 1.6; color: var(--color-text-label); font-style: italic;"></p>
+    <!-- 4. GENERAL RECIPE CHEF NOTES FOOTER CARD -->
+    <div th:if="${recipe.recipeNote != null && !recipe.recipeNote.trim().isEmpty()}" class="chef-notes-footer-card">
+        <h4 class="chef-notes-heading">Notes</h4>
+        <p class="chef-notes-footer-text" th:text="${recipe.recipeNote}"></p>
     </div>
 
 </div>
