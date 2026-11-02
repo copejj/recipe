@@ -71,7 +71,7 @@
     font-size: 0.8rem;
     background-color: var(--color-danger-raw);
     color: white;
-    display: none; /* Managed dynamically via JavaScript */
+    display: none;
 }
 
 /* Timeline Ingredient Section Scope Container Wrappers */
@@ -103,38 +103,80 @@
     padding: 0;
 }
 
-/* CONSOLIDATED: Unified Ingredient Row Layout Configuration */
+/* ==========================================================================
+   DESKTOP CORE ELEMENT LAYOUTS (Optimized Ratios)
+   ========================================================================== */
+
+/* Ingredient Multi-Lane Distribution Grid Layout */
 .ingredient-row {
     display: flex;
-    gap: 10px;
+    flex-direction: row;
+    gap: 12px; /* Slightly wider layout tracking gap cushion */
     align-items: center;
     margin-bottom: 10px;
-    background-color: rgba(0, 0, 0, 0.04);
+    background-color: #88888854;
     padding: 10px;
     border: 1px solid var(--color-border);
     border-radius: 8px;
 }
 
-.row-flex-alignment-grid {
+.ingredient-row .row-lane {
     display: flex;
-    gap: 10px;
     align-items: center;
+    gap: 10px;
+    min-width: 0; /* CRITICAL: Allows flex containers to calculate sizing based on parent bounds */
 }
 
-.select-width-weight-large {
-    flex: 2.5;
+/* OPTIMIZED GRID WEIGHT RATIOS: Giving the main Select2 box the dominant width space */
+.ingredient-row .lane-one { 
+    flex: 4.5; 
+}
+.ingredient-row .lane-two { 
+    flex: 3.5; 
+}
+.ingredient-row .lane-three { 
+    flex: 3; 
 }
 
-.select-width-weight-medium {
-    flex: 1.5;
+
+/* Dynamic Split layout rules for Fraction Conversion Engine */
+.ingredient-row .amount-wrapper.fraction-split-grid {
+    display: flex;
+    gap: 4px;
+    flex: 1.5; 
+    min-width: 140px;
 }
 
-.input-forced-full-width {
-    width: 100%;
+.ingredient-row .amount-wrapper.fraction-split-grid .whole-amount-input {
+    flex: 1;
+    text-align: center;
+    padding: 10px 4px;
 }
 
-.btn-square-row-dismiss {
+.ingredient-row .amount-wrapper.fraction-split-grid .fraction-dropdown-select {
+    flex: 1.2;
+    cursor: pointer;
+    background-color: #f8f9fa;
+}
+
+.ingredient-row .select-width-weight-large { flex: 1; width: 100%; }
+.ingredient-row .select-width-weight-medium { flex: 1; width: 100%; }
+
+/* Core Layout Utility: Keeps template pools completely hidden */
+.hidden-element-pool,
+div[aria-hidden="true"] select {
+    display: none !important;
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    pointer-events: none;
+}
+
+/* Desktop Row Dismiss Button Style Signatures */
+.template-step-card-blueprint .ingredient-row .lane-three .btn-square-row-dismiss {
     width: auto;
+    max-width: none;
+    height: auto;
     padding: 10px 14px;
     font-size: 1rem;
     margin: 0;
@@ -143,6 +185,7 @@
     border: 1px solid var(--color-border-input);
     border-radius: 6px;
     cursor: pointer;
+    display: inline-block;
 }
 
 /* Timeline Step Insertion Infrastructure */
@@ -165,17 +208,43 @@
     width: 15rem;
 }
 
-/* Footer Section Action Layout Frameworks */
-.global-recipe-notes-margin-box {
-    margin-bottom: 24px;
+/* ==========================================================================
+   RESTORED ORIGINAL FORM ACTIONS FOOTER BAR (Sticky Layout Component)
+   ========================================================================== */
+.application-form-footer-action-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #ffffff; /* Prevents underlying text from bleeding through */
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08); /* Adds visual separation from content */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 40px; /* Aligns horizontally with .page-card padding */
+    box-sizing: border-box;
+    z-index: 9999; /* Keeps it above form cards but below toast alerts */
 }
 
-.label-bold-dark-theme {
-    font-weight: 700;
-    color: var(--color-text-dark);
+/* Add a safety padding cushion to the main container so content doesn't get buried behind the sticky footer */
+.page-card {
+    padding: 40px;
+    padding-bottom: 120px; 
 }
 
-.btn-outline-danger-action-card {
+.footer-save-operations-left-cluster {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.footer-save-operations-left-cluster button,
+.footer-save-operations-left-cluster .btn {
+    width: auto;
+}
+
+.application-form-footer-action-bar .btn.inline-delete-btn.btn-outline-danger-action-card {
     background-color: #ffffff;
     color: #dc3545;
     border: 2px solid #dc3545;
@@ -185,224 +254,120 @@
     cursor: pointer;
     transition: all 0.2s ease-in-out;
     font-size: 0.95rem;
-}
-
-/* Refactored: CSS-Driven Deletion Confirmation State */
-.btn-danger-critical {
-    background-color: #bd2130 !important;
-    color: #ffffff !important;
-    border-color: #bd2130 !important;
-    box-shadow: 0 0 8px rgba(220, 53, 69, 0.4);
-}
-
-/* Modal Windows UI Architecture Subsystems */
-.modal-descriptive-subtitle {
-    font-size: 0.9rem;
-    color: var(--color-text-muted);
-    margin-bottom: 20px;
-}
-
-.modal-spacing-bottom-medium {
-    margin-bottom: 15px;
-}
-
-.modal-input-bold-heading-label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.modal-classification-group-wrapper {
-    margin-bottom: 1.5rem;
-}
-
-.modal-classification-section-label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: var(--color-text-dark);
-}
-
-.modal-classification-three-column-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-}
-
-/* Classification Active Option Cards Configurations */
-.class-selector-card {
-    padding: 0.75rem;
-    border-radius: 6px;
-    text-align: left;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: 2px solid #dee2e6;
-    background: #fff;
-}
-
-.class-selector-card .card-description-body-text {
-    font-size: 0.75rem;
-    color: #555;
-    line-height: 1rem;
-}
-
-/* Refactored: Modal Selectors managed entirely by Class Switches */
-.class-selector-card.active.selector-card-solid {
-    border: 2px solid #198754;
-    background: #f4fbf7;
-}
-.class-selector-card.active.selector-card-wet {
-    border: 2px solid #0dcaf0;
-    background: #f0fafd;
-}
-.class-selector-card.active.selector-card-dry {
-    border: 2px solid #ffc107;
-    background: #fffdf4;
-}
-
-.class-selector-card .heading-solid { font-weight: bold; color: #198754; margin-bottom: 4px; }
-.class-selector-card .card-heading-wet { font-weight: bold; color: #0dcaf0; margin-bottom: 4px; }
-.class-selector-card .card-heading-dry { font-weight: bold; color: #ffc107; margin-bottom: 4px; }
-
-.modal-footer-alignment-row { display: flex; justify-content: flex-end; gap: 10px; }
-.btn-modal-dismiss-grey { background-color: #e9ecef; color: #495057; }
-.btn-modal-submit-blue { background-color: #007bff; color: white; }
-.hidden-element-pool { display: none; }
-
-/* Select2 Form Theme Unification Layout System Overrides */
-.ingredient-row .select2-container--default .select2-selection--single {
-    height: 42px;
-    border: 1px solid var(--color-border-input);
-    border-radius: 6px;
-    background-color: var(--color-bg-card);
-    display: flex;
-    align-items: center;
-}
-.ingredient-row .select2-container--default .select2-selection--single .select2-selection__rendered {
-    line-height: 40px;
-    padding-left: 14px;
-    padding-right: 30px;
-    color: var(--color-text-dark);
-    font-size: 1rem;
-}
-.ingredient-row .select2-container--default .select2-selection--single .select2-selection__arrow {
-    height: 40px;
-    top: 0;
-    right: 8px;
-}
-.ingredient-row .select2-container--default.select2-container--focus .select2-selection--single {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15);
-}
-
-/* High Contrast Global Form Typography Adjustments */
-.select2-container--default .select2-selection--single .select2-selection__placeholder,
-.template-step-card-blueprint .ingredient-row input,
-.template-step-card-blueprint .ingredient-row select,
-.template-step-card-blueprint textarea,
-.select2-container--default .select2-results__option,
-.template-step-card-blueprint .form-input::placeholder {
-    color: var(--color-text-dark);
-    font-weight: 500;
-}
-.template-step-card-blueprint .form-input::placeholder {
-    color: #555555;
-    opacity: 1;
-}
-
-@keyframes rainbowTextCycle {
-    0% { color: #ff0000; transform: scale(1.05); }
-    17% { color: #ffa500; }
-    33% { color: #ffff00; }
-    50% { color: #008000; }
-    67% { color: #0000ff; }
-    83% { color: #4b0082; }
-    100% { color: inherit; transform: scale(1); }
-}
-.animate-rainbow-trigger {
-    animation: rainbowTextCycle 1.5s ease-in-out;
+    width: auto;
     display: inline-block;
+    height: auto;
 }
 
-/* Sticky Action Navigation Footer Bar Panel Component */
-.application-form-footer-action-bar {
-    position: sticky;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    z-index: 100; /* Keeps it layered above scrolling inputs and textareas */
-    background-color: var(--color-bg-card, #ffffff); /* Solid background blocks text scrolling underneath */
-    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.08); /* Soft shadow creates visual separation from content */
-    margin-top: 30px;
-    padding: 16px 24px; /* Balanced padding keeping it compact and unintrusive */
-    border-top: 1px solid var(--color-border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    box-sizing: border-box; /* Prevents padding from breaking width boundaries */
-}
-.footer-save-operations-left-cluster {
-    display: flex;
-    gap: 12px;
-}
 .explicit-text-nowrap-bound {
     white-space: nowrap;
 }
 
+.page-card {
+    padding: 40px;
+}
+
+/* Modals & Select2 Overrides */
+.btn-danger-critical { background-color: #bd2130 !important; color: #ffffff !important; }
+.ingredient-row .select2-container--default .select2-selection--single { height: 42px; border: 1px solid var(--color-border-input); border-radius: 6px; display: flex; align-items: center; }
+.ingredient-row .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 40px; padding-left: 14px; color: var(--color-text-dark); }
+.ingredient-row .select2-container--default .select2-selection--single .select2-selection__arrow { height: 40px; top: 0; right: 8px; }
+
 /* ==========================================================================
-   CONSOLIDATED Mobile Responsive Adaptive Optimization Constraints
+   MOBILE MEDIA QUERY TARGETING (Declared Last to Override Cleanly)
    ========================================================================== */
 @media screen and (max-width: 600px) {
-    /* 1. Ingredient Rows Stacking Overrides */
+    
+    /* 3-Tier Row Separation Configuration */
     .template-step-card-blueprint .ingredient-row {
-        flex-wrap: wrap;
-        gap: 12px 8px;
-        border-bottom: 1px dashed var(--color-border);
-        padding-bottom: 16px;
-        margin-bottom: 16px;
-    }
-    .template-step-card-blueprint .ingredient-row:last-of-type {
-        border-bottom: none;
-        margin-bottom: 10px;
-    }
-    .template-step-card-blueprint .ingredient-row .select2-container {
-        flex: 0 0 100%;
-        width: 100%;
-    }
-    .template-step-card-blueprint .ingredient-row .amount-wrapper {
-        width: calc(50% - 4px);
-    }
-    .template-step-card-blueprint .ingredient-row select.select-width-weight-medium {
-        flex: 0 0 calc(50% - 4px);
-        width: calc(50% - 4px);
-    }
-    .template-step-card-blueprint .ingredient-row input[type="text"] {
-        flex: 1;
-        width: auto;
-    }
-    .template-step-card-blueprint .ingredient-row .btn-square-row-dismiss {
-        flex: 0 0 auto;
-        width: auto;
-        padding: 10px 16px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        padding: 12px;
     }
 
-    /* 2. Un-smash the LocalStorage Notification Banner for Portrait Layouts */
-    #draft-restore-alert-banner {
-        flex-direction: column !important; /* Forces buttons below text */
-        align-items: flex-start !important; /* Left-aligns content neatly */
-        gap: 16px !important; /* Creates a comfortable breathing room cushion */
-        padding: 16px !important;
-    }
-    #draft-restore-alert-banner > div:last-child {
-        width: 100%; /* Stretches the action button cluster wrapper */
+    .template-step-card-blueprint .ingredient-row .row-lane {
+        width: 100%;
         display: flex;
-        gap: 12px;
+        align-items: center;
+        gap: 8px;
     }
-    #draft-restore-alert-banner button {
-        flex: 1; /* Automatically balances both buttons to a perfect 50/50 split target width */
-        text-align: center;
-        padding: 10px 14px !important; /* Thickens target zones for thumb touches */
-        font-size: 0.95rem !important;
+
+    /* Line 1 override: Let Select2 handle dynamic width values */
+    .template-step-card-blueprint .ingredient-row .lane-one .select2-container {
+        width: 100% !important; 
+    }
+
+    /* Line 2 layout overrides */
+    .template-step-card-blueprint .ingredient-row .lane-two .amount-wrapper.fraction-split-grid {
+        flex: 0 0 135px;
+        width: 135px;
+        min-width: unset;
+    }
+    
+    .template-step-card-blueprint .ingredient-row .lane-two select.select-width-weight-medium {
+        flex: 1;
+    }
+
+    /* Line 3 layout overrides */
+    .template-step-card-blueprint .ingredient-row .lane-three input[type="text"] {
+        flex: 1;
+    }
+    
+    .template-step-card-blueprint .ingredient-row .lane-three .btn-square-row-dismiss {
+        flex: 0 0 42px; 
+        width: 42px;
+        height: 42px; 
+        padding: 0;   
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    /* RESTORED ORIGINAL FOOTER SPACING CONSTRAINTS FOR MOBILE */
+    .application-form-footer-action-bar {
+        flex-direction: row; 
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        padding-top: 20px;
+    }
+
+    .footer-save-operations-left-cluster {
+        display: flex;
+        gap: 6px;
+        flex: none;
+    }
+
+    .footer-save-operations-left-cluster #save-stay-btn,
+    .footer-save-operations-left-cluster #finish-view-btn {
+        width: auto !important;
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+
+    .application-form-footer-action-bar .btn.inline-delete-btn.btn-outline-danger-action-card {
+        width: auto !important;
+        padding: 10px 12px;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    /* Mobile Draft Banners */
+    #draft-restore-alert-banner { flex-direction: column; align-items: flex-start; gap: 16px; padding: 16px; }
+    #draft-restore-alert-banner > div:last-child { width: 100%; display: flex; gap: 12px; }
+    #draft-restore-alert-banner button { flex: 1; text-align: center; padding: 10px 14px; font-size: 0.95rem; }
+
+    /* STACK METADATA FIELDS VERTICALLY ON PORTRAIT SCREENS */
+    .metadata-split-row {
+        flex-direction: column;
+        gap: 12px; /* Tightens vertical gaps slightly for smaller viewports */
+    }
+
+    /* Force input blocks to span full available width */
+    .metadata-split-row .input-flexible-fill {
+        width: 100%;
+        flex: none; /* Disables horizontal flex calculation limits */
     }
 }
