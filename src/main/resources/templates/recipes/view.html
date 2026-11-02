@@ -76,9 +76,9 @@
 
         <!-- VIEW PANEL TABS SWITCH NAVIGATION HEADER BAR -->
         <div class="view-mode-tabs">
-            <button type="button" class="tab-btn active" data-target="overview-panel">Recipe Overview</button>
-            <button type="button" class="tab-btn" data-target="prep-panel">Recipe Preparation</button>
-            <button type="button" class="tab-btn" data-target="shopping-panel">Shopping List</button>
+            <button type="button" class="tab-btn active" data-target="overview-panel">Overview</button>
+            <button type="button" class="tab-btn" data-target="prep-panel">Preparation</button>
+            <button type="button" class="tab-btn" data-target="list-panel">Item List</button>
         </div>
 
         <!-- MODULAR DISPLAY LAYOUT CHANNELS -->
@@ -90,8 +90,8 @@
             <div th:insert="~{recipes/views/prep :: prep-panel}"></div>
         </div>
 
-        <div id="shopping-panel" class="tab-panel" style="display: none;">
-            <div th:insert="~{recipes/views/shopping :: shopping-view}"></div>
+        <div id="list-panel" class="tab-panel" style="display: none;">
+            <div th:insert="~{recipes/views/list :: list-view}"></div>
         </div>
 
     </main>

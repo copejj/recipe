@@ -11,6 +11,8 @@ import com.braindribbler.recipe.repository.recipe.GroceryCategoryRepository;
 import com.braindribbler.recipe.repository.auth.UserMessageRepository;
 import jakarta.persistence.EntityNotFoundException;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +30,7 @@ public class IngredientService {
 
     private final IngredientRepository ingredientRepository;
     private final UserMessageRepository userMessageRepository;
-    private final GroceryCategoryRepository groceryCategoryRepository; // ◄ NEW
+    private final GroceryCategoryRepository groceryCategoryRepository;
 
     public IngredientService(IngredientRepository ingredientRepository,
             UserMessageRepository userMessageRepository,
@@ -46,17 +48,16 @@ public class IngredientService {
     @Transactional(readOnly = true)
     public List<Ingredient> getAllIngredientsSorted(User user) {
         if (user == null) {
-            // Fallback for safety/anonymous access: only show verified items
             return ingredientRepository.findAvailableIngredientsForUser(null);
         }
         return ingredientRepository.findAvailableIngredientsForUser(user);
     }
-
     @Transactional(readOnly = true)
     public Optional<UserMessage> getLatestActiveMessageForUser(Integer userId) {
         return userMessageRepository.findLatestActiveMessage(userId, OffsetDateTime.now());
     }
 
+    @Cacheable(value = "groceryCategories")
     @Transactional(readOnly = true)
     public List<GroceryCategory> getAllGroceryCategories() {
         return groceryCategoryRepository.findAll();
@@ -75,12 +76,10 @@ public class IngredientService {
             IngredientClassification classification, User creator) {
         String trimmedName = name.trim();
 
-        // Check against the case-and-whitespace-insensitive partial master index
         Optional<Ingredient> collision = ingredientRepository.findVerifiedCollisionByCanonicalName(trimmedName);
         if (collision.isPresent()) {
             throw new IllegalArgumentException(
-                    "A verified master ingredient matching '" + trimmedName
-                            + "' already exists.");
+                    "A verified master ingredient matching '" + trimmedName + "' already exists.");
         }
 
         GroceryCategory category = groceryCategoryRepository.findById(groceryCategoryId)
@@ -91,8 +90,7 @@ public class IngredientService {
         ingredient.setGroceryCategory(category);
         ingredient.setCreatedByUser(creator);
         ingredient.setIsVerified(false);
-        ingredient.setClassification(classification != null ? classification
-                : IngredientClassification.SOLID);
+        ingredient.setClassification(classification != null ? classification : IngredientClassification.SOLID);
 
         return ingredientRepository.save(ingredient);
     }
@@ -112,7 +110,7 @@ public class IngredientService {
         ingredientRepository.relinkMergedIngredients(duplicateId, targetId);
         ingredientRepository.delete(duplicate);
     }
-
+    @CacheEvict(value = "groceryCategories", allEntries = true)
     @Transactional
     public void approveAndModifyIngredient(Integer ingredientId, String updatedName, Integer updatedCategoryId,
             com.braindribbler.recipe.domain.recipe.IngredientClassification classification) {
@@ -122,16 +120,12 @@ public class IngredientService {
         String finalName = (updatedName != null && !updatedName.trim().isEmpty()) ? updatedName.trim()
                 : ingredient.getIngredientName();
 
-        // A. Look ahead to make sure another master isn't already verified under this
-        // canonical name
         Optional<Ingredient> collision = ingredientRepository.findVerifiedCollisionByCanonicalName(finalName);
         if (collision.isPresent() && !collision.get().getIngredientId().equals(ingredientId)) {
             throw new IllegalArgumentException(
-                    "An approved master ingredient matching '" + finalName
-                            + "' already exists. Please merge this duplicate instead.");
+                    "An approved master ingredient matching '" + finalName + "' already exists. Please merge this duplicate instead.");
         }
 
-        // B. Apply modifications
         if (updatedName != null && !updatedName.trim().isEmpty()) {
             ingredient.setIngredientName(finalName);
         }
@@ -143,97 +137,62 @@ public class IngredientService {
             ingredient.setClassification(classification);
         }
 
-        // C. Promote globally
         ingredient.setIsVerified(true);
         ingredientRepository.save(ingredient);
 
-        // ◄ SERVICE CALL 1: Idiomatic bulk update to instantly wake up and unlock all
-        // matching duplicate entries
         ingredientRepository.unlockUnverifiedCollisionsByCanonicalName(finalName);
     }
 
-    /**
-     * Manually registers a brand new master ingredient, skipping the review queue
-     * instantly
-     */
     @Transactional
     public Ingredient registerVerifiedIngredient(String name, Integer categoryId,
-            com.braindribbler.recipe.domain.recipe.IngredientClassification classification) { // ◄ UPDATED
+            com.braindribbler.recipe.domain.recipe.IngredientClassification classification) {
         if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Ingredient master name cannot be empty."); //
+            throw new IllegalArgumentException("Ingredient master name cannot be empty.");
         }
 
         Ingredient ingredient = new Ingredient();
-        ingredient.setIngredientName(name.trim()); //
-        ingredient.setIsVerified(true); // 🔥 Promotes item straight to global cookbook options instantly
+        ingredient.setIngredientName(name.trim());
+        ingredient.setIsVerified(true);
 
-        // Connect structural foreign key lookup dependency row
         GroceryCategory category = groceryCategoryRepository.findById(categoryId)
-                .orElseThrow(
-                        () -> new EntityNotFoundException("Grocery category section not found with ID: " + categoryId)); //
-        ingredient.setGroceryCategory(category); //
+                .orElseThrow(() -> new EntityNotFoundException("Grocery category section not found with ID: " + categoryId));
+        ingredient.setGroceryCategory(category);
 
-        // NEW: Set management track classifications parameters
-        ingredient.setClassification(classification != null ? classification
-                : com.braindribbler.recipe.domain.recipe.IngredientClassification.SOLID);
+        ingredient.setClassification(classification != null ? classification : com.braindribbler.recipe.domain.recipe.IngredientClassification.SOLID);
 
-        return ingredientRepository.save(ingredient); //
+        return ingredientRepository.save(ingredient);
     }
 
-    /**
-     * Fetches a single ingredient entity by its primary key ID
-     */
     @Transactional(readOnly = true)
     public Ingredient getIngredientById(Integer id) {
         return ingredientRepository.findById(id)
-                .orElseThrow(
-                        () -> new jakarta.persistence.EntityNotFoundException("Ingredient not found with ID: " + id));
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Ingredient not found with ID: " + id));
     }
-
-    /**
-     * Hard-deletes an ingredient from the database pool if it is not actively
-     * linked to a recipe step
-     */
     @Transactional
     public void deleteIngredientById(Integer ingredientId) {
-        // 1. Verify existence before pulling the trigger
         if (!ingredientRepository.existsById(ingredientId)) {
             throw new EntityNotFoundException("Ingredient not found with ID: " + ingredientId);
         }
 
         try {
-            // 2. Attempt a clean removal from the master catalog rows
             ingredientRepository.deleteById(ingredientId);
         } catch (DataIntegrityViolationException e) {
-            // 3. Intercept active foreign key usage blocks cleanly to prevent a server
-            // crash
             throw new IllegalStateException(
                     "Cannot delete this ingredient. It is currently being used in active recipe steps!");
         }
     }
 
-    /**
-     * Fetches all grocery categories ordered by their physical aisle display
-     * priority weight
-     */
+    @Cacheable(value = "groceryCategories")
     @Transactional(readOnly = true)
     public List<GroceryCategory> getAllGroceryCategoriesSortedByOrder() {
-        // Bridges cleanly to your backing repository query sequence mapping hook
         return groceryCategoryRepository.findAllByOrderByDisplayOrderAsc();
     }
 
-    /**
-     * Retracts an ingredient from global pools and drops it back into the
-     * moderation queue
-     * without breaking database relationships.
-     */
     @Transactional
     public void retractIngredientFromGlobalPool(Integer ingredientId) {
         Ingredient ingredient = ingredientRepository.findById(ingredientId)
-                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException(
-                        "Ingredient not found with ID: " + ingredientId));
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Ingredient not found with ID: " + ingredientId));
 
-        // Demote tracking flag parameter
         ingredient.setIsVerified(false);
         ingredientRepository.save(ingredient);
     }
@@ -243,7 +202,6 @@ public class IngredientService {
         if (userId == null)
             return 0;
 
-        // Pass the raw integer ID straight into the repository query
         return ingredientRepository.countByCreatedByUserIdAndIsVerifiedFalseAndIsLockedFalse(userId);
     }
 
@@ -255,13 +213,13 @@ public class IngredientService {
         return ingredientRepository.findByCreatedByUserIdAndIsVerifiedFalseAndIsLockedFalse(userId);
     }
 
+    @CacheEvict(value = "groceryCategories", allEntries = true)
     @Transactional
     public void updateUserSubmittedIngredient(Integer id, String name, Integer categoryId, String classification,
             Integer userId) {
         Ingredient ingredient = ingredientRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Ingredient not found ID: " + id));
 
-        // A. Validate WHO is making the request first
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isNotModerator = auth == null || auth.getAuthorities().stream()
                 .noneMatch(a -> a.getAuthority().equals("can_moderate_ingredients"));
@@ -276,15 +234,12 @@ public class IngredientService {
             }
         }
 
-        // ◄ SERVICE CALL 2: Idiomatic lookahead check to block names matching any
-        // verified master asset
         Optional<Ingredient> collision = ingredientRepository.findVerifiedCollisionByCanonicalName(name);
         if (collision.isPresent() && !collision.get().getIngredientId().equals(id)) {
             throw new IllegalArgumentException("A verified master ingredient matching '" + name
                     + "' already exists. Please merge the records instead of renaming.");
         }
 
-        // B. Save changes if all guards pass
         GroceryCategory cat = groceryCategoryRepository.findById(categoryId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid grocery category selection."));
 
@@ -295,10 +250,6 @@ public class IngredientService {
         ingredientRepository.save(ingredient);
     }
 
-    /**
-     * Locks an unverified ingredient, removing it from the admin queue
-     * and blocking future editing.
-     */
     @Transactional
     public void lockAndHideIngredient(Integer ingredientId) {
         Ingredient ingredient = ingredientRepository.findById(ingredientId)
@@ -308,10 +259,6 @@ public class IngredientService {
         ingredientRepository.save(ingredient);
     }
 
-    /**
-     * Finds a verified master ingredient by checking a case and whitespace
-     * insensitive expression.
-     */
     @Transactional(readOnly = true)
     public Optional<Ingredient> getVerifiedIngredientByCanonicalName(String name) {
         if (name == null || name.trim().isEmpty()) {
@@ -319,5 +266,4 @@ public class IngredientService {
         }
         return ingredientRepository.findVerifiedCollisionByCanonicalName(name);
     }
-
 }

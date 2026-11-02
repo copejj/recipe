@@ -29,6 +29,7 @@ import com.braindribbler.recipe.domain.recipe.RecipeStepIngredient;
 import com.braindribbler.recipe.dto.recipe.RecipeForm;
 import com.braindribbler.recipe.security.RecipeUserDetails;
 import com.braindribbler.recipe.service.recipe.IngredientService;
+import com.braindribbler.recipe.service.recipe.MetadataLookupService;
 import com.braindribbler.recipe.service.recipe.RecipeCategoryService;
 import com.braindribbler.recipe.service.recipe.RecipeService;
 import com.braindribbler.recipe.util.RecipeUtility;
@@ -41,11 +42,16 @@ public class RecipeController {
     private final RecipeService recipeService;
     private final IngredientService ingredientService;
     private final RecipeCategoryService recipeCategoryService;
+    private final MetadataLookupService metadataLookupService;
 
-    public RecipeController(RecipeService recipeService, IngredientService ingredientService, RecipeCategoryService recipeCategoryService) {
+    public RecipeController(RecipeService recipeService, 
+                            IngredientService ingredientService, 
+                            RecipeCategoryService recipeCategoryService, 
+                            MetadataLookupService metadataLookupService) {
         this.recipeService = recipeService;
         this.ingredientService = ingredientService;
         this.recipeCategoryService = recipeCategoryService;
+        this.metadataLookupService = metadataLookupService;
     }
 
     @GetMapping("/")
@@ -101,12 +107,13 @@ public class RecipeController {
 
         return "recipes/dashboard";
     }
-
     @GetMapping("/recipes/create")
     public String showCreateForm(Model model, @AuthenticationPrincipal RecipeUserDetails currentUser) {
-
         model.addAttribute("recipeForm", new RecipeForm());
         model.addAttribute("isEditMode", false);
+
+        // Populates lookups cleanly from RAM cache only during form generations
+        populateFormMetadataDirectly(model, currentUser);
 
         return "recipes/create";
     }
@@ -126,18 +133,14 @@ public class RecipeController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(jsonResponse);
         }
 
-        // 1. Call your existing transaction business handler logic
         Recipe savedRecipe = recipeService.saveOrUpdateRecipe(recipeForm, currentUser.getUserProfile());
 
         jsonResponse.put("success", true);
         jsonResponse.put("recipeId", savedRecipe.getRecipeId());
 
-        // 2. Evaluate button pathing commands dynamically
         if ("FINISH".equalsIgnoreCase(actionType)) {
-            // Provide the routing path for the "Finish & View Recipe" button
             jsonResponse.put("redirectUrl", "/recipes/view/" + savedRecipe.getRecipeId());
         } else {
-            // Provide a stay-put confirmation path for the "Save Progress" button
             jsonResponse.put("redirectUrl", null);
         }
 
@@ -151,8 +154,6 @@ public class RecipeController {
         }
 
         var domainUser = currentUser.getUserProfile();
-
-        // Fetch the scoped list of recipes owned explicitly by this chef account
         List<Recipe> userRecipes = recipeService.getRecipesByUserId(domainUser.getUserId());
         model.addAttribute("recipes", userRecipes);
         model.addAttribute("userDisplayName", domainUser.getDisplayName());
@@ -160,7 +161,6 @@ public class RecipeController {
         return "recipes/my-list";
     }
 
-    // Handles: /recipes/view/1
     @PreAuthorize("hasAuthority('can_hide_any_recipe')")
     @PostMapping("/recipes/view/{recipeId}/hide")
     public String hideRecipeByNumericId(@PathVariable Integer recipeId) {
@@ -184,39 +184,18 @@ public class RecipeController {
             }
 
             RecipeForm recipeForm = recipeService.prepareFormFromRecipe(recipe);
-            recipeForm.setRecipeId(numericRecipeId); // ◄ CRITICAL: Attaches the active row ID to the form!
+            recipeForm.setRecipeId(numericRecipeId); 
 
             model.addAttribute("recipeForm", recipeForm);
             model.addAttribute("isEditMode", true);
+
+            // Populates metadata values efficiently via lookups cache layer
+            populateFormMetadataDirectly(model, currentUser);
 
             return "recipes/create";
         } catch (NumberFormatException e) {
             return "redirect:/recipes/my-list?error=invalidRecipeId";
         }
-    }
-
-    @ModelAttribute
-    public void populateFormMetadata(Model model,
-            @AuthenticationPrincipal RecipeUserDetails currentUser,
-            HttpServletRequest request) {
-
-        String method = request.getMethod();
-
-        // CRITICAL EFFICIENCY GUARD: Only query the database for GET requests (page
-        // renders)
-        if (!"GET".equalsIgnoreCase(method)) {
-            return;
-        }
-
-        User userEntity = (currentUser != null) ? currentUser.getUserProfile() : null;
-
-        model.addAttribute("recipeCategories", recipeCategoryService.getAllCategories());
-        model.addAttribute("allIngredients", ingredientService.getAllIngredientsSorted(userEntity));
-        model.addAttribute("measurements", recipeService.getAllMeasurements());
-        model.addAttribute("visibilities", recipeService.getAllVisibilities());
-
-        model.addAttribute("groceryCategories", ingredientService.getAllGroceryCategoriesSortedByOrder());
-        model.addAttribute("classifications", IngredientClassification.values());
     }
 
     @PostMapping("/recipes/delete/{id}")
@@ -231,16 +210,12 @@ public class RecipeController {
             Integer numericRecipeId = Integer.parseInt(id.trim());
             Recipe recipe = recipeService.getRecipeById(numericRecipeId);
 
-            // Security Check: Ensure the logged-in user actually owns this recipe
             if (!recipe.getUser().getUserId().equals(currentUser.getUserProfile().getUserId())) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Unauthorized action.");
                 return "redirect:/recipes/my-list";
             }
 
-            // Execute service deletion cascading
             recipeService.deleteRecipeById(numericRecipeId);
-
-            // Use flash attributes to show a sweet alert or toast on the listing page
             redirectAttributes.addFlashAttribute("successMessage", "Recipe deleted successfully.");
             return "redirect:/recipes/my-list";
 
@@ -250,23 +225,14 @@ public class RecipeController {
         }
     }
 
-    
-    /**
-     * Entry Point 1: Numeric ID lookup
-     * Route: GET /recipes/view/34
-     */
     @GetMapping("/recipes/view/{id}")
     public String viewRecipeProfile(@PathVariable("id") Integer id, Model model, @AuthenticationPrincipal RecipeUserDetails currentUser) {
         Recipe recipe = recipeService.getRecipeById(id);
         if (recipe == null) return "redirect:/search?notFound";
 
-        return populateAndRenderProfileView(recipe, model, currentUser); // ◄ Calls utility
+        return populateAndRenderProfileView(recipe, model, currentUser);
     }
 
-    /**
-     * Entry Point 2: Public secure UUID lookup
-     * Route: GET /view/4de5677f-3370-4ff9-af60-8f9c44fc4d88
-     */
     @GetMapping("/view/{publicId}")
     public String viewPublicRecipe(@PathVariable("publicId") String publicIdStr, Model model, @AuthenticationPrincipal RecipeUserDetails currentUser) {
         try {
@@ -274,45 +240,53 @@ public class RecipeController {
             Recipe recipe = recipeService.getRecipeByPublicId(publicId);
             if (recipe == null) return "redirect:/search?notFound";
 
-            return populateAndRenderProfileView(recipe, model, currentUser); // ◄ Calls identical utility
+            return populateAndRenderProfileView(recipe, model, currentUser);
         } catch (IllegalArgumentException e) {
             return "redirect:/search?notFound";
         }
     }
 
-
-    /**
-     * Processes both controller routing paths seamlessly in one single point.
-     */
     private String populateAndRenderProfileView(Recipe recipe, Model model, RecipeUserDetails currentUser) {
         User userProfile = (currentUser != null) ? currentUser.getUserProfile() : null;
         
-        // 1. Unified security context assessment
         boolean canEdit = (userProfile != null) && recipe.getUser().getUserId().equals(userProfile.getUserId());
         boolean hasHidePermission = (currentUser != null) && currentUser.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("can_hide_any_recipe"));
 
         int visibilityId = recipe.getRecipeVisibility().getRecipeVisibilityId();
 
-        // Security boundary guards
         if (visibilityId == 2 && !canEdit && !hasHidePermission) return "redirect:/search?unauthorized";
         if (visibilityId == 3 && !canEdit) return "redirect:/search?unauthorized";
 
-        // 2. Execute exact identical mathematical calculations pass
-        List<Measurement> measurementsPool = recipeService.getAllMeasurements();
+        // Pulls exclusively from your optimized MetadataLookupService cache map abstraction
+        List<Measurement> measurementsPool = metadataLookupService.getAllMeasurements();
         List<Recipe> singleRecipeSelection = Collections.singletonList(recipe);
-        Map<String, List<RecipeStepIngredient>> structuredIngredients = RecipeUtility
+        
+        // Segregated logic blocks for uncombined display card views vs combined checkout sheets
+        Map<String, List<RecipeStepIngredient>> lineItemIngredients = RecipeUtility
+                .groupIngredientsByGroceryCategory(singleRecipeSelection);
+        Map<String, List<RecipeStepIngredient>> combinedShoppingList = RecipeUtility
                 .aggregateAndPromoteShoppingList(singleRecipeSelection, measurementsPool);
 
-        // 3. Inject uniform data tokens down to the view layout engine template
         model.addAttribute("recipe", recipe);
         model.addAttribute("canEdit", canEdit);
-        model.addAttribute("isOwner", canEdit); // Map cleanly to both context configurations
+        model.addAttribute("isOwner", canEdit);
         model.addAttribute("canHide", hasHidePermission && visibilityId != 2);
         
-        model.addAttribute("singleRecipeAggregatedIngredients", structuredIngredients);
-        model.addAttribute("shoppingListAggregatedIngredients", structuredIngredients);
+        model.addAttribute("singleRecipeAggregatedIngredients", lineItemIngredients);
+        model.addAttribute("shoppingListAggregatedIngredients", combinedShoppingList);
 
         return "recipes/view";
+    }
+
+    private void populateFormMetadataDirectly(Model model, RecipeUserDetails currentUser) {
+        User userEntity = (currentUser != null) ? currentUser.getUserProfile() : null;
+
+        model.addAttribute("recipeCategories", recipeCategoryService.getAllCategories());
+        model.addAttribute("allIngredients", ingredientService.getAllIngredientsSorted(userEntity));
+        model.addAttribute("measurements", metadataLookupService.getAllMeasurements());
+        model.addAttribute("visibilities", metadataLookupService.getAllVisibilities());
+        model.addAttribute("groceryCategories", ingredientService.getAllGroceryCategoriesSortedByOrder());
+        model.addAttribute("classifications", IngredientClassification.values());
     }
 }

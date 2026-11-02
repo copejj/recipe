@@ -2,6 +2,8 @@ package com.braindribbler.recipe.service.recipe;
 
 import com.braindribbler.recipe.domain.recipe.RecipeCategory;
 import com.braindribbler.recipe.repository.recipe.RecipeCategoryRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,10 @@ public class RecipeCategoryService {
         this.recipeCategoryRepository = recipeCategoryRepository;
     }
 
+    /**
+     * Subsequent requests hit fast in-memory concurrent maps instead of hitting Postgres.
+     */
+    @Cacheable(value = "recipeCategories")
     @Transactional(readOnly = true)
     public List<RecipeCategory> getAllCategories() {
         return recipeCategoryRepository.findAllByOrderByNameAsc();
@@ -28,6 +34,10 @@ public class RecipeCategoryService {
         return recipeCategoryRepository.findById(id);
     }
 
+    /**
+     * Evicts the entire cache region whenever a category is saved, modified, or added.
+     */
+    @CacheEvict(value = "recipeCategories", allEntries = true)
     public RecipeCategory saveCategory(RecipeCategory category) {
         if (category.getName() != null) {
             category.setName(category.getName().trim());
@@ -35,6 +45,10 @@ public class RecipeCategoryService {
         return recipeCategoryRepository.save(category);
     }
 
+    /**
+     * Evicts the cache region completely when a category gets deleted.
+     */
+    @CacheEvict(value = "recipeCategories", allEntries = true)
     public void deleteCategoryById(Integer id) {
         recipeCategoryRepository.deleteById(id);
     }
