@@ -888,3 +888,18 @@ nav.header-nav span.dropdown-caret {
 .brand-nobreak {
     white-space: nowrap;
 }
+
+/* Base styling for the inline registration link */
+.register-link {
+    color: var(--color-primary);
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block; /* Helps handle transitions cleanly */
+    transition: transform 0.2s ease, letter-spacing 0.2s ease;
+}
+
+/* Hover effect: Swaps to UPPERCASE smoothly */
+.register-link:hover {
+    text-transform: uppercase;
+    font-size: .72rem; /* Slightly smaller font size for a subtle effect */
+}

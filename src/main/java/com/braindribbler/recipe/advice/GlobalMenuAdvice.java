@@ -24,6 +24,7 @@ public class GlobalMenuAdvice {
                 auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken) {
             menuItems.add(new MenuItem("Home", "/"));
             menuItems.add(new MenuItem("Search", "/search"));
+            menuItems.add(new MenuItem("Register", "/register", "nav-button nav-link--cta"));
             return menuItems;
         }
 

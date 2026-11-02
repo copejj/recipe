@@ -4,7 +4,7 @@
 <head th:fragment="html_head(title)">
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title th:text="${title} - Brain Dribbler">Brain Dribbler Recipes</title>
+    <title th:text="${title} + ' - Brain Dribbler'">Brain Dribbler Recipes</title>
 
     <link rel="apple-touch-icon" sizes="180x180" th:href="@{/apple-touch-icon.png}">
     <link rel="icon" type="image/png" sizes="32x32" th:href="@{/favicon-32x32.png}">
@@ -42,11 +42,13 @@
                             <span class="dropdown-caret">▼</span>
                         </button>
                         <div class="dropdown-menu">
-                            <a th:each="child : ${item.children}" th:href="@{${child.url}}" class="dropdown-item"
+                            <a th:each="child : ${item.children}" th:href="@{${child.url}}" 
+                                th:class="${child.className} + ' dropdown-item'"
                                 th:text="${child.label}">Child Option</a>
                         </div>
                     </div>
-                    <a th:if="${!item.hasChildren()}" th:href="@{${item.url}}" class="nav-link"
+                    <a th:if="${!item.hasChildren()}" th:href="@{${item.url}}" 
+                        th:class="${item.className} + ' nav-link'"
                         th:text="${item.label}">Standard Link</a>
                 </th:block>
 
