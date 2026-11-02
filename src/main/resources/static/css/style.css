@@ -844,3 +844,47 @@ nav.header-nav span.dropdown-caret {
     display: flex;
     gap: 12px;
 }
+
+/* Container holding the text flow */
+.hero-flow-container {
+    color: var(--color-text-dark);
+    line-height: 1.7;
+    margin-bottom: 40px;
+}
+
+/* Floats the image box left and handles margins */
+.hero-flow-image-wrapper {
+    float: left;
+    width: 380px; /* Adjusted to fit the horizontal orientation comfortably */
+    margin-right: 30px; /* Clean breathing room between the art and text */
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Clean image adjustments without transformations */
+.hero-illustration {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    background-color: transparent !important;
+}
+
+/* Typography styles */
+.intro-paragraph {
+    margin-bottom: 20px;
+}
+
+/* Link customization */
+.search-link {
+    color: var(--color-primary);
+    font-weight: 600;
+    text-decoration: none;
+    margin-left: 6px;
+}
+
+/* Forces the brand name to stay together on a single line */
+.brand-nobreak {
+    white-space: nowrap;
+}
