@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Recipe Creation Layout Stylesheet - Part 1
+   Recipe Creation Layout Stylesheet - Core Layouts & Structural Grids
    Path: src/main/resources/static/css/recipes/create.css
    ========================================================================== */
 
@@ -71,8 +71,7 @@
     font-size: 0.8rem;
     background-color: var(--color-danger-raw);
     color: white;
-    display: none;
-    /* Managed dynamically via JavaScript */
+    display: none; /* Managed dynamically via JavaScript */
 }
 
 /* Timeline Ingredient Section Scope Container Wrappers */
@@ -104,24 +103,25 @@
     padding: 0;
 }
 
-/* ==========================================================================
-   Recipe Creation Layout Stylesheet - Part 2
-   Path: src/main/resources/static/css/recipes/create.css
-   ========================================================================== */
-
-/* Ingredient Grid Array Row Node Layout Allocation Formulas */
-.row-flex-alignment-grid {
+/* CONSOLIDATED: Unified Ingredient Row Layout Configuration */
+.ingredient-row {
     display: flex;
     gap: 10px;
     align-items: center;
     margin-bottom: 10px;
+    background-color: rgba(0, 0, 0, 0.04);
+    padding: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+}
+
+.row-flex-alignment-grid {
+    display: flex;
+    gap: 10px;
+    align-items: center;
 }
 
 .select-width-weight-large {
-    flex: 2;
-}
-
-.select-width-weight-large:first-of-type {
     flex: 2.5;
 }
 
@@ -142,8 +142,10 @@
     color: var(--color-text-dark);
     border: 1px solid var(--color-border-input);
     border-radius: 6px;
+    cursor: pointer;
 }
 
+/* Timeline Step Insertion Infrastructure */
 .timeline-step-insertion-point-wrapper {
     text-align: center;
     margin-top: 14px;
@@ -163,7 +165,7 @@
     width: 15rem;
 }
 
-/* Footer Section Action Frameworks */
+/* Footer Section Action Layout Frameworks */
 .global-recipe-notes-margin-box {
     margin-bottom: 24px;
 }
@@ -171,25 +173,6 @@
 .label-bold-dark-theme {
     font-weight: 700;
     color: var(--color-text-dark);
-}
-
-.application-form-footer-action-bar {
-    margin-top: 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    padding-top: 20px;
-    border-top: 1px solid var(--color-border);
-}
-
-.footer-save-operations-left-cluster {
-    display: flex;
-    gap: 12px;
-}
-
-.explicit-text-nowrap-bound {
-    white-space: nowrap;
 }
 
 .btn-outline-danger-action-card {
@@ -204,7 +187,15 @@
     font-size: 0.95rem;
 }
 
-/* Modal Windows UI Structure Layout Subsystems */
+/* Refactored: CSS-Driven Deletion Confirmation State */
+.btn-danger-critical {
+    background-color: #bd2130 !important;
+    color: #ffffff !important;
+    border-color: #bd2130 !important;
+    box-shadow: 0 0 8px rgba(220, 53, 69, 0.4);
+}
+
+/* Modal Windows UI Architecture Subsystems */
 .modal-descriptive-subtitle {
     font-size: 0.9rem;
     color: var(--color-text-muted);
@@ -238,7 +229,7 @@
     gap: 10px;
 }
 
-/* Classification Active Option Subcards Configurations */
+/* Classification Active Option Cards Configurations */
 .class-selector-card {
     padding: 0.75rem;
     border-radius: 6px;
@@ -255,75 +246,115 @@
     line-height: 1rem;
 }
 
-/* Active State Custom Color Modifiers */
+/* Refactored: Modal Selectors managed entirely by Class Switches */
 .class-selector-card.active.selector-card-solid {
     border: 2px solid #198754;
     background: #f4fbf7;
 }
-
-.class-selector-card .heading-solid {
-    font-weight: bold;
-    color: #198754;
-    margin-bottom: 4px;
-}
-
 .class-selector-card.active.selector-card-wet {
     border: 2px solid #0dcaf0;
     background: #f0fafd;
 }
-
-.class-selector-card .card-heading-wet {
-    font-weight: bold;
-    color: #0dcaf0;
-    margin-bottom: 4px;
-}
-
 .class-selector-card.active.selector-card-dry {
     border: 2px solid #ffc107;
     background: #fffdf4;
 }
 
-.class-selector-card .card-heading-dry {
-    font-weight: bold;
-    color: #ffc107;
-    margin-bottom: 4px;
-}
+.class-selector-card .heading-solid { font-weight: bold; color: #198754; margin-bottom: 4px; }
+.class-selector-card .card-heading-wet { font-weight: bold; color: #0dcaf0; margin-bottom: 4px; }
+.class-selector-card .card-heading-dry { font-weight: bold; color: #ffc107; margin-bottom: 4px; }
 
-/* Dialog Action Footer Layout Node System Elements */
-.modal-operation-feedback-line {
-    display: none;
-    margin-bottom: 15px;
-    font-size: 0.9rem;
-    font-weight: bold;
-}
+.modal-footer-alignment-row { display: flex; justify-content: flex-end; gap: 10px; }
+.btn-modal-dismiss-grey { background-color: #e9ecef; color: #495057; }
+.btn-modal-submit-blue { background-color: #007bff; color: white; }
+.hidden-element-pool { display: none; }
 
-.modal-footer-alignment-row {
+/* Select2 Form Theme Unification Layout System Overrides */
+.ingredient-row .select2-container--default .select2-selection--single {
+    height: 42px;
+    border: 1px solid var(--color-border-input);
+    border-radius: 6px;
+    background-color: var(--color-bg-card);
     display: flex;
-    justify-content: flex-end;
-    gap: 10px;
+    align-items: center;
+}
+.ingredient-row .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 40px;
+    padding-left: 14px;
+    padding-right: 30px;
+    color: var(--color-text-dark);
+    font-size: 1rem;
+}
+.ingredient-row .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 40px;
+    top: 0;
+    right: 8px;
+}
+.ingredient-row .select2-container--default.select2-container--focus .select2-selection--single {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15);
 }
 
-.btn-modal-dismiss-grey {
-    background-color: #e9ecef;
-    color: #495057;
+/* High Contrast Global Form Typography Adjustments */
+.select2-container--default .select2-selection--single .select2-selection__placeholder,
+.template-step-card-blueprint .ingredient-row input,
+.template-step-card-blueprint .ingredient-row select,
+.template-step-card-blueprint textarea,
+.select2-container--default .select2-results__option,
+.template-step-card-blueprint .form-input::placeholder {
+    color: var(--color-text-dark);
+    font-weight: 500;
+}
+.template-step-card-blueprint .form-input::placeholder {
+    color: #555555;
+    opacity: 1;
 }
 
-.btn-modal-submit-blue {
-    background-color: #007bff;
-    color: white;
+@keyframes rainbowTextCycle {
+    0% { color: #ff0000; transform: scale(1.05); }
+    17% { color: #ffa500; }
+    33% { color: #ffff00; }
+    50% { color: #008000; }
+    67% { color: #0000ff; }
+    83% { color: #4b0082; }
+    100% { color: inherit; transform: scale(1); }
+}
+.animate-rainbow-trigger {
+    animation: rainbowTextCycle 1.5s ease-in-out;
+    display: inline-block;
 }
 
-/* Global Hidden Pipeline Objects Container */
-.hidden-element-pool {
-    display: none;
+/* Sticky Action Navigation Footer Bar Panel Component */
+.application-form-footer-action-bar {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100; /* Keeps it layered above scrolling inputs and textareas */
+    background-color: var(--color-bg-card, #ffffff); /* Solid background blocks text scrolling underneath */
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.08); /* Soft shadow creates visual separation from content */
+    margin-top: 30px;
+    padding: 16px 24px; /* Balanced padding keeping it compact and unintrusive */
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    box-sizing: border-box; /* Prevents padding from breaking width boundaries */
+}
+.footer-save-operations-left-cluster {
+    display: flex;
+    gap: 12px;
+}
+.explicit-text-nowrap-bound {
+    white-space: nowrap;
 }
 
 /* ==========================================================================
-   Mobile Responsive Alignment Rules (Select2 Ingredient Layout Override)
+   CONSOLIDATED Mobile Responsive Adaptive Optimization Constraints
    ========================================================================== */
 @media screen and (max-width: 600px) {
-
-    /* 1. Force the row wrapper to break lines, overriding the inline style declaration */
+    /* 1. Ingredient Rows Stacking Overrides */
     .template-step-card-blueprint .ingredient-row {
         flex-wrap: wrap;
         gap: 12px 8px;
@@ -331,180 +362,47 @@
         padding-bottom: 16px;
         margin-bottom: 16px;
     }
-
     .template-step-card-blueprint .ingredient-row:last-of-type {
         border-bottom: none;
         margin-bottom: 10px;
     }
-
-    /* LINE 1: Select2 Main Container Box Wrapper -> 100% full width layout */
     .template-step-card-blueprint .ingredient-row .select2-container {
         flex: 0 0 100%;
         width: 100%;
     }
-
-    /* LINE 2: Amount field block wrapper container node -> 50% split width space */
     .template-step-card-blueprint .ingredient-row .amount-wrapper {
         width: calc(50% - 4px);
     }
-
-    /* LINE 2: Unit drop-down selection box input -> 50% split width space */
     .template-step-card-blueprint .ingredient-row select.select-width-weight-medium {
         flex: 0 0 calc(50% - 4px);
         width: calc(50% - 4px);
     }
-
-    /* LINE 3: Notes input string field box container -> stretch and claim remainder space */
     .template-step-card-blueprint .ingredient-row input[type="text"] {
         flex: 1;
         width: auto;
     }
-
-    /* LINE 3: Deletion dismiss target button action -> snap fit to the far right */
     .template-step-card-blueprint .ingredient-row .btn-square-row-dismiss {
         flex: 0 0 auto;
         width: auto;
         padding: 10px 16px;
     }
 
-    .ingredients-container {
-        padding-bottom: 1rem;
+    /* 2. Un-smash the LocalStorage Notification Banner for Portrait Layouts */
+    #draft-restore-alert-banner {
+        flex-direction: column !important; /* Forces buttons below text */
+        align-items: flex-start !important; /* Left-aligns content neatly */
+        gap: 16px !important; /* Creates a comfortable breathing room cushion */
+        padding: 16px !important;
     }
-}
-
-/* ==========================================================================
-   SELECT2 UNIFICATION OVERRIDES (Forces 42px Match With Theme Inputs)
-   ========================================================================== */
-
-/* 1. Reset the outer selection layout box container constraints */
-.ingredient-row .select2-container--default .select2-selection--single {
-    height: 42px;
-    padding: 0;
-    border: 1px solid var(--color-border-input);
-    border-radius: 6px;
-    background-color: var(--color-bg-card);
-    display: flex;
-    align-items: center;
-}
-
-/* 2. Unify the text label container layout inner alignments */
-.ingredient-row .select2-container--default .select2-selection--single .select2-selection__rendered {
-    line-height: 40px;
-    /* Total container block height minus borders */
-    padding-left: 14px;
-    /* Matches your .form-input 14px padding */
-    padding-right: 30px;
-    color: var(--color-text-dark);
-    font-size: 1rem;
-    width: 100%;
-}
-
-/* 3. Center and realign the select arrow caret wrapper drop block */
-.ingredient-row .select2-container--default .select2-selection--single .select2-selection__arrow {
-    height: 40px;
-    /* Matches rendering line boundary heights */
-    top: 0;
-    right: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* 4. Fix baseline focus ring glowing behaviors matching standard inputs */
-.ingredient-row .select2-container--default.select2-container--focus .select2-selection--single {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15);
-    outline: none;
-}
-
-.ingredient-row {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    margin-bottom: 10px;
-    background-color: rgba(0, 0, 0, 0.15);
-    padding: .5em;
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    border-radius: 9px;
-}
-
-/* ==========================================================================
-   HIGH-CONTRAST TYPOGRAPHY OVERRIDES (Improves Form Text Legibility)
-   ========================================================================== */
-
-/* 1. Target standard inputs, textareas, and select elements */
-.select2-container--default .select2-selection--single .select2-selection__placeholder,
-.template-step-card-blueprint .ingredient-row input,
-.template-step-card-blueprint .ingredient-row select,
-.template-step-card-blueprint textarea {
-    color: var(--color-text-dark);
-    font-weight: 500;
-    /* Slightly boosts weight for better rendering on low-res screens */
-}
-
-/* 2. Target Select2's active selection label */
-.template-step-card-blueprint .ingredient-row .select2-container--default .select2-selection--single .select2-selection__rendered {
-    color: var(--color-text-dark);
-    font-weight: 500;
-}
-
-/* 3. Darken the unselected option items inside the Select2 dropdown box lists */
-.select2-container--default .select2-results__option {
-    color: var(--color-text-dark);
-}
-
-/* 4. Darken field placeholder text helper strings slightly for better visibility */
-.template-step-card-blueprint .form-input::placeholder {
-    color: #555555;
-    /* Noticeably darker than standard browser muted gray */
-    opacity: 1;
-    /* Fixes browser-specific placeholder opacity clamping */
-}
-
-/* Rainbow text animation cycling through a spectrum */
-@keyframes rainbowTextCycle {
-    0% {
-        color: #ff0000;
-        transform: scale(1.05);
+    #draft-restore-alert-banner > div:last-child {
+        width: 100%; /* Stretches the action button cluster wrapper */
+        display: flex;
+        gap: 12px;
     }
-
-    /* Red */
-    17% {
-        color: #ffa500;
+    #draft-restore-alert-banner button {
+        flex: 1; /* Automatically balances both buttons to a perfect 50/50 split target width */
+        text-align: center;
+        padding: 10px 14px !important; /* Thickens target zones for thumb touches */
+        font-size: 0.95rem !important;
     }
-
-    /* Orange */
-    33% {
-        color: #ffff00;
-    }
-
-    /* Yellow */
-    50% {
-        color: #008000;
-    }
-
-    /* Green */
-    67% {
-        color: #0000ff;
-    }
-
-    /* Blue */
-    83% {
-        color: #4b0082;
-    }
-
-    /* Indigo */
-    100% {
-        color: inherit;
-        transform: scale(1);
-    }
-
-    /* Smoothly back to normal */
-}
-
-/* Helper class to apply the animation */
-.animate-rainbow-trigger {
-    animation: rainbowTextCycle 1.5s ease-in-out;
-    display: inline-block;
-    /* Ensures the transform scale works perfectly on text/buttons */
 }

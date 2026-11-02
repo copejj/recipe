@@ -19,6 +19,16 @@
         <h1 th:text="${isEditMode ?: false} ? 'Edit Your Recipe' : 'Create New Recipe'">Recipe Stuff</h1>
         <p class="page-subtitle">Map out your instructions and attach step-scoped ingredients with exact quantities.</p>
 
+        <div id="draft-restore-alert-banner" style="display: none; background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 14px 20px; border-radius: 6px; margin-bottom: 24px; align-items: center; justify-content: space-between; gap: 16px;">
+            <div>
+                <strong>💾 Unsaved Draft Found!</strong> We found an unsaved recipe draft from earlier today at <span id="draft-time-placeholder"></span>. Would you like to pick up where you left off?
+            </div>
+            <div style="display: flex; gap: 10px; flex-shrink: 0;">
+                <button type="button" id="confirm-restore-btn" class="btn" style="background-color: #ffc107; color: #212529; padding: 6px 14px; font-size: 0.9rem;">Yes, Restore Draft</button>
+                <button type="button" id="dismiss-restore-btn" class="btn" style="background-color: transparent; border: 1px solid #856404; color: #856404; padding: 6px 14px; font-size: 0.9rem;">Discard</button>
+            </div>
+        </div>
+
         <form th:action="@{/recipes/create}" th:object="${recipeForm}" method="post" id="recipeForm">
             <input type="hidden" id="recipeId" th:field="*{recipeId}" />
 
@@ -42,7 +52,7 @@
                     <input type="number" th:field="*{servings}" class="form-input" min="1" required />
                 </div>
 
-                <!-- ➡️ CENTRALIZED RECIPE CATEGORY TAXONOMY DROPDOWN -->
+                <!-- CENTRALIZED RECIPE CATEGORY TAXONOMY DROPDOWN -->
                 <div class="form-group input-flexible-fill">
                     <label class="form-label" for="recipeCategoryId">Recipe Category</label>
                     <select th:field="*{recipeCategoryId}" class="form-input" required>
@@ -63,11 +73,15 @@
                 </div>
             </div>
 
-
             <hr class="dashboard-divider section-break-divider" />
-
             <!-- Dynamic Interactive Timeline Section -->
             <h2>Instructions & Ingredients Blueprint</h2>
+            <div class="timeline-step-insertion-point-wrapper" style="margin-bottom: 24px;">
+                <button type="button" id="insert-step-top-btn" class="btn btn-dashed-insertion-action">
+                    ➕ Insert a New Step
+                </button>
+            </div>
+
             <div id="steps-container">
 
                 <!-- Step Card Master Template Row Block -->
@@ -91,14 +105,13 @@
                     <div class="ingredients-section timeline-ingredients-scope-box">
                         <div class="ingredients-section-header-alignment">
                             <label class="form-label label-inline-reset">Ingredients Needed for this Step</label>
-                            <button type="button" class="open-quick-ing-btn embedded-modal-trigger-link">✨ Missing an
-                                ingredient?</button>
+                            <button type="button" class="open-quick-ing-btn embedded-modal-trigger-link">✨ Missing an ingredient?</button>
                         </div>
 
                         <div class="ingredients-container">
                             <th:block th:if="${isEditMode and step.ingredients != null}">
                                 <div th:each="ing, ingStat : ${step.ingredients}"
-                                    class="ingredient-row row-flex-alignment-grid" th:data-ing-index="${ingStat.index}">
+                                    class="ingredient-row" th:data-ing-index="${ingStat.index}">
 
                                     <select
                                         th:name="|steps[${stepStat.index}].ingredients[${ingStat.index}].ingredientId|"
@@ -155,7 +168,6 @@
             </div>
 
             <hr class="dashboard-divider section-break-divider" />
-
             <div class="form-group global-recipe-notes-margin-box">
                 <label class="form-label label-bold-dark-theme" for="recipeNote">General Recipe Notes</label>
                 <textarea th:field="*{recipeNote}" class="form-input" rows="3"
@@ -165,15 +177,15 @@
             <!-- Global Timeline Action Buttons Footer Bar Container -->
             <div class="form-actions-footer application-form-footer-action-bar">
                 <div class="footer-save-operations-left-cluster">
-                    <button type="button" id="save-stay-btn" class="btn">Save Recipe</button>
+                    <button type="button" id="save-stay-btn" class="btn">Save</button>
                     <button type="button" id="finish-view-btn"
-                        class="btn btn--primary explicit-text-nowrap-bound">Finish & View Recipe</button>
+                        class="btn btn--primary explicit-text-nowrap-bound">Save & View</button>
                 </div>
 
                 <div th:if="${recipeForm.recipeId != null}">
                     <button type="submit" form="deleteForm" class="btn inline-delete-btn btn-outline-danger-action-card"
                         data-confirmed="false">
-                        Delete Recipe
+                        Delete
                     </button>
                 </div>
             </div>
@@ -181,7 +193,8 @@
 
         <form th:if="${recipeForm.recipeId != null}" id="deleteForm"
             th:action="@{/recipes/delete/{id}(id=${recipeForm.recipeId})}" method="post"
-            class="delete-recipe-form hidden-element-pool"></form>
+            class="delete-recipe-form hidden-element-pool">
+        </form>
     </main>
 
     <!-- Native HTML5 Dialog Interactive Component Layer -->
@@ -211,20 +224,17 @@
                 <div class="modal-classification-three-column-grid">
                     <button type="button" class="class-selector-card active selector-card-solid" data-value="SOLID">
                         <div class="heading-solid">SOLID</div>
-                        <div class="card-description-body-text">Whole amounts, count variables, slices, pieces, cloves,
-                            packages.</div>
+                        <div class="card-description-body-text">Whole amounts, count variables, slices, pieces, cloves, packages.</div>
                     </button>
 
                     <button type="button" class="class-selector-card selector-card-wet" data-value="WET">
                         <div class="card-heading-wet">WET / LIQUID</div>
-                        <div class="card-description-body-text">Fluids using Cups, Teaspoons, Pints, Quarts, Gallons,
-                            Fluid Ounces.</div>
+                        <div class="card-description-body-text">Fluids using Cups, Teaspoons, Pints, Quarts, Gallons, Fluid Ounces.</div>
                     </button>
 
                     <button type="button" class="class-selector-card selector-card-dry" data-value="DRY">
                         <div class="card-heading-dry">DRY VOLUME</div>
-                        <div class="card-description-body-text">Powders, spices, or grains using Teaspoons, Tablespoons,
-                            Cups, Pounds.</div>
+                        <div class="card-description-body-text">Powders, spices, or grains using Teaspoons, Tablespoons, Cups, Pounds.</div>
                     </button>
                 </div>
             </div>

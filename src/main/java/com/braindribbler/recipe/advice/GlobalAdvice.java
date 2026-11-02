@@ -17,6 +17,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -114,12 +115,14 @@ public class GlobalAdvice {
      * and handles them cleanly without flooding terminal screens with 500 error
      * stack traces.
      */
-    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
-    public String handleMissingStaticResources(org.springframework.web.servlet.resource.NoResourceFoundException ex,
-            Model model) {
-        // Log as a light trace warning text message instead of a loud structural error
-        // dump
-        logger.warn("Static resource routing missed: {}", ex.getMessage());
+    @ExceptionHandler(NoResourceFoundException.class)
+    public String handleMissingStaticResources(NoResourceFoundException ex, HttpServletRequest request, Model model) {
+        String uri = request.getRequestURI();
+        boolean isChromeProbe = (uri != null && uri.contains(".well-known"));
+
+        if (!isChromeProbe) {
+            logger.warn("Static resource routing missed: {}", ex.getMessage());
+        }
 
         model.addAttribute("errorCode", "404");
         model.addAttribute("errorTitle", "Resource Not Found");
@@ -129,6 +132,7 @@ public class GlobalAdvice {
 
         return "error"; // Directs to templates/error.html
     }
+
 
     /**
      * Globally catches manual rank violations or Spring Security access checks
