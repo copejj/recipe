@@ -23,7 +23,10 @@ $(document).ready(function () {
         clickedTab.addClass("active").css({ "color": "var(--color-primary, #0d6efd)", "border-bottom": "3px solid var(--color-primary, #0d6efd)", "margin-bottom": "-13px" });
 
         $(".tab-panel").hide();
-        $("#" + targetPanelId).fadeIn(150);
+        $("#" + targetPanelId).fadeIn(150, function() {
+            // Fire scaling engine after fade-in finishes to ensure exact layout sizes are known
+            runLiveScalingEngine();
+        });
     });
 
     // --- DYNAMIC SYSTEM CONVERSION MODE CONTROLLER ---
@@ -95,6 +98,10 @@ $(document).ready(function () {
             // 1. Grab the existing text from the HTML element to use as the absolute fallback
             var nativeDatabaseUnitText = $unitLabel.length ? ($unitLabel.data("original-unit-name") || $unitLabel.text().trim()) : "Units";
 
+            // To look strictly for the data attribute first:
+            var nativeDatabaseUnitText = $unitLabel.length ? ($unitLabel.attr("data-original-unit-name") || $unitLabel.text().trim() || "Units") : "Units";
+
+
             // 2. Direct ID match to find the initial configuration inside the matrix array
             var originalUnitMeta = poolMatrix.find(function (m) { return m.measurementId === originalUnitId; });
 
@@ -117,7 +124,8 @@ $(document).ready(function () {
                         var nameLower = m.unitName.toLowerCase();
                         return nameLower.includes("teaspoon") ||
                             nameLower.includes("tablespoon") ||
-                            nameLower.includes("cup");
+                            nameLower.includes("cup") ||
+                            nameLower.includes("pinch"); 
                     });
                 } else if (classification === "WET") {
                     // Wet ingredients should also gracefully restrict dry-exclusive scaling steps if required

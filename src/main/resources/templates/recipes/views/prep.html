@@ -29,7 +29,8 @@
                         th:data-ingredient-classification="${item.ingredient.classification.name()}"
                         th:text="${T(com.braindribbler.recipe.util.RecipeUtility).convertDecimalToKitchenFraction(item.amount)}">1</span>
 
-                    <span class="scalable-unit-name" th:text="${item.measurement.unitName}">Cups</span>
+                    <span class="scalable-unit-name" th:data-original-unit-name="${item.measurement.unitName}" 
+                        th:text="${item.measurement.unitName}">Cups</span>
                     <strong th:text="${item.ingredient.ingredientName}">Flour</strong>
                     <!-- Target element anchor for Imperial display packaging updates -->
                     <span class="oz-package-preview"></span>

@@ -88,12 +88,13 @@ public class GlobalAdvice {
             // Map entities to clean, flat, transaction-safe JSON parameter fragments
             List<Map<String, Object>> flatMatrix = measurementsPool.stream().map(m -> {
                 Map<String, Object> map = new HashMap<>();
+
+                map.put("measurementId", m.getMeasurementId()); 
                 map.put("unitName", m.getUnitName());
                 map.put("pluralName", m.getPluralName());
 
                 // Maps your new database floor value into the JavaScript JSON output array
-                map.put("minPromotionFloor",
-                        m.getMinPromotionFloor() != null ? m.getMinPromotionFloor().doubleValue() : 0.85);
+                map.put("minPromotionFloor", m.getMinPromotionFloor() != null ? m.getMinPromotionFloor().doubleValue() : 0.85);
 
                 map.put("baseUnitEquivalent", m.getBaseUnitEquivalent().doubleValue());
                 map.put("scalingRank", m.getScalingRank().intValue());

@@ -168,66 +168,6 @@ public class RecipeController {
         return "redirect:/recipes/view/" + recipeId;
     }
 
-    @GetMapping("/recipes/view/{id}")
-    public String viewRecipeProfile(@PathVariable("id") Integer id,
-            Model model,
-            @AuthenticationPrincipal RecipeUserDetails currentUser) {
-
-        // 1. Fetch your recipe record entity from the database repository layer
-        Recipe recipe = recipeService.getRecipeById(id);
-        if (recipe == null) {
-            return "redirect:/search?notFound";
-        }
-
-        // 5. DETERMINE PERMISSIONS: Evaluate edit rights cleanly using objects
-        boolean canEdit = false;
-        if (currentUser != null && recipe.getUser() != null) {
-            // Safe, type-safe comparison of numeric IDs (Integer / Long)
-            canEdit = recipe.getUser().getUserId().equals(currentUser.getUserProfile().getUserId());
-        }
-
-        // NEW: Evaluate if the current user has the moderator permission
-        boolean hasHidePermission = (currentUser != null) && currentUser.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals("can_hide_any_recipe"));
-
-        int visibilityId = recipe.getRecipeVisibility().getRecipeVisibilityId();
-
-        // NEW: Block private recipes (visibility 2) unless they are the owner or a
-        // moderator
-        if (visibilityId == 2 && !canEdit && !hasHidePermission) {
-            return "redirect:/search?unauthorized";
-        }
-
-        // NEW: Block shared recipes (visibility 3) unless they are the owner
-        if (visibilityId == 3 && !canEdit) {
-            return "redirect:/search?unauthorized";
-        }
-
-        // 2. CRITICAL LOOKUP: Fetch all master measurements from your database pool
-        List<Measurement> measurementsPool = recipeService.getAllMeasurements();
-
-        // 3. Wrap your single recipe inside a list wrapper container
-        List<Recipe> singleRecipeSelection = Collections.singletonList(recipe);
-
-        // 4. Run your type-safe BigDecimal scaling and category-sorting math engine
-        Map<String, List<RecipeStepIngredient>> structuredIngredients = RecipeUtility
-                .aggregateAndPromoteShoppingList(singleRecipeSelection, measurementsPool);
-
-        // 6. Inject all matching data attributes down to the Thymeleaf model view
-        // context
-        model.addAttribute("recipe", recipe);
-        model.addAttribute("canEdit", canEdit);
-
-        // NEW: Pass the canHide flag to the Thymeleaf view layer
-        // Only true if they have the permission AND the recipe isn't already private
-        model.addAttribute("canHide", hasHidePermission && visibilityId != 2);
-
-        model.addAttribute("singleRecipeAggregatedIngredients", structuredIngredients);
-        model.addAttribute("shoppingListAggregatedIngredients", structuredIngredients);
-
-        return "recipes/view";
-    }
-
     @GetMapping("/recipes/edit/{id}")
     public String showEditRecipeForm(@PathVariable("id") String id, Model model,
             @AuthenticationPrincipal RecipeUserDetails currentUser) {
@@ -308,5 +248,71 @@ public class RecipeController {
             redirectAttributes.addFlashAttribute("errorMessage", "Invalid recipe ID reference.");
             return "redirect:/recipes/my-list";
         }
+    }
+
+    
+    /**
+     * Entry Point 1: Numeric ID lookup
+     * Route: GET /recipes/view/34
+     */
+    @GetMapping("/recipes/view/{id}")
+    public String viewRecipeProfile(@PathVariable("id") Integer id, Model model, @AuthenticationPrincipal RecipeUserDetails currentUser) {
+        Recipe recipe = recipeService.getRecipeById(id);
+        if (recipe == null) return "redirect:/search?notFound";
+
+        return populateAndRenderProfileView(recipe, model, currentUser); // ◄ Calls utility
+    }
+
+    /**
+     * Entry Point 2: Public secure UUID lookup
+     * Route: GET /view/4de5677f-3370-4ff9-af60-8f9c44fc4d88
+     */
+    @GetMapping("/view/{publicId}")
+    public String viewPublicRecipe(@PathVariable("publicId") String publicIdStr, Model model, @AuthenticationPrincipal RecipeUserDetails currentUser) {
+        try {
+            java.util.UUID publicId = java.util.UUID.fromString(publicIdStr.trim());
+            Recipe recipe = recipeService.getRecipeByPublicId(publicId);
+            if (recipe == null) return "redirect:/search?notFound";
+
+            return populateAndRenderProfileView(recipe, model, currentUser); // ◄ Calls identical utility
+        } catch (IllegalArgumentException e) {
+            return "redirect:/search?notFound";
+        }
+    }
+
+
+    /**
+     * Processes both controller routing paths seamlessly in one single point.
+     */
+    private String populateAndRenderProfileView(Recipe recipe, Model model, RecipeUserDetails currentUser) {
+        User userProfile = (currentUser != null) ? currentUser.getUserProfile() : null;
+        
+        // 1. Unified security context assessment
+        boolean canEdit = (userProfile != null) && recipe.getUser().getUserId().equals(userProfile.getUserId());
+        boolean hasHidePermission = (currentUser != null) && currentUser.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("can_hide_any_recipe"));
+
+        int visibilityId = recipe.getRecipeVisibility().getRecipeVisibilityId();
+
+        // Security boundary guards
+        if (visibilityId == 2 && !canEdit && !hasHidePermission) return "redirect:/search?unauthorized";
+        if (visibilityId == 3 && !canEdit) return "redirect:/search?unauthorized";
+
+        // 2. Execute exact identical mathematical calculations pass
+        List<Measurement> measurementsPool = recipeService.getAllMeasurements();
+        List<Recipe> singleRecipeSelection = Collections.singletonList(recipe);
+        Map<String, List<RecipeStepIngredient>> structuredIngredients = RecipeUtility
+                .aggregateAndPromoteShoppingList(singleRecipeSelection, measurementsPool);
+
+        // 3. Inject uniform data tokens down to the view layout engine template
+        model.addAttribute("recipe", recipe);
+        model.addAttribute("canEdit", canEdit);
+        model.addAttribute("isOwner", canEdit); // Map cleanly to both context configurations
+        model.addAttribute("canHide", hasHidePermission && visibilityId != 2);
+        
+        model.addAttribute("singleRecipeAggregatedIngredients", structuredIngredients);
+        model.addAttribute("shoppingListAggregatedIngredients", structuredIngredients);
+
+        return "recipes/view";
     }
 }
