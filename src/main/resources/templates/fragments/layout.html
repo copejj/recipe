@@ -4,7 +4,7 @@
 <head th:fragment="html_head(title)">
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title th:text="${title}">Braindribbler Recipes</title>
+    <title th:text="${title} - Brain Dribbler">Brain Dribbler Recipes</title>
 
     <link rel="apple-touch-icon" sizes="180x180" th:href="@{/apple-touch-icon.png}">
     <link rel="icon" type="image/png" sizes="32x32" th:href="@{/favicon-32x32.png}">
@@ -31,7 +31,7 @@
     <header th:fragment="header" class="main-header">
         <div class="header-container">
             <h3 class="header-logo">
-                <a th:href="@{/}">Braindribbler Recipes</a>
+                <a th:href="@{/}">Brain Dribbler Recipes</a>
             </h3>
 
             <nav class="header-nav">

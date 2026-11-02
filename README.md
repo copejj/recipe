@@ -1,4 +1,4 @@
-# Recipe Dribbler (Braindribbler Recipes)
+# Recipe Dribbler (Brain Dribbler Recipes)
 
 Welcome to **Recipe Dribbler**, a modern server-side Java web application designed to help food enthusiasts view, scale, group, and share recipes seamlessly. The platform features dynamic scaling calculations, custom automated shopping list aggregations, and data-driven security-aware layouts.
 
@@ -65,4 +65,4 @@ To spin up a local instance of the application for development or testing:
    *The server will initialize locally at `http://localhost:8080`*
 
 ---
-© 2026 Braindribbler Recipes. Distributed under standard project guidelines.
+© 2026 Brain Dribbler Recipes. Distributed under standard project guidelines.

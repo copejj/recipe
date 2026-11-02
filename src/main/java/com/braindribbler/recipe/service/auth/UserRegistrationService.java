@@ -45,7 +45,6 @@ public class UserRegistrationService {
         this.roleRepository = roleRepository;
     }
 
-    // Inside com.braindribbler.recipe.service.auth.UserRegistrationService.java
     @Transactional
     public User registerNewUser(String email, String rawPassword, String firstName, String lastName,
             String displayName, Set<Role> assignedRoles) {
@@ -92,9 +91,9 @@ public class UserRegistrationService {
         UserAuth auth = user.getUserAuth();
         String verificationLink = appApiHost + "/verify?token=" + auth.getVerificationToken();
 
-        String emailSubject = "Verify your Braindribbler Recipe Account";
+        String emailSubject = "Verify your Brain Dribbler Recipe Account";
         String emailBody = "Hi " + user.getFirstName() + ",\n\n" +
-                "Thanks for joining Braindribbler Recipes! Please click the link below to verify your account:\n" +
+                "Thanks for joining Brain Dribbler Recipes! Please click the link below to verify your account:\n" +
                 verificationLink + "\n\n" +
                 "Happy Cooking!";
 
