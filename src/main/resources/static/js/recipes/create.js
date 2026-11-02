@@ -36,12 +36,14 @@ $(document).ready(function () {
 
         $("#steps-container").append(clone);
         reindexForm();
+        saveCurrentDraftToLocalStorage();
     });
 
     $(document).on("click", ".remove-step-btn", function () {
         $(this).closest(".step-card").remove();
         reindexForm();
         validateStepIngredients();
+        saveCurrentDraftToLocalStorage();
     });
 
     // --- MID-TIMELINE ELEMENT INSERTION SYSTEM ---
@@ -61,6 +63,7 @@ $(document).ready(function () {
 
         $("#steps-container").prepend(clone);
         reindexForm();
+        saveCurrentDraftToLocalStorage();
     });
 
     $(document).on("click", ".insert-step-here-btn", function (e) {
@@ -79,6 +82,7 @@ $(document).ready(function () {
 
         $(this).closest(".step-card").after(clone);
         reindexForm();
+        saveCurrentDraftToLocalStorage();
     });
 
     // --- INGREDIENT ROW MANAGEMENT ---
@@ -117,6 +121,7 @@ $(document).ready(function () {
 
         container.append($(newRowHtml));
         reindexForm();
+        saveCurrentDraftToLocalStorage();
     });
 
     $(document).on("click", ".remove-ing-btn", function () {
@@ -126,6 +131,7 @@ $(document).ready(function () {
         $row.remove();
         reindexForm();
         validateStepIngredients();
+        saveCurrentDraftToLocalStorage();
     });
 
     // --- QUICK INGREDIENT MODAL HANDLERS ---
@@ -448,29 +454,37 @@ $(document).ready(function () {
     // 1. The Autosave Listener: Debounced to save 1 second after typing stops
     var autosaveTimeout;
     $(document).on("input change select2:select", "#recipeForm input, #recipeForm textarea, #recipeForm select", function() {
-        // Skip tracking fields if it's the ID itself or hidden action flags
         if ($(this).attr('id') === 'recipeId' || $(this).attr('name') === 'actionType') return;
 
         clearTimeout(autosaveTimeout);
         autosaveTimeout = setTimeout(function() {
-            var formData = $("#recipeForm").serializeArray();
-            
-            // Track structural layout parameters to help rebuild rows accurately on load
-            var structuralData = [];
-            $("#steps-container .step-card").each(function(stepIdx) {
-                var ingCount = $(this).find(".ingredients-container .ingredient-row").length;
-                structuralData.push({ stepIndex: stepIdx, ingredientCount: ingCount });
-            });
-
-            var savePayload = {
-                formData: formData,
-                structure: structuralData,
-                timestamp: new Date().getTime()
-            };
-
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(savePayload));
+            saveCurrentDraftToLocalStorage();
         }, 1000); // 1-second delay
     });
+
+    // --- UNIFIED AUTOSAVE ENGINE FUNCTION ---
+    function saveCurrentDraftToLocalStorage() {
+        // Skip tracking fields if it's the ID itself or hidden action flags
+        if ($("#recipeId").val() === 'recipeId') return;
+
+        var formData = $("#recipeForm").serializeArray();
+        
+        // Track structural layout parameters to help rebuild rows accurately on load
+        var structuralData = [];
+        $("#steps-container .step-card").each(function(stepIdx) {
+            var ingCount = $(this).find(".ingredients-container .ingredient-row").length;
+            structuralData.push({ stepIndex: stepIdx, ingredientCount: ingCount });
+        });
+
+        var savePayload = {
+            formData: formData,
+            structure: structuralData,
+            timestamp: new Date().getTime()
+        };
+
+        localStorage.setItem("recipe_draft_autosave", JSON.stringify(savePayload));
+    }
+
 
     // 2. The Hydration Logic: Rebuilds DOM nodes and populates saved values
     function restoreRecipeDraft(savedData) {
@@ -657,7 +671,6 @@ $(document).ready(function () {
 
     // --- REALTIME FRACTION TO DECIMAL SYNCHRONIZATION ENGINE ---
     var typingSplitTimeout;
-
     // 1. Handle Whole Input changes on keyup/input with a debounced typing delay
     $(document).on("input keyup", ".whole-amount-input", function () {
         var $wrapper = $(this).closest(".amount-wrapper");
