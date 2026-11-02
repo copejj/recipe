@@ -19,7 +19,6 @@ public class RecipeUtility {
         long wholePart = amount.longValue();
         double decimalPart = amount - wholePart;
 
-        // Round to 3 decimal places to fix floating-point clipping anomalies
         decimalPart = Math.round(decimalPart * 1000.0) / 1000.0;
 
         if (decimalPart == 0)
@@ -54,10 +53,8 @@ public class RecipeUtility {
             return "";
 
         long wholePart = amount.longValue();
-        // Subtract whole part to isolate decimal remainder
         BigDecimal decimalPartBd = amount.subtract(BigDecimal.valueOf(wholePart));
 
-        // Round to 3 decimal places to smooth floating calculations
         double decimalPart = decimalPartBd.setScale(3, RoundingMode.HALF_UP).doubleValue();
 
         if (decimalPart == 0)
@@ -84,6 +81,43 @@ public class RecipeUtility {
         return (wholePart > 0 ? wholePart + " " : "") + fractionText;
     }
 
+        /**
+     * Groups ingredients strictly by their Grocery Category aisle without combining 
+     * quantities or losing individual step notes. (Solves the layout visibility bug!)
+     */
+    public static Map<String, List<RecipeStepIngredient>> groupIngredientsByGroceryCategory(List<Recipe> recipes) {
+        if (recipes == null || recipes.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<RecipeStepIngredient> flatIngredients = recipes.stream()
+                .filter(Objects::nonNull)
+                .flatMap(r -> r.getSteps().stream())
+                .filter(step -> step.getStepIngredients() != null)
+                .flatMap(step -> step.getStepIngredients().stream())
+                .filter(item -> item.getIngredient() != null && item.getMeasurement() != null)
+                .toList();
+
+        Map<GroceryCategory, List<RecipeStepIngredient>> groupedByCategoryEntity = flatIngredients.stream()
+                .collect(Collectors.groupingBy(
+                        item -> item.getIngredient().getGroceryCategory(),
+                        Collectors.toList()));
+
+        return groupedByCategoryEntity.entrySet().stream()
+                .sorted(Comparator.comparingInt(entry -> entry.getKey().getDisplayOrder()))
+                .collect(Collectors.toMap(
+                        entry -> entry.getKey().getCategoryName(),
+                        entry -> {
+                            List<RecipeStepIngredient> aisleIngredients = new ArrayList<>(entry.getValue());
+                            aisleIngredients.sort(Comparator.comparing(
+                                    item -> item.getIngredient().getIngredientName().toLowerCase()));
+                            return aisleIngredients;
+                        },
+                        (oldValue, newValue) -> oldValue,
+                        LinkedHashMap::new
+                ));
+    }
+
     /**
      * Aggregates, normalizes, and auto-promotes multi-recipe ingredient batches
      * driven entirely by your database is_promotable and is_metric configurations.
@@ -96,7 +130,6 @@ public class RecipeUtility {
             return Collections.emptyMap();
         }
 
-        // 1. Flatten all step ingredient lines
         List<RecipeStepIngredient> flatIngredients = recipes.stream()
                 .filter(Objects::nonNull)
                 .flatMap(r -> r.getSteps().stream())
@@ -105,7 +138,6 @@ public class RecipeUtility {
                 .filter(item -> item.getIngredient() != null && item.getMeasurement() != null)
                 .toList();
 
-        // 2. Accumulate base pools
         Map<Integer, BigDecimal> ingredientBaseSums = new HashMap<>();
         Map<Integer, Measurement> referenceMeasurements = new HashMap<>();
         Map<Integer, List<String>> accumulatedNotes = new HashMap<>();
@@ -125,7 +157,6 @@ public class RecipeUtility {
             }
         }
 
-        // 3. Auto-Promote Engine
         List<RecipeStepIngredient> finalShoppingList = new ArrayList<>();
 
         for (Map.Entry<Integer, BigDecimal> entry : ingredientBaseSums.entrySet()) {
@@ -139,26 +170,20 @@ public class RecipeUtility {
             Measurement optimizedTargetUnit = originalUnit;
             BigDecimal scaledFinalAmount = totalBaseAmount;
 
-            // Rule: Only attempt unit promotion if dealing with Volume(1) or Weight(2),
-            // AND only if the original unit allows promotion from the start
             if ((targetBaseTypeId.equals(1) || targetBaseTypeId.equals(2)) && originalUnit.getIsPromotable()) {
 
                 List<Measurement> candidateUnits = allMeasurementsPool.stream()
                         .filter(m -> m.getBaseType().getBaseTypeId().equals(targetBaseTypeId))
                         .filter(m -> {
-                            // Enforce strict lane separation: candidate system must match original system
-                            // exactly
                             boolean isCandidateMetric = m.getIsMetric() != null ? m.getIsMetric() : false;
                             return m.getIsPromotable() && (isCandidateMetric == isOriginalMetric);
                         })
-                        // Sort descending by scaling_rank: highest containers checked first
                         .sorted((m1, m2) -> Short.compare(m2.getScalingRank(), m1.getScalingRank()))
                         .toList();
 
                 for (Measurement candidate : candidateUnits) {
                     String unitText = candidate.getUnitName().toLowerCase().trim();
 
-                    // Guardrails: Prevents premature jumping to larger units
                     if (unitText.equals("qt") && totalBaseAmount.compareTo(BigDecimal.valueOf(946.352946)) < 0)
                         continue;
                     if (unitText.equals("gal") && totalBaseAmount.compareTo(BigDecimal.valueOf(3785.411784)) < 0)
@@ -174,8 +199,6 @@ public class RecipeUtility {
                     }
                 }
             } else {
-                // Non-promotable units (ml, l, pt) or Counts/Text scale numbers linearly but
-                // freeze the unit label!
                 optimizedTargetUnit = originalUnit;
                 scaledFinalAmount = totalBaseAmount.divide(originalUnit.getBaseUnitEquivalent(), 4,
                         RoundingMode.HALF_UP);
@@ -185,7 +208,6 @@ public class RecipeUtility {
                 scaledFinalAmount = totalBaseAmount.divide(originalUnit.getBaseUnitEquivalent(), 4, RoundingMode.HALF_UP);
             }
 
-            // Build out the final clean row mapping object
             RecipeStepIngredient shoppingItem = new RecipeStepIngredient();
             RecipeStepIngredient sample = flatIngredients.stream()
                     .filter(i -> i.getIngredient().getIngredientId().equals(ingId))
@@ -195,7 +217,14 @@ public class RecipeUtility {
             shoppingItem.setIngredient(sample.getIngredient());
             shoppingItem.setMeasurement(optimizedTargetUnit);
 
-            // Type safety check to prevent compilation casting crashes
+            List<String> notes = accumulatedNotes.get(ingId);
+            if (notes != null && !notes.isEmpty()) {
+                String joinedNotes = notes.stream()
+                        .distinct()
+                        .collect(Collectors.joining(", "));
+                shoppingItem.setIngredientNote(joinedNotes);
+            }
+
             if (sample.getAmount() instanceof BigDecimal) {
                 shoppingItem.setAmount(scaledFinalAmount);
             } else {
@@ -205,33 +234,23 @@ public class RecipeUtility {
             finalShoppingList.add(shoppingItem);
         }
 
-        // ==========================================================================
-        // 4. GROUP & SORT: Order by Grocery Display Order, then Alphabetical A-Z
-        // ==========================================================================
-
-        // Step A: Group by the full GroceryCategory domain entity object
         Map<GroceryCategory, List<RecipeStepIngredient>> groupedByCategoryEntity = finalShoppingList.stream()
                 .collect(Collectors.groupingBy(
                         item -> item.getIngredient().getGroceryCategory(),
                         Collectors.toList()));
 
-        // Step B: Sort aisle categories by displayOrder weight, and alphabetize
-        // ingredients underneath
         return groupedByCategoryEntity.entrySet().stream()
                 .sorted(Comparator.comparingInt(entry -> entry.getKey().getDisplayOrder()))
                 .collect(Collectors.toMap(
-                        // Keep your existing naming layout (returns capitalized category title string)
                         entry -> entry.getKey().getCategoryName(),
                         entry -> {
                             List<RecipeStepIngredient> aisleIngredients = entry.getValue();
-                            // Sort rows alphabetically by ingredient name underneath this aisle
                             aisleIngredients.sort(Comparator.comparing(
                                     item -> item.getIngredient().getIngredientName().toLowerCase()));
                             return aisleIngredients;
                         },
                         (oldValue, newValue) -> oldValue,
-                        LinkedHashMap::new // CRITICAL: Retains insertion order from the sorted stream
+                        LinkedHashMap::new
                 ));
     }
-
 }

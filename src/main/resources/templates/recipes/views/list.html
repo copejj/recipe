@@ -1,5 +1,5 @@
-<!-- templates/recipes/views/shopping.html -->
-<div th:fragment="shopping-view">
+<!-- templates/recipes/views/list.html -->
+<div th:fragment="list-view">
     <!-- Category Loop (Matches Controller Map Syntax Perfectly) -->
     <div th:each="entry : ${shoppingListAggregatedIngredients}" class="shopping-category-section"
         style="margin-bottom: 24px;">
@@ -34,6 +34,8 @@
 
                         <span class="oz-package-preview"
                             style="color: #6c757d; font-size: 0.9rem; font-weight: 500;"></span>
+                        
+                        <span th:text="${item.ingredientNote}" style="font-weight: 600;">Some Note</span>
                     </span>
                 </div>
             </li>
