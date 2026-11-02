@@ -19,11 +19,14 @@ $(document).ready(function () {
     // --- STEP CARD MANAGEMENT ---
     $("#add-step-btn").click(function () {
         var firstCard = $("#steps-container .step-card").first();
-        firstCard.find(".ingredient-row select:first-child").each(function () {
-            if ($(this).hasClass("select2-hidden-accessible")) { $(this).select2("destroy"); }
-        });
-
+        
+        // Clone the card
         var clone = firstCard.clone();
+        
+        clone.find(".select2-container").remove(); 
+        clone.find("select").removeClass("select2-hidden-accessible").removeAttr("data-select2-id");
+
+        // Clear values safely
         clone.find("textarea, input").val("");
         clone.find("select").prop("selectedIndex", 0);
         clone.find("input[type='hidden']").remove();
@@ -44,11 +47,11 @@ $(document).ready(function () {
         e.preventDefault();
         var firstCard = $("#steps-container .step-card").first();
         
-        firstCard.find(".ingredient-row select:first-child").each(function () {
-            if ($(this).hasClass("select2-hidden-accessible")) { $(this).select2("destroy"); }
-        });
-
         var clone = firstCard.clone();
+        
+        clone.find(".select2-container").remove();
+        clone.find("select").removeClass("select2-hidden-accessible").removeAttr("data-select2-id");
+
         clone.find("textarea, input").val("");
         clone.find("select").prop("selectedIndex", 0);
         clone.find("input[type='hidden']").remove();
@@ -62,11 +65,11 @@ $(document).ready(function () {
         e.preventDefault();
         var firstCard = $("#steps-container .step-card").first();
         
-        firstCard.find(".ingredient-row select:first-child").each(function () {
-            if ($(this).hasClass("select2-hidden-accessible")) { $(this).select2("destroy"); }
-        });
-
         var clone = firstCard.clone();
+        
+        clone.find(".select2-container").remove();
+        clone.find("select").removeClass("select2-hidden-accessible").removeAttr("data-select2-id");
+
         clone.find("textarea, input").val("");
         clone.find("select").prop("selectedIndex", 0);
         clone.find("input[type='hidden']").remove();
@@ -519,7 +522,6 @@ $(document).ready(function () {
     if (rawDraft) {
         var parsedDraft = JSON.parse(rawDraft);
         
-        // 🌟 NEW SAFETY CHECK: Find out what recipe ID is in the saved draft vs the page DOM
         var currentFormId = $("#recipeId").val() || "";
         var draftFormId = "";
         
@@ -530,7 +532,6 @@ $(document).ready(function () {
             }
         });
 
-        // 🌟 ONLY proceed if we are making a brand new recipe OR editing the exact same recipe ID
         if (currentFormId === draftFormId) {
             var hasSubstantiveContent = false;
             var totalIngredientsCount = 0;
