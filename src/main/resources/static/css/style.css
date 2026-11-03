@@ -10,22 +10,28 @@
     --color-text-label: #57534e;     /* Medium dark warm gray for form labels */
     --color-border: #e7e5e4;         /* Soft warm-gray divider line */
     --color-border-input: #d6d3d1;   /* Subtle border for input fields */
-    --color-bg-card: #ffffffbd;        /* Crisp white for recipe cards to stand out */
+    --color-bg-card: #ffffffcc;        /* Solid white ensures crisp text contrast for recipes */
     --color-bg-body: #fdfbfc;        /* Warm flour/cream background (soft on the eyes) */
     --color-bg-disabled: #f5f5f4;    /* Light disabled state */
-    --color-bg-head: #451a036b;      /* Light parchment overlay for modals */
-    --color-bg-backdrop: #af4005b0; 
-    --color-bg-foot: #533920;        /* Light warm footer background */
+    
+    /* Isolated Header, Footer & Backdrop Elements (Matched to Crust Photo) */
+    --color-bg-head: #2d1302;        /* Rich, deeply baked mahogany mid-tone from the crust */
+    --color-bg-foot: #1c0a01;        /* Blistered near-black char tone from the top ridge */
+    --color-bg-backdrop: #421a05cc;  /* Deep toasted-amber overlay for backdrops (80% opacity) */
+    
+    /* Dedicated Text Color Tokens for Isolated Dark Components */
+    --color-text-head: #fef9c3;      /* Soft, buttery yellow-white for header links */
+    --color-text-foot: #e7e5e4;      /* Soft crumb warm-gray for legible footer metadata */
 
     /* Theme Layout Color Tokens */
-    --color-dark-bg: #451a03;        /* Deep molasses/dark chocolate for dark sections */
-    --color-dark-border: #78350f;   /* Toasted brown border for dark sections */
-    --color-profile-dark-btn: #78350f;/* Rich brown for dark-themed profile buttons */
+    --color-dark-bg: #2d1302;        /* Deep molasses/dark chocolate for dark sections */
+    --color-dark-border: #5c2707;    /* Toasted brown border for dark sections */
+    --color-profile-dark-btn: #5c2707;/* Rich brown for dark-themed profile buttons */
 
-    /* Global Typography System (Optional: Swapped to a friendlier font stack for recipes) */
+    /* Global Typography System */
     --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Georgia, serif;
 
-    /* Functional Notification & Alert Colors (Softened slightly to match the warm vibe) */
+    /* Functional Notification & Alert Colors */
     --color-success-text: #14532d;
     --color-success-bg: #f0fdf4;
     --color-success-border: #bbf7d0;
@@ -45,7 +51,18 @@
 
     --color-badge-blue-text: #b45309; /* Re-purposed to a "baking tip" amber badge */
     --color-badge-blue-bg: #fef3c7;  /* Soft golden badge background */
+
+    /* Isolated Header, Footer & Backdrop Elements (Matched to Crust Photo) */
+    --color-bg-head: #2d130280;        /* Rich, deeply baked mahogany mid-tone */
+    --color-bg-head-light: #52220499;  /* NEW: Warm toasted golden-brown variation */
+    --color-bg-foot: #110600c2;        /* Deeply blistered near-black char tone */
+    --color-bg-backdrop: #421a05cc;  
+    
+    /* Dedicated Text Color Tokens for Isolated Dark Components */
+    --color-text-head: #fef9c3;      
+    --color-text-foot: #e7e5e4;      
 }
+
 
 
 /* ==========================================================================
@@ -54,6 +71,45 @@
 * {
     box-sizing: border-box;
 }
+
+/* Custom Header layout mimicking caramelized crust variance */
+header, .site-header {
+    /* 1. Color Variance: Smooth diagonal gradient between the mahogany and warm toasted highlights */
+    background: linear-gradient(135deg, var(--color-bg-head) 0%, var(--color-bg-head-light) 100%);
+    color: var(--color-text-head);
+    position: relative;
+    box-shadow: inset 0 -5px 15px rgba(0, 0, 0, 0.3); /* Simulates the shadow of a deep crust ridge */
+}
+
+/* Custom Footer layout mimicking the blistered base of the loaf */
+footer, .site-footer {
+    background-color: var(--color-bg-foot);
+    color: var(--color-text-foot);
+    position: relative;
+    border-top: 2px dashed #d97706; /* Dashed line mimics a scored flour lane at the footer border */
+    box-shadow: inset 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* 2. Texture Overlay: Injected grain effect using a pseudo-element */
+header::before, footer::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100%; height: 100%;
+    opacity: 0.04; /* Keeps the texture incredibly soft and professional */
+    pointer-events: none; /* Allows clicks to pass right through to links */
+    z-index: 1;
+    
+    /* Dynamic grain pattern built purely out of browser-safe SVG noise data */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://w3.org id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Keep the navigation text sitting crisply above the texture layer */
+header > *, footer > * {
+    position: relative;
+    z-index: 2;
+}
+
 
 body {
     margin: 0;
