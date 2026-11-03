@@ -2,47 +2,51 @@
    1. GLOBAL SYSTEM VARIABLES (THEME CONFIGURATION)
    ========================================================================== */
 :root {
-    /* Brand Design Palette */
-    --color-primary: #007bff;
-    --color-primary-hover: #0056b3;
-    --color-text-dark: #212529;
-    --color-text-muted: #6c757d;
-    --color-text-label: #495057;
-    --color-border: #dee2e6;
-    --color-border-input: #ced4da;
-    --color-bg-card: #ffffff;
-    --color-bg-body: #f8f9fa;
-    --color-bg-disabled: #e9ecef;
+    /* Brand Design Palette - Golden Bakery Theme */
+    --color-primary: #d97706;        /* Warm golden-honey / bread crust */
+    --color-primary-hover: #b45309;  /* Deep amber / toasted crust */
+    --color-text-dark: #292524;      /* Soft stone-charcoal with a hint of warmth */
+    --color-text-muted: #78716c;     /* Muted warm gray for descriptions */
+    --color-text-label: #57534e;     /* Medium dark warm gray for form labels */
+    --color-border: #e7e5e4;         /* Soft warm-gray divider line */
+    --color-border-input: #d6d3d1;   /* Subtle border for input fields */
+    --color-bg-card: #ffffffbd;        /* Crisp white for recipe cards to stand out */
+    --color-bg-body: #fdfbfc;        /* Warm flour/cream background (soft on the eyes) */
+    --color-bg-disabled: #f5f5f4;    /* Light disabled state */
+    --color-bg-head: #451a036b;      /* Light parchment overlay for modals */
+    --color-bg-backdrop: #af4005b0; 
+    --color-bg-foot: #533920;        /* Light warm footer background */
 
     /* Theme Layout Color Tokens */
-    --color-dark-bg: #1a1d20;
-    --color-dark-border: #2d3238;
-    --color-profile-dark-btn: #2c3e50;
+    --color-dark-bg: #451a03;        /* Deep molasses/dark chocolate for dark sections */
+    --color-dark-border: #78350f;   /* Toasted brown border for dark sections */
+    --color-profile-dark-btn: #78350f;/* Rich brown for dark-themed profile buttons */
 
-    /* Global Typography System */
-    --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    /* Global Typography System (Optional: Swapped to a friendlier font stack for recipes) */
+    --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Georgia, serif;
 
-    /* Functional Notification & Alert Colors */
-    --color-success-text: #155724;
-    --color-success-bg: #d4edda;
-    --color-success-border: #c3e6cb;
-    --color-success-raw: #28a745;
+    /* Functional Notification & Alert Colors (Softened slightly to match the warm vibe) */
+    --color-success-text: #14532d;
+    --color-success-bg: #f0fdf4;
+    --color-success-border: #bbf7d0;
+    --color-success-raw: #22c55e;
 
-    --color-danger-text: #721c24;
-    --color-danger-bg: #f8d7da;
-    --color-danger-border: #f5c6cb;
-    --color-danger-raw: #dc3545;
+    --color-danger-text: #7f1d1d;
+    --color-danger-bg: #fef2f2;
+    --color-danger-border: #fecaca;
+    --color-danger-raw: #ef4444;
 
-    --color-info-text: #0c5460;
-    --color-info-bg: #d1ecf1;
-    --color-info-border: #bee5eb;
+    --color-info-text: #1e3a8a;
+    --color-info-bg: #eff6ff;
+    --color-info-border: #bfdbfe;
 
-    --color-warn-text: #856404;
-    --color-warn-bg: #fff3cd;
+    --color-warn-text: #713f12;      /* Deep golden brown warning text */
+    --color-warn-bg: #fef9c3;        /* Warm buttery warning background */
 
-    --color-badge-blue-text: #0369a1;
-    --color-badge-blue-bg: #e0f2fe;
+    --color-badge-blue-text: #b45309; /* Re-purposed to a "baking tip" amber badge */
+    --color-badge-blue-bg: #fef3c7;  /* Soft golden badge background */
 }
+
 
 /* ==========================================================================
    2. REUSABLE FOUNDATIONS & STRUCTURAL BASE
@@ -55,7 +59,7 @@ body {
     margin: 0;
     padding: 0;
     font-family: var(--font-family);
-    background-color: var(--color-bg-body);
+    background-color: var(--color-bg-backdrop);
     color: var(--color-text-dark);
     line-height: 1.6;
     display: flex;
@@ -82,10 +86,10 @@ p {
    ========================================================================== */
 main {
     flex: 1 0 auto;
-    width: 100%;
-    max-width: 1140px;
     margin: 40px auto;
     padding: 0 24px;
+    width: 95rem;
+    max-width: calc(100vw - 1rem);
 }
 
 /* Standardized Page Base Components (Unifies Dashboard, Home, Search views) */
@@ -93,7 +97,7 @@ main {
     background-color: var(--color-bg-card);
     border: 1px solid var(--color-border);
     border-radius: 8px;
-    padding: 40px;
+    padding: 1rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
 }
 
@@ -120,7 +124,7 @@ main {
    4. SHARED FRAGMENTS (HEADER & FOOTER)
    ========================================================================== */
 .main-header {
-    background-color: var(--color-dark-bg);
+    background-color: var(--color-bg-head);
     color: var(--color-bg-card);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
@@ -192,7 +196,7 @@ main {
     color: var(--color-text-muted);
     font-size: 0.875rem;
     border-top: 1px solid var(--color-border);
-    background-color: var(--color-bg-card);
+    background-color: var(--color-bg-foot);
     margin-top: auto;
 }
 

@@ -1,4 +1,3 @@
-
 /* src/main/resources/static/js/recipes/search-dashboard.js */
 
 $(document).ready(function () {
@@ -17,7 +16,8 @@ $(document).ready(function () {
     $('.select2-quick-add').select2({
         placeholder: "Type ingredients (e.g. Eggs, Basil)...",
         allowClear: true,
-        dropdownAutoWidth: true
+        dropdownAutoWidth: true,
+        width: '100%'
     });
 
     // Intercept dropdown selection events
@@ -37,17 +37,17 @@ $(document).ready(function () {
         selectedIngredients[ingredientId] = ingredientName;
 
         var listItemHtml =
-            '<li data-id="' + ingredientId + '" class="badge-permission" style="padding: 6px 12px; font-size: 0.9rem; border-radius: 20px; display: inline-flex; align-items: center; gap: 10px; background-color: var(--color-badge-blue-bg); color: var(--color-badge-blue-text); border: 1px solid var(--color-border); box-shadow: 0 1px 3px rgba(0,0,0,0.02); transition: all 0.15s ease;">' +
+            '<li data-id="' + ingredientId + '" class="badge-permission">' +
             '<span>' + ingredientName + '</span>' +
-            '<span class="remove-fridge-item" style="cursor: pointer; color: var(--color-text-muted); font-weight: 700; transition: color 0.1s;" onmouseover="this.style.color=\'var(--color-danger-raw)\'" onmouseout="this.style.color=\'var(--color-text-muted)\'">X</span>' +
+            '<span class="remove-fridge-item">X</span>' +
             '</li>';
 
         $('#fridgeInventoryList').append(listItemHtml);
         $('.select2-quick-add').val('').trigger('change');
         syncHiddenFormInputs();
         
-        // AUTO-SUBMIT FORM ON INGREDIENT ADD FOR REACTIVE SEARCH EXPERIENCE
-        $('#searchForm').submit(); 
+        // REFRESH CATALOG VIA AJAX FOR A SEAMLESS UX
+        refreshRecipeCatalog(); 
     });
 
     // Handle removal clicks on individual list badges
@@ -58,13 +58,13 @@ $(document).ready(function () {
         $listItem.remove();
         syncHiddenFormInputs();
         
-        // AUTO-SUBMIT FORM ON INGREDIENT REMOVAL
-        $('#searchForm').submit(); 
+        // REFRESH CATALOG VIA AJAX UPON INGREDIENT REMOVAL
+        refreshRecipeCatalog(); 
     });
 
     // INSTANTLY RETRIGGER UNIFIED SEARCH UPON CATEGORY SELECTION DEVIATION
     $(document).on('change', '#recipeCategoryFilterSelect', function () {
-        $('#searchForm').submit();
+        refreshRecipeCatalog();
     });
 
     // Maps active cache identifiers to hidden input tags
@@ -86,4 +86,41 @@ $(document).ready(function () {
             window.location.href = href;
         }
     });
+
+    // Clean Interception for manual/fallback form submissions
+    $('#searchForm').on('submit', function(event) {
+        event.preventDefault(); // Stop standard full-page reload
+        refreshRecipeCatalog();
+    });
+
+    // The AJAX function that reloads the recipe index seamlessly
+    function refreshRecipeCatalog() {
+        var $form = $('#searchForm');
+        // Build URL matching the backend parameters
+        var targetUrl = $form.attr('action') + '?' + $form.serialize();
+
+        // Dim the table components to give visual loading feedback
+        $('.table-responsive-wrapper, .index-section-header').css({
+            'opacity': '0.5',
+            'transition': 'opacity 0.15s ease'
+        });
+
+        // Fetch the updated view fragments silently over AJAX
+        $.get(targetUrl, function(responseHtml) {
+            // Parse out just the responsive table wrapper from the incoming payload
+            var newTable = $(responseHtml).find('.table-responsive-wrapper').html();
+            // Parse out the dynamic section title headers
+            var newHeader = $(responseHtml).find('.index-section-header').html();
+            
+            // Inject them back into the DOM safely
+            $('.table-responsive-wrapper').html(newTable);
+            $('.index-section-header').html(newHeader);
+
+            // Restore clarity to the updated view
+            $('.table-responsive-wrapper, .index-section-header').css('opacity', '1');
+        }).fail(function() {
+            // Fallback safety if the endpoint encounters an unexpected glitch
+            $('.table-responsive-wrapper, .index-section-header').css('opacity', '1');
+        });
+    }
 });
