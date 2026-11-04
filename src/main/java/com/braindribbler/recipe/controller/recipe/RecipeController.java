@@ -97,7 +97,7 @@ public class RecipeController {
 
         // 3. Dynamic Moderator Action Alerts
         List<String> dashboardAlerts = new ArrayList<>();
-        if (currentUser.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("can_moderate_ingredients"))) {
+        if (currentUser.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("can_moderate_recipe_metadata"))) {
             if (pendingIngredients > 0) {
                 dashboardAlerts.add("There are " + pendingIngredients
                         + " unverified ingredients in the master pool requiring moderator review.");

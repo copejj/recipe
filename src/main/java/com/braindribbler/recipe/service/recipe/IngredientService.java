@@ -222,7 +222,7 @@ public class IngredientService {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isNotModerator = auth == null || auth.getAuthorities().stream()
-                .noneMatch(a -> a.getAuthority().equals("can_moderate_ingredients"));
+                .noneMatch(a -> a.getAuthority().equals("can_moderate_recipe_metadata"));
 
         if (isNotModerator) {
             if (Boolean.TRUE.equals(ingredient.getIsLocked())) {
