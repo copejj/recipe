@@ -109,7 +109,7 @@ public class SecurityConfig {
                                         .requestMatchers("/view/**").permitAll()
 
                                         .requestMatchers("/admin/ingredients/**", "/admin/categories/**")
-                                        .hasAuthority("can_moderate_ingredients")
+                                        .hasAuthority("can_moderate_recipe_metadata")
 
                                         .requestMatchers("/admin/users/**").hasAuthority("can_manage_users")
                                         .requestMatchers("/admin/roles/**").hasAuthority("can_manage_users")
