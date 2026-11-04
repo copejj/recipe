@@ -121,6 +121,10 @@ $(document).ready(function () {
 
         container.append($(newRowHtml));
         reindexForm();
+
+        container.find(".ingredient-row:last-child select.select-width-weight-large").each(function () {
+            initializeIngredientSelect(this);
+        });
         saveCurrentDraftToLocalStorage();
     });
 
@@ -263,21 +267,28 @@ $(document).ready(function () {
             $(this).find(".ingredients-container .ingredient-row").each(function (ingIdx) {
                 var $row = $(this);
                 $row.attr("data-ing-index", ingIdx);
-                $row.find("select").eq(0).attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].ingredientId");
                 
-                // FIXED: Direct sequential array serialization bound correctly to hidden decimal target fields
+                // Targets the ingredient selector specifically by its weight class signature
+                $row.find("select.select-width-weight-large").attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].ingredientId");
+                
+                // Direct array serialization bound correctly to hidden decimal target fields
                 $row.find(".combined-decimal-amount").attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].amount");
                 
+                // Targets the measurement unit specifically by its medium weight class name
                 $row.find("select.select-width-weight-medium").attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].measurementId");
-                $row.find("input[type='text']").attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].ingredientNote");
+                
+                // Targets notes field input safely
+                $row.find("input[type='text'].select-width-weight-large").attr("name", "steps[" + stepIdx + "].ingredients[" + ingIdx + "].ingredientNote");
                 $row.find(".remove-ing-btn").show();
             });
         });
 
-        $(".ingredient-row select:first-child").each(function () {
+        // Safe re-initialization layer for select2 components
+        $(".ingredient-row select.select-width-weight-large").each(function () {
             initializeIngredientSelect(this);
         });
     }
+
 
     // --- FORM SUBMISSION LAYER ---
     $(document).on("click", "#save-stay-btn, #finish-view-btn", function (e) {
@@ -729,4 +740,72 @@ $(document).ready(function () {
         var combinedTotal = (finalWhole + finalFraction).toFixed(3);
         $wrapper.find(".combined-decimal-amount").val(combinedTotal).trigger('change');
     }
+
+        // --- QUICK INGREDIENT AJAX SUBMISSION ENGINE (Form-Urlencoded Version) ---
+    $("#quickIngredientForm").on("submit", function (e) {
+        e.preventDefault(); // Stop native HTML dialog close/reset behavior
+
+        var submitButton = $(this).find("button[type='submit']");
+        var originalText = submitButton.html();
+        submitButton.prop("disabled", true).html("Adding...");
+
+        // Map the inputs to match your Java @RequestParam bindings ("name", "groceryCategoryId", "classification")
+        var payload = {
+            name: $("#quickIngredientName").val(),
+            groceryCategoryId: $("#quickGroceryCategoryId").val(),
+            classification: $("#quickIngredientClassification").val()
+        };
+
+        // Extract XSRF/CSRF Token security layer if present
+        var token = document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN='))?.split('=');
+
+        $.ajax({
+            url: "/ingredients/quick-add",
+            type: "POST",
+            // Remove application/json content type to allow default application/x-www-form-urlencoded
+            data: payload, 
+            beforeSend: function (xhr) { 
+                if (token) xhr.setRequestHeader("X-XSRF-TOKEN", decodeURIComponent(token[1])); 
+            },
+            success: function (response) {
+                submitButton.prop("disabled", false).html(originalText);
+                
+                // Checks for the "success" flag returned by your Spring Map.of response
+                if (response.success) {
+                    var newId = response.ingredientId;
+                    var newName = response.ingredientName;
+                    var newClass = payload.classification; // Retain classification weight state
+
+                    // 1. Inject the brand new entity option into our master HTML pool template
+                    var newOptionHtml = `<option value="${newId}" data-classification="${newClass}">${newName}</option>`;
+                    $("#ingredient-options-pool").append(newOptionHtml);
+
+                    // 2. Also inject it into any active select lists currently drawn on screen
+                    $("select.select-width-weight-large").each(function() {
+                        $(this).append(newOptionHtml);
+                    });
+
+                    // 3. Clear modal inputs, close dialog box window, and fire user success toast
+                    $("#quickIngredientName").val("");
+                    $("#quickGroceryCategoryId").prop("selectedIndex", 0);
+                    
+                    var modalEl = document.getElementById("quickIngredientModal");
+                    if (modalEl) modalEl.close();
+                    
+                    showToast(`"${newName}" added successfully to selections!`, true);
+                } else {
+                    $("#modal-feedback-msg").text(response.message || "Failed to create ingredient.").show();
+                }
+            },
+            error: function (xhr) {
+                submitButton.prop("disabled", false).html(originalText);
+                var errorText = "Server error while adding ingredient.";
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorText = xhr.responseJSON.message;
+                }
+                $("#modal-feedback-msg").text(errorText).show();
+            }
+        });
+    });
+
 });

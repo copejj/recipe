@@ -1,6 +1,5 @@
 /* ==========================================================================
-   Recipe Creation Layout Stylesheet - Core Layouts & Structural Grids
-   Path: src/main/resources/static/css/recipes/create.css
+   Recipe Creation Layout Stylesheet - Part 1
    ========================================================================== */
 
 /* Toast UI Message Overlay System Component */
@@ -73,6 +72,9 @@
     color: white;
     display: none;
 }
+/* ==========================================================================
+   Recipe Creation Layout Stylesheet - Part 2
+   ========================================================================== */
 
 /* Timeline Ingredient Section Scope Container Wrappers */
 .timeline-ingredients-scope-box {
@@ -103,15 +105,11 @@
     padding: 0;
 }
 
-/* ==========================================================================
-   DESKTOP CORE ELEMENT LAYOUTS (Optimized Ratios)
-   ========================================================================== */
-
 /* Ingredient Multi-Lane Distribution Grid Layout */
 .ingredient-row {
     display: flex;
     flex-direction: row;
-    gap: 12px; /* Slightly wider layout tracking gap cushion */
+    gap: 12px;
     align-items: center;
     margin-bottom: 10px;
     background-color: #88888854;
@@ -124,7 +122,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    min-width: 0; /* CRITICAL: Allows flex containers to calculate sizing based on parent bounds */
+    min-width: 0;
 }
 
 /* OPTIMIZED GRID WEIGHT RATIOS: Giving the main Select2 box the dominant width space */
@@ -137,7 +135,9 @@
 .ingredient-row .lane-three { 
     flex: 3; 
 }
-
+/* ==========================================================================
+   Recipe Creation Layout Stylesheet - Part 3
+   ========================================================================== */
 
 /* Dynamic Split layout rules for Fraction Conversion Engine */
 .ingredient-row .amount-wrapper.fraction-split-grid {
@@ -207,15 +207,16 @@ div[aria-hidden="true"] select {
     transition: all 0.2s ease;
     width: 15rem;
 }
-
 /* ==========================================================================
-   RESTORED ORIGINAL FORM ACTIONS FOOTER BAR (Sticky Layout Component)
+   Recipe Creation Layout Stylesheet - Part 4
    ========================================================================== */
+
+/* RESTORED ORIGINAL FORM ACTIONS FOOTER BAR (Sticky Layout Component) */
 .application-form-footer-action-bar {
     position: sticky;
     bottom: 0;
     width: 100%;
-    margin: 0 auto; /* Centers it automatically inside its parent container */
+    margin: 0 auto;
     background-color: #ffffff; 
     box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08); 
     display: flex;
@@ -226,7 +227,6 @@ div[aria-hidden="true"] select {
     box-sizing: border-box;
     z-index: 9999; 
 }
-
 
 /* Add a safety padding cushion to the main container so content doesn't get buried behind the sticky footer */
 .page-card {
@@ -264,10 +264,6 @@ div[aria-hidden="true"] select {
     white-space: nowrap;
 }
 
-.page-card {
-    padding: 40px;
-}
-
 /* Modals & Select2 Overrides */
 .btn-danger-critical { background-color: #bd2130 !important; color: #ffffff !important; }
 .ingredient-row .select2-container--default .select2-selection--single { height: 42px; border: 1px solid var(--color-border-input); border-radius: 6px; display: flex; align-items: center; }
@@ -277,28 +273,183 @@ div[aria-hidden="true"] select {
 .alert-restore-banner {
     position: sticky;
     top: 0;
-    z-index: 9998; /* Sits securely under toast notifications (100000) and sticky footer (9999) */
+    z-index: 9998;
     background-color: #fff3cd;
     color: #856404;
     border: 1px solid #ffeeba;
     padding: 16px 20px;
-    border-radius: 8px; /* Keeps rounded corners when nested naturally inside columns */
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
     margin-bottom: 24px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); 
-    display: none; /* Hidden by default, shown conditionally via JS */
+    display: none;
+}
+/* ==========================================================================
+   Recipe Creation Layout Stylesheet - Part 5
+   ========================================================================== */
+
+/* WARM BAKERY INTERACTIVE DIALOG / MODAL FRAMEWORK */
+dialog.admin-modal::backdrop {
+    background-color: var(--color-bg-backdrop, #421a05cc);
+    backdrop-filter: blur(4px);
 }
 
+dialog.admin-modal {
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    background-color: #ffffff;
+    padding: 32px;
+    max-width: 600px;
+    width: 90%;
+    margin: auto;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+    color: var(--color-text-dark);
+}
+
+dialog.admin-modal h3 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 1.5rem;
+    color: var(--color-primary);
+}
+
+.modal-descriptive-subtitle {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    line-height: 1.4;
+    margin-bottom: 24px;
+}
+
+.modal-spacing-bottom-medium {
+    margin-bottom: 20px;
+}
+
+.modal-input-bold-heading-label,
+.modal-classification-section-label {
+    display: block;
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+}
+
+.input-forced-full-width {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Classification Selector Card Layout Grid */
+.modal-classification-three-column-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+/* Classification Option Buttons base style */
+.class-selector-card {
+    background-color: #fdfbfc;
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+    padding: 14px 10px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.card-description-body-text {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    line-height: 1.3;
+}
+
+/* Active State Custom Color Modifiers - Bakery Spectrum Palette */
+.class-selector-card.active.selector-card-solid {
+    border-color: var(--color-primary, #d97706);
+    background-color: #fffbeb;
+}
+.class-selector-card .heading-solid {
+    font-weight: bold;
+    color: var(--color-primary, #d97706);
+    margin-bottom: 4px;
+}
+
+.class-selector-card.active.selector-card-wet {
+    border-color: #b45309;
+    background-color: #fef3c7;
+}
+.class-selector-card .card-heading-wet {
+    font-weight: bold;
+    color: #b45309;
+    margin-bottom: 4px;
+}
+
+.class-selector-card.active.selector-card-dry {
+    border-color: #78350f;
+    background-color: #faf7f2;
+}
+.class-selector-card .card-heading-dry {
+    font-weight: bold;
+    color: #78350f;
+    margin-bottom: 4px;
+}
+/* ==========================================================================
+   Recipe Creation Layout Stylesheet - Part 6
+   ========================================================================== */
+
+/* Modal Layout Actions Row */
+.modal-footer-alignment-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 28px;
+    padding-top: 16px;
+    border-top: 1px solid var(--color-border);
+}
+
+.btn-modal-dismiss-grey {
+    background-color: var(--color-bg-disabled, #f5f5f4) !important;
+    color: var(--color-text-label, #57534e) !important;
+    border: 1px solid var(--color-border);
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-modal-submit-blue {
+    background-color: var(--color-primary, #d97706) !important;
+    color: white !important;
+    border: 1px solid var(--color-primary-hover, #b45309);
+    padding: 10px 22px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-modal-submit-blue:hover {
+    background-color: var(--color-primary-hover, #b45309) !important;
+}
 
 /* ==========================================================================
-   MOBILE MEDIA QUERY TARGETING (Declared Last to Override Cleanly)
+   MOBILE MEDIA QUERY TARGETING
    ========================================================================== */
 @media screen and (max-width: 600px) {
+    .modal-classification-three-column-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    dialog.admin-modal {
+        padding: 20px;
+    }
     
-    /* 3-Tier Row Separation Configuration */
     .template-step-card-blueprint .ingredient-row {
         flex-direction: column;
         align-items: stretch;
@@ -313,12 +464,10 @@ div[aria-hidden="true"] select {
         gap: 8px;
     }
 
-    /* Line 1 override: Let Select2 handle dynamic width values */
     .template-step-card-blueprint .ingredient-row .lane-one .select2-container {
         width: 100% !important; 
     }
 
-    /* Line 2 layout overrides */
     .template-step-card-blueprint .ingredient-row .lane-two .amount-wrapper.fraction-split-grid {
         flex: 0 0 135px;
         width: 135px;
@@ -329,7 +478,6 @@ div[aria-hidden="true"] select {
         flex: 1;
     }
 
-    /* Line 3 layout overrides */
     .template-step-card-blueprint .ingredient-row .lane-three input[type="text"] {
         flex: 1;
     }
@@ -345,7 +493,6 @@ div[aria-hidden="true"] select {
         font-size: 1.25rem;
     }
 
-    /* RESTORED ORIGINAL FOOTER SPACING CONSTRAINTS FOR MOBILE */
     .application-form-footer-action-bar {
         flex-direction: row; 
         justify-content: space-between;
@@ -374,20 +521,34 @@ div[aria-hidden="true"] select {
         margin: 0;
     }
 
-    /* Mobile Draft Banners */
     #draft-restore-alert-banner { flex-direction: column; align-items: flex-start; gap: 16px; padding: 16px; }
     #draft-restore-alert-banner > div:last-child { width: 100%; display: flex; gap: 12px; }
     #draft-restore-alert-banner button { flex: 1; text-align: center; padding: 10px 14px; font-size: 0.95rem; }
 
-    /* STACK METADATA FIELDS VERTICALLY ON PORTRAIT SCREENS */
     .metadata-split-row {
         flex-direction: column;
-        gap: 12px; /* Tightens vertical gaps slightly for smaller viewports */
+        gap: 12px;
     }
 
-    /* Force input blocks to span full available width */
     .metadata-split-row .input-flexible-fill {
         width: 100%;
-        flex: none; /* Disables horizontal flex calculation limits */
+        flex: none;
+    }
+}
+
+/* Rainbow text flash animation trigger */
+.animate-rainbow-trigger {
+    animation: rainbow-flash 0.5s ease-in-out 3; /* Flashes 3 times over 1.5 seconds */
+}
+
+@keyframes rainbow-flash {
+    0%, 100% {
+        color: var(--color-primary, #d97706);
+        transform: scale(1);
+    }
+    50% {
+        color: #dc3545; /* Temporary bright flash color (e.g., danger red or vivid accent) */
+        transform: scale(1.08); /* Slight pop/grow effect */
+        text-shadow: 0 0 8px rgba(220, 53, 69, 0.4);
     }
 }
