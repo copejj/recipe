@@ -75,6 +75,40 @@
     box-sizing: border-box;
 }
 
+/* 1. Ensure the parent containers span the full height of the viewport */
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+/* 2. Turn the body into a vertical layout engine */
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 3. Tell main to aggressively expand and fill all empty space */
+main {
+  flex: 1 0 auto; /* Shorthand for: grow to fill space, don't shrink, auto base */
+  display: flex;  /* Turn main into a flexbox too so its child can stretch */
+  flex-direction: column;
+}
+
+/* 4. Tell the card to fill the newly expanded main element */
+.page-card {
+  flex: 1; /* Forces the card to span the entire height of the expanded <main> */
+  
+  /* Optional: If you want to vertically center your hero content inside short pages */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; 
+}
+
+/* 5. Keep the footer anchored to the bottom structural floor */
+.recipe-footer {
+  flex-shrink: 0; /* Prevents the footer from getting squished on short screens */
+}
+
 /* 1. The Main Header Banner */
 .recipe-header {
   /* This creates a dark overlay gradient fading left-to-right, blending into your crust image */
@@ -82,11 +116,10 @@
     rgb(38 21 11 / 10%) 20%, 
     rgba(22, 11, 5, 0.6) 60%, 
     rgb(22 11 5 / 21%) 100% )
-  , url(/images/crusty_bread.png);
+  , url(/images/crusty_bread.jpg);
   background-size: 75rem auto !important; /* Forces image to maintain its proportions, cutting off edges rather than stretching */
   background-position: center;   /* Keeps the center of the crust in view on all screen sizes */
   background-repeat: no-repeat;  /* Prevents tiling */
-
 }
 
 .recipe-header,
@@ -126,26 +159,6 @@
   color: rgba(255, 250, 245, 0.7);
 }
 
-/* 1. Force the page to span at least the full height of the viewport */
-body {
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
-
-/* 2. Command the main tag to greedily absorb all remaining vertical empty space */
-main {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-/* 3. Instruct your content card to stretch 100% of that newly expanded space */
-.page-card {
-    flex-grow: 1;
-    /* Optional: custom background styling or borders you might already have */
-}
 
 /* Custom Header layout mimicking caramelized crust variance */
 header, .site-header {
@@ -161,7 +174,6 @@ footer, .site-footer {
     background-color: var(--color-bg-foot);
     color: var(--color-text-foot);
     position: relative;
-    border-top: 2px dashed #d97706; /* Dashed line mimics a scored flour lane at the footer border */
     box-shadow: inset 0 5px 15px rgba(0, 0, 0, 0.5);
 }
 
@@ -218,14 +230,14 @@ p {
 main {
     flex: 1 0 auto;
     margin: 1rem auto;
-    width: calc(var(--main-width) - 2rem);
+    width: var(--main-width);
 }
 
 /* Standardized Page Base Components (Unifies Dashboard, Home, Search views) */
 .page-card {
     background-color: var(--color-bg-card);
     border: 1px solid var(--color-border);
-    border-radius: 0rem 1rem;
+    border-radius: 0rem .5rem;
     padding: 2rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
 }
@@ -321,10 +333,9 @@ main {
 
 .recipe-footer {
     text-align: center;
-    padding: 30px 24px;
+    padding: 1rem;
     color: var(--color-text-muted);
     font-size: 0.875rem;
-    border-top: 1px solid var(--color-border);
     background-color: var(--color-bg-foot);
     margin-top: auto;
 }
@@ -531,6 +542,13 @@ main {
 /* ==========================================================================
    8. RESPONSIVE LAYOUT BREAKPOINTS
    ========================================================================== */
+@media (max-width: var(--main-width)) {
+    main {
+        margin: 1rem auto;
+        width: calc(var(--main-width) - 1rem);
+    }
+}
+
 @media (max-width: 768px) {
     .header-container {
         flex-direction: column;
@@ -539,12 +557,8 @@ main {
         text-align: center;
     }
 
-    main {
-        margin: 20px auto;
-    }
-
     .page-card {
-        padding: 24px;
+        padding: 1rem;
     }
 
     .page-title {
@@ -924,7 +938,6 @@ textarea {
     /* Format your administrative action panel layout to wrap on mobile frames */
     .page-card div.table-responsive-wrapper table#myRecipesTable tbody td.actions-cell {
         margin-top: 12px;
-        border-top: 1px dashed var(--color-border, #eee);
         padding-top: 12px;
         order: 5;
         /* Forces buttons block container straight to bottom stack */

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz">
+	<head th:replace="~{fragments/head :: head-fragment}">
+	</head>
+	<body>
+		<div class="full-page-content">
+			<div th:replace="~{fragments/header :: header-fragment}"></div>
+			<nav th:replace="~{fragments/navbar :: nav-fragment}"></nav>
+				<div class="content-cont table" th:classappend="${isNarrow} ? 'content-narrow' : ''">
+					<div class="container-fluid py-3">
+						<div class="mb-2">
+							<nav th:replace="~{fragments/header :: title-fragment}"></nav>
+						</div>
+						<div th:replace="~{fragments/message :: message-fragment}"></div>
+						<main layout:fragment="content"></main>
+					</div>
+				</div>
+				<footer th:replace="~{fragments/footer :: footer-fragment}"></footer>
+			<div th:replace="~{fragments/foot :: foot-fragment}"> </div>
+		</div>
+	</body>
+</html>
