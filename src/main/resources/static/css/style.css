@@ -126,6 +126,26 @@
   color: rgba(255, 250, 245, 0.7);
 }
 
+/* 1. Force the page to span at least the full height of the viewport */
+body {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* 2. Command the main tag to greedily absorb all remaining vertical empty space */
+main {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 3. Instruct your content card to stretch 100% of that newly expanded space */
+.page-card {
+    flex-grow: 1;
+    /* Optional: custom background styling or borders you might already have */
+}
 
 /* Custom Header layout mimicking caramelized crust variance */
 header, .site-header {
