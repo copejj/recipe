@@ -11,8 +11,8 @@
     <div th:replace="~{fragments/layout :: header}"></div>
 
     <main class="page-card auth-layout">
-        <h1 class="page-title" style="text-align: center;">Create Account</h1>
-        <p class="page-subtitle" style="text-align: center; margin-bottom: 20px;">Join our community of chefs</p>
+        <h1 class="page-title">Create Account</h1>
+        <p class="page-subtitle">Join our community of chefs</p>
 
         <form th:action="@{/register}" th:object="${registrationDto}" method="post">
 
@@ -68,9 +68,8 @@
                 <div th:if="${#fields.hasErrors('displayName')}" th:errors="*{displayName}" class="form-error-msg"></div>
             </div>
 
-            <!-- Honeypot Trap -->
-            <div style="display: none !important;" aria-hidden="true">
-                <label for="website">Please leave this field entirely blank:</label>
+            <div class="form-group form-group--lastlast" aria-hidden="true">
+                <label for="website" class="form-label">Website</label>
                 <input type="text" id="website" name="website" autocomplete="off" tabindex="-1" value="" />
             </div>
 
