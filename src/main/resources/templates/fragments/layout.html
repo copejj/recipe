@@ -28,7 +28,7 @@
 
 <body>
     <!-- Unified Header Fragment -->
-    <header th:fragment="header" class="main-header">
+    <header th:fragment="header" class="recipe-header">
         <div class="header-container">
             <h3 class="header-logo">
                 <a th:href="@{/}">Brain Dribbler Recipes</a>
@@ -63,7 +63,7 @@
     </header>
 
     <!-- Unified Footer Fragment -->
-    <footer th:fragment="footer" class="main-footer">
+    <footer th:fragment="footer" class="recipe-footer">
         <div class="footer-container">
             <p>&copy; <span th:text="${#temporals.year(#temporals.createNow())}">2024</span>
                 Brain Dribbler Recipes. All rights reserved.
