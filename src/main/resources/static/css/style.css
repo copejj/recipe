@@ -10,7 +10,8 @@
     --color-text-label: #57534e;     /* Medium dark warm gray for form labels */
     --color-border: #e7e5e4;         /* Soft warm-gray divider line */
     --color-border-input: #d6d3d1;   /* Subtle border for input fields */
-    --color-bg-card: #ffffffcc;        /* Solid white ensures crisp text contrast for recipes */
+    --color-bg-card: #ffffff;        /* Solid white ensures crisp text contrast for recipes */
+    --color-bg-card-tp: #ffffff45;        /* Solid white ensures crisp text contrast for recipes */
     --color-bg-body: #fdfbfc;        /* Warm flour/cream background (soft on the eyes) */
     --color-bg-disabled: #f5f5f4;    /* Light disabled state */
     
@@ -107,6 +108,7 @@ main {
 /* 5. Keep the footer anchored to the bottom structural floor */
 .recipe-footer {
   flex-shrink: 0; /* Prevents the footer from getting squished on short screens */
+  border-radius: .5rem .5rem 0 0; /* Rounds the top corners of the header for a soft crust effect */
 }
 
 /* 1. The Main Header Banner */
@@ -117,9 +119,10 @@ main {
     rgba(22, 11, 5, 0.6) 60%, 
     rgb(22 11 5 / 21%) 100% )
   , url(/images/crusty_bread.jpg);
-  background-size: 75rem auto !important; /* Forces image to maintain its proportions, cutting off edges rather than stretching */
+  background-size: var(--main-width) auto !important; /* Forces image to maintain its proportions, cutting off edges rather than stretching */
   background-position: center;   /* Keeps the center of the crust in view on all screen sizes */
   background-repeat: no-repeat;  /* Prevents tiling */
+  border-radius: 0 0 .5rem .5rem; /* Rounds the bottom corners of the header for a soft crust effect */
 }
 
 .recipe-header,
@@ -197,7 +200,6 @@ header > *, footer > * {
     z-index: 2;
 }
 
-
 body {
     margin: 0;
     padding: 0;
@@ -208,6 +210,21 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  
+  background-image: url('/images/recipe_back.jpg');
+  background-repeat: repeat;
+  background-size: 45rem;
+  background-attachment: fixed;
+  
+  opacity: 0.08; 
+  z-index: -1; 
 }
 
 /* Base Typographic Hierarchy */
@@ -237,7 +254,7 @@ main {
 .page-card {
     background-color: var(--color-bg-card);
     border: 1px solid var(--color-border);
-    border-radius: 0rem .5rem;
+    border-radius: .5rem;
     padding: 2rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
 }
@@ -256,9 +273,15 @@ main {
 
 /* Centralized Small Form Card Layouts (For Login & Registration Only) */
 .auth-layout {
-    max-width: 440px;
-    margin-top: 60px;
-    margin-bottom: 60px;
+    max-width: 100%;
+    background-color: var(--color-bg-card-tp);
+}
+
+.auth-layout .auth-container {
+    margin: 0 auto;
+    padding: 5rem 3rem;
+    background: var(--color-bg-card);
+    border-radius: 1rem;
 }
 
 /* ==========================================================================
@@ -542,13 +565,6 @@ main {
 /* ==========================================================================
    8. RESPONSIVE LAYOUT BREAKPOINTS
    ========================================================================== */
-@media (max-width: var(--main-width)) {
-    main {
-        margin: 1rem auto;
-        width: calc(var(--main-width) - 1rem);
-    }
-}
-
 @media (max-width: 768px) {
     .header-container {
         flex-direction: column;
@@ -1057,4 +1073,21 @@ nav.header-nav span.dropdown-caret {
 .register-link:hover {
     text-transform: uppercase;
     font-size: .72rem; /* Slightly smaller font size for a subtle effect */
+}
+
+@media (max-width: 75rem) {
+    .recipe-header
+    , .recipe-footer 
+    , .page-card {
+        border-radius: 0;
+    }
+}
+
+@media (max-width: 430px) {
+    .recipe-header
+    , .recipe-footer 
+    , .page-card {
+        border-radius: 0;
+        padding: 0;
+    }
 }
