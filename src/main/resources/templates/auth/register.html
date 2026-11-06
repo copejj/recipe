@@ -11,74 +11,76 @@
     <div th:replace="~{fragments/layout :: header}"></div>
 
     <main class="page-card auth-layout">
-        <h1 class="page-title">Create Account</h1>
-        <p class="page-subtitle">Join our community of chefs</p>
+        <div class="auth-container">
+            <h1 class="page-title">Create Account</h1>
+            <p class="page-subtitle">Join our community of chefs</p>
 
-        <form th:action="@{/register}" th:object="${registrationDto}" method="post">
+            <form th:action="@{/register}" th:object="${registrationDto}" method="post">
 
-            <!-- Field 1: Email Address -->
-            <div class="form-group">
-                <label for="email" class="form-label">Email Address</label>
-                <input type="email" id="email" th:field="*{email}" class="form-input" required placeholder="chef@braindribbler.com" />
-                <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="form-error-msg"></div>
-            </div>
-
-            <!-- Field 2: Password -->
-            <div class="form-group">
-                <label for="password" class="form-label">Password</label>
-                <div class="password-wrapper">
-                    <input type="password" id="password" name="password" th:field="*{password}" class="form-input" required placeholder="••••••••" autocomplete="new-password" />
-                    <button type="button" onclick="togglePasswordVisibility('password', this)" class="password-toggle-btn" aria-label="Show password">
-                        <i class="fa-solid fa-eye"></i>
-                    </button>
+                <!-- Field 1: Email Address -->
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" id="email" th:field="*{email}" class="form-input" required placeholder="chef@braindribbler.com" />
+                    <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="form-error-msg"></div>
                 </div>
-                <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="form-error-msg"></div>
-            </div>
 
-            <!-- Field 3: Confirm Password -->
-            <div class="form-group">
-                <label for="confirmPassword" class="form-label">Confirm Password</label>
-                <div class="password-wrapper">
-                    <input type="password" id="confirmPassword" name="confirmPassword" th:field="*{confirmPassword}" class="form-input" required placeholder="••••••••" autocomplete="new-password" />
-                    <button type="button" onclick="togglePasswordVisibility('confirmPassword', this)" class="password-toggle-btn" aria-label="Show password">
-                        <i class="fa-solid fa-eye"></i>
-                    </button>
+                <!-- Field 2: Password -->
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" name="password" th:field="*{password}" class="form-input" required placeholder="••••••••" autocomplete="new-password" />
+                        <button type="button" onclick="togglePasswordVisibility('password', this)" class="password-toggle-btn" aria-label="Show password">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                    <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="form-error-msg"></div>
                 </div>
-                <div th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}" class="form-error-msg"></div>
-            </div>
 
-            <!-- Field 4: First Name -->
-            <div class="form-group">
-                <label for="firstName" class="form-label">First Name</label>
-                <input type="text" id="firstName" th:field="*{firstName}" class="form-input" required placeholder="Jane" />
-                <div th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}" class="form-error-msg"></div>
-            </div>
+                <!-- Field 3: Confirm Password -->
+                <div class="form-group">
+                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="confirmPassword" name="confirmPassword" th:field="*{confirmPassword}" class="form-input" required placeholder="••••••••" autocomplete="new-password" />
+                        <button type="button" onclick="togglePasswordVisibility('confirmPassword', this)" class="password-toggle-btn" aria-label="Show password">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                    <div th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}" class="form-error-msg"></div>
+                </div>
 
-            <!-- Field 5: Last Name -->
-            <div class="form-group">
-                <label for="lastName" class="form-label">Last Name</label>
-                <input type="text" id="lastName" th:field="*{lastName}" class="form-input" required placeholder="Doe" />
-                <div th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}" class="form-error-msg"></div>
-            </div>
+                <!-- Field 4: First Name -->
+                <div class="form-group">
+                    <label for="firstName" class="form-label">First Name</label>
+                    <input type="text" id="firstName" th:field="*{firstName}" class="form-input" required placeholder="Jane" />
+                    <div th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}" class="form-error-msg"></div>
+                </div>
 
-            <!-- Field 6: Display Name -->
-            <div class="form-group form-group--last">
-                <label for="displayName" class="form-label">Display Name</label>
-                <input type="text" id="displayName" th:field="*{displayName}" class="form-input" required placeholder="SousChefJane" />
-                <div th:if="${#fields.hasErrors('displayName')}" th:errors="*{displayName}" class="form-error-msg"></div>
-            </div>
+                <!-- Field 5: Last Name -->
+                <div class="form-group">
+                    <label for="lastName" class="form-label">Last Name</label>
+                    <input type="text" id="lastName" th:field="*{lastName}" class="form-input" required placeholder="Doe" />
+                    <div th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}" class="form-error-msg"></div>
+                </div>
 
-            <div class="form-group form-group--lastlast" aria-hidden="true">
-                <label for="website" class="form-label">Website</label>
-                <input type="text" id="website" name="website" autocomplete="off" tabindex="-1" value="" />
-            </div>
+                <!-- Field 6: Display Name -->
+                <div class="form-group form-group--last">
+                    <label for="displayName" class="form-label">Display Name</label>
+                    <input type="text" id="displayName" th:field="*{displayName}" class="form-input" required placeholder="SousChefJane" />
+                    <div th:if="${#fields.hasErrors('displayName')}" th:errors="*{displayName}" class="form-error-msg"></div>
+                </div>
 
-            <button type="submit" class="btn btn--primary">Sign Up</button>
-        </form>
+                <div class="form-group form-group--lastlast" aria-hidden="true">
+                    <label for="website" class="form-label">Website</label>
+                    <input type="text" id="website" name="website" autocomplete="off" tabindex="-1" value="" />
+                </div>
 
-        <p class="auth-footer-text">
-            Already have an account? <a th:href="@{/login}" class="auth-link">Sign in here</a>
-        </p>
+                <button type="submit" class="btn btn--primary">Sign Up</button>
+            </form>
+
+            <p class="auth-footer-text">
+                Already have an account? <a th:href="@{/login}" class="auth-link">Sign in here</a>
+            </p>
+        </div>
     </main>
 
     <div th:replace="~{fragments/layout :: footer}"></div>
