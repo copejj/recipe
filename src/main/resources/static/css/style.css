@@ -275,7 +275,7 @@ p {
     flex: 1 0 auto;
     display: flex;
     flex-direction: column;
-    width: 100%;
+    margin: 1rem;
 }
 
 .content-cont.content-narrow > .container-fluid {
@@ -728,6 +728,9 @@ table.dataTable tbody td:first-child {
 
 .admin-header-flex .page-title {
     margin: 0;
+    line-height: 1.2;
+    color: var(--color-text-dark);
+    font-weight: 700;
 }
 
 .auth-layout .page-title {
@@ -1206,7 +1209,7 @@ nav.header-nav span.dropdown-caret {
 
 .admin-header-flex .page-subtitle {
     margin: 4px 0 0 0;
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     color: var(--color-text-muted, #78716c);
 }
 

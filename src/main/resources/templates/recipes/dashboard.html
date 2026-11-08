@@ -6,24 +6,10 @@
       lang="en">
 
 <head>
-    <!-- Combined seamlessly via layout patterns into "Home - Brain Dribbler Recipes" -->
     <title>Dashboard</title>
 
-    <div layout:fragment="page-title"> Welcome to <span class="brand-nobreak">Brain Dribbler Recipes</span> </div>
-    <p layout:fragment="page-subtitle"> Your personal culinary companion for organizing, scaling, and discovering meals. </p>
-</head>
-
-<body>
-    <!-- This matches the layout:fragment content slot placeholder inside fragments/layout.html -->
-    <main layout:fragment="content">
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://ultraq.net.nz"
-      layout:decorate="~{fragments/layout}"
-      lang="en">
-
-<head>
-    <title>Dashboard</title>
+    <div layout:fragment="page-title"> Welcome <span th:text="${userDisplayName != null ? userDisplayName : 'Chef'}">Chef</span>!</div>
+    <p layout:fragment="page-subtitle">My Kitchen Workspace</p>
 </head>
 
 <body>
@@ -45,14 +31,6 @@
             </div>
         </div>
 
-        <!-- Dashboard Welcome Banner -->
-        <h1 class="page-title">Welcome <span
-                th:text="${userDisplayName != null ? userDisplayName : 'Chef'}">Chef</span>!</h1>
-        <p class="page-subtitle" th:text="${message}">Security status message.</p>
-
-        <h2
-            style="margin-top: 20px; font-size: 1.5rem; border-bottom: 2px solid var(--color-border); padding-bottom: 8px;">
-            My Kitchen Workspace</h2>
         <div class="status-grid">
 
             <div class="status-item">
