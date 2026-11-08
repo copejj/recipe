@@ -1,23 +1,23 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
 
 <head>
-    <th:block th:replace="~{fragments/layout :: html_head('Add New Recipe')}"></th:block>
+    <title>Add/Edit Recipe</title>
     <link rel="stylesheet" th:href="@{/css/recipes/create.css}" />
 </head>
 
 <body>
-    <!-- Global Event Form Toast Feedback Notification Element -->
-    <div id="form-toast-notification" class="toast-notification">
-        <span id="toast-icon" class="toast-icon-badge"></span>
-        <span id="toast-message"></span>
-    </div>
-
-    <header th:replace="~{fragments/layout :: header}"></header>
-
-    <main class="page-card">
-        <h1 th:text="${isEditMode ?: false} ? 'Edit Your Recipe' : 'Create New Recipe'">Recipe Stuff</h1>
-        <p class="page-subtitle">Map out your instructions and attach step-scoped ingredients with exact quantities.</p>
+    <div layout:fragment="page-title" th:content="${isEditMode ?: false} ? 'Edit Your Recipe' : 'Create New Recipe'">Add/Edit Recipe</div>
+    <p layout:fragment="page-subtitle">Map out your instructions and attach step-scoped ingredients with exact quantities.</p>
+    
+    <main layout:fragment="content">
+        <div id="form-toast-notification" class="toast-notification">
+            <span id="toast-icon" class="toast-icon-badge"></span>
+            <span id="toast-message"></span>
+        </div>
 
         <div id="draft-restore-alert-banner" class="alert-restore-banner">
             <div>
@@ -147,7 +147,7 @@
                                             </select>
                                         </div>
 
-                                        <select th:name="|steps[${stepStat.index}].ingredients[${ingStat.index}].measurementId|"
+                                        <select th:name="|steps[${stepStat.index}].measurementId|"
                                             class="form-input select-width-weight-medium" required>
                                             <option value="">-- Unit --</option>
                                             <option th:each="m : ${measurements}" th:value="${m.measurementId}"
@@ -184,7 +184,6 @@
                 </div>
 
             </div>
-
             <hr class="dashboard-divider section-break-divider" />
             <div class="form-group global-recipe-notes-margin-box">
                 <label class="form-label label-bold-dark-theme" for="recipeNote">General Recipe Notes</label>
@@ -192,7 +191,6 @@
                     placeholder="Optional notes about presentation templates, pairing ideas, or storage parameters..."></textarea>
             </div>
 
-            <!-- Global Timeline Action Buttons Footer Bar Container -->
             <div class="form-actions-footer application-form-footer-action-bar">
                 <div class="footer-save-operations-left-cluster">
                     <button type="button" id="save-stay-btn" class="btn">Save</button>
@@ -213,17 +211,16 @@
             th:action="@{/recipes/delete/{id}(id=${recipeForm.recipeId})}" method="post"
             class="delete-recipe-form hidden-element-pool">
         </form>
+
+        <script th:src="@{/js/recipes/create.js}"></script>
     </main>
 
-    <!-- Native HTML5 Dialog Interactive Component Layer -->
     <dialog id="quickIngredientModal" class="admin-modal">
         <h3>Suggest a Missing Ingredient</h3>
         <p class="modal-descriptive-subtitle">
             Can't find your ingredient? Type it below to instantly add it to your selection drop-downs.
             It will be saved as unverified until approved by a content moderator.
         </p>
-
-        <div id="modal-feedback-msg" class="form-error-msg hidden-element-pool modal-spacing-bottom-medium"></div>
 
         <form id="quickIngredientForm" method="dialog">
             <div class="form-group modal-spacing-bottom-medium">
@@ -288,9 +285,6 @@
                 th:data-is-metric="${m.isMetric}" th:data-scaling-rank="${m.scalingRank}"></option>
         </select>
     </div>
-
-    <footer th:replace="~{fragments/layout :: footer}"></footer>
-    <script th:src="@{/js/recipes/create.js}"></script>
 </body>
 
 </html>

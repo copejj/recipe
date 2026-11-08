@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz"
@@ -8,11 +7,12 @@
 <head>
     <title>Dashboard</title>
 
-    <div layout:fragment="page-title"> Welcome <span th:text="${userDisplayName != null ? userDisplayName : 'Chef'}">Chef</span>!</div>
-    <p layout:fragment="page-subtitle">My Kitchen Workspace</p>
 </head>
 
 <body>
+    <div layout:fragment="page-title"> Welcome <span th:text="${userDisplayName != null ? userDisplayName : 'Chef'}">Chef</span>!</div>
+    <p layout:fragment="page-subtitle">My Kitchen Workspace</p>
+
     <main layout:fragment="content">
         <div th:if="${dbMessageText != null}" class="alert"
             th:classappend="${dbMessageClass != null ? dbMessageClass : 'alert--info'}"

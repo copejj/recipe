@@ -9,12 +9,10 @@
 </head>
 
 <body>
+    <div layout:fragment="page-title">My Cookbook</div>
+    <p layout:fragment="page-subtitle">Browse, review, or modify your personalized library of culinary concoctions.</p>
     <main layout:fragment="content">
-        <div th:replace="~{fragments/header-fragments :: dashboard_header(
-                'My Cookbook', 
-                'Browse, review, or modify your personalized library of culinary concoctions.',
-                ~{::cookbookButtons}
-            )}">
+        <div>
             <th:block th:fragment="cookbookButtons">
                 <a th:href="@{/recipes/create}" class="btn btn--primary"
                     style="white-space: nowrap; width: 100%; max-width: 200px; text-align: center; padding: 10px 16px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; height: 44px; box-sizing: border-box;">

@@ -1,18 +1,15 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org"
-      xmlns:layout="http://ultraq.net.nz"
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz"
       layout:decorate="~{fragments/layout}"
       lang="en">
 
 <head>
-    <!-- Hardcoded static values here guarantee the template compiler won't crash on null variables -->
     <title>Whoops</title>
-    <meta name="page-title" content="Something Went Wrong" />
-    <meta name="page-subtitle" content="Our recipe engine encountered an unexpected kitchen error." />
 </head>
 <body>
-
-    <!-- This matches the layout:fragment content slot placeholder inside fragments/layout.html -->
+    <div layout:fragment="page-title">Something Went Wrong</div>
+    <p layout:fragment="page-subtitle">Our recipe engine encountered an unexpected kitchen error.</p>
     <main layout:fragment="content" class="page-card page-card--error" 
           th:classappend="${showTechnicalDetails} ? 'other-layout' : 'auth-layout'">
 

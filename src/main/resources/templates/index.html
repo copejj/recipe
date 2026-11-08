@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz"
@@ -6,15 +5,12 @@
       lang="en">
 
 <head>
-    <!-- Combined seamlessly via layout patterns into "Home - Brain Dribbler Recipes" -->
     <title>Home</title>
-
-    <div layout:fragment="page-title"> Welcome to <span class="brand-nobreak">Brain Dribbler Recipes</span> </div>
-    <p layout:fragment="page-subtitle"> Your personal culinary companion for organizing, scaling, and discovering meals. </p>
 </head>
 
 <body>
-    <!-- This matches the layout:fragment content slot placeholder inside fragments/layout.html -->
+    <div layout:fragment="page-title"> Welcome to <span class="brand-nobreak">Brain Dribbler Recipes</span> </div>
+    <p layout:fragment="page-subtitle"> Your personal culinary companion for organizing, scaling, and discovering meals. </p>
     <main layout:fragment="content">
         <div>
             <h1 class="page-title"></h1>
