@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
 
-<head th:replace="~{fragments/layout :: html_head('My Recipes')}"></head>
+<head>
+    <title>My Recipes</title>
+</head>
 
 <body>
-    <header th:replace="~{fragments/layout :: header}"></header>
-
-    <main class="page-card">
+    <main layout:fragment="content">
         <div th:replace="~{fragments/header-fragments :: dashboard_header(
                 'My Cookbook', 
                 'Browse, review, or modify your personalized library of culinary concoctions.',
@@ -79,7 +82,6 @@
         </div>
     </main>
 
-    <footer th:replace="~{fragments/layout :: footer}"></footer>
     <script th:src="@{/js/recipes/my-list.js}"></script>
 </body>
 

@@ -1,16 +1,33 @@
-<!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
 
-<head th:replace="~{fragments/layout :: html_head('Culinary Command Center')}"></head>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
+
+<head>
+    <!-- Combined seamlessly via layout patterns into "Home - Brain Dribbler Recipes" -->
+    <title>Dashboard</title>
+
+    <div layout:fragment="page-title"> Welcome to <span class="brand-nobreak">Brain Dribbler Recipes</span> </div>
+    <p layout:fragment="page-subtitle"> Your personal culinary companion for organizing, scaling, and discovering meals. </p>
+</head>
 
 <body>
-    <header th:replace="~{fragments/layout :: header}"></header>
+    <!-- This matches the layout:fragment content slot placeholder inside fragments/layout.html -->
+    <main layout:fragment="content">
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
 
-    <main class="page-card">
+<head>
+    <title>Dashboard</title>
+</head>
 
-        <!-- ==========================================================================
-       NEW: DYNAMIC BROADCAST BANNER (Pulls directly from user_messages table)
-       ========================================================================== -->
+<body>
+    <main layout:fragment="content">
         <div th:if="${dbMessageText != null}" class="alert"
             th:classappend="${dbMessageClass != null ? dbMessageClass : 'alert--info'}"
             style="margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
@@ -33,9 +50,6 @@
                 th:text="${userDisplayName != null ? userDisplayName : 'Chef'}">Chef</span>!</h1>
         <p class="page-subtitle" th:text="${message}">Security status message.</p>
 
-        <!-- ==========================================================================
-           SECTION 1: STANDARD CULINARY WORKSPACE (Visible to All Members)
-           ========================================================================== -->
         <h2
             style="margin-top: 20px; font-size: 1.5rem; border-bottom: 2px solid var(--color-border); padding-bottom: 8px;">
             My Kitchen Workspace</h2>
@@ -146,10 +160,6 @@
 
             </div>
         </div>
-
     </main>
-
-    <footer th:replace="~{fragments/layout :: footer}"></footer>
 </body>
-
 </html>

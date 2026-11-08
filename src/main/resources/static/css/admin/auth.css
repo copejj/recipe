@@ -53,3 +53,34 @@
 .btn--terminate-sessions:hover {
     background-color: #c9302c;
 }
+
+/* Authentication Typography Overrides */
+.auth-layout .page-subtitle {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Remember Me Control Alignment Panel */
+.remember-me-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 25px;
+    cursor: pointer;
+}
+
+.remember-me-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #e67e22;
+}
+
+.remember-me-label {
+    font-size: 14px;
+    color: #444;
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: 0;
+}
+
