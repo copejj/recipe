@@ -7,7 +7,8 @@
     <title>Ingredient Moderation Queue</title>
     
     <th:block layout:fragment="page_styles">
-        <link rel="stylesheet" th:href="@{/css/admin/ingredients/queue.css}" />
+        <link rel="stylesheet" th:href="@{/css/admin/categories-list.css}" />
+        <link rel="stylesheet" th:href="@{/css/admin/ingredients-queue.css}" />
         <meta name="_csrf" th:content="${_csrf != null ? _csrf.token : ''}" />
         <meta name="_csrf_header" th:content="${_csrf != null ? _csrf.headerName : 'X-CSRF-TOKEN'}" />
     </th:block>
@@ -18,13 +19,12 @@
     <p layout:fragment="page-subtitle">Review crowd-sourced ingredient suggestions, verify food database definitions, or merge duplicate row constraints.</p>
     
     <main layout:fragment="content">
-        <div class="queue-top-panel">
-            <div class="queue-actions-row">
-                <!-- BUTTON 1: RETURN TO PENDING MODERATION QUEUE -->
-                <a th:href="@{/admin/metadata}" class="btn btn-dashboard-return">
-                    ← Metadata Dashboard
-                </a>
+        <div class="header-grid">
+            <div class="action-tray">
+                <a th:href="@{/admin/metadata}" class="btn btn-secondary">← Metadata Dashboard</a>
             </div>
+        </div>
+        <div class="queue-top-panel">
             <!-- Asynchronous Dynamic Notification Banners -->
             <div id="async-toast-alert" class="status-text--active toast-alert-banner"></div>
 

@@ -13,13 +13,11 @@
     <div layout:fragment="page-title"> Recipe Category Management </div>
     <p layout:fragment="page-subtitle"> Configure, populate, and maintain overarching meal courses, dietary preferences, and lifestyle taxonomy nodes. </p>
     <main layout:fragment="content">
-        <!-- UNIFIED RESPONSIVE HEADER GRID -->
         <div class="header-grid">
             <div class="action-tray">
                 <a th:href="@{/admin/metadata}" class="btn btn-secondary">← Metadata Dashboard</a>
             </div>
 
-            <!-- Inline Fast Add Form Deck Controller -->
             <form th:action="@{/admin/metadata/recipes/categories/add}" th:object="${newCategory}" method="post" style="width: 100%; margin: 0; box-sizing: border-box;">
                 <div class="add-category-bar">
                     <div class="input-wrapper--name" style="flex: 1;">
@@ -53,8 +51,8 @@
                 <!-- Define Header Structure -->
                 <th:block th:fragment="categoryHeaders">
                     <tr class="categories-header-row">
-                        <th style="width: 20%; text-align: left;">Actions</th>
-                        <th style="width: 65%; text-align: left;">Recipe Category Name</th>
+                        <th>Actions</th>
+                        <th>Recipe Category Name</th>
                     </tr>
                 </th:block>
 
