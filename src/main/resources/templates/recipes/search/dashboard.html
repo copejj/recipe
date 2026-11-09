@@ -1,144 +1,135 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
 
 <head>
-    <th:block th:replace="~{fragments/layout :: html_head('Recipe Discovery Hub')}"></th:block>
-    <!-- Combined externalized theme stylesheet asset with zero inline overrides -->
+    <title>Recipe Discovery Hub</title>
     <link rel="stylesheet" th:href="@{/css/recipes/search-dashboard.css}" />
 </head>
 
 <body>
-    <div th:replace="~{fragments/layout :: header}"></div >
+    <div layout:fragment="page-title">Recipe Discovery Hub</div>
+    <p layout:fragment="page-subtitle"> Browse the complete available catalog generally, or add specific ingredients and categories to find tailored meal matches. </p>
+    <main layout:fragment="content">
+        <div>
+            <h3>Unified Catalog Filters</h3>
+            <p class="filter-column-subtitle">Filter your catalog search directly by selecting an overarching recipe category type, choosing specific ingredients on hand, or combining both criteria.</p>
 
-    <main>
-        <div class="page-card">
-            <h1 class="page-title">Recipe Discovery Hub</h1>
-            <p class="page-subtitle">Browse the complete available catalog generally, or add specific ingredients and categories to find tailored meal matches.</p>
-
-            <!-- Unified Search & Filter Controls Card -->
-            <div class="panel-card">
-                <h3>Unified Catalog Filters</h3>
-                <p class="filter-column-subtitle">Filter your catalog search directly by selecting an overarching recipe category type, choosing specific ingredients on hand, or combining both criteria.</p>
-
-                <form id="searchForm" th:action="@{/search}" method="get">
-                    
-                    <!-- PARALLEL GRID LAYOUT FOR BALANCED FILTER FIELDS -->
-                    <div class="filter-row">
-                        
-                        <!-- CONTROL 1: RECIPE CATEGORY PROFILE SELECTION LINK -->
-                        <div class="filter-column">
-                            <label for="recipeCategoryFilterSelect">Filter by Recipe Category</label>
-                            <select id="recipeCategoryFilterSelect" name="recipeCategoryId" class="form-input-unified">
-                                <option value="">-- All Recipes --</option>
-                                <option th:each="cat : ${categoryPool}" 
-                                        th:value="${cat.recipeCategoryId}"
-                                        th:text="${cat.name}"
-                                        th:selected="${cat.recipeCategoryId == selectedCategoryId}">
-                                </option>
-                            </select>
-                        </div>
-
-                        <!-- CONTROL 2: INGREDIENT CONSOLE SELECTION ACCELERATOR TOOL -->
-                        <div class="filter-column">
-                            <label for="fridgeSelect">Match Ingredients on Hand</label>
-                            <select id="fridgeSelect" class="form-input select2-quick-add">
-                                <option value="">-- Type to add ingredient to checklist --</option>
-                                <option th:each="ing : ${ingredientPool}" th:value="${ing.ingredientId}"
-                                    th:text="${ing.ingredientName}"></option>
-                            </select>
-                        </div>
-
-                    </div>
-
-                    <!-- Active Ingredient Selection Tag Cloud Row Container -->
-                    <div class="badge-row-container">
-                        <ul id="fridgeInventoryList">
-                            <li th:each="ing : ${ingredientPool}"
-                                th:if="${activeFilterIds != null and activeFilterIds.contains(ing.ingredientId)}"
-                                th:data-id="${ing.ingredientId}" class="badge-permission">
-                                <span th:text="${ing.ingredientName}">Ingredient</span>
-                                <span class="remove-fridge-item">X</span>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <!-- Hidden fields wrapper tracking ingredient parameters stack bindings -->
-                    <div id="hiddenInputsContainer">
-                        <input th:each="id : ${activeFilterIds}" type="hidden" name="ingredientIds" th:value="${id}" />
-                    </div>
-
-                    <!-- Clean Form Action Navigation Footer -->
-                    <div class="filter-action-tray">
-                        <button type="submit" class="btn btn--primary btn--apply">Apply Search Filters</button>
-                        <a th:if="${isFilteredView}" th:href="@{/search}" class="btn btn--reset">Reset Dashboard</a>
-                    </div>
-                </form>
-            </div>
-
-            <!-- THE DYNAMIC CATALOG DATA TABLE INDEX -->
-            <div class="index-section-header">
-                <h2 th:if="${isFilteredView}">Filtered Recipe Matches</h2>
-                <h2 th:unless="${isFilteredView}">Browse All Available Recipes</h2>
-
-                <p class="filter-column-subtitle">
-                    <span th:if="${isFilteredView}">Showing recipes matching your active taxonomy criteria parameters.</span>
-                    <span th:unless="${isFilteredView}">Explore our complete public recipe database catalog instantly.</span>
-                </p>
-            </div>
-
-            <div class="table-responsive-wrapper">
+            <form id="searchForm" th:action="@{/search}" method="get">
                 
-                <!-- Central DataTables Layout Component Integration Hook -->
-                <div th:replace="~{fragments/datatable :: genericTable(
-                    tableId='generalIndexTable',
-                    dataList=${recipesIndexPool},
-                    headerTemplate=~{::recipeHeaders},
-                    rowTemplate=~{::recipeRow}
-                )}">
+                <!-- PARALLEL GRID LAYOUT FOR BALANCED FILTER FIELDS -->
+                <div class="filter-row">
+                    
+                    <!-- CONTROL 1: RECIPE CATEGORY PROFILE SELECTION LINK -->
+                    <div class="filter-column">
+                        <label for="recipeCategoryFilterSelect">Filter by Recipe Category</label>
+                        <select id="recipeCategoryFilterSelect" name="recipeCategoryId" class="form-input-unified">
+                            <option value="">-- All Recipes --</option>
+                            <option th:each="cat : ${categoryPool}" 
+                                    th:value="${cat.recipeCategoryId}"
+                                    th:text="${cat.name}"
+                                    th:selected="${cat.recipeCategoryId == selectedCategoryId}">
+                            </option>
+                        </select>
+                    </div>
 
-                    <!-- 1. Define Header Structure Fragment Layout -->
-                    <th:block th:fragment="recipeHeaders">
-                        <tr>
-                            <th class="col-actions">Actions</th>
-                            <th class="col-title">Recipe Title</th>
-                            <th class="col-category">Category</th>
-                            <th class="col-description">Description</th>
-                        </tr>
-                    </th:block>
-
-                    <!-- 2. Define Row Structure Fragment Layout -->
-                    <th:block th:fragment="recipeRow">
-                        <tr th:data-href="@{/view/{publicId}(publicId=${item.publicId})}">
-
-                            <td class="table-action-cell" data-label="Actions">
-                                <a th:replace="~{fragments/actions :: viewLink(targetUrl=@{/view/{publicId}(publicId=${item.publicId})})}"></a>
-                            </td>
-
-                            <td class="table-title-cell" data-label="Recipe Title">
-                                <strong th:text="${item.title}">Recipe Title</strong>
-                            </td>
-
-                            <td class="table-category-cell" data-label="Category">
-                                <span class="badge-permission table-category-badge" 
-                                      th:text="${item.recipeCategory != null ? item.recipeCategory.name : 'General'}">General</span>
-                            </td>
-
-                            <td class="table-description-cell" data-label="Description">
-                                <span th:text="${item.description != null and item.description.length() > 140} ? ${item.description.substring(0, 140)} + '...' : ${item.description}">Description snippet...</span>
-                            </td>
-                        </tr>
-                    </th:block>
+                    <!-- CONTROL 2: INGREDIENT CONSOLE SELECTION ACCELERATOR TOOL -->
+                    <div class="filter-column">
+                        <label for="fridgeSelect">Match Ingredients on Hand</label>
+                        <select id="fridgeSelect" class="form-input select2-quick-add">
+                            <option value="">-- Type to add ingredient to checklist --</option>
+                            <option th:each="ing : ${ingredientPool}" th:value="${ing.ingredientId}"
+                                th:text="${ing.ingredientName}"></option>
+                        </select>
+                    </div>
 
                 </div>
 
-            </div>
+                <!-- Active Ingredient Selection Tag Cloud Row Container -->
+                <div class="badge-row-container">
+                    <ul id="fridgeInventoryList">
+                        <li th:each="ing : ${ingredientPool}"
+                            th:if="${activeFilterIds != null and activeFilterIds.contains(ing.ingredientId)}"
+                            th:data-id="${ing.ingredientId}" class="badge-permission">
+                            <span th:text="${ing.ingredientName}">Ingredient</span>
+                            <span class="remove-fridge-item">X</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Hidden fields wrapper tracking ingredient parameters stack bindings -->
+                <div id="hiddenInputsContainer">
+                    <input th:each="id : ${activeFilterIds}" type="hidden" name="ingredientIds" th:value="${id}" />
+                </div>
+
+                <!-- Clean Form Action Navigation Footer -->
+                <div class="filter-action-tray">
+                    <button type="submit" class="btn btn--primary btn--apply">Apply Search Filters</button>
+                    <a th:if="${isFilteredView}" th:href="@{/search}" class="btn btn--reset">Reset Dashboard</a>
+                </div>
+            </form>
         </div>
+
+        <!-- THE DYNAMIC CATALOG DATA TABLE INDEX -->
+        <div class="index-section-header">
+            <h2 th:if="${isFilteredView}">Filtered Recipe Matches</h2>
+            <h2 th:unless="${isFilteredView}">Browse All Available Recipes</h2>
+
+            <p class="filter-column-subtitle">
+                <span th:if="${isFilteredView}">Showing recipes matching your active taxonomy criteria parameters.</span>
+                <span th:unless="${isFilteredView}">Explore our complete public recipe database catalog instantly.</span>
+            </p>
+        </div>
+
+        <div class="table-responsive-wrapper">
+            
+            <!-- Central DataTables Layout Component Integration Hook -->
+            <div th:replace="~{fragments/datatable :: genericTable(
+                tableId='generalIndexTable',
+                dataList=${recipesIndexPool},
+                headerTemplate=~{::recipeHeaders},
+                rowTemplate=~{::recipeRow}
+            )}">
+
+                <!-- 1. Define Header Structure Fragment Layout -->
+                <th:block th:fragment="recipeHeaders">
+                    <tr>
+                        <th class="col-actions">Actions</th>
+                        <th class="col-title">Recipe Title</th>
+                        <th class="col-category">Category</th>
+                        <th class="col-description">Description</th>
+                    </tr>
+                </th:block>
+
+                <!-- 2. Define Row Structure Fragment Layout -->
+                <th:block th:fragment="recipeRow">
+                    <tr th:data-href="@{/view/{publicId}(publicId=${item.publicId})}">
+
+                        <td class="table-action-cell" data-label="Actions">
+                            <a th:replace="~{fragments/actions :: viewLink(targetUrl=@{/view/{publicId}(publicId=${item.publicId})})}"></a>
+                        </td>
+
+                        <td class="table-title-cell" data-label="Recipe Title">
+                            <strong th:text="${item.title}">Recipe Title</strong>
+                        </td>
+
+                        <td class="table-category-cell" data-label="Category">
+                            <span class="badge-permission table-category-badge" 
+                                    th:text="${item.recipeCategory != null ? item.recipeCategory.name : 'General'}">General</span>
+                        </td>
+
+                        <td class="table-description-cell" data-label="Description">
+                            <span th:text="${item.description != null and item.description.length() > 140} ? ${item.description.substring(0, 140)} + '...' : ${item.description}">Description snippet...</span>
+                        </td>
+                    </tr>
+                </th:block>
+
+            </div>
+
+        </div>
+        <script th:src="@{/js/search-dashboard.js}"></script>
     </main>
-
-    <div th:replace="~{fragments/layout :: footer}"></div>
-
-    <!-- Call the externalized static script asset -->
-    <script th:src="@{/js/search-dashboard.js}"></script>
 </body>
-
 </html>

@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
-
+<html xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
 <head>
-    <th:block th:replace="~{fragments/layout :: html_head('Modify Role Tiers')}"></th:block>
-    <link rel="stylesheet" type="text/css" th:href="@{/css/admin/roles-edit.css}" />
+    <title>Modify Role Tiers</title>
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" type="text/css" th:href="@{/css/admin/roles-edit.css}" />
+    </th:block>
 </head>
 
 <body>
-
-    <div th:replace="~{fragments/layout :: header}"></div>
-
-    <main class="page-card">
-        <h1 class="page-title"
-            th:text="${role.roleId == null} ? 'Create Global Security Role' : 'Modify Security Role Tier'">
-            Edit Role
-        </h1>
-        <p class="page-subtitle">
-            Assign functional authority parameters and adjust platform access access tokens for this application user
-            tier.
-        </p>
-
+    <h1 layout:fragment="page-title">Edit Role</h1>
+    <p layout:fragment="page-subtitle">Assign functional authority parameters and adjust platform access access tokens for this application user tier.</p>
+    <main layout:fragment="content">
         <form th:action="@{/admin/roles/edit/{id}(id=${role.roleId})}" th:object="${role}" method="POST"
             class="role-edit-form">
             <input type="hidden" th:field="*{roleId}" />
@@ -67,12 +61,7 @@
                 <th:block th:replace="~{fragments/actions :: saveBtn(itemId=${role.roleId})}"></th:block>
                 <th:block th:replace="~{fragments/actions :: cancelLink(targetUrl=@{/admin/roles})}"></th:block>
             </div>
-
         </form>
     </main>
-
-    <div th:replace="~{fragments/layout :: footer}"></div>
-
 </body>
-
 </html>

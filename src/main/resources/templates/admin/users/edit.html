@@ -1,17 +1,18 @@
+<!-- your average page template -->
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
-
-<head th:replace="~{fragments/layout :: html_head('Modify Access')}">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
+<head>
+    <title>Modify Access</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/admin/users-edit.css}" />
 </head>
 
 <body>
-    <link rel="stylesheet" type="text/css" th:href="@{/css/admin/users-edit.css}" />
-    <div th:replace="~{fragments/layout :: header}"></div>
-
-    <main class="page-card other-layout">
-        <h1 class="page-title">Manage Permissions</h1>
-        <p class="page-subtitle" th:text="'Modifying role clusters for: ' + ${targetUser.displayName}"></p>
-
+    <div layout:fragment="page-title"> Manage Permissions </div>
+    <p layout:fragment="page-subtitle" th:text="'Modifying role clusters for: ' + ${targetUser.displayName}"> Page Subtitle text </p>
+    <main layout:fragment="content">
         <!-- Dynamic Grid Wrap Layout Structure -->
         <form th:action="@{/admin/users/edit/{publicId}/roles(publicId=${targetUser.publicId})}" method="post"
             class="workspace-form">
@@ -161,11 +162,8 @@
             th:action="@{/admin/users/delete/{publicId}(publicId=${targetUser.publicId})}" method="post"
             class="delete-user-form" style="display: none;">
         </form>
+        <script th:src="@{/js/admin/user-edit.js}"></script>
     </main>
-
-    <div th:replace="~{fragments/layout :: footer}"></div>
-
-    <script th:src="@{/js/admin/user-form.js}"></script>
 </body>
 
 </html>

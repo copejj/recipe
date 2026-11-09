@@ -1,14 +1,19 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
 
-<head th:replace="~{fragments/layout :: html_head('Home')}"></head>
+<head>
+    <title>Home</title>
+</head>
 
 <body>
-    <div th:replace="~{fragments/layout :: header}"></div>
-
-    <main>
-        <div class="page-card">
-            <h1 class="page-title">Welcome to <span class="brand-nobreak">Brain Dribbler Recipes</span></h1>
+    <div layout:fragment="page-title"> Welcome to <span class="brand-nobreak">Brain Dribbler Recipes</span> </div>
+    <p layout:fragment="page-subtitle"> Your personal culinary companion for organizing, scaling, and discovering meals. </p>
+    <main layout:fragment="content">
+        <div>
+            <h1 class="page-title"></h1>
 
             <p th:text="${message}" class="page-subtitle">Your personal culinary companion for organizing, scaling, and discovering meals.</p>
 
@@ -55,7 +60,5 @@
         </div>
     </main>
 
-    <div th:replace="~{fragments/layout :: footer}"></div>
 </body>
-
 </html>

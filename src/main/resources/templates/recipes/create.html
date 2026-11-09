@@ -1,23 +1,23 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
 
 <head>
-    <th:block th:replace="~{fragments/layout :: html_head('Add New Recipe')}"></th:block>
+    <title>Add/Edit Recipe</title>
     <link rel="stylesheet" th:href="@{/css/recipes/create.css}" />
 </head>
 
 <body>
-    <!-- Global Event Form Toast Feedback Notification Element -->
-    <div id="form-toast-notification" class="toast-notification">
-        <span id="toast-icon" class="toast-icon-badge"></span>
-        <span id="toast-message"></span>
-    </div>
-
-    <header th:replace="~{fragments/layout :: header}"></header>
-
-    <main class="page-card">
-        <h1 th:text="${isEditMode ?: false} ? 'Edit Your Recipe' : 'Create New Recipe'">Recipe Stuff</h1>
-        <p class="page-subtitle">Map out your instructions and attach step-scoped ingredients with exact quantities.</p>
+    <div layout:fragment="page-title" th:content="${isEditMode} ? 'Edit Your Recipe' : 'Create New Recipe'">Add/Edit Recipe</div>
+    <p layout:fragment="page-subtitle">Map out your instructions and attach step-scoped ingredients with exact quantities.</p>
+    
+    <main layout:fragment="content">
+        <div id="form-toast-notification" class="toast-notification">
+            <span id="toast-icon" class="toast-icon-badge"></span>
+            <span id="toast-message"></span>
+        </div>
 
         <div id="draft-restore-alert-banner" class="alert-restore-banner">
             <div>
@@ -147,7 +147,7 @@
                                             </select>
                                         </div>
 
-                                        <select th:name="|steps[${stepStat.index}].ingredients[${ingStat.index}].measurementId|"
+                                        <select th:name="|steps[${stepStat.index}].measurementId|"
                                             class="form-input select-width-weight-medium" required>
                                             <option value="">-- Unit --</option>
                                             <option th:each="m : ${measurements}" th:value="${m.measurementId}"
@@ -184,7 +184,6 @@
                 </div>
 
             </div>
-
             <hr class="dashboard-divider section-break-divider" />
             <div class="form-group global-recipe-notes-margin-box">
                 <label class="form-label label-bold-dark-theme" for="recipeNote">General Recipe Notes</label>
@@ -192,7 +191,6 @@
                     placeholder="Optional notes about presentation templates, pairing ideas, or storage parameters..."></textarea>
             </div>
 
-            <!-- Global Timeline Action Buttons Footer Bar Container -->
             <div class="form-actions-footer application-form-footer-action-bar">
                 <div class="footer-save-operations-left-cluster">
                     <button type="button" id="save-stay-btn" class="btn">Save</button>
@@ -213,84 +211,80 @@
             th:action="@{/recipes/delete/{id}(id=${recipeForm.recipeId})}" method="post"
             class="delete-recipe-form hidden-element-pool">
         </form>
-    </main>
 
-    <!-- Native HTML5 Dialog Interactive Component Layer -->
-    <dialog id="quickIngredientModal" class="admin-modal">
-        <h3>Suggest a Missing Ingredient</h3>
-        <p class="modal-descriptive-subtitle">
-            Can't find your ingredient? Type it below to instantly add it to your selection drop-downs.
-            It will be saved as unverified until approved by a content moderator.
-        </p>
+        <script th:src="@{/js/recipes/create.js}"></script>
 
-        <div id="modal-feedback-msg" class="form-error-msg hidden-element-pool modal-spacing-bottom-medium"></div>
+        <dialog id="quickIngredientModal" class="admin-modal">
+            <h3>Suggest a Missing Ingredient</h3>
+            <p class="modal-descriptive-subtitle">
+                Can't find your ingredient? Type it below to instantly add it to your selection drop-downs.
+                It will be saved as unverified until approved by a content moderator.
+            </p>
 
-        <form id="quickIngredientForm" method="dialog">
-            <div class="form-group modal-spacing-bottom-medium">
-                <label for="quickIngredientName" class="modal-input-bold-heading-label">Ingredient Name:</label>
-                <input type="text" id="quickIngredientName" class="form-input input-forced-full-width" required
-                    placeholder="e.g., Heavy Cream" />
-            </div>
-
-            <div class="form-group modal-classification-group-wrapper">
-                <label class="modal-classification-section-label">
-                    Ingredient Type & Sizing Rules:
-                </label>
-
-                <input type="hidden" id="quickIngredientClassification" name="classification" value="SOLID" />
-
-                <div class="modal-classification-three-column-grid">
-                    <button type="button" class="class-selector-card active selector-card-solid" data-value="SOLID">
-                        <div class="heading-solid">SOLID</div>
-                        <div class="card-description-body-text">Whole amounts, count variables, slices, pieces, cloves, packages.</div>
-                    </button>
-
-                    <button type="button" class="class-selector-card selector-card-wet" data-value="WET">
-                        <div class="card-heading-wet">WET / LIQUID</div>
-                        <div class="card-description-body-text">Fluids using Cups, Teaspoons, Pints, Quarts, Gallons, Fluid Ounces.</div>
-                    </button>
-
-                    <button type="button" class="class-selector-card selector-card-dry" data-value="DRY">
-                        <div class="card-heading-dry">DRY VOLUME</div>
-                        <div class="card-description-body-text">Powders, spices, or grains using Teaspoons, Tablespoons, Cups, Pounds.</div>
-                    </button>
+            <form id="quickIngredientForm" method="dialog">
+                <div class="form-group modal-spacing-bottom-medium">
+                    <label for="quickIngredientName" class="modal-input-bold-heading-label">Ingredient Name:</label>
+                    <input type="text" id="quickIngredientName" class="form-input input-forced-full-width" required
+                        placeholder="e.g., Heavy Cream" />
                 </div>
-            </div>
 
-            <div class="form-group modal-spacing-bottom-medium">
-                <label for="quickGroceryCategoryId" class="modal-input-bold-heading-label">Grocery Category:</label>
-                <select id="quickGroceryCategoryId" class="form-input input-forced-full-width" required>
-                    <option value="" disabled selected>-- Select Aisle --</option>
-                    <option th:each="cat : ${groceryCategories}" th:value="${cat.groceryCategoryId}"
-                        th:text="${cat.categoryName}"></option>
-                </select>
-            </div>
+                <div class="form-group modal-classification-group-wrapper">
+                    <label class="modal-classification-section-label">
+                        Ingredient Type & Sizing Rules:
+                    </label>
 
-            <div class="modal-actions modal-footer-alignment-row">
-                <button type="button" id="closeQuickIngBtn"
-                    class="btn btn-secondary btn-modal-dismiss-grey">Cancel</button>
-                <button type="submit" class="btn btn-primary btn-modal-submit-blue">Add Ingredient</button>
-            </div>
-        </form>
-    </dialog>
+                    <input type="hidden" id="quickIngredientClassification" name="classification" value="SOLID" />
 
-    <div class="hidden-element-pool" aria-hidden="true">
-        <select id="ingredient-options-pool" class="hidden-element-pool" style="display: none;">
-            <option value="">-- Choose Ingredient --</option>
-            <option th:each="ing : ${allIngredients}" th:value="${ing.ingredientId}" th:text="${ing.ingredientName}"
-                th:data-classification="${ing.classification.name()}"></option>
-        </select>
+                    <div class="modal-classification-three-column-grid">
+                        <button type="button" class="class-selector-card active selector-card-solid" data-value="SOLID">
+                            <div class="heading-solid">SOLID</div>
+                            <div class="card-description-body-text">Whole amounts, count variables, slices, pieces, cloves, packages.</div>
+                        </button>
 
-        <select id="measurement-options-pool" class="hidden-element-pool" style="display: none;">
-            <option value="">-- Unit --</option>
-            <option th:each="m : ${measurements}" th:value="${m.measurementId}" th:text="${m.unitName}"
-                th:data-base-type="${m.baseTypeId}" th:data-unit-id="${m.measurementId}"
-                th:data-is-metric="${m.isMetric}" th:data-scaling-rank="${m.scalingRank}"></option>
-        </select>
-    </div>
+                        <button type="button" class="class-selector-card selector-card-wet" data-value="WET">
+                            <div class="card-heading-wet">WET / LIQUID</div>
+                            <div class="card-description-body-text">Fluids using Cups, Teaspoons, Pints, Quarts, Gallons, Fluid Ounces.</div>
+                        </button>
 
-    <footer th:replace="~{fragments/layout :: footer}"></footer>
-    <script th:src="@{/js/recipes/create.js}"></script>
+                        <button type="button" class="class-selector-card selector-card-dry" data-value="DRY">
+                            <div class="card-heading-dry">DRY VOLUME</div>
+                            <div class="card-description-body-text">Powders, spices, or grains using Teaspoons, Tablespoons, Cups, Pounds.</div>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group modal-spacing-bottom-medium">
+                    <label for="quickGroceryCategoryId" class="modal-input-bold-heading-label">Grocery Category:</label>
+                    <select id="quickGroceryCategoryId" class="form-input input-forced-full-width" required>
+                        <option value="" disabled selected>-- Select Aisle --</option>
+                        <option th:each="cat : ${groceryCategories}" th:value="${cat.groceryCategoryId}"
+                            th:text="${cat.categoryName}"></option>
+                    </select>
+                </div>
+
+                <div class="modal-actions modal-footer-alignment-row">
+                    <button type="button" id="closeQuickIngBtn"
+                        class="btn btn-secondary btn-modal-dismiss-grey">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-modal-submit-blue">Add Ingredient</button>
+                </div>
+            </form>
+        </dialog>
+
+        <div class="hidden-element-pool" aria-hidden="true">
+            <select id="ingredient-options-pool" class="hidden-element-pool" style="display: none;">
+                <option value="">-- Choose Ingredient --</option>
+                <option th:each="ing : ${allIngredients}" th:value="${ing.ingredientId}" th:text="${ing.ingredientName}"
+                    th:data-classification="${ing.classification.name()}"></option>
+            </select>
+
+            <select id="measurement-options-pool" class="hidden-element-pool" style="display: none;">
+                <option value="">-- Unit --</option>
+                <option th:each="m : ${measurements}" th:value="${m.measurementId}" th:text="${m.unitName}"
+                    th:data-base-type="${m.baseTypeId}" th:data-unit-id="${m.measurementId}"
+                    th:data-is-metric="${m.isMetric}" th:data-scaling-rank="${m.scalingRank}"></option>
+            </select>
+        </div>
+    </main>
 </body>
 
 </html>

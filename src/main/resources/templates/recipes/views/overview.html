@@ -1,12 +1,7 @@
 <!-- templates/recipes/views/overview.html -->
 <div th:fragment="overview-panel" class="recipe-view-panel">
 
-    <!-- 1. RECIPE HIGH-LEVEL DESCRIPTION SECTION -->
-    <div class="recipe-description-container">
-        <p class="recipe-description-text" th:text="${recipe.description}">Mix, bake, and enjoy!</p>
-    </div>
-
-    <!-- 2. COMBINED MASTER INGREDIENTS CHECKLIST SUMMARY BOX -->
+    <!-- 1. COMBINED MASTER INGREDIENTS CHECKLIST SUMMARY BOX -->
     <div class="recipe-ingredient-card-panel">
         <h4 class="recipe-panel-heading">Ingredient Checklist</h4>
 
@@ -35,7 +30,7 @@
         </ul>
     </div>
 
-    <!-- 3. TRADITIONAL CONTINUOUS TIMELINE READING BLOCK -->
+    <!-- 2. TRADITIONAL CONTINUOUS TIMELINE READING BLOCK -->
     <div class="overview-steps-timeline">
         <h4 class="recipe-panel-heading">Preparation Instructions</h4>
         <ol>
@@ -43,7 +38,7 @@
         </ol>
     </div>
 
-    <!-- 4. GENERAL RECIPE CHEF NOTES FOOTER CARD -->
+    <!-- 3. GENERAL RECIPE CHEF NOTES FOOTER CARD -->
     <div th:if="${recipe.recipeNote != null && !recipe.recipeNote.trim().isEmpty()}" class="chef-notes-footer-card">
         <h4 class="chef-notes-heading">Notes</h4>
         <p class="chef-notes-footer-text" th:text="${recipe.recipeNote}"></p>

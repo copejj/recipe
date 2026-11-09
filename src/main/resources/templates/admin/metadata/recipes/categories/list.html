@@ -1,29 +1,23 @@
+<!-- your average page template -->
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
-
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
 <head>
-    <th:block th:replace="~{fragments/layout :: html_head('Recipe Categories')}"></th:block>
-    <!-- We can reuse your existing admin category list stylesheet configuration rules -->
+    <title>Recipe Categories</title>
     <link rel="stylesheet" th:href="@{/css/admin/categories-list.css}" />
 </head>
 
 <body>
-    <header th:replace="~{fragments/layout :: header}"></header>
-
-    <main class="page-card categories-main">
-
-        <!-- UNIFIED RESPONSIVE HEADER GRID -->
+    <div layout:fragment="page-title"> Recipe Category Management </div>
+    <p layout:fragment="page-subtitle"> Configure, populate, and maintain overarching meal courses, dietary preferences, and lifestyle taxonomy nodes. </p>
+    <main layout:fragment="content">
         <div class="header-grid">
-            <div class="header-title-block">
-                <h1 class="page-title">Recipe Category Management</h1>
-                <p class="page-subtitle">Configure, populate, and maintain overarching meal courses, dietary preferences, and lifestyle taxonomy nodes.</p>
-            </div>
-
             <div class="action-tray">
                 <a th:href="@{/admin/metadata}" class="btn btn-secondary">← Metadata Dashboard</a>
             </div>
 
-            <!-- Inline Fast Add Form Deck Controller -->
             <form th:action="@{/admin/metadata/recipes/categories/add}" th:object="${newCategory}" method="post" style="width: 100%; margin: 0; box-sizing: border-box;">
                 <div class="add-category-bar">
                     <div class="input-wrapper--name" style="flex: 1;">
@@ -57,8 +51,8 @@
                 <!-- Define Header Structure -->
                 <th:block th:fragment="categoryHeaders">
                     <tr class="categories-header-row">
-                        <th style="width: 20%; text-align: left;">Actions</th>
-                        <th style="width: 65%; text-align: left;">Recipe Category Name</th>
+                        <th>Actions</th>
+                        <th>Recipe Category Name</th>
                     </tr>
                 </th:block>
 
@@ -97,13 +91,7 @@
 
             </div>
         </div>
+        <script th:src="@{/js/admin/recipe-categories-list.js}"></script>
     </main>
-
-    <!-- Shared Footer Fragment -->
-    <div th:replace="~{fragments/layout :: footer}"></div>
-    
-    <!-- JavaScript asset initializes generic DataTable behaviors automatically -->
-    <script th:src="@{/js/admin/categories-list.js}"></script>
 </body>
-
 </html>

@@ -1,17 +1,18 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
 
-<head th:replace="~{fragments/layout :: html_head('My Recipes')}"></head>
+<head>
+    <title>My Recipes</title>
+</head>
 
 <body>
-    <header th:replace="~{fragments/layout :: header}"></header>
-
-    <main class="page-card">
-        <div th:replace="~{fragments/header-fragments :: dashboard_header(
-                'My Cookbook', 
-                'Browse, review, or modify your personalized library of culinary concoctions.',
-                ~{::cookbookButtons}
-            )}">
+    <div layout:fragment="page-title">My Cookbook</div>
+    <p layout:fragment="page-subtitle">Browse, review, or modify your personalized library of culinary concoctions.</p>
+    <main layout:fragment="content">
+        <div>
             <th:block th:fragment="cookbookButtons">
                 <a th:href="@{/recipes/create}" class="btn btn--primary"
                     style="white-space: nowrap; width: 100%; max-width: 200px; text-align: center; padding: 10px 16px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; height: 44px; box-sizing: border-box;">
@@ -77,10 +78,8 @@
             </tr>
 
         </div>
+        <script th:src="@{/js/recipes/my-list.js}"></script>
     </main>
-
-    <footer th:replace="~{fragments/layout :: footer}"></footer>
-    <script th:src="@{/js/recipes/my-list.js}"></script>
 </body>
 
 </html>

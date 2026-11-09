@@ -1,17 +1,16 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" lang="en">
-
-<head th:replace="~{fragments/layout :: html_head('Schema Migrations')}"></head>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
+<head>
+    <title>Schema Migrations</title>
+</head>
 
 <body>
-
-    <!-- Shared Navigation Header Fragment -->
-    <div th:replace="~{fragments/layout :: header}"></div>
-
-    <main class="page-card">
-        <h1 class="page-title">Database Migration History</h1>
-        <p class="page-subtitle">Monitor systemic schema DDL execution states across deployment nodes.</p>
-
+    <div layout:fragment="page-title"> Database Schema Migrations </div>
+    <p layout:fragment="page-subtitle"> Monitor systemic schema DDL execution states across deployment nodes. </p>
+    <main layout:fragment="content">
         <!-- STATE A: THE TABLE CONTEXT DOES NOT EXIST (LOCAL DEV FALLBACK STATE) -->
         <div th:if="${!tableExists}" class="alert alert--info">
             <h5 style="margin: 0 0 5px 0; font-weight: 700;">Local Environment Detected</h5>
@@ -89,16 +88,9 @@
                         </td>
                     </tr>
                 </th:block>
-
             </div>
-
         </div>
+        <script th:src="@{/js/admin/migrations.js}"></script>
     </main>
-
-    <!-- Shared Footer Fragment -->
-    <div th:replace="~{fragments/layout :: footer}"></div>
-
-    <script th:src="@{/js/admin/migrations.js}"></script>
 </body>
-
 </html>

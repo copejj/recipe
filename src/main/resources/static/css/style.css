@@ -23,6 +23,7 @@
     /* Dedicated Text Color Tokens for Isolated Dark Components */
     --color-text-head: #fef9c3;      /* Soft, buttery yellow-white for header links */
     --color-text-foot: #e7e5e4;      /* Soft crumb warm-gray for legible footer metadata */
+    --color-page-title: #76554940;
 
     /* Theme Layout Color Tokens */
     --color-dark-bg: #2d1302;        /* Deep molasses/dark chocolate for dark sections */
@@ -34,12 +35,12 @@
 
     /* Functional Notification & Alert Colors */
     --color-success-text: #14532d;
-    --color-success-bg: #f0fdf4;
+    --color-success-bg: #cfffde;
     --color-success-border: #bbf7d0;
     --color-success-raw: #22c55e;
 
     --color-danger-text: #7f1d1d;
-    --color-danger-bg: #fef2f2;
+    --color-danger-bg: #f5b5b5;
     --color-danger-border: #fecaca;
     --color-danger-raw: #ef4444;
 
@@ -97,11 +98,6 @@ main {
 
 /* 4. Tell the card to fill the newly expanded main element */
 .page-card {
-  flex: 1; /* Forces the card to span the entire height of the expanded <main> */
-  
-  /* Optional: If you want to vertically center your hero content inside short pages */
-  display: flex;
-  flex-direction: column;
   justify-content: center; 
 }
 
@@ -244,19 +240,63 @@ p {
 /* ==========================================================================
    3. SYSTEM STANDARD APP CONTAINER LAYOUTS
    ========================================================================== */
-main {
+/* 1. Ensure the parent flex container fills the viewport screen */
+.full-page-content {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+}
+/* 2. Enforce flex calculations down to the wrapper deck element */
+.content-cont {
     flex: 1 0 auto;
-    margin: 1rem auto;
-    width: var(--main-width);
+    display: flex;
+    flex-direction: column;
 }
 
-/* Standardized Page Base Components (Unifies Dashboard, Home, Search views) */
-.page-card {
-    background-color: var(--color-bg-card);
+/* 3. Force your inner Bootstrap wrapper to fill out the workspace background height */
+.content-cont > .container-fluid {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    width: var(--main-width);
+    margin: 1rem auto;
+    padding: 1rem 2rem;
+}
+
+/* 4. Force your view content to expand greedily down to your footer boundary */
+.content-cont > .container-fluid  {
     border: 1px solid var(--color-border);
-    border-radius: .5rem;
-    padding: 2rem;
+    border-radius: 1rem;
+    padding: 1rem 2rem;
+}
+
+.content-cont > .container-fluid > main {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    margin: 1rem;
+    justify-content: flex-start;
+}
+
+.content-cont.content-narrow > .container-fluid {
+    background-color: var(--color-bg-card-tp);
+}
+
+.content-cont.content-narrow > .container-fluid > main.page-card {
+    width: 28rem;
+    margin: auto;
+    background: transparent;
+}
+
+/* 5. Allow your system card component box to fully stretch */
+.page-card {
+    flex: 1 0 auto;
+    background-color: var(--color-bg-card);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+    
+    display: flex;
+    flex-direction: column;
 }
 
 .page-title {
@@ -278,8 +318,7 @@ main {
 }
 
 .auth-layout .auth-container {
-    margin: 0 auto;
-    padding: 5rem 3rem;
+    padding: 2rem 3rem;
     background: var(--color-bg-card);
     border-radius: 1rem;
 }
@@ -431,6 +470,22 @@ main {
 .btn--primary {
     background-color: var(--color-primary);
     color: var(--color-bg-card);
+}
+
+.add-primary-button {
+    white-space: nowrap;
+    width: 100%;
+    max-width: 200px;
+    text-align: center;
+    padding: 10px 16px;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center; 
+    height: 44px; 
+    box-sizing: border-box;
 }
 
 .btn--primary:hover {
@@ -690,6 +745,9 @@ table.dataTable tbody td:first-child {
 
 .admin-header-flex .page-title {
     margin: 0;
+    line-height: 1.2;
+    color: var(--color-text-dark);
+    font-weight: 700;
 }
 
 .auth-layout .page-title {
@@ -1081,4 +1139,193 @@ nav.header-nav span.dropdown-caret {
     , .page-card {
         border-radius: 0;
     }
+}
+
+/* Utility overrides to completely replace the complex, non-standard layout overrides */
+.page-card--error {
+    text-align: center;
+    padding: 5rem 3rem; /* Emulates the balanced spacing found in auth-container blocks */
+}
+.error-code {
+    font-size: 4rem;
+    font-weight: 800;
+    color: var(--color-danger-raw);
+    margin-bottom: 10px;
+}
+.error-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+.btn--error-home {
+    width: auto;
+    padding: 10px 24px;
+}
+.admin-debug-panel {
+    text-align: left;
+    font-family: monospace;
+    margin-top: 2rem;
+}
+.debug-header {
+    margin-top: 0;
+    border-bottom: 1px solid var(--color-danger-text);
+    padding-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.badge-debug-status {
+    font-size: 0.8rem;
+    background: var(--color-danger-text);
+    color: var(--color-bg-card);
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+.debug-accordion {
+    margin-top: 1rem;
+    cursor: pointer;
+}
+.debug-summary {
+    font-weight: bold;
+    padding: 0.5rem 0;
+    outline: none;
+    user-select: none;
+    color: var(--color-danger-text);
+}
+.debug-stacktrace {
+    display: block;
+    max-height: 350px;
+    overflow: auto;
+    background-color: #212529; /* Kept dark theme to preserve console log legibility */
+    color: #f8f9fa;
+    padding: 1rem;
+    margin-top: 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    line-height: 1.4rem;
+    white-space: pre;
+    word-break: normal;
+    cursor: text;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+}
+
+/* Custom additions for the updated standard dashboard layout header banner */
+.admin-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: var(--color-page-title);
+    border-radius: 1rem;
+}
+
+.admin-header-flex .page-title {
+    margin: 0;
+    font-size: 2rem;
+}
+
+.admin-header-flex .page-subtitle {
+    margin: 4px 0 0 0;
+    font-size: 1.15rem;
+    color: var(--color-text-muted, #78716c);
+}
+
+.admin-btn-group {
+    display: inline-flex;
+    gap: 10px;
+}
+
+.hide-cell {
+    display: none;
+}
+
+/* 1. Make the card the boundary for the link */
+.clickable-card {
+    position: relative; 
+    /* Optional: add a cursor pointer and smooth hover transition for the whole card */
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Optional: visual feedback when hovering anywhere on the card */
+.clickable-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.stretched-link {
+    font-size: 0.85rem; 
+    color: var(--color-primary); 
+    margin-top: 6px; 
+    text-decoration: none; 
+    font-weight: 600;
+}
+
+/* 2. The magic trick: stretch the link's pseudo-element to cover the parent */
+.stretched-link::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    pointer-events: auto;
+    content: "";
+}
+
+.danger-alert{
+    border-color: var(--color-danger-border); 
+    background-color: var(--color-danger-bg);
+}
+
+.danger-alert .alert-text{
+    color: var(--color-danger-text);
+    font-weight: 700;
+}
+
+.success-alert{
+    border-color: var(--color-success-border); 
+    background-color: var(--color-success-bg);
+}
+
+.success-alert .alert-text{
+    color: var(--color-success-text);
+    font-weight: 700;
+}
+
+/* Action Utility Toolbar Tray */
+.action-tray {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+    box-sizing: border-box;
+}
+
+.action-tray .btn {
+    width: auto;
+    min-width: 180px;
+    text-align: center;
+    text-decoration: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    line-height: 20px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.action-tray .btn-secondary {
+    background-color: var(--color-bg-body);
+    color: var(--color-text-dark);
+    border: 1px solid var(--color-border);
 }

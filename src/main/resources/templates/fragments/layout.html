@@ -1,18 +1,22 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz"
+      lang="en">
 
-<head th:fragment="html_head(title)">
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title th:text="${title} + ' - Brain Dribbler'">Brain Dribbler Recipes</title>
+    
+    <!-- Dynamically builds the tab name based on "$CONTENT_TITLE - $LAYOUT_TITLE" -->
+    <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">Brain Dribbler Recipes</title>
 
     <link rel="apple-touch-icon" sizes="180x180" th:href="@{/apple-touch-icon.png}">
     <link rel="icon" type="image/png" sizes="32x32" th:href="@{/favicon-32x32.png}">
     <link rel="icon" type="image/png" sizes="16x16" th:href="@{/favicon-16x16.png}">
     <link rel="stylesheet" th:href="@{/css/style.css}" />
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
-        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 
     <script th:src="@{/js/main.js}" defer></script>
 
@@ -27,56 +31,85 @@
 
     <link rel="preload" href="/images/crusty_bread.jpg" as="image">
     <link rel="preload" href="/images/recipe_back.jpg" as="image">
+    
+    <!-- Allows child templates to automatically append page-specific scripts or styles here -->
+    <th:block layout:fragment="page_styles"></th:block>
 </head>
 
 <body>
-    <!-- Unified Header Fragment -->
-    <header th:fragment="header" class="recipe-header">
-        <div class="header-container">
-            <h3 class="header-logo">
-                <a th:href="@{/}">Brain Dribbler Recipes</a>
-            </h3>
+    <div class="full-page-content">
+        
+        <!-- Unified Global Navbar Header -->
+        <header class="recipe-header">
+            <div class="header-container">
+                <h3 class="header-logo">
+                    <a th:href="@{/}">Brain Dribbler Recipes</a>
+                </h3>
 
-            <nav class="header-nav">
-                <th:block th:each="item : ${globalMenuItems}">
-                    <div class="nav-dropdown" th:if="${item.hasChildren()}">
-                        <button type="button" class="nav-button nav-link nav-link--cta">
-                            <span th:text="${item.label}">Dropdown Title</span>
-                            <span class="dropdown-caret">▼</span>
-                        </button>
-                        <div class="dropdown-menu">
-                            <a th:each="child : ${item.children}" th:href="@{${child.url}}" 
-                                th:class="${child.className} + ' dropdown-item'"
-                                th:text="${child.label}">Child Option</a>
+                <nav class="header-nav">
+                    <th:block th:each="item : ${globalMenuItems}">
+                        <div class="nav-dropdown" th:if="${item.hasChildren()}">
+                            <button type="button" class="nav-button nav-link nav-link--cta">
+                                <span th:text="${item.label}">Dropdown Title</span>
+                                <span class="dropdown-caret">▼</span>
+                            </button>
+                            <div class="dropdown-menu">
+                                <a th:each="child : ${item.children}" th:href="@{${child.url}}" 
+                                    th:class="${child.className} + ' dropdown-item'"
+                                    th:text="${child.label}">Child Option</a>
+                            </div>
                         </div>
+                        <a th:if="${!item.hasChildren()}" th:href="@{${item.url}}" 
+                            th:class="${item.className} + ' nav-link'"
+                            th:text="${item.label}">Standard Link</a>
+                    </th:block>
+
+                    <!-- Authentication Routing Actions -->
+                    <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="nav-logout-form">
+                        <button type="submit" class="nav-button nav-button--cta">Sign Out</button>
+                    </form>
+                    <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="nav-link nav-link--cta">Sign In</a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main Body Grid Layout Wrapper (Stretches perfectly between header and footer) -->
+        <div class="content-cont" th:classappend="${isNarrow} ? 'content-narrow' : ''">
+            <div class="container-fluid py-3 page-card">
+                
+                <!-- Standardized Dynamic Page Header Banner -->
+                <div class="admin-header-flex" th:classappend="${isHeaderless} ? 'hide-cell' : ''">
+                    <div class="header-text-group">
+                        <!-- The layout engine replaces this entire h1 block with your custom child div -->
+                        <h1 class="page-title" layout:fragment="page-title"></h1>
+                        
+                        <!-- The layout engine replaces this p element with your child page subtitle -->
+                        <p class="page-subtitle" layout:fragment="page-subtitle"></p>
                     </div>
-                    <a th:if="${!item.hasChildren()}" th:href="@{${item.url}}" 
-                        th:class="${item.className} + ' nav-link'"
-                        th:text="${item.label}">Standard Link</a>
-                </th:block>
+                    
+                    <div class="admin-btn-group">
+                        <th:block layout:fragment="page_actions"></th:block>
+                    </div>
+                </div>
 
-                <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="nav-logout-form">
-                    <button type="submit" class="nav-button nav-button--cta">
-                        Sign Out
-                    </button>
-                </form>
-                <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="nav-link nav-link--cta">Sign In</a>
-            </nav>
+                <!-- Primary Content Fragment Hook (Where the unique body card markup mounts) -->
+                <main layout:fragment="content" class="page-card"></main>
+                
+            </div>
         </div>
-    </header>
 
-    <!-- Unified Footer Fragment -->
-    <footer th:fragment="footer" class="recipe-footer">
-        <div class="footer-container">
-            <p>&copy; <span th:text="${#temporals.year(#temporals.createNow())}">2024</span>
-                Brain Dribbler Recipes. All rights reserved.
+        <!-- Unified Sticky Footer Layout floor -->
+        <footer class="recipe-footer">
+            <div class="footer-container">
+                <p>&copy; <span th:text="${#temporals.year(#temporals.createNow())}">2026</span>
+                    Brain Dribbler Recipes. All rights reserved.
+                </p>
+            </div>
+            <p th:if="${showGitInfo}" class="footer-git-info">
+                Version: <span th:text="${gitBranch}">main</span> (<span th:text="${gitHash}">abcd123</span>)
             </p>
-        </div>
-        <!-- Structural fix: Closed duplicate extra loose container div here -->
-        <p th:if="${showGitInfo}" class="footer-git-info">
-            Version: <span th:text="${gitBranch}">main</span> (<span th:text="${gitHash}">abcd123</span>)
-        </p>
-    </footer>
+        </footer>
+    </div>
+    <th:block layout:fragment="page_scripts"></th:block>
 </body>
-
 </html>

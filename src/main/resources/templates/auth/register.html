@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" lang="en">
-
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      th:with="isNarrow=true,isHeaderless=true"
+      lang="en">
 <head>
-    <th:block th:replace="~{fragments/layout :: html_head('Register')}"></th:block>
+    <title>Register</title>
     <link rel="stylesheet" th:href="@{/css/admin/auth.css}" />
 </head>
 
 <body>
-
-    <div th:replace="~{fragments/layout :: header}"></div>
-
-    <main class="page-card auth-layout">
+    <main layout:fragment="content" class="page-card auth-layout">
         <div class="auth-container">
             <h1 class="page-title">Create Account</h1>
             <p class="page-subtitle">Join our community of chefs</p>

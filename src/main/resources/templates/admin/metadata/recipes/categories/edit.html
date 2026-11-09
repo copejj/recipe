@@ -1,18 +1,17 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" lang="en">
-
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
 <head>
-    <th:block th:replace="~{fragments/layout :: html_head('Edit Recipe Category')}"></th:block>
+    <title>Edit Recipe Category</title>
     <link rel="stylesheet" th:href="@{/css/admin/ingredients-edit.css}" />
 </head>
 
 <body>
-    <header th:replace="~{fragments/layout :: header}"></header>
-
-    <main class="page-card form-card">
-        <h1 class="page-title">Modify Category Node Label</h1>
-        <p class="page-subtitle">Update global system lookup properties or fix structural errors for this recipe category taxonomy definition element.</p>
-
+    <div layout:fragment="page-title"> Modify Category Label </div>
+    <p layout:fragment="page-subtitle"> Update global system lookup properties or fix structural errors for this recipe category taxonomy definition element.</p>
+    <main layout:fragment="content">
         <form th:action="@{/admin/metadata/recipes/categories/update/{id}(id=${category.recipeCategoryId})}"
               th:object="${category}" method="post" class="ingredient-entry-form">
 
@@ -30,8 +29,5 @@
 
         </form>
     </main>
-
-    <footer th:replace="~{fragments/layout :: footer}"></footer>
 </body>
-
 </html>

@@ -1,24 +1,18 @@
+<!-- your average page template -->
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
-
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
 <head>
-    <th:block th:replace="~{fragments/layout :: html_head('Edit Blacklist')}"></th:block>
-    <link rel="stylesheet" type="text/css" th:href="@{/css/admin/blacklist-edit.css}" />
+    <title>Add/Edit Blacklist</title>
+    <link rel="stylesheet" th:href="@{/css/admin/blacklist-edit.css}" />
 </head>
 
 <body>
-
-    <div th:replace="~{fragments/layout :: header}"></div>
-
-    <main class="page-card">
-        <h1 class="page-title"
-            th:text="${itemId == 0} ? 'Register New Blacklist Threat Rule' : 'Modify Security Blacklist Entry'">
-            Threat Workspace
-        </h1>
-        <p class="page-subtitle">
-            Configure strict application protection protocols to shield database queries and system interfaces.
-        </p>
-
+    <h1 layout:fragment="page-title" th:text="${itemId == 0} ? 'Register New Blacklist Threat Rule' : 'Modify Security Blacklist Entry'"> Threat Workspace </h1>
+    <p layout:fragment="page-subtitle"> Configure strict application protection protocols to shield database queries and system interfaces.  </p>
+    <main layout:fragment="content">
         <form th:action="@{/admin/blacklist/save}" th:object="${item}" method="POST" class="workspace-form-narrow">
 
             <input type="hidden" name="itemId" th:value="${itemId}" />
@@ -68,9 +62,5 @@
 
         </form>
     </main>
-
-    <div th:replace="~{fragments/layout :: footer}"></div>
-
 </body>
-
 </html>
