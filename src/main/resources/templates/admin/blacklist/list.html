@@ -1,25 +1,27 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
 
-<!-- Head routing handles loading core libraries and the global actions.css structure -->
-
-<head th:replace="~{fragments/layout :: html_head('Blacklist Registry')}"></head>
+<head>
+    <title>Blacklist Registry</title>
+</head>
 
 <body>
-
-    <!-- Shared Navigation Header Fragment -->
-    <div th:replace="~{fragments/layout :: header}"></div>
-
-    <main class="page-card">
-
-        <!-- Unified header utility block wrapper -->
-        <div class="dashboard-header-group">
-            <p class="page-subtitle">
-                Manage global server firewall security exceptions, block compromised router IP blocks, and intercept
-                automated registration spam networks.
-            </p>
-            <a th:target="_self" th:href="@{/admin/blacklist/add}"
-                class="btn btn-action btn-action--edit btn-action--header-cta">+ Add New Entry</a>
+    <div layout:fragment="page-title">Blacklist Registry</div>
+    <p layout:fragment="page-subtitle"> Manage global server firewall 
+        security exceptions, block compromised router IP blocks, and 
+        intercept automated registration spam networks.
+    </p>
+    <main layout:fragment="content">
+        <div>
+            <th:block th:fragment="cookbookButtons">
+                <a th:target="_self" th:href="@{/admin/blacklist/add}"
+                    class="btn btn--primary add-primary-button">
+                    + Add New Entry
+                </a>
+            </th:block>
         </div>
 
         <!-- Administrative Management Data Table Grid -->
@@ -82,9 +84,5 @@
 
         </div>
     </main>
-
-    <!-- Shared Footer Fragment -->
-    <div th:replace="~{fragments/layout :: footer}"></div>
 </body>
-
 </html>

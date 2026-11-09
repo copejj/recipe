@@ -1,21 +1,17 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" lang="en">
-
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
 <head>
-    <!-- Shared Layout Fragment (Handles base metadata & layout title) -->
-    <th:block th:replace="~{fragments/layout :: html_head('Login Logs')}"></th:block>
+    <title>Login Logs</title>
+    <link rel="stylesheet" th:href="@{/css/admin/login.css}" />
 </head>
 
 <body>
-
-    <!-- Shared Navigation Header Fragment -->
-    <div th:replace="~{fragments/layout :: header}"></div>
-
-    <main class="page-card">
-        <h1 class="page-title">Login Audit History</h1>
-        <p class="page-subtitle">Real-time telemetry monitoring for connection attempts, network IP whitelists, and
-            intrusion probing records.</p>
-
+    <div layout:fragment="page-title"> Login Audit History </div>
+    <p layout:fragment="page-subtitle"> Real-time telemetry monitoring for connection attempts, network IP whitelists, and intrusion probing records. </p>
+    <main layout:fragment="content">
         <!-- Whitelist Feedback Success Alert -->
         <div th:if="${param.override_success}" class="alert alert--success">
             Network IP target context has been successfully whitelisted for the next 2 hours!
@@ -109,15 +105,8 @@
                 </tbody>
             </table>
         </div>
+        <script th:src="@{/js/admin/login-history.js}"></script>
     </main>
-
-    <!-- Shared Footer Fragment -->
-    <div th:replace="~{fragments/layout :: footer}"></div>
-
-    <link rel="stylesheet" th:href="@{/css/admin/login.css}" />
-
-    <!-- Unified Script Dependencies Call Pipes -->
-    <script th:src="@{/js/admin/login-history.js}"></script>
 </body>
 
 </html>

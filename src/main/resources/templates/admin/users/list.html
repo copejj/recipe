@@ -1,23 +1,23 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" lang="en">
-
-<head th:replace="~{fragments/layout :: html_head('User Management')}"></head>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
+<head>
+    <!-- put your title here -->
+    <title>User Management</title>
+    <!-- put your css here -->
+    <link rel="stylesheet" th:href="@{/css/recipes/view.css}" />
+</head>
 
 <body>
-
-    <!-- Shared Navigation Header Fragment -->
-    <div th:replace="~{fragments/layout :: header}"></div>
-
-    <main class="page-card">
-        <h1 class="page-title">Chef Registry</h1>
-        <p class="page-subtitle">Manage system user access privileges, administrative account bans, and profile states.
-        </p>
-
-        <!-- Administrative Management Data Table Grid -->
+    <div layout:fragment="page-title"> Chef Registry </div>
+    <p layout:fragment="page-subtitle"> Manage system user access privileges, administrative account bans, and profile states. </p>
+    <main layout:fragment="content">
         <div class="admin-table-wrapper">
 
             <div th:replace="~{fragments/datatable :: genericTable(
-                tableId='chefRegistryTable',
+                tableId='userTable',
                 dataList=${chefs},
                 headerTemplate=~{::chefHeaders},
                 rowTemplate=~{::chefRow}
@@ -69,13 +69,9 @@
                         </td>
                     </tr>
                 </th:block>
-
             </div>
-
         </div>
+        <script th:src="@{/js/admin/user-list.js}"></script>
     </main>
-
-    <div th:replace="~{fragments/layout :: footer}"></div>
 </body>
-
 </html>

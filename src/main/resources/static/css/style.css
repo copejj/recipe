@@ -472,6 +472,22 @@ p {
     color: var(--color-bg-card);
 }
 
+.add-primary-button {
+    white-space: nowrap;
+    width: 100%;
+    max-width: 200px;
+    text-align: center;
+    padding: 10px 16px;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center; 
+    height: 44px; 
+    box-sizing: border-box;
+}
+
 .btn--primary:hover {
     background-color: var(--color-primary-hover);
 }
