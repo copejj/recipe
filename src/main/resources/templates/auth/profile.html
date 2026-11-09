@@ -1,19 +1,18 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
 
 <head>
-    <th:block th:replace="~{fragments/layout :: html_head('My Profile')}"></th:block>
-    <!-- Include separate auth layout styling for visibility toggles -->
+    <title>My Profile</title>
     <link rel="stylesheet" th:href="@{/css/admin/auth.css}" />
 </head>
 
 <body>
-    <div th:replace="~{fragments/layout :: header}"></div>
-
-    <main class="page-card profile-card">
-        <h1 class="page-title">Profile Settings</h1>
-        <p class="page-subtitle auth-header-spacing">Manage your chef profile information and account credentials.</p>
-
+    <div layout:fragment="page-title">Profile Settings</div>
+    <p layout:fragment="page-subtitle">Manage your profile information and account credentials.</p>
+    <main layout:fragment="content" class="profile-card">
         <!-- Dynamic Success/Error Alerts Feedback Vectors -->
         <div th:if="${successMessage}" class="alert alert--success" th:text="${successMessage}"></div>
         <div th:if="${infoMessage}" class="alert alert--info" th:text="${infoMessage}"></div>
@@ -99,11 +98,7 @@
             </form>
         </div>
 
+        <script th:src="@{/js/admin/auth.js}"></script>
     </main>
-    <div th:replace="~{fragments/layout :: footer}"></div>
-
-    <!-- Link our script engine logic safely near the end of the body node -->
-    <script th:src="@{/js/admin/auth.js}"></script>
 </body>
-
 </html>

@@ -23,6 +23,7 @@
     /* Dedicated Text Color Tokens for Isolated Dark Components */
     --color-text-head: #fef9c3;      /* Soft, buttery yellow-white for header links */
     --color-text-foot: #e7e5e4;      /* Soft crumb warm-gray for legible footer metadata */
+    --color-page-title: #76554940;
 
     /* Theme Layout Color Tokens */
     --color-dark-bg: #2d1302;        /* Deep molasses/dark chocolate for dark sections */
@@ -1194,12 +1195,14 @@ nav.header-nav span.dropdown-caret {
 
 /* Custom additions for the updated standard dashboard layout header banner */
 .admin-header-flex {
-    margin-bottom: 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     gap: 1rem;
+    padding: 1rem;
+    background-color: var(--color-page-title);
+    border-radius: 1rem;
 }
 
 .admin-header-flex .page-title {

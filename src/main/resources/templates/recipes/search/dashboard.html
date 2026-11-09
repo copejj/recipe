@@ -7,12 +7,11 @@
 <head>
     <title>Recipe Discovery Hub</title>
     <link rel="stylesheet" th:href="@{/css/recipes/search-dashboard.css}" />
-
-    <div layout:fragment="page-title">Recipe Discovery Hub</div>
-    <p layout:fragment="page-subtitle"> Browse the complete available catalog generally, or add specific ingredients and categories to find tailored meal matches. </p>
 </head>
 
 <body>
+    <div layout:fragment="page-title">Recipe Discovery Hub</div>
+    <p layout:fragment="page-subtitle"> Browse the complete available catalog generally, or add specific ingredients and categories to find tailored meal matches. </p>
     <main layout:fragment="content">
         <div>
             <h3>Unified Catalog Filters</h3>
@@ -130,10 +129,8 @@
             </div>
 
         </div>
+        <script th:src="@{/js/search-dashboard.js}"></script>
     </main>
-
-    <!-- Call the externalized static script asset -->
-    <script th:src="@{/js/search-dashboard.js}"></script>
 </body>
 
 </html>

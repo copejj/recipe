@@ -9,14 +9,10 @@
     <link rel="stylesheet" th:href="@{/css/recipes/view.css}" />
 </head>
 
-<body style="overflow-x: hidden; width: 100%; margin: 0; padding: 0;">
-    <header th:replace="~{fragments/layout :: header}"></header>
-
 <body>
     <div layout:fragment="page-title" th:text="${recipe.title}">Tasty Recipe Title</div>
-    <p layout:fragment="page-subtitle"></p>
+    <p layout:fragment="page-subtitle" th:text="${recipe.description}">Mix, bake, and enjoy!</p>
     <main layout:fragment="content">
-
         <!-- JUMBO IDENTITY HEADER WITH LIVE SCALING CONTROLLERS -->
         <div class="recipe-header-container">
             <div class="recipe-title-block">
@@ -96,13 +92,12 @@
             <div th:insert="~{recipes/views/list :: list-view}"></div>
         </div>
 
+        <script th:src="@{/js/recipes/view.js}"></script>
+
+        <script th:inline="javascript">
+            window.MEASUREMENT_MATRIX = /*[[${globalMeasurementsPool}]]*/[];
+        </script>
     </main>
-
-    <script th:src="@{/js/recipes/view.js}"></script>
-
-    <script th:inline="javascript">
-        window.MEASUREMENT_MATRIX = /*[[${globalMeasurementsPool}]]*/[];
-    </script>
 </body>
 
 </html>
