@@ -6,7 +6,9 @@
       lang="en">
 <head>
     <title>Add/Edit Blacklist</title>
-    <link rel="stylesheet" th:href="@{/css/admin/blacklist-edit.css}" />
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" th:href="@{/css/admin/blacklist-edit.css}" />
+    </th:block>
 </head>
 
 <body>
@@ -59,7 +61,6 @@
                         automatically upon submission.</p>
                 </div>
             </div>
-
         </form>
     </main>
 </body>

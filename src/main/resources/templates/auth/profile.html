@@ -6,7 +6,9 @@
 
 <head>
     <title>My Profile</title>
-    <link rel="stylesheet" th:href="@{/css/admin/auth.css}" />
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" th:href="@{/css/admin/auth.css}" />
+    </th:block>
 </head>
 
 <body>
@@ -97,8 +99,9 @@
                 </button>
             </form>
         </div>
-
-        <script th:src="@{/js/admin/auth.js}"></script>
     </main>
+    <th:block layout:fragment="page_scripts">
+        <script th:src="@{/js/admin/auth.js}"></script>
+    </th:block> 
 </body>
 </html>

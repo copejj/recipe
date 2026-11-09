@@ -5,7 +5,9 @@
       lang="en">
 <head>
     <title>Login Logs</title>
-    <link rel="stylesheet" th:href="@{/css/admin/login.css}" />
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" th:href="@{/css/admin/login.css}" />
+    </th:block>
 </head>
 
 <body>
@@ -105,8 +107,9 @@
                 </tbody>
             </table>
         </div>
-        <script th:src="@{/js/admin/login-history.js}"></script>
     </main>
+    <th:block layout:fragment="page_scripts">
+        <script th:src="@{/js/admin/login-history.js}"></script>
+    </th:block> 
 </body>
-
 </html>

@@ -6,7 +6,9 @@
 
 <head>
     <title>Recipe Discovery Hub</title>
-    <link rel="stylesheet" th:href="@{/css/recipes/search-dashboard.css}" />
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" th:href="@{/css/recipes/search-dashboard.css}" />
+    </th:block>
 </head>
 
 <body>
@@ -135,7 +137,9 @@
             </div>
 
         </div>
-        <script th:src="@{/js/search-dashboard.js}"></script>
     </main>
+    <th:block layout:fragment="page_scripts">
+        <script th:src="@{/js/search-dashboard.js}"></script>
+    </th:block> 
 </body>
 </html>

@@ -6,7 +6,9 @@
 
 <head>
     <title>Add/Edit Recipe</title>
-    <link rel="stylesheet" th:href="@{/css/recipes/create.css}" />
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" th:href="@{/css/recipes/create.css}" />
+    </th:block>
 </head>
 
 <body>
@@ -212,8 +214,6 @@
             class="delete-recipe-form hidden-element-pool">
         </form>
 
-        <script th:src="@{/js/recipes/create.js}"></script>
-
         <dialog id="quickIngredientModal" class="admin-modal">
             <h3>Suggest a Missing Ingredient</h3>
             <p class="modal-descriptive-subtitle">
@@ -285,6 +285,8 @@
             </select>
         </div>
     </main>
+    <th:block layout:fragment="page_scripts">
+        <script th:src="@{/js/recipes/create.js}"></script>
+    </th:block> 
 </body>
-
 </html>

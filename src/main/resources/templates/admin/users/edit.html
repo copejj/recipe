@@ -6,7 +6,9 @@
       lang="en">
 <head>
     <title>Modify Access</title>
-    <link rel="stylesheet" type="text/css" th:href="@{/css/admin/users-edit.css}" />
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" type="text/css" th:href="@{/css/admin/users-edit.css}" />
+    </th:block>
 </head>
 
 <body>
@@ -162,8 +164,9 @@
             th:action="@{/admin/users/delete/{publicId}(publicId=${targetUser.publicId})}" method="post"
             class="delete-user-form" style="display: none;">
         </form>
-        <script th:src="@{/js/admin/user-edit.js}"></script>
     </main>
+    <th:block layout:fragment="page_scripts">
+        <script th:src="@{/js/admin/user-edit.js}"></script>
+    </th:block> 
 </body>
-
 </html>

@@ -90,7 +90,9 @@
                 </th:block>
             </div>
         </div>
-        <script th:src="@{/js/admin/migrations.js}"></script>
     </main>
+    <th:block layout:fragment="page_scripts">
+        <script th:src="@{/js/admin/migrations.js}"></script>
+    </th:block> 
 </body>
 </html>
