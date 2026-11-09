@@ -66,8 +66,8 @@
                     <th:block th:fragment="categoryHeaders">
                         <tr class="categories-header-row">
                             <th style="text-align: left;">Actions</th>
-                            <th>Display Order</th>
-                            <th>Grocery Category Name</th>
+                            <th>Order</th>
+                            <th>Name</th>
                         </tr>
                     </th:block>
 
@@ -91,7 +91,7 @@
                             </td>
 
                             <!-- Column 2: Sequence display order weight input -->
-                            <td>
+                            <td th:data-order="${item.displayOrder}">
                                 <span style="display: none;" th:text="${item.displayOrder}">0</span>
 
                                 <!-- We generate the bracketed index strings dynamically using the object's unique ID block -->
@@ -105,7 +105,7 @@
                                     form="bulkOrderForm" required />
                             </td>
 
-                            <td>
+                            <td th:data-order="${item.categoryName}">
                                 <span style="display: none;" th:text="${item.categoryName}">Category</span>
                                 <strong class="category-title-text" th:text="${item.categoryName}">Produce</strong>
                             </td>
@@ -126,7 +126,7 @@
         </div>
     </main>
     <th:block layout:fragment="page_scripts">
-        <script th:src="@{/js/admin/categories-list.js}"></script>
+        <script th:src="@{/js/admin/grocery-categories-list.js}"></script>
     </th:block> 
 </body>
 </html>

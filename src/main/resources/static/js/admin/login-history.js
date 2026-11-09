@@ -5,12 +5,13 @@
 window.addEventListener('load', function () {
     var $ = jQuery;
 
+    var tableId = '#auditTable';
     // Safety guard tear-down preventing double-binding glitches
-    if ($.fn.DataTable.isDataTable('#auditTable')) {
-        $('#auditTable').DataTable().destroy();
+    if ($.fn.DataTable.isDataTable(tableId)) {
+        $(tableId).DataTable().destroy();
     }
 
-    var table = $('#auditTable').DataTable({
+    var table = $(tableId).DataTable({
         "order": [[0, 'desc']],
         "pageLength": 25,
         "searching": true,

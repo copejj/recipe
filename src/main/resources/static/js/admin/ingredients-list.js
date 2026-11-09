@@ -1,6 +1,6 @@
 $(document).ready(function () {
     // 1. Destroy the generic initialization so we can re-map custom layouts
-    var tableId = '#masterCategoriesTable';
+    var tableId = '#masterIngredientsTable';
     if ($.fn.DataTable.isDataTable(tableId)) {
         $(tableId).DataTable().destroy();
     }
@@ -19,9 +19,6 @@ $(document).ready(function () {
         },
         "columnDefs": [
             { "orderable": false, "targets": 0 }, // Disable sorting on actions
-            { "width": "120px", "targets": 0 },   // Snap Actions Column tight to button edge
-            { "width": "100px", "targets": 1 },    // Snap Display Order input tight
-            { "type": "num", "targets": 1 }  
         ],
         "autoWidth": false // Prevents DataTables from guessing and forcing bad layout stretching
     });
