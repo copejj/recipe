@@ -97,27 +97,33 @@
                 <th:block th:fragment="recipeHeaders">
                     <tr>
                         <th class="col-actions">Actions</th>
-                        <th class="col-title">Recipe Title</th>
                         <th class="col-category">Category</th>
+                        <th class="col-displayName">Chef</th>
+                        <th class="col-title">Recipe Title</th>
                         <th class="col-description">Description</th>
                     </tr>
                 </th:block>
 
                 <!-- 2. Define Row Structure Fragment Layout -->
                 <th:block th:fragment="recipeRow">
-                    <tr th:data-href="@{/view/{publicId}(publicId=${item.publicId})}">
+                    <tr th:data-href="@{/view/{recipeId}(recipeId=${item.recipeId})}">
 
                         <td class="table-action-cell" data-label="Actions">
-                            <a th:replace="~{fragments/actions :: viewLink(targetUrl=@{/view/{publicId}(publicId=${item.publicId})})}"></a>
-                        </td>
-
-                        <td class="table-title-cell" data-label="Recipe Title">
-                            <strong th:text="${item.title}">Recipe Title</strong>
+                            <a th:replace="~{fragments/actions :: viewLink(targetUrl=@{/view/{recipeId}(recipeId=${item.recipeId})})}"></a>
                         </td>
 
                         <td class="table-category-cell" data-label="Category">
                             <span class="badge-permission table-category-badge" 
                                     th:text="${item.recipeCategory != null ? item.recipeCategory.name : 'General'}">General</span>
+                        </td>
+
+                        <td class="table-display-name-cell" data-label="Chef">
+                            <span class="badge-permission table-chef-badge" 
+                                    th:text="${item.user.displayName != null ? item.user.displayName : 'Anonymous'}">Anonymous</span>
+                        </td>
+
+                        <td class="table-title-cell" data-label="Recipe Title" th:text="${item.title}">
+                            Recipe Title
                         </td>
 
                         <td class="table-description-cell" data-label="Description">

@@ -34,8 +34,6 @@ import com.braindribbler.recipe.service.recipe.RecipeCategoryService;
 import com.braindribbler.recipe.service.recipe.RecipeService;
 import com.braindribbler.recipe.util.RecipeUtility;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 @Controller
 public class RecipeController {
 
@@ -139,7 +137,7 @@ public class RecipeController {
         jsonResponse.put("recipeId", savedRecipe.getRecipeId());
 
         if ("FINISH".equalsIgnoreCase(actionType)) {
-            jsonResponse.put("redirectUrl", "/recipes/view/" + savedRecipe.getRecipeId());
+            jsonResponse.put("redirectUrl", "/view/" + savedRecipe.getRecipeId());
         } else {
             jsonResponse.put("redirectUrl", null);
         }
@@ -165,7 +163,7 @@ public class RecipeController {
     @PostMapping("/recipes/view/{recipeId}/hide")
     public String hideRecipeByNumericId(@PathVariable Integer recipeId) {
         recipeService.forceRecipePrivateBySequenceId(recipeId);
-        return "redirect:/recipes/view/" + recipeId;
+        return "redirect:/view/" + recipeId;
     }
 
     @GetMapping("/recipes/edit/{id}")
@@ -225,19 +223,10 @@ public class RecipeController {
         }
     }
 
-    @GetMapping("/recipes/view/{id}")
-    public String viewRecipeProfile(@PathVariable("id") Integer id, Model model, @AuthenticationPrincipal RecipeUserDetails currentUser) {
-        Recipe recipe = recipeService.getRecipeById(id);
-        if (recipe == null) return "redirect:/search?notFound";
-
-        return populateAndRenderProfileView(recipe, model, currentUser);
-    }
-
-    @GetMapping("/view/{publicId}")
-    public String viewPublicRecipe(@PathVariable("publicId") String publicIdStr, Model model, @AuthenticationPrincipal RecipeUserDetails currentUser) {
+    @GetMapping("/view/{id}")
+    public String viewPublicRecipe(@PathVariable("id") Integer id, Model model, @AuthenticationPrincipal RecipeUserDetails currentUser) {
         try {
-            java.util.UUID publicId = java.util.UUID.fromString(publicIdStr.trim());
-            Recipe recipe = recipeService.getRecipeByPublicId(publicId);
+            Recipe recipe = recipeService.getRecipeById(id);
             if (recipe == null) return "redirect:/search?notFound";
 
             return populateAndRenderProfileView(recipe, model, currentUser);
