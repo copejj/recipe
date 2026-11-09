@@ -233,3 +233,9 @@
     border-radius: 4px;
     cursor: pointer;
 }
+
+.btn-dismiss-lock {
+    background-color: var(--color-bg-body); 
+    color: var(--color-text-muted); 
+    border-color: var(--color-border);
+}

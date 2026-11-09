@@ -1,26 +1,24 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
-
+<html xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
 <head>
-    <div th:replace="~{fragments/layout :: html_head('Ingredient Moderation Queue')}"></div>
-    <!-- Dedicated Asset Style Link Routing -->
-    <link rel="stylesheet" th:href="@{/css/admin/ingredients/queue.css}" />
-    <meta name="_csrf" th:content="${_csrf != null ? _csrf.token : ''}" />
-    <meta name="_csrf_header" th:content="${_csrf != null ? _csrf.headerName : 'X-CSRF-TOKEN'}" />
+    <title>Ingredient Moderation Queue</title>
+    
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" th:href="@{/css/admin/ingredients/queue.css}" />
+        <meta name="_csrf" th:content="${_csrf != null ? _csrf.token : ''}" />
+        <meta name="_csrf_header" th:content="${_csrf != null ? _csrf.headerName : 'X-CSRF-TOKEN'}" />
+    </th:block>
 </head>
 
 <body>
-    <header th:replace="~{fragments/layout :: header}"></header>
-    <main class="page-card queue-container">
+    <h1 layout:fragment="page-title">Ingredient Verification Queue</h1>
+    <p layout:fragment="page-subtitle">Review crowd-sourced ingredient suggestions, verify food database definitions, or merge duplicate row constraints.</p>
+    
+    <main layout:fragment="content">
         <div class="queue-top-panel">
-            <!-- TOP PANEL: Header Titles Block -->
-            <div class="queue-title-block">
-                <h1 class="page-title">Ingredient Verification Queue</h1>
-                <p class="page-subtitle">
-                    Review crowd-sourced ingredient suggestions, verify food database definitions, or merge duplicate
-                    row constraints.
-                </p>
-            </div>
             <div class="queue-actions-row">
                 <!-- BUTTON 1: RETURN TO PENDING MODERATION QUEUE -->
                 <a th:href="@{/admin/metadata}" class="btn btn-dashboard-return">
@@ -90,7 +88,7 @@
                             <!-- COLUMN 4: SUBMITTING USER DISPLAY FIELD -->
                             <td class="cell-user"
                                 th:text="${ing.getCreatedByUsername() != null ? ing.getCreatedByUsername() : 'Anonymous Chef'}">
-                                jcope
+                                Jefe Chefe
                             </td>
 
                             <!-- COLUMN 5: CONTROL BUTTON ACTIONS GRID BAR PANEL -->
@@ -123,9 +121,8 @@
 
 
                                     <!-- 3. ASYNC LOCK & HIDE TRIGGER BUTTON -->
-                                    <button type="button" class="btn async-lock-btn btn-dismiss-merge"
-                                        th:data-id="${ing.getIngredientId()}"
-                                        style="background-color: var(--color-bg-body); color: var(--color-text-muted); border-color: var(--color-border);">
+                                    <button type="button" class="btn async-lock-btn btn-dismiss-lock"
+                                        th:data-id="${ing.getIngredientId()}">
                                         Lock
                                     </button>
 
@@ -137,8 +134,8 @@
             </div>
         </div>
     </main>
-    <footer th:replace="~{fragments/layout :: footer}"></footer>
-    <script th:src="@{/js/admin/ingredients/queue.js}"></script>
+    <th:block layout:fragment="page_scripts">
+        <script th:src="@{/js/admin/ingredients/queue.js}"></script>
+    </th:block> 
 </body>
-
 </html>

@@ -1,26 +1,23 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
-
+<html xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
 <head>
-    <th:block
-        th:replace="~{fragments/layout :: html_head(${ingredient.ingredientId != null} ? 'Edit Ingredient' : 'Add New Ingredient')}">
+    <title th:text="${ingredient.ingredientId != null} ? 'Edit Ingredient' : 'Add New Ingredient'"></title> 
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" th:href="@{/css/admin/ingredients-edit.css}" />
     </th:block>
-    <!-- External Ingredient Form Rules Link - Render Blocking to prevent FOUC -->
-    <link rel="stylesheet" th:href="@{/css/admin/ingredients-edit.css}" />
 </head>
 
 <body>
-    <header th:replace="~{fragments/layout :: header}"></header>
-
-    <main class="page-card form-card">
-        <h1 class="page-title"
-            th:text="${ingredient.ingredientId != null} ? 'Modify Ingredient Profile' : 'Add Master Ingredient'">Add
-            Master Ingredient</h1>
-        <p class="page-subtitle"
-            th:text="${ingredient.ingredientId != null} ? 'Update global lookup properties or fix lingering typos for this ingredient.' : 'Manually inject a pre-verified food definition straight into the global lookup pool.'">
-        </p>
-
-        <!-- Dynamic Action Route Binding Switch -->
+    <h1 layout:fragment="page-title" 
+        th:text="${ingredient.ingredientId != null} ? 'Modify Ingredient Profile' : 'Add Master Ingredient'">
+            Add Master Ingredient</h1>
+    <p layout:fragment="page-subtitle"
+        th:text="${ingredient.ingredientId != null} ? 'Update global lookup properties or fix lingering typos for this ingredient.' : 'Manually inject a pre-verified food definition straight into the global lookup pool.'">
+            Dynamic subtext baseline describing the primary interface role or system domain.</p>
+    <main layout:fragment="content" class="form-card">
         <form
             th:action="${ingredient.ingredientId != null} ? @{/admin/metadata/ingredients/edit/{id}(id=${ingredient.ingredientId})} : @{/admin/metadata/ingredients/add}"
             method="post" class="ingredient-entry-form">
@@ -68,8 +65,5 @@
 
         </form>
     </main>
-
-    <footer th:replace="~{fragments/layout :: footer}"></footer>
 </body>
-
 </html>

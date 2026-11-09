@@ -1,27 +1,20 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org" lang="en">
-
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
 <head>
-    <th:block th:replace="~{fragments/layout :: html_head('Master Ingredients')}"></th:block>
-
+    <title>Master Ingredients</title>
     <link rel="stylesheet" th:href="@{/css/admin/ingredients-list.css}" />
 </head>
 
 <body>
-    <header th:replace="~{fragments/layout :: header}"></header>
+    <div layout:fragment="page-title"> Master Ingredient Management </div>
+    <p layout:fragment="page-subtitle"> View, modify, or remove verified ingredients globally active in the application database. </p>
 
-    <main class="page-card inventory-main">
-
+    <main layout:fragment="content" class="inventory-main">
         <!-- UNIFIED RESPONSIVE HEADER GRID -->
         <div class="header-grid">
-            <!-- TOP PANEL: Header Titles Block -->
-            <div class="header-title-block">
-                <h1 class="page-title">Master Ingredient Management</h1>
-                <p class="page-subtitle">View, modify, or remove verified ingredients globally active in the application
-                    database.</p>
-            </div>
-
-            <!-- BOTTOM PANEL: Action Buttons Tray -->
             <div class="action-tray">
                 <a th:href="@{/admin/metadata}" class="btn btn-secondary">← Metadata Dashboard</a>
                 <a th:href="@{/admin/metadata/ingredients/add}" class="btn btn--primary">+ Add Ingredient</a>
@@ -102,13 +95,8 @@
                         </td>
                     </tr>
                 </th:block>
-
             </div>
         </div>
     </main>
-
-    <!-- Shared Footer Fragment -->
-    <div th:replace="~{fragments/layout :: footer}"></div>
 </body>
-
 </html>

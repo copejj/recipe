@@ -1,24 +1,24 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
-
+<html xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
 <head>
-    <th:block th:replace="~{fragments/layout :: html_head('Grocery Categories')}"></th:block>
-    <!-- External Categories Stylesheet Link - Render Blocking inside Head to prevent FOUC -->
-    <link rel="stylesheet" th:href="@{/css/admin/categories-list.css}" />
+    <!-- 1. Customize your browser tab title text string here -->
+    <title>Grocery Categories</title>
+    
+    <!-- 2. Mount your screen component style bundles cleanly inside this hook -->
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" th:href="@{/css/admin/categories-list.css}" />
+    </th:block>
 </head>
 
-<body style="overflow-x: hidden; width: 100%; margin: 0; padding: 0;">
-    <header th:replace="~{fragments/layout :: header}"></header>
-
-    <main class="page-card categories-main">
-
-        <!-- UNIFIED RESPONSIVE HEADER GRID -->
+<body>
+    <h1 layout:fragment="page-title">Grocery Category Management</h1>
+    <p layout:fragment="page-subtitle">Organize and weigh store aisle display sequencing vectors to future-proof smart sorting shopping lists.</p>
+    
+    <main layout:fragment="content" class="categories-main">
         <div class="header-grid">
-            <div class="header-title-block">
-                <h1 class="page-title">Grocery Category Management</h1>
-                <p class="page-subtitle">Organize and weigh store aisle display sequencing vectors to future-proof smart sorting shopping lists.</p>
-            </div>
-
             <div class="action-tray">
                 <a th:href="@{/admin/metadata/ingredients/list}" class="btn btn-secondary">← Ingredients List</a>
             </div>
@@ -53,8 +53,7 @@
 
         <!-- DATA REPLACEMENT INDEX GRID MATRIX (DATATABLE SWAP) -->
         <div class="admin-table-wrapper">
-            <form th:action="@{/admin/metadata/ingredients/grocery-categories/save-all}" th:object="${formWrapper}" method="post"
-                style="width: 100%; margin: 0; box-sizing: border-box;">
+            <form th:action="@{/admin/metadata/ingredients/grocery-categories/save-all}" th:object="${formWrapper}" method="post">
 
                 <div th:replace="~{fragments/datatable :: genericTable(
                     tableId='masterCategoriesTable',
@@ -126,11 +125,8 @@
             </form>
         </div>
     </main>
-
-    <!-- Shared Footer Fragment -->
-    <div th:replace="~{fragments/layout :: footer}"></div>
-
-    <script th:src="@{/js/admin/categories-list.js}"></script>
+    <th:block layout:fragment="page_scripts">
+        <script th:src="@{/js/admin/categories-list.js}"></script>
+    </th:block> 
 </body>
-
 </html>
