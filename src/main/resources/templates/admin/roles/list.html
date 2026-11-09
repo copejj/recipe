@@ -1,27 +1,22 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" lang="en">
-
-<!-- Explicitly routing layout dependencies via your global component baseline configuration -->
-
-
+<html xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
 <head>
-    <th:block th:replace="~{fragments/layout :: html_head('Role Matrix')}"></th:block>
-    <link rel="stylesheet" type="text/css" th:href="@{/css/admin/roles-list.css}" />
+    <title>Role Matrix</title>
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" type="text/css" th:href="@{/css/admin/roles-list.css}" />
+    </th:block>
 </head>
 
 <body>
-
-    <!-- Shared Navigation Header Fragment -->
-    <div th:replace="~{fragments/layout :: header}"></div>
-
-    <main class="page-card">
-
+    <h1 layout:fragment="page-title">Role & Authority Matrix</h1>
+    <p layout:fragment="page-subtitle">Manage global security tiers and permissions</p>
+    
+    <main layout:fragment="content">
         <!-- Universal Admin Section Layout Controls -->
         <div class="admin-header-flex">
-            <div>
-                <h1 class="page-title">Role & Authority Matrix</h1>
-                <p class="page-subtitle">Manage global security tiers and permissions</p>
-            </div>
             <!-- Standardized clean button styling blueprint integration -->
             <div class="admin-btn-group">
                 <button type="button" class="btn btn-action btn-action--primary btn-action--header-cta"
@@ -60,7 +55,7 @@
                                 </th:block>
                             </div>
                         </td>
-                        <td class="role-name-cell" data-label="Role Name" th:text="${item.roleName}">ROLE_ADMIN</td>
+                        <td th:data-order="${item.roleRank}" class="role-name-cell" data-label="Role Name" th:text="${item.roleName}">ROLE_ADMIN</td>
                         <td data-label="Description" th:text="${item.description}">Administrative access</td>
                         <td data-label="Permissions">
                             <div class="badge-container">
@@ -85,15 +80,9 @@
 
         <div th:replace="~{fragments/modals :: create_role_modal}"></div>
     </main>
-
-    <div th:replace="~{fragments/layout :: footer}"></div>
-    <script type="text/javascript" th:src="@{/js/admin/roles-list.js}"></script>
-
-    <script>
-        // Native browser overlay engine controls
-        function openModal(id) { document.getElementById(id).showModal(); }
-        function closeModal(id) { document.getElementById(id).close(); }
-    </script>
+    <th:block layout:fragment="page_scripts">
+        <script type="text/javascript" th:src="@{/js/admin/roles-list.js}"></script>
+    </th:block> 
 </body>
 
 </html>
