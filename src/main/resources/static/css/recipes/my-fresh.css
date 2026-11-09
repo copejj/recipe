@@ -1,0 +1,116 @@
+/* Navigation and layout structure utilities */
+.back-nav-container {
+    margin-bottom: 1rem;
+}
+
+.hidden-payload-form {
+    display: none;
+}
+
+.text-right {
+    text-align: right;
+}
+
+/* Status Notifications and Banners */
+.alert-banner {
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    border: 1px solid transparent;
+}
+
+.alert-success {
+    background-color: var(--color-success-bg, #d4edda);
+    color: var(--color-success-raw, #28a745);
+    border-color: var(--color-success-border, #c3e6cb);
+}
+
+/* Table Card Empty Placeholder */
+.empty-state-card {
+    text-align: center;
+    padding: 40px;
+    border: 1px dashed var(--color-border);
+    border-radius: 8px;
+}
+
+.empty-state-text {
+    color: var(--color-text-muted);
+    margin: 0;
+}
+
+/* Master Data Grid Workbook styling rules */
+.workbook-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.table-header-row {
+    border-bottom: 2px solid var(--color-border);
+    text-align: left;
+}
+
+.table-header-row th {
+    padding: 12px 8px;
+}
+
+/* Explicit Workbook Table Width Allocations */
+.col-nameHeader { width: 35%; }
+.col-classHeader { width: 25%; }
+.col-categoryHeader { width: 25%; }
+.col-actionsHeader { width: 15%; text-align: right; }
+
+.table-body-row {
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: middle;
+}
+
+.table-cell {
+    padding: 10px 8px;
+}
+
+/* Global Form Control Row Layout Baselines */
+.inline-text-input,
+.inline-select-input {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--color-border-input, #ccc);
+    font-size: 0.95rem;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.inline-text-input {
+    font-weight: 600;
+    color: var(--color-text-dark);
+}
+
+.inline-select-input {
+    cursor: pointer;
+    background-color: transparent;
+}
+
+/* Row Context Save Action Layout Component Elements */
+.btn-save-row {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+    padding: 0 16px;
+    box-sizing: border-box;
+    font-size: 0.85rem;
+    font-weight: 700;
+    background-color: var(--color-profile-dark-btn, #333);
+    color: white;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.btn-save-row:hover {
+    opacity: 0.9;
+}

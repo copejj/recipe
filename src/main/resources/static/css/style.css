@@ -247,7 +247,6 @@ p {
     min-height: 100vh;
     margin: 0;
 }
-
 /* 2. Enforce flex calculations down to the wrapper deck element */
 .content-cont {
     flex: 1 0 auto;
@@ -277,6 +276,7 @@ p {
     display: flex;
     flex-direction: column;
     margin: 1rem;
+    justify-content: flex-start;
 }
 
 .content-cont.content-narrow > .container-fluid {
@@ -1295,4 +1295,37 @@ nav.header-nav span.dropdown-caret {
     font-weight: 700;
 }
 
-/*style="color: var(--color-success-raw, #28a745); font-weight: 700;">0</span>*/
+/* Action Utility Toolbar Tray */
+.action-tray {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+    box-sizing: border-box;
+}
+
+.action-tray .btn {
+    width: auto;
+    min-width: 180px;
+    text-align: center;
+    text-decoration: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    line-height: 20px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.action-tray .btn-secondary {
+    background-color: var(--color-bg-body);
+    color: var(--color-text-dark);
+    border: 1px solid var(--color-border);
+}
