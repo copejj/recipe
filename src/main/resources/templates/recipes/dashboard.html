@@ -15,8 +15,7 @@
 
     <main layout:fragment="content">
         <div th:if="${dbMessageText != null}" class="alert"
-            th:classappend="${dbMessageClass != null ? dbMessageClass : 'alert--info'}"
-            style="margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
+            th:classappend="${dbMessageClass != null ? dbMessageClass : 'alert--info'}">
             <span>📢</span>
             <strong th:text="${dbMessageText}">System broadcast alert announcement text goes here
                 dynamically...</strong>
@@ -32,53 +31,45 @@
         </div>
 
         <div class="status-grid">
-
-            <div class="status-item">
+            <div class="status-item clickable-card">
                 <span class="status-icon">🍳</span>
                 <div class="status-info">
                     <span class="status-label">Recipe Collection</span>
                     <span class="status-value"><span th:text="${myRecipesCount}">0</span> Recipes Saved</span>
-                    <a th:href="@{/recipes/my-list}"
-                        style="font-size: 0.85rem; color: var(--color-primary); margin-top: 6px; text-decoration: none; font-weight: 600;">View
-                        My Collection →</a>
+                    <a th:href="@{/recipes/my-list}" 
+                        class="status-link stretched-link">View My Collection →</a>
                 </div>
             </div>
 
-            <div class="status-item">
+            <div class="status-item clickable-card">
                 <span class="status-icon">➕</span>
                 <div class="status-info">
                     <span class="status-label">Creation Studio</span>
                     <span class="status-value">Add a New Recipe</span>
                     <a th:href="@{/recipes/create}"
-                        style="font-size: 0.85rem; color: var(--color-primary); margin-top: 6px; text-decoration: none; font-weight: 600;">Open
-                        Form Wizard →</a>
+                        class="status-link stretched-link">Open Form Wizard →</a>
                 </div>
             </div>
 
-            <div class="status-item">
+            <div class="status-item clickable-card">
                 <span class="status-icon">🔍</span>
                 <div class="status-info">
                     <span class="status-label">Discovery Hub</span>
                     <span class="status-value">Search Public Catalog</span>
                     <a th:href="@{/search}"
-                        style="font-size: 0.85rem; color: var(--color-primary); margin-top: 6px; text-decoration: none; font-weight: 600;">Find
-                        Inspiration →</a>
+                        class="status-link stretched-link">Find Inspiration →</a>
                 </div>
             </div>
 
-            <div th:if="${freshIngredientsCount > 0}" class="status-item"
-                style="border-color: var(--color-success-border, #c3e6cb); background-color: var(--color-success-bg, #d4edda);">
+            <div th:if="${freshIngredientsCount > 0}" class="status-item clickable-card success-alert" >
                 <span class="status-icon">🌱</span>
                 <div class="status-info">
                     <span class="status-label">My Fresh Ingredients</span>
                     <span class="status-value">
-                        <span th:text="${freshIngredientsCount}"
-                            style="color: var(--color-success-raw, #28a745); font-weight: 700;">0</span>
-                        Pending Verification
+                        <span th:text="${freshIngredientsCount}" class="alert-text">0</span>Modifiable Ingredients
                     </span>
                     <a th:href="@{/ingredients/my-fresh}"
-                        style="font-size: 0.85rem; color: var(--color-success-raw, #28a745); margin-top: 6px; text-decoration: none; font-weight: 600;">
-                        Manage My Submissions →
+                        class="status-link stretched-link"> Manage My Submissions →
                     </a>
                 </div>
             </div>
@@ -90,37 +81,34 @@
            ========================================================================== -->
         <div
             sec:authorize="hasAnyAuthority('can_moderate_recipe_metadata', 'can_hide_any_recipe', 'can_delete_any_comment')">
-            <hr class="dashboard-divider" style="margin: 40px 0 30px 0;" />
-            <h2 style="font-size: 1.5rem; border-bottom: 2px solid var(--color-border); padding-bottom: 8px;">Pending
-                Review Items</h2>
+            <hr class="dashboard-divider" />
+            <h2 style=>Pending Review Items</h2>
             <div class="status-grid">
-
                 <!-- Ingredient Queue Card - Highlights RED if items are waiting -->
-                <div sec:authorize="hasAuthority('can_moderate_recipe_metadata')" class="status-item"
-                    th:style="${pendingIngredientsCount > 0} ? 'border-color: var(--color-danger-border); background-color: var(--color-danger-bg);' : ''">
+                <div sec:authorize="hasAuthority('can_moderate_recipe_metadata')" 
+                    class="status-item clickable-card"
+                        th:classappend="${pendingIngredientsCount > 0} ? 'danger-alert' : ''">
                     <span class="status-icon">🌿</span>
                     <div class="status-info">
                         <span class="status-label">Ingredients Pool</span>
                         <span class="status-value">
                             <span th:text="${pendingIngredientsCount}"
-                                th:style="${pendingIngredientsCount > 0} ? 'color: var(--color-danger-raw); font-weight:700;' : ''">0</span>
-                            Unverified Options
+                                th:classappend="${pendingIngredientsCount > 0} ? 'alert-text' : ''">0</span> Unverified Options
                         </span>
                         <a th:href="@{/admin/metadata/ingredients}"
-                            style="font-size: 0.85rem; color: var(--color-primary); margin-top: 6px; text-decoration: none; font-weight: 600;">Review
-                            Ingestion Queue →</a>
+                            class="status-link stretched-link">Review Ingestion Queue →</a>
                     </div>
                 </div>
 
                 <!-- Global Content Metric Monitor -->
-                <div sec:authorize="hasAuthority('can_hide_any_recipe')" class="status-item">
+                <div sec:authorize="hasAuthority('can_hide_any_recipe')" 
+                    class="status-item clickable-card">
                     <span class="status-icon">🛡️</span>
                     <div class="status-info">
                         <span class="status-label">Recipe Moderation</span>
                         <span class="status-value"><span th:text="${totalRecipesCount}">0</span> Public Postings</span>
-                        <a th:href="@{/search}"
-                            style="font-size: 0.85rem; color: var(--color-primary); margin-top: 6px; text-decoration: none; font-weight: 600;">Moderate
-                            Catalog →</a>
+                        <a th:href="@{/search}" 
+                            class="status-link stretched-link">Moderate Catalog →</a>
                     </div>
                 </div>
 
@@ -135,7 +123,6 @@
                             Active</span>
                     </div>
                 </div>
-
             </div>
         </div>
     </main>

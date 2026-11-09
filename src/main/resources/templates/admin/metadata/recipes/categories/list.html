@@ -1,24 +1,20 @@
+<!-- your average page template -->
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" xmlns:sec="http://thymeleaf.org" lang="en">
-
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
 <head>
-    <th:block th:replace="~{fragments/layout :: html_head('Recipe Categories')}"></th:block>
-    <!-- We can reuse your existing admin category list stylesheet configuration rules -->
+    <title>Recipe Categories</title>
     <link rel="stylesheet" th:href="@{/css/admin/categories-list.css}" />
 </head>
 
 <body>
-    <header th:replace="~{fragments/layout :: header}"></header>
-
-    <main class="page-card categories-main">
-
+    <div layout:fragment="page-title"> Recipe Category Management </div>
+    <p layout:fragment="page-subtitle"> Configure, populate, and maintain overarching meal courses, dietary preferences, and lifestyle taxonomy nodes. </p>
+    <main layout:fragment="content">
         <!-- UNIFIED RESPONSIVE HEADER GRID -->
         <div class="header-grid">
-            <div class="header-title-block">
-                <h1 class="page-title">Recipe Category Management</h1>
-                <p class="page-subtitle">Configure, populate, and maintain overarching meal courses, dietary preferences, and lifestyle taxonomy nodes.</p>
-            </div>
-
             <div class="action-tray">
                 <a th:href="@{/admin/metadata}" class="btn btn-secondary">← Metadata Dashboard</a>
             </div>
@@ -97,13 +93,7 @@
 
             </div>
         </div>
+        <script th:src="@{/js/admin/categories-list.js}"></script>
     </main>
-
-    <!-- Shared Footer Fragment -->
-    <div th:replace="~{fragments/layout :: footer}"></div>
-    
-    <!-- JavaScript asset initializes generic DataTable behaviors automatically -->
-    <script th:src="@{/js/admin/categories-list.js}"></script>
 </body>
-
 </html>

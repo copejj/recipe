@@ -35,12 +35,12 @@
 
     /* Functional Notification & Alert Colors */
     --color-success-text: #14532d;
-    --color-success-bg: #f0fdf4;
+    --color-success-bg: #cfffde;
     --color-success-border: #bbf7d0;
     --color-success-raw: #22c55e;
 
     --color-danger-text: #7f1d1d;
-    --color-danger-bg: #fef2f2;
+    --color-danger-bg: #f5b5b5;
     --color-danger-border: #fecaca;
     --color-danger-raw: #ef4444;
 
@@ -1240,3 +1240,59 @@ nav.header-nav span.dropdown-caret {
 .hide-cell {
     display: none;
 }
+
+/* 1. Make the card the boundary for the link */
+.clickable-card {
+    position: relative; 
+    /* Optional: add a cursor pointer and smooth hover transition for the whole card */
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Optional: visual feedback when hovering anywhere on the card */
+.clickable-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.stretched-link {
+    font-size: 0.85rem; 
+    color: var(--color-primary); 
+    margin-top: 6px; 
+    text-decoration: none; 
+    font-weight: 600;
+}
+
+/* 2. The magic trick: stretch the link's pseudo-element to cover the parent */
+.stretched-link::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    pointer-events: auto;
+    content: "";
+}
+
+.danger-alert{
+    border-color: var(--color-danger-border); 
+    background-color: var(--color-danger-bg);
+}
+
+.danger-alert .alert-text{
+    color: var(--color-danger-text);
+    font-weight: 700;
+}
+
+.success-alert{
+    border-color: var(--color-success-border); 
+    background-color: var(--color-success-bg);
+}
+
+.success-alert .alert-text{
+    color: var(--color-success-text);
+    font-weight: 700;
+}
+
+/*style="color: var(--color-success-raw, #28a745); font-weight: 700;">0</span>*/
