@@ -19,6 +19,10 @@ $(document).ready(function () {
         },
         "columnDefs": [
             { "orderable": false, "targets": 0 }, // Disable sorting on actions
+            { 
+                "targets": 3,                     // Target index 3 is Column 4
+                "type": "date",                   // Forces DataTables to treat it as a chronological date
+            }
         ],
         "autoWidth": false // Prevents DataTables from guessing and forcing bad layout stretching
     });
