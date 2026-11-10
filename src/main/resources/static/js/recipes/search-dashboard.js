@@ -1,46 +1,130 @@
 $(document).ready(function () {
     var tableId = '#generalIndexTable';
 
-    // 1. Pack configuration into a clean, reusable function to prevent layout freezing on updates
+    // Global client-side tracking state variables
+    let activeChefFilter = null;
+    let activeCategoryFilter = null;
+
     function initializeDataTable() {
         if ($.fn.DataTable.isDataTable(tableId)) {
             $(tableId).DataTable().destroy();
         }
 
-        $(tableId).DataTable({
+        var table = $(tableId).DataTable({
             "paging": true,
             "searching": true,
-            "order": [[3, 'asc']],
+            "order": [[3, 'asc']], // Orders by Recipe Title (Column Array Index 3)
             "ordering": true,
             "info": true,
-            "pageLength": -1, // Displays ALL records by default on page load
+            "pageLength": -1, 
             "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
             "language": {
                 "emptyTable": "No data available in table"
             },
             "columnDefs": [
-                { "orderable": false, "targets": 0 }, // Disable sorting on actions
+                { "orderable": false, "targets": 0 }, 
                 { "width": "5rem", "targets": 0 }
             ],
-            "autoWidth": false // Prevents DataTables from guessing and forcing bad layout stretching
+            "autoWidth": false 
         });
+
+        // Sync visual highlighted classes on initial renders or subsequent paginations
+        highlightMatchingBadges();
+        return table;
     }
 
-    // Initialize the grid layout on first load
-    initializeDataTable();
+    // Initialize application catalog context state
+    var dataTableInstance = initializeDataTable();
 
-    var selectedIngredients = {};
+    // Custom DataTables engine layout search intercept push hook
+    $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+        // Safe check using optional chaining to prevent reading 'id' of undefined settings structures
+        if (settings?.nTable?.id && settings.nTable.id !== 'generalIndexTable') return true;
 
-    // Read any existing filtering tokens pre-loaded into the DOM by Thymeleaf on load
-    $('#fridgeInventoryList li').each(function () {
-        var id = $(this).attr('data-id');
-        var name = $(this).find('span').first().text();
-        if (id) {
-            selectedIngredients[id] = name;
+        // Safely extract column data with fallbacks to avoid text splitting crashes
+        const rowCategoryName = data && data[1] ? data[1].trim() : ''; 
+        const rowChefName = data && data[2] ? data[2].trim() : ''; 
+
+        if (activeCategoryFilter && rowCategoryName !== activeCategoryFilter) return false;
+        if (activeChefFilter && rowChefName !== activeChefFilter) return false;
+
+        return true;
+    });
+
+    function highlightMatchingBadges() {
+        // Check if the dataTableInstance exists and is initialized
+        if (dataTableInstance) {
+            // Use the rows().nodes() API to access ALL rows in memory (visible + hidden)
+            dataTableInstance.rows().nodes().to$().each(function() {
+                // Find chef badges within this row
+                $(this).find(".table-chef-badge").each(function() {
+                    const name = $(this).text().trim();
+                    $(this).toggleClass("filter-matching", !!(activeChefFilter && name === activeChefFilter));
+                });
+
+                // Find category badges within this row
+                $(this).find(".clickable-category-badge").each(function() {
+                    const category = $(this).text().trim();
+                    $(this).toggleClass("filter-matching", !!(activeCategoryFilter && category === activeCategoryFilter));
+                });
+            });
+        } else {
+            // Fallback for initial boot or before dataTableInstance is fully bound
+            document.querySelectorAll(".table-chef-badge").forEach(badge => {
+                const name = badge.textContent.trim();
+                badge.classList.toggle("filter-matching", !!(activeChefFilter && name === activeChefFilter));
+            });
+
+            document.querySelectorAll(".clickable-category-badge").forEach(badge => {
+                const category = badge.textContent.trim();
+                badge.classList.toggle("filter-matching", !!(activeCategoryFilter && category === activeCategoryFilter));
+            });
+        }
+    }
+
+    // Unified Interceptor handling actions, redirects, and badge selections
+    $(document).on("click", "#generalIndexTable tbody tr", function (event) {
+        const $target = $(event.target);
+
+        // Discard routing execution if actions layout cell elements are clicked
+        if ($target.closest(".table-action-cell").length) return;
+
+        // Chef badge click toggle mechanics
+        if ($target.hasClass("table-chef-badge")) {
+            const clickedChef = $target.text().trim();
+            activeChefFilter = (activeChefFilter === clickedChef) ? null : clickedChef;
+            highlightMatchingBadges();
+            dataTableInstance.draw();
+            return;
+        }
+
+        // Category badge click toggle mechanics
+        if ($target.hasClass("clickable-category-badge")) {
+            const clickedCategory = $target.text().trim();
+            activeCategoryFilter = (activeCategoryFilter === clickedCategory) ? null : clickedCategory;
+            highlightMatchingBadges();
+            dataTableInstance.draw();
+            return;
+        }
+
+        // Standard Row Navigation Redirection Parameter block
+        var href = $(this).data("href");
+        if (href) {
+            window.location.href = href;
         }
     });
 
-    // Initialize Select2 search control
+    /* =========================================================================
+       FRIDGE INVENTORY CONTROL PIPELINES
+       ========================================================================= */
+    var selectedIngredients = {};
+
+    $('#fridgeInventoryList li').each(function () {
+        var id = $(this).attr('data-id');
+        var name = $(this).find('span').first().text();
+        if (id) selectedIngredients[id] = name;
+    });
+
     $('.select2-quick-add').select2({
         placeholder: "Type ingredients (e.g. Eggs, Basil)...",
         allowClear: true,
@@ -48,107 +132,58 @@ $(document).ready(function () {
         width: '100%'
     });
 
-    // Intercept dropdown selection events
     $('.select2-quick-add').on('select2:select', function (e) {
         var data = e.params.data;
-        var ingredientId = data.id;
-        var ingredientName = data.text;
-
-        if (!ingredientId) return;
-
-        // Prevent duplicate items from being added to the list
-        if (selectedIngredients[ingredientId]) {
+        if (!data.id || selectedIngredients[data.id]) {
             $('.select2-quick-add').val('').trigger('change');
             return;
         }
 
-        selectedIngredients[ingredientId] = ingredientName;
-
-        var listItemHtml =
-            '<li data-id="' + ingredientId + '" class="badge-permission">' +
-            '<span>' + ingredientName + '</span>' +
+        selectedIngredients[data.id] = data.text;
+        $('#fridgeInventoryList').append(
+            '<li data-id="' + data.id + '" class="badge-permission">' +
+            '<span>' + data.text + '</span>' +
             '<span class="remove-fridge-item">X</span>' +
-            '</li>';
-
-        $('#fridgeInventoryList').append(listItemHtml);
+            '</li>'
+        );
         $('.select2-quick-add').val('').trigger('change');
         syncHiddenFormInputs();
-        
-        // REFRESH CATALOG VIA AJAX FOR A SEAMLESS UX
         refreshRecipeCatalog(); 
     });
 
-    // Handle removal clicks on individual list badges
     $(document).on('click', '.remove-fridge-item', function () {
         var $listItem = $(this).closest('li');
-        var targetId = $listItem.attr('data-id');
-        delete selectedIngredients[targetId];
+        delete selectedIngredients[$listItem.attr('data-id')];
         $listItem.remove();
         syncHiddenFormInputs();
-        
-        // REFRESH CATALOG VIA AJAX UPON INGREDIENT REMOVAL
         refreshRecipeCatalog(); 
     });
 
-    // INSTANTLY RETRIGGER UNIFIED SEARCH UPON CATEGORY SELECTION DEVIATION
-    $(document).on('change', '#recipeCategoryFilterSelect', function () {
-        refreshRecipeCatalog();
-    });
-
-    // Maps active cache identifiers to hidden input tags
     function syncHiddenFormInputs() {
-        var $container = $('#hiddenInputsContainer');
-        $container.empty();
+        var $container = $('#hiddenInputsContainer').empty();
         Object.keys(selectedIngredients).forEach(function (id) {
-            var hiddenInput = $('<input type="hidden" name="ingredientIds" />').val(id);
-            $container.append(hiddenInput);
+            $container.append($('<input type="hidden" name="ingredientIds" />').val(id));
         });
     }
 
-    // ROW CLICK LISTENER FOR DATA TABLE INTERACTION
-    $(document).on("click", "#generalIndexTable tbody tr", function (event) {
-        if ($(event.target).closest(".btn-view").length) return;
-        var href = $(this).data("href");
-        if (href) {
-            window.location.href = href;
-        }
-    });
-
-    // Clean Interception for manual/fallback form submissions
-    $('#searchForm').on('submit', function(event) {
-        event.preventDefault(); // Stop standard full-page reload
-        refreshRecipeCatalog();
-    });
-
-    // The AJAX function that reloads the recipe index seamlessly
     function refreshRecipeCatalog() {
         var $form = $('#searchForm');
-        // Build URL matching the backend parameters
         var targetUrl = $form.attr('action') + '?' + $form.serialize();
 
-        // Dim the table components to give visual loading feedback
         $('.table-responsive-wrapper, .index-section-header').css({
             'opacity': '0.5',
             'transition': 'opacity 0.15s ease'
         });
 
-        // Fetch the updated view fragments silently over AJAX
         $.get(targetUrl, function(responseHtml) {
-            // Parse out just the responsive table wrapper from the incoming payload
-            var newTable = $(responseHtml).find('.table-responsive-wrapper').html();
-            // Parse out the dynamic section title headers
-            var newHeader = $(responseHtml).find('.index-section-header').html();
-            
-            // Inject them back into the DOM safely
-            $('.table-responsive-wrapper').html(newTable);
-            $('.index-section-header').html(newHeader);
+            $('.table-responsive-wrapper').html($(responseHtml).find('.table-responsive-wrapper').html());
+            $('.index-section-header').html($(responseHtml).find('.index-section-header').html());
 
-            initializeDataTable();
+            // Re-instantiate table API context shell; custom engine filters survive redraw updates automatically
+            dataTableInstance = initializeDataTable();
 
-            // Restore clarity to the updated view
             $('.table-responsive-wrapper, .index-section-header').css('opacity', '1');
         }).fail(function() {
-            // Fallback safety if the endpoint encounters an unexpected glitch
             $('.table-responsive-wrapper, .index-section-header').css('opacity', '1');
         });
     }
