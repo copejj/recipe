@@ -43,7 +43,7 @@ public class GlobalMenuAdvice {
 
             // Base culinary actions available to standard users or creators
             userChildren.add(new MenuItem("Create New Recipe", "/recipes/create"));
-            userChildren.add(new MenuItem("My Recipes", "/recipes/my-list"));
+            userChildren.add(new MenuItem("My Cookbook", "/recipes/my-list"));
             userChildren.add(new MenuItem("My Profile", "/profile"));
             
             // Map the complete Recipes Parent Dropdown

@@ -24,20 +24,6 @@
                 <!-- PARALLEL GRID LAYOUT FOR BALANCED FILTER FIELDS -->
                 <div class="filter-row">
                     
-                    <!-- CONTROL 1: RECIPE CATEGORY PROFILE SELECTION LINK -->
-                    <div class="filter-column">
-                        <label for="recipeCategoryFilterSelect">Filter by Recipe Category</label>
-                        <select id="recipeCategoryFilterSelect" name="recipeCategoryId" class="form-input-unified">
-                            <option value="">-- All Recipes --</option>
-                            <option th:each="cat : ${categoryPool}" 
-                                    th:value="${cat.recipeCategoryId}"
-                                    th:text="${cat.name}"
-                                    th:selected="${cat.recipeCategoryId == selectedCategoryId}">
-                            </option>
-                        </select>
-                    </div>
-
-                    <!-- CONTROL 2: INGREDIENT CONSOLE SELECTION ACCELERATOR TOOL -->
                     <div class="filter-column">
                         <label for="fridgeSelect">Match Ingredients on Hand</label>
                         <select id="fridgeSelect" class="form-input select2-quick-add">
@@ -139,7 +125,7 @@
         </div>
     </main>
     <th:block layout:fragment="page_scripts">
-        <script th:src="@{/js/search-dashboard.js}"></script>
+        <script th:src="@{/js/recipes/search-dashboard.js}"></script>
     </th:block> 
 </body>
 </html>

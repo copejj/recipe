@@ -38,8 +38,19 @@
 
                     <!-- ACTION 1: CENTRAL EDIT LINK -->
                     <th:block th:if="${canEdit}">
-                        <a
-                            th:replace="~{fragments/actions :: editLink(targetUrl=@{/recipes/edit/{id}(id=${recipe.recipeId})})}"></a>
+                        <a th:replace="~{fragments/actions :: editLink(targetUrl=@{/recipes/edit/{id}(id=${recipe.recipeId})})}"></a>
+                    </th:block>
+
+                    <th:block th:unless="${canEdit}">
+                        <th:block th:if="${currentUser != null}">
+                            <form th:action="@{/recipes/save/{id}(id=${recipe.recipeId})}" method="POST" style="display: inline;">
+                                <input type="hidden" name="redirectContext" value="view" />
+                                
+                                <button type="submit" th:class="${isSaved} ? 'btn-action btn-unsave' : 'btn-action btn-save'">
+                                    <span th:text="${isSaved} ? 'Unsave Recipe' : 'Save to Cookbook'">Toggle Save</span>
+                                </button>
+                            </form>
+                        </th:block>
                     </th:block>
 
                     <!-- ACTION 2: CENTRAL UNPUBLISH CONFIRMATION CONTROLLER -->
