@@ -7,6 +7,12 @@
 <head>
     <title th:text="${recipe.title}">Tasty Recipe Title</title>
     <th:block layout:fragment="page_styles">
+        <meta property="og:title" th:content="${recipe.title}" />
+        <meta property="og:description" th:content="${recipe.description}" />
+        <meta property="og:image" th:content="${apiHost} + '/images/chefbraindribbler.png'" />
+        <meta property="og:url" th:content="${apiHost} + '/view/' + ${recipe.recipeId}" />
+        <meta property="og:type" content="article" />
+
         <link rel="stylesheet" th:href="@{/css/recipes/view.css}" />
     </th:block>
 </head>
