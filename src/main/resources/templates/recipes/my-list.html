@@ -3,7 +3,6 @@
       xmlns:layout="http://ultraq.net.nz"
       layout:decorate="~{fragments/layout}"
       lang="en">
-
 <head>
     <title>My Recipes</title>
 </head>
@@ -49,14 +48,12 @@
             </tr>
 
             <!-- Table Rows Slot (Uses 'item' context variable populated by the fragment) -->
-            <tr th:fragment="recipeRows" th:data-href="@{/recipes/view/{id}(id=${item.recipeId})}"
+            <tr th:fragment="recipeRows" th:data-href="@{/view/{id}(id=${item.recipeId})}"
                 style="cursor: pointer;">
                 <td data-label="Actions" class="actions-cell">
                     <div class="admin-btn-group" style="display: inline-flex; gap: 6px;">
-                        <a
-                            th:replace="~{fragments/actions :: editLink(targetUrl=@{/recipes/edit/{id}(id=${item.recipeId})})}"></a>
-                        <a
-                            th:replace="~{fragments/actions :: viewLink(targetUrl=@{/recipes/view/{id}(id=${item.recipeId})})}"></a>
+                        <a th:replace="~{fragments/actions :: editLink(targetUrl=@{/recipes/edit/{id}(id=${item.recipeId})})}"></a>
+                        <a th:replace="~{fragments/actions :: viewLink(targetUrl=@{/view/{id}(id=${item.recipeId})})}"></a>
                     </div>
                 </td>
                 <td data-label="Title">
@@ -78,8 +75,9 @@
             </tr>
 
         </div>
-        <script th:src="@{/js/recipes/my-list.js}"></script>
     </main>
+    <th:block layout:fragment="page_scripts">
+        <script th:src="@{/js/recipes/my-list.js}"></script>
+    </th:block> 
 </body>
-
 </html>

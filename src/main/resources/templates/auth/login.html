@@ -6,7 +6,6 @@
       lang="en">
 <head>
     <title>Login</title>
-    <link rel="stylesheet" th:href="@{/css/admin/auth.css}" />
 </head>
 
 <body>
@@ -74,11 +73,10 @@
                 </p>
             </div>
         </div>
-
-        <!-- Safe inline body element script registration -->
-        <script th:src="@{/js/admin/auth.js}"></script>
     </main>
-
+    <th:block layout:fragment="page_scripts">
+        <script th:src="@{/js/admin/auth.js}"></script>
+    </th:block> 
 </body>
 </html>
 

@@ -99,12 +99,9 @@ public class SecurityConfig {
                                         .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.FORWARD)
                                         .permitAll()
                                         .requestMatchers("/error").permitAll()
-                                        .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**")
-                                        .permitAll()
+                                        .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
                                         .requestMatchers("/", "/search", "/register", "/login", "/verify",
-                                                        "/password/forgot", "/password/reset")
-                                        .permitAll()
-
+                                                        "/password/forgot", "/password/reset").permitAll()
                                         .requestMatchers("/search/**").permitAll()
                                         .requestMatchers("/view/**").permitAll()
 
@@ -131,26 +128,24 @@ public class SecurityConfig {
                                                         response.sendRedirect("/login?systemError");
                                                 }
                                         })
-                                        // Inject or extract the RememberMeServices bean configuration state
-.failureHandler((request, response, exception) -> {
-    RememberMeServices rms = http.getSharedObject(RememberMeServices.class);
-    if (rms != null) {
-        rms.loginFail(request, response);
-    }
+                                .failureHandler((request, response, exception) -> {
+                                                RememberMeServices rms = http.getSharedObject(RememberMeServices.class);
+                                                if (rms != null) {
+                                                        rms.loginFail(request, response);
+                                                }
 
-    if (exception instanceof AuthenticationExceptions.IpBruteForceLockedException) {
-        response.sendRedirect("/login?iplocked");
-    } else if (exception instanceof AuthenticationExceptions.AccountInactiveException) {
-        response.sendRedirect("/login?inactive");
-    } else if (exception instanceof AuthenticationExceptions.AccountUnverifiedException) {
-        response.sendRedirect("/login?unverified");
-    } else if (exception instanceof BadCredentialsException) {
-        response.sendRedirect("/login?error");
-    } else {
-        response.sendRedirect("/login?systemError");
-    }
-})
-
+                                                if (exception instanceof AuthenticationExceptions.IpBruteForceLockedException) {
+                                                        response.sendRedirect("/login?iplocked");
+                                                } else if (exception instanceof AuthenticationExceptions.AccountInactiveException) {
+                                                        response.sendRedirect("/login?inactive");
+                                                } else if (exception instanceof AuthenticationExceptions.AccountUnverifiedException) {
+                                                        response.sendRedirect("/login?unverified");
+                                                } else if (exception instanceof BadCredentialsException) {
+                                                        response.sendRedirect("/login?error");
+                                                } else {
+                                                        response.sendRedirect("/login?systemError");
+                                                }
+                                        })
                                         .permitAll())
                                 .logout(logout -> logout
                                         .logoutUrl("/logout")
@@ -159,7 +154,6 @@ public class SecurityConfig {
                                         .clearAuthentication(true)
                                         .deleteCookies("RECIPE_JSESSIONID", "JSESSIONID", "XSRF-TOKEN", "remember-me") // Added cookie wipe tracking target
                                         .permitAll())
-                                        // --- ENABLE PERSISTENT REMEMBER ME HANDSHAKES ---
                                 .rememberMe(remember -> remember
                                         .tokenRepository(persistentTokenRepository())
                                         .userDetailsService(userDetailsService)

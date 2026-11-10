@@ -5,7 +5,9 @@
       lang="en">
 <head>
     <title>Master Ingredients</title>
-    <link rel="stylesheet" th:href="@{/css/admin/ingredients-list.css}" />
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" th:href="@{/css/admin/ingredients-list.css}" />
+    </th:block>
 </head>
 
 <body>

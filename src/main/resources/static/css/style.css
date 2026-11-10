@@ -321,6 +321,8 @@ p {
     padding: 2rem 3rem;
     background: var(--color-bg-card);
     border-radius: 1rem;
+    min-height: 100%;
+    margin: auto;
 }
 
 /* ==========================================================================

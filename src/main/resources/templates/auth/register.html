@@ -6,7 +6,9 @@
       lang="en">
 <head>
     <title>Register</title>
-    <link rel="stylesheet" th:href="@{/css/admin/auth.css}" />
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" th:href="@{/css/admin/auth.css}" />
+    </th:block>
 </head>
 
 <body>
@@ -82,9 +84,8 @@
             </p>
         </div>
     </main>
-
-    <div th:replace="~{fragments/layout :: footer}"></div>
-
-    <script th:src="@{/js/admin/auth.js}"></script>
+    <th:block layout:fragment="page_scripts">
+        <script th:src="@{/js/admin/auth.js}"></script>
+    </th:block> 
 </body>
 </html>

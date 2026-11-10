@@ -30,6 +30,9 @@ public class GlobalAdvice {
     @Value("${app.config.environment}")
     private EnvironmentConfig currentEnv;
 
+    @Value("${app.api.host}")
+    private String apiHost;
+
     // Thread-safe centralized logger instance for the recipe platform engine
     private static final Logger logger = LoggerFactory.getLogger(GlobalAdvice.class);
 
@@ -40,6 +43,11 @@ public class GlobalAdvice {
     GlobalAdvice(GitProperties gitProperties, RecipeService recipeService) {
         this.gitProperties = gitProperties;
         this.recipeService = recipeService;
+    }
+
+    @ModelAttribute("apiHost")
+    public String getApiHost() {
+        return apiHost;
     }
 
     @ModelAttribute

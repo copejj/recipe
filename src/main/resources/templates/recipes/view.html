@@ -6,7 +6,15 @@
 
 <head>
     <title th:text="${recipe.title}">Tasty Recipe Title</title>
-    <link rel="stylesheet" th:href="@{/css/recipes/view.css}" />
+    <th:block layout:fragment="page_styles">
+        <meta property="og:title" th:content="${recipe.title}" />
+        <meta property="og:description" th:content="${recipe.description}" />
+        <meta property="og:image" th:content="${apiHost} + '/images/chefbraindribbler.png'" />
+        <meta property="og:url" th:content="${apiHost} + '/view/' + ${recipe.recipeId}" />
+        <meta property="og:type" content="article" />
+
+        <link rel="stylesheet" th:href="@{/css/recipes/view.css}" />
+    </th:block>
 </head>
 
 <body>
@@ -91,13 +99,12 @@
         <div id="list-panel" class="tab-panel" style="display: none;">
             <div th:insert="~{recipes/views/list :: list-view}"></div>
         </div>
-
-        <script th:src="@{/js/recipes/view.js}"></script>
-
+    </main>
+    <th:block layout:fragment="page_scripts">
         <script th:inline="javascript">
             window.MEASUREMENT_MATRIX = /*[[${globalMeasurementsPool}]]*/[];
         </script>
-    </main>
+        <script th:src="@{/js/recipes/view.js}"></script>
+    </th:block> 
 </body>
-
 </html>

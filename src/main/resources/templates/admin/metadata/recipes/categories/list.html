@@ -6,7 +6,9 @@
       lang="en">
 <head>
     <title>Recipe Categories</title>
-    <link rel="stylesheet" th:href="@{/css/admin/categories-list.css}" />
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" th:href="@{/css/admin/categories-list.css}" />
+    </th:block>
 </head>
 
 <body>
@@ -91,7 +93,9 @@
 
             </div>
         </div>
-        <script th:src="@{/js/admin/recipe-categories-list.js}"></script>
     </main>
+    <th:block layout:fragment="page_scripts">
+        <script th:src="@{/js/admin/recipe-categories-list.js}"></script>
+    </th:block> 
 </body>
 </html>

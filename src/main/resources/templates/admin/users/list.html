@@ -4,10 +4,10 @@
       layout:decorate="~{fragments/layout}"
       lang="en">
 <head>
-    <!-- put your title here -->
     <title>User Management</title>
-    <!-- put your css here -->
-    <link rel="stylesheet" th:href="@{/css/recipes/view.css}" />
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" th:href="@{/css/recipes/view.css}" />
+    </th:block>
 </head>
 
 <body>
@@ -71,7 +71,9 @@
                 </th:block>
             </div>
         </div>
-        <script th:src="@{/js/admin/user-list.js}"></script>
     </main>
+    <th:block layout:fragment="page_scripts">
+        <script th:src="@{/js/admin/user-list.js}"></script>
+    </th:block> 
 </body>
 </html>

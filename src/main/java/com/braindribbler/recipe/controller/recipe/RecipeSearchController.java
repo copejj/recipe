@@ -1,8 +1,6 @@
 package com.braindribbler.recipe.controller.recipe;
 
 import com.braindribbler.recipe.domain.recipe.Recipe;
-import com.braindribbler.recipe.domain.recipe.RecipeStepIngredient;
-import com.braindribbler.recipe.domain.recipe.Ingredient;
 import com.braindribbler.recipe.service.recipe.RecipeCategoryService;
 import com.braindribbler.recipe.service.recipe.RecipeService;
 import com.braindribbler.recipe.domain.auth.User;
@@ -39,24 +37,24 @@ public class RecipeSearchController {
     @GetMapping("/search")
     public String unifiedSearchConsole(
             @RequestParam(value = "ingredientIds", required = false) List<Integer> ingredientIds,
-            @RequestParam(value = "recipeCategoryId", required = false) Integer recipeCategoryId, // ◄ ADD THIS
+            @RequestParam(value = "recipeCategoryId", required = false) Integer recipeCategoryId, 
             Model model,
             @AuthenticationPrincipal RecipeUserDetails currentUser) {
 
-        User userProfile = (currentUser != null) ? currentUser.getUserProfile() : null; //
+        User userProfile = (currentUser != null) ? currentUser.getUserProfile() : null; 
 
         // 1. Always supply master metadata selection pools on every view load
-        model.addAttribute("ingredientPool", recipeService.getAllIngredientsAlphabetical()); //
-        model.addAttribute("categoryPool", recipeCategoryService.getAllCategories()); // ◄ ADD THIS
+        model.addAttribute("ingredientPool", recipeService.getAllIngredientsAlphabetical()); 
+        model.addAttribute("categoryPool", recipeCategoryService.getAllCategories());
 
         List<Recipe> tableRowsPool;
-        boolean isFilteredView = false; //
+        boolean isFilteredView = false; 
 
         // 2. Load matching recipe subset if ingredient parameters exist
-        if (ingredientIds != null && !ingredientIds.isEmpty()) { //
-            tableRowsPool = recipeService.searchByIngredientsOnHand(ingredientIds, userProfile); //
+        if (ingredientIds != null && !ingredientIds.isEmpty()) { 
+            tableRowsPool = recipeService.searchByIngredientsOnHand(ingredientIds, userProfile); 
             isFilteredView = true; //
-            model.addAttribute("activeFilterIds", ingredientIds); //
+            model.addAttribute("activeFilterIds", ingredientIds); 
         } 
         // 3. NEW: Fallback filter by selected Recipe Category
         else if (recipeCategoryId != null) {
@@ -66,13 +64,13 @@ public class RecipeSearchController {
         }
         // 4. Fall back to loading the comprehensive catalog index generally
         else {
-            tableRowsPool = recipeService.getGeneralBrowsingPool(userProfile); //
+            tableRowsPool = recipeService.getGeneralBrowsingPool(userProfile);
         }
 
-        model.addAttribute("recipesIndexPool", tableRowsPool); //
-        model.addAttribute("isFilteredView", isFilteredView); //
+        model.addAttribute("recipesIndexPool", tableRowsPool); 
+        model.addAttribute("isFilteredView", isFilteredView); 
 
-        return "recipes/search/dashboard"; //
+        return "recipes/search/dashboard";
     }
 
     // Handles: /view/4de5677f-3370-4ff9-af60-8f9c44fc4d88
