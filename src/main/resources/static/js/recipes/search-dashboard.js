@@ -1,28 +1,33 @@
 $(document).ready(function () {
-    // 1. Destroy the generic initialization so we can re-map custom layouts
     var tableId = '#generalIndexTable';
-    if ($.fn.DataTable.isDataTable(tableId)) {
-        $(tableId).DataTable().destroy();
+
+    // 1. Pack configuration into a clean, reusable function to prevent layout freezing on updates
+    function initializeDataTable() {
+        if ($.fn.DataTable.isDataTable(tableId)) {
+            $(tableId).DataTable().destroy();
+        }
+
+        $(tableId).DataTable({
+            "paging": true,
+            "searching": true,
+            "order": [[3, 'asc']],
+            "ordering": true,
+            "info": true,
+            "pageLength": -1, // Displays ALL records by default on page load
+            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+            "language": {
+                "emptyTable": "No data available in table"
+            },
+            "columnDefs": [
+                { "orderable": false, "targets": 0 }, // Disable sorting on actions
+                { "width": "5rem", "targets": 0 }
+            ],
+            "autoWidth": false // Prevents DataTables from guessing and forcing bad layout stretching
+        });
     }
 
-    // 2. Re-initialize with explicit width controls and all-row paging defaults
-    $(tableId).DataTable({
-        "paging": true,
-        "searching": true,
-        "order": [[3, 'asc']],
-        "ordering": true,
-        "info": true,
-        "pageLength": -1, // <-- Core Fix: Displays ALL records by default on page load
-        "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
-        "language": {
-            "emptyTable": "No data available in table"
-        },
-        "columnDefs": [
-            { "orderable": false, "targets": 0 }, // Disable sorting on actions
-            { "width": "5rem", "targets": 0 }
-        ],
-        "autoWidth": false // Prevents DataTables from guessing and forcing bad layout stretching
-    });
+    // Initialize the grid layout on first load
+    initializeDataTable();
 
     var selectedIngredients = {};
 
@@ -101,7 +106,6 @@ $(document).ready(function () {
     }
 
     // ROW CLICK LISTENER FOR DATA TABLE INTERACTION
-    // Delegated to the document scope to remain fully operational with asynchronous or custom-built DataTables pools
     $(document).on("click", "#generalIndexTable tbody tr", function (event) {
         if ($(event.target).closest(".btn-view").length) return;
         var href = $(this).data("href");
@@ -138,6 +142,8 @@ $(document).ready(function () {
             // Inject them back into the DOM safely
             $('.table-responsive-wrapper').html(newTable);
             $('.index-section-header').html(newHeader);
+
+            initializeDataTable();
 
             // Restore clarity to the updated view
             $('.table-responsive-wrapper, .index-section-header').css('opacity', '1');
