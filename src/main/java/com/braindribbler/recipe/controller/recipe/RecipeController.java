@@ -152,7 +152,9 @@ public class RecipeController {
         }
 
         var domainUser = currentUser.getUserProfile();
-        List<Recipe> userRecipes = recipeService.getRecipesByUserId(domainUser.getUserId());
+        int currentUserId = domainUser.getUserId();
+        List<Recipe> userRecipes = recipeService.getRecipesByUserId(currentUserId);
+        model.addAttribute("currentUserId", currentUserId);
         model.addAttribute("recipes", userRecipes);
         model.addAttribute("userDisplayName", domainUser.getDisplayName());
 
@@ -247,6 +249,12 @@ public class RecipeController {
         if (visibilityId == 2 && !canEdit && !hasHidePermission) return "redirect:/search?unauthorized";
         if (visibilityId == 3 && !canEdit) return "redirect:/search?unauthorized";
 
+        // FIXED: Safely evaluate save status using your active transactional service layer instead of lazy object properties
+        boolean isSaved = false;
+        if (userProfile != null) {
+            isSaved = recipeService.isRecipeSavedByUser(recipe.getRecipeId(), userProfile.getUserId());
+        }
+
         // Pulls exclusively from your optimized MetadataLookupService cache map abstraction
         List<Measurement> measurementsPool = metadataLookupService.getAllMeasurements();
         List<Recipe> singleRecipeSelection = Collections.singletonList(recipe);
@@ -261,6 +269,10 @@ public class RecipeController {
         model.addAttribute("canEdit", canEdit);
         model.addAttribute("isOwner", canEdit);
         model.addAttribute("canHide", hasHidePermission && visibilityId != 2);
+        
+        // Expose parameters cleanly to Thymeleaf templates
+        model.addAttribute("isSaved", isSaved);
+        model.addAttribute("currentUser", currentUser); 
         
         model.addAttribute("singleRecipeAggregatedIngredients", lineItemIngredients);
         model.addAttribute("shoppingListAggregatedIngredients", combinedShoppingList);
@@ -277,5 +289,38 @@ public class RecipeController {
         model.addAttribute("visibilities", metadataLookupService.getAllVisibilities());
         model.addAttribute("groceryCategories", ingredientService.getAllGroceryCategoriesSortedByOrder());
         model.addAttribute("classifications", IngredientClassification.values());
+    }
+
+    @PostMapping("/recipes/save/{id}")
+    public String toggleRecipeSave(
+            @PathVariable("id") Integer recipeId,
+            @RequestParam(value = "redirectContext", defaultValue = "view") String redirectContext,
+            RedirectAttributes redirectAttributes,
+            @AuthenticationPrincipal RecipeUserDetails currentUser) {
+
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            User domainUser = currentUser.getUserProfile();
+            
+            // Calls your toggle service method
+            boolean isSaved = recipeService.toggleRecipeSaveStatus(recipeId, domainUser);
+
+            if (isSaved) {
+                redirectAttributes.addFlashAttribute("successMessage", "Recipe added to your cookbook!");
+            } else {
+                redirectAttributes.addFlashAttribute("successMessage", "Recipe removed from your cookbook.");
+            }
+        } catch (IllegalArgumentException | jakarta.persistence.EntityNotFoundException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+
+        // Redirect safely depending on where the user clicked the button
+        if ("list".equalsIgnoreCase(redirectContext)) {
+            return "redirect:/recipes/my-list";
+        }
+        return "redirect:/view/" + recipeId;
     }
 }

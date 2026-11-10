@@ -5,29 +5,32 @@
       lang="en">
 <head>
     <title>My Recipes</title>
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" th:href="@{/css/recipes/my-list.css}" />
+    </th:block>
 </head>
 
 <body>
     <div layout:fragment="page-title">My Cookbook</div>
     <p layout:fragment="page-subtitle">Browse, review, or modify your personalized library of culinary concoctions.</p>
+    
     <main layout:fragment="content">
-        <div>
+        <div class="action-bar">
             <th:block th:fragment="cookbookButtons">
-                <a th:href="@{/recipes/create}" class="btn btn--primary"
-                    style="white-space: nowrap; width: 100%; max-width: 200px; text-align: center; padding: 10px 16px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; height: 44px; box-sizing: border-box;">
+                <a th:href="@{/recipes/create}" class="btn btn--primary btn-add-recipe">
                     + Add Recipe
                 </a>
             </th:block>
         </div>
 
-        <div class="notifications-wrapper" style="width: 100%; max-width: 1200px; margin: 0 auto;">
-            <div th:if="${successMessage}"
-                style="background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 14px 20px; margin-bottom: 20px; border-radius: 6px; font-weight: 600; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <span>💾</span> <span th:text="${successMessage}">Success!</span>
+        <div class="notifications-wrapper">
+            <div th:if="${successMessage}" class="alert alert--success">
+                <span class="alert-icon">💾</span> 
+                <span th:text="${successMessage}">Success!</span>
             </div>
-            <div th:if="${errorMessage}"
-                style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 14px 20px; margin-bottom: 20px; border-radius: 6px; font-weight: 600; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <span>⚠️</span> <span th:text="${errorMessage}">Error!</span>
+            <div th:if="${errorMessage}" class="alert alert--error">
+                <span class="alert-icon">⚠️</span> 
+                <span th:text="${errorMessage}">Error!</span>
             </div>
         </div>
 
@@ -40,42 +43,46 @@
 
             <!-- Table Headers Slot -->
             <tr th:fragment="recipeHeaders">
-                <th style="text-align: left; width: 15%;">Actions</th>
+                <th>Actions</th>
+                <th>Chef</th>
                 <th>Title</th>
                 <th>Summary</th>
-                <th style="width: 12%;">Servings</th>
-                <th style="width: 15%;">Visibility</th>
+                <th>Servings</th>
+                <th>Visibility</th>
             </tr>
 
-            <!-- Table Rows Slot (Uses 'item' context variable populated by the fragment) -->
-            <tr th:fragment="recipeRows" th:data-href="@{/view/{id}(id=${item.recipeId})}"
-                style="cursor: pointer;">
+            <!-- Table Rows Slot -->
+            <tr th:fragment="recipeRows" 
+                th:data-href="@{/view/{id}(id=${item.recipeId})}"
+                th:classappend="${iterStat != null and iterStat.even} ? 'row-even' : ''"
+                class="recipe-table-row">
+                
                 <td data-label="Actions" class="actions-cell">
-                    <div class="admin-btn-group" style="display: inline-flex; gap: 6px;">
-                        <a th:replace="~{fragments/actions :: editLink(targetUrl=@{/recipes/edit/{id}(id=${item.recipeId})})}"></a>
+                    <div class="admin-btn-group">
+                        <th:block th:if="${item.user.userId == currentUserId}">
+                            <a th:replace="~{fragments/actions :: editLink(targetUrl=@{/recipes/edit/{id}(id=${item.recipeId})})}"></a>
+                        </th:block>
                         <a th:replace="~{fragments/actions :: viewLink(targetUrl=@{/view/{id}(id=${item.recipeId})})}"></a>
                     </div>
                 </td>
-                <td data-label="Title">
-                    <strong th:text="${item.title}"
-                        style="font-weight: 700; color: var(--color-text-dark); font-size: 1.05rem; display: block;">
-                        Title </strong>
+                <td data-label="Chef" class="display-name-cell">
+                    <span class="badge-permission table-chef-badge" 
+                        th:text="${item.user.displayName != null ? item.user.displayName : 'Anonymous'}">Anonymous</span>
                 </td>
-                <td data-label="Summary"
-                    th:text="${item.description != null && !item.description.isEmpty() ? item.description : 'No description provided.'}"
-                    style="color: var(--color-text-muted); font-size: 0.9rem;"> Description </td>
-                <td data-label="Servings">
+                <td data-label="Title" class="recipe-title-cell" th:text="${item.title}">Title</td>
+                <td data-label="Summary" class="recipe-description-cell"
+                    th:text="${item.description != null && !item.description.isEmpty() ? item.description : 'No description provided.'}">Description</td>
+                <td data-label="Servings" class="recipe-servings-cell">
                     <span th:text="${item.servings != null ? item.servings : '—'}">4</span> ppl
                 </td>
-                <td data-label="Visibility">
-                    <span class="badge-permission"
-                        th:text="${item.recipeVisibility != null ? item.recipeVisibility.visibilityName : 'Public'}"
-                        style="padding: 4px 8px; font-size: 0.8rem; border-radius: 4px; background-color: var(--color-bg-disabled, #eee); color: var(--color-text-dark);">Public</span>
+                <td data-label="Visibility" class="recipe-visibility-cell">
+                    <span class="badge-permission table-visibility-badge"
+                        th:text="${item.recipeVisibility != null ? item.recipeVisibility.visibilityName : 'Public'}">Public</span>
                 </td>
             </tr>
-
         </div>
     </main>
+
     <th:block layout:fragment="page_scripts">
         <script th:src="@{/js/recipes/my-list.js}"></script>
     </th:block> 

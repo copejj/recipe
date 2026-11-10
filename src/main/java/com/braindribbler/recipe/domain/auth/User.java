@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import com.braindribbler.recipe.domain.recipe.Recipe;
+
 @Entity
 @Table(name = "users")
 public class User {
@@ -47,6 +49,17 @@ public class User {
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles", schema = "public", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
+
+    // Inside com.braindribbler.recipe.domain.auth.User
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "recipe_saves",
+        schema = "public",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "recipe_id")
+    )
+    private Set<Recipe> savedRecipes = new java.util.HashSet<>();
 
     public User() {
     }
@@ -161,5 +174,13 @@ public class User {
 
     public void addRole(Role role) {
         this.roles.add(role);
+    }
+
+    public Set<Recipe> getSavedRecipes() {
+        return savedRecipes;
+    }
+
+    public void setSavedRecipes(Set<Recipe> savedRecipes) {
+        this.savedRecipes = savedRecipes;
     }
 }

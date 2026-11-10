@@ -3,8 +3,10 @@ package com.braindribbler.recipe.repository.recipe;
 import com.braindribbler.recipe.domain.recipe.Recipe;
 import com.braindribbler.recipe.dto.recipe.RecipeStats;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -58,4 +60,20 @@ public interface RecipeRepository extends JpaRepository<Recipe, Integer> {
                         ") " +
                         "FROM Recipe r WHERE r.user.userId = :userId")
         RecipeStats getRecipeStatsByUserId(@Param("userId") Integer userId);
+
+        @Query("SELECT r FROM Recipe r " +
+                "LEFT JOIN r.user u " +
+                "WHERE u.userId = :userId " +
+                "OR (r.recipeVisibility.recipeVisibilityId = 1 AND :userId IN (SELECT su.userId FROM r.savedByUsers su))")
+        List<Recipe> findCookbookRecipes(@Param("userId") Integer userId);
+
+        @Modifying
+        @Transactional
+        @Query(value = "INSERT INTO recipe_saves (user_id, recipe_id) VALUES (:userId, :recipeId) ON CONFLICT DO NOTHING", nativeQuery = true)
+        void nativeSaveRecipe(@Param("userId") Integer userId, @Param("recipeId") Integer recipeId);
+
+        @Modifying
+        @Transactional
+        @Query(value = "DELETE FROM recipe_saves WHERE user_id = :userId AND recipe_id = :recipeId", nativeQuery = true)
+        void nativeUnsaveRecipe(@Param("userId") Integer userId, @Param("recipeId") Integer recipeId);
 }

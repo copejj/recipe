@@ -21,7 +21,8 @@ $(document).ready(function () {
                 },
                 "columnDefs": [
                     { "orderable": false, "targets": 0 }
-                ]
+                ],
+                "stripeClasses": ['', 'row-even'] 
             });
         }
     });

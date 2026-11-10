@@ -130,8 +130,10 @@ public class RecipeService {
 
     @Transactional(readOnly = true)
     public List<Recipe> getRecipesByUserId(Integer userId) {
-        // Calls your existing repository method hook cleanly
-        return recipeRepository.findByUserUserId(Long.valueOf(userId));
+        if (userId == null) {
+            return Collections.emptyList();
+        }
+        return recipeRepository.findCookbookRecipes(userId);
     }
 
     @Transactional(readOnly = true)
@@ -461,5 +463,41 @@ public class RecipeService {
 
         recipe.setRecipeVisibility(privateVisibility);
         recipeRepository.save(recipe);
+    }
+
+    @Transactional
+    public boolean toggleRecipeSaveStatus(Integer recipeId, User userEntity) {
+        Recipe recipe = recipeRepository.findById(recipeId)
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Recipe not found with ID: " + recipeId));
+
+        // Security validation
+        if (recipe.getRecipeVisibility().getRecipeVisibilityId() != 1 
+                && !recipe.getUser().getUserId().equals(userEntity.getUserId())) {
+            throw new IllegalArgumentException("Cannot save a restricted or private recipe belonging to another user.");
+        }
+
+        // Use your clean, exception-safe boolean checker method
+        boolean isAlreadySaved = isRecipeSavedByUser(recipeId, userEntity.getUserId());
+
+        if (isAlreadySaved) {
+            recipeRepository.nativeUnsaveRecipe(userEntity.getUserId(), recipeId);
+            return false; // Returns false because it is now unsaved
+        } else {
+            recipeRepository.nativeSaveRecipe(userEntity.getUserId(), recipeId);
+            return true;  // Returns true because it is now saved
+        }
+    }
+
+    // Add this method to com.braindribbler.recipe.service.recipe.RecipeService
+    @Transactional(readOnly = true)
+    public boolean isRecipeSavedByUser(Integer recipeId, Integer userId) {
+        if (recipeId == null || userId == null) {
+            return false;
+        }
+        // Hibernate safely loads the collections here inside an active transactional session
+        return recipeRepository.findById(recipeId)
+                .map(recipe -> recipe.getSavedByUsers().stream()
+                        .anyMatch(user -> user.getUserId().equals(userId)))
+                .orElse(false);
     }
 }
