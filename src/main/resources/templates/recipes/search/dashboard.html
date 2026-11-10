@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
+<html xmlns:th="http://thymeleaf.org"
       xmlns:layout="http://ultraq.net.nz"
       layout:decorate="~{fragments/layout}"
       lang="en">
@@ -13,17 +13,35 @@
 
 <body>
     <div layout:fragment="page-title">Recipe Discovery Hub</div>
-    <p layout:fragment="page-subtitle"> Browse the complete available catalog generally, or add specific ingredients and categories to find tailored meal matches. </p>
+    <p layout:fragment="page-subtitle">
+        Browse the complete available catalog generally, or add specific ingredients and categories to find tailored meal matches.
+    </p>
     <main layout:fragment="content">
         <div>
+            <h4 th:if="${#authorization.expression('isAuthenticated()')}">
+                    As a registered member, you can also save your favorite discoveries straight 
+                    to your personal cookbook!
+            </h4>
+            <h4 th:unless="${#authorization.expression('isAuthenticated()')}">
+                    Have you <a th:href="@{/register}" class="cookbook-signin-link">Registered</a>?
+                    As a registered member, you can <a th:href="@{/login}" class="cookbook-signin-link">Sign in</a> 
+                    to save these recipes directly to your personal cookbook.
+            </h4>
+        </div>
+
+        <div>
             <h3>Unified Catalog Filters</h3>
-            <p class="filter-column-subtitle">Filter your catalog search directly by selecting an overarching recipe category type, choosing specific ingredients on hand, or combining both criteria.</p>
+            <p class="filter-column-subtitle">
+                Optimize your search by adding specific ingredients on hand.
+            </p>
+            <p class="filter-column-subtitle">
+                You can also click directly on any <em>Chef</em> or <em>Category</em> badge in the table 
+                below to instantly refine your view by that specific attribute.
+            </p>
 
             <form id="searchForm" th:action="@{/search}" method="get">
-                
                 <!-- PARALLEL GRID LAYOUT FOR BALANCED FILTER FIELDS -->
                 <div class="filter-row">
-                    
                     <div class="filter-column">
                         <label for="fridgeSelect">Match Ingredients on Hand</label>
                         <select id="fridgeSelect" class="form-input select2-quick-add">
@@ -32,7 +50,6 @@
                                 th:text="${ing.ingredientName}"></option>
                         </select>
                     </div>
-
                 </div>
 
                 <!-- Active Ingredient Selection Tag Cloud Row Container -->
@@ -51,12 +68,6 @@
                 <div id="hiddenInputsContainer">
                     <input th:each="id : ${activeFilterIds}" type="hidden" name="ingredientIds" th:value="${id}" />
                 </div>
-
-                <!-- Clean Form Action Navigation Footer -->
-                <div class="filter-action-tray">
-                    <button type="submit" class="btn btn--primary btn--apply">Apply Search Filters</button>
-                    <a th:if="${isFilteredView}" th:href="@{/search}" class="btn btn--reset">Reset Dashboard</a>
-                </div>
             </form>
         </div>
 
@@ -66,13 +77,12 @@
             <h2 th:unless="${isFilteredView}">Browse All Available Recipes</h2>
 
             <p class="filter-column-subtitle">
-                <span th:if="${isFilteredView}">Showing recipes matching your active taxonomy criteria parameters.</span>
-                <span th:unless="${isFilteredView}">Explore our complete public recipe database catalog instantly.</span>
+                <span th:if="${isFilteredView}">Showing recipes matching your active taxonomy criteria parameters. Click highlighted badges to remove column filters.</span>
+                <span th:unless="${isFilteredView}">Explore our complete public recipe database catalog instantly. Click table badges to isolate specific chefs or styles.</span>
             </p>
         </div>
 
         <div class="table-responsive-wrapper">
-            
             <!-- Central DataTables Layout Component Integration Hook -->
             <div th:replace="~{fragments/datatable :: genericTable(
                 tableId='generalIndexTable',
@@ -95,13 +105,12 @@
                 <!-- 2. Define Row Structure Fragment Layout -->
                 <th:block th:fragment="recipeRow">
                     <tr th:data-href="@{/view/{recipeId}(recipeId=${item.recipeId})}">
-
                         <td class="table-action-cell" data-label="Actions">
                             <a th:replace="~{fragments/actions :: viewLink(targetUrl=@{/view/{recipeId}(recipeId=${item.recipeId})})}"></a>
                         </td>
 
                         <td class="table-category-cell" data-label="Category">
-                            <span class="badge-permission table-category-badge" 
+                            <span class="badge-permission table-category-badge clickable-category-badge" 
                                     th:text="${item.recipeCategory != null ? item.recipeCategory.name : 'General'}">General</span>
                         </td>
 
@@ -119,9 +128,7 @@
                         </td>
                     </tr>
                 </th:block>
-
             </div>
-
         </div>
     </main>
     <th:block layout:fragment="page_scripts">

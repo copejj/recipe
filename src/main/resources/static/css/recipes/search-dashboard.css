@@ -128,32 +128,29 @@ select.form-input-unified:focus,
     font-weight: 700;
 }
 
-/* Action Form Footer Tray Layout */
-.filter-action-tray {
-    display: flex;
-    gap: 12px;
-    margin-top: 24px;
-    padding-top: 16px;
-    border-top: 1px solid var(--color-border);
+/* Master Data Table Interactive Badge Elements */
+.table-chef-badge,
+.clickable-category-badge {
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
 }
 
-.filter-action-tray .btn--apply {
-    background-color: var(--color-success-raw);
-    width: auto;
+.table-chef-badge:hover,
+.clickable-category-badge:hover {
+    filter: brightness(0.85);
+    transform: scale(1.05);
 }
 
-.filter-action-tray .btn--reset {
-    width: auto;
-    background-color: var(--color-bg-disabled);
-    color: var(--color-text-label);
-    text-decoration: none;
-    border-radius: 6px;
-    padding: 12px 20px;
-    font-weight: 600;
-    font-size: 1rem;
+/* High contrast selection styles for client-side search filtering matches */
+.table-chef-badge.filter-matching,
+.clickable-category-badge.filter-matching {
+    background-color: var(--color-accent-secondary, #ffc107) !important;
+    color: #1a1a1a !important;
+    font-weight: 700;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-/* Master Data Table Category Badges Elements */
 .table-category-badge {
     padding: 4px 8px;
     border-radius: 4px;
@@ -175,4 +172,48 @@ td.table-title-cell {
 
 td.table-description-cell {
     font-size: small;
+}
+
+/* Master Data Table Interactive Badge Elements */
+.table-chef-badge,
+.clickable-category-badge {
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+}
+
+.table-chef-badge:hover,
+.clickable-category-badge:hover {
+    filter: brightness(0.85);
+    transform: scale(1.05);
+}
+
+/* 1. Keep Chef Active Highlight: High contrast amber yellow */
+.table-chef-badge.filter-matching {
+    background-color: var(--color-accent-secondary, #ffc107) !important;
+    color: #1a1a1a !important;
+    font-weight: 700;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* 2. NEW Category Active Highlight: Colored inline with text color (Subtle Blueprint Theme) */
+.clickable-category-badge.filter-matching {
+    /* Uses a transparent variation of your text/primary color for a beautiful matching tint */
+    background-color: var(--color-badge-blue-bg, rgba(0, 123, 255, 0.12)) !important;
+    color: var(--color-badge-blue-text, #0056b3) !important; 
+    border: 1px solid var(--color-badge-blue-text, #0056b3) !important;
+    font-weight: 700;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.cookbook-signin-link {
+    color: var(--color-primary, #007bff);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.15s ease-in-out;
+}
+
+.cookbook-signin-link:hover {
+    color: var(--color-badge-blue-text, #0056b3);
+    text-decoration: underline; /* Optional: adds underline back only when hovering */
 }
