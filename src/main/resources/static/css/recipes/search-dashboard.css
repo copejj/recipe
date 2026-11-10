@@ -168,8 +168,11 @@ select.form-input-unified:focus,
     vertical-align: middle;
 }
 
-.table-title-cell strong {
-    color: var(--color-text-dark);
-    font-size: 1.05rem;
-    display: block;
+td.table-title-cell {
+    font-weight: 600;
+    font-size: small;
+}
+
+td.table-description-cell {
+    font-size: small;
 }

@@ -19,9 +19,7 @@ $(document).ready(function () {
         },
         "columnDefs": [
             { "orderable": false, "targets": 0 }, // Disable sorting on actions
-            { "width": "5rem", "targets": [0, 1, 2] }, 
-            { "width": "10rem", "targets": 3 }    // Snap Display Order input tight
-            { "width": "20rem", "targets": 4 }    // Snap Display Order input tight
+            { "width": "5rem", "targets": 0 }
         ],
         "autoWidth": false // Prevents DataTables from guessing and forcing bad layout stretching
     });
