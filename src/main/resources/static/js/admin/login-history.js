@@ -18,28 +18,8 @@ window.addEventListener('load', function () {
         "ordering": true,
         "paging": true,
         "columnDefs": [
-            {
-                "targets": 0,
-                "render": function (data, type, row) {
-                    if ((type === 'display' || type === 'filter') && data) {
-                        var cleanData = data.trim();
-                        if (cleanData === '—' || cleanData === '') return '—';
-
-                        var date = new Date(cleanData);
-                        if (!isNaN(date.getTime())) {
-                            return date.toLocaleString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric',
-                                hour: 'numeric',
-                                minute: '2-digit',
-                                hour12: true
-                            });
-                        }
-                    }
-                    return data;
-                }
-            }
+            { "type": "num", "targets": 1 },
+            { "orderable": false, "targets": 0 },
         ],
         "language": {
             "search": "Filter Logs:",

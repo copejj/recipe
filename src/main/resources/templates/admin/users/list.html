@@ -29,6 +29,7 @@
                         <th>Action</th>
                         <th>Display</th>
                         <th>Email</th>
+                        <th>Created On</th>
                         <th>Last Login</th>
                         <th>Verification Status</th>
                         <th>Account Status</th>
@@ -49,7 +50,15 @@
                         </td>
                         <td data-label="Display" class="role-name-cell" th:text="${item.displayName}">SousChefJane </td>
                         <td data-label="Email" th:text="${item.userAuth != null ? item.userAuth.email : 'N/A'}">chef@braindribbler.com</td>
-                        <td data-label="Last Login" th:data-order="${item.userAuth?.lastLogin}">
+                        <td data-label="Created On" th:data-order="${item.createdAt.toInstant().toEpochMilli()}">
+                            <span data-label="Created On" 
+                                class="local-time" 
+                                th:datetime="${item.createdAt}" 
+                                th:text="${item.createdAt}"> 
+                                2026-10-08 15:30
+                            </span>
+                        </td>
+                        <td data-label="Last Login" th:data-order="${item.userAuth?.lastLogin != null ? item.userAuth.lastLogin.toInstant().toEpochMilli() : 0}">
                             <span data-label="lastLogin" 
                                 class="local-time" 
                                 th:datetime="${item.userAuth?.lastLogin}" 
