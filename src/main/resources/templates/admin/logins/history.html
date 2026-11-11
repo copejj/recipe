@@ -6,7 +6,7 @@
 <head>
     <title>Login Logs</title>
     <th:block layout:fragment="page_styles">
-        <link rel="stylesheet" th:href="@{/css/admin/login.css}" />
+        <link rel="stylesheet" th:href="@{/css/admin/login-history.css}" />
     </th:block>
 </head>
 
@@ -33,26 +33,33 @@
             <table id="auditTable" class="display">
                 <thead>
                     <tr>
+                        <th>Actions</th>
                         <th>Timestamp</th>
                         <th>User ID</th>
                         <th>Identity (Actual / Attempted)</th>
                         <th>Network IP Address</th>
                         <th>Status</th>
                         <th>Failure Reason</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr th:each="log : ${rawLogs}">
-
-                        <td th:data-order="${log.loginAt}">
+                        <td>
+                            <form th:if="${!log.successful and log.ipAddress != null}"
+                                th:action="@{/admin/login-history/override}" method="post" class="audit-action-form">
+                                <input type="hidden" name="ipAddress" th:value="${log.ipAddress}" />
+                                <button type="submit" class="btn btn-action btn-action--unblock">
+                                    Unblock
+                                </button>
+                            </form>
+                        </td>
+                        <td th:data-order="${log.loginAt != null ? log.loginAt.toInstant().toEpochMilli() : 0}">
                             <span th:class="${log.loginAt != null ? 'local-time' : ''}"
                                 th:datetime="${log.loginAt}"
                                 th:text="${log.loginAt != null ? log.loginAt : 'N/A'}">
                                 2026-10-11 18:01:00
                             </span>
                         </td>
-
                         <td class="audit-user-id audit-font-monospace">
                             <span th:if="${log.userId != null}" th:text="${log.userId}"
                                 class="clickable-audit-filter user-filter-trigger"
@@ -67,43 +74,22 @@
                                 th:text="${log.attemptedEmail != null ? log.attemptedEmail : '—'}"> Typed:
                                 chef_typo@braindribbler.com</div>
                         </td>
-
-                        <!-- 4. Network IP Address -->
                         <td class="audit-font-monospace">
                             <span th:if="${log.ipAddress != null}" th:text="${log.ipAddress}"
                                 class="clickable-audit-filter ip-filter-trigger"
                                 th:data-ip-address="${log.ipAddress}">127.0.0.1</span>
                             <span th:if="${log.ipAddress == null}" class="audit-user-id--empty">—</span>
                         </td>
-
-                        <!-- 5. Status Badge (FIXED TO MATCH BOOLEAN METHOD LAUNCH HOOKS) -->
                         <td>
-                            <!-- FIXED: SpEL maps isSuccessful() getter directly to the 'successful' or 'isSuccessful' lookup property -->
                             <span th:if="${log.successful}"
                                 class="audit-badge @alert--success audit-badge--success">SUCCESS</span>
                             <span th:if="${!log.successful}" class="audit-badge audit-badge--failed">FAILED</span>
                         </td>
-
-                        <!-- 6. Failure Reason Diagnostic -->
                         <td th:text="${log.failureReason != null ? log.failureReason : '—'}"
                             th:class="${log.failureReason != null ? 'audit-log-failure audit-log-failure--active' : 'audit-log-failure audit-log-failure--empty'}">
                             —
                         </td>
-
-                        <!-- 7. Inline Whitelist Quick Unblock Actions Override (FIXED LOGIC) -->
-                        <td>
-                            <form th:if="${!log.successful and log.ipAddress != null}"
-                                th:action="@{/admin/login-history/override}" method="post" class="audit-action-form">
-                                <input type="hidden" name="ipAddress" th:value="${log.ipAddress}" />
-                                <button type="submit" class="btn btn--primary btn--unblock-override">
-                                    Unblock IP
-                                </button>
-                            </form>
-                            <span th:if="${log.successful or log.ipAddress == null}" class="audit-action-text--none">No
-                                Action</span>
-                        </td>
                     </tr>
-
                 </tbody>
             </table>
         </div>

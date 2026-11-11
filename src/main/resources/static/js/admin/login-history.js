@@ -12,14 +12,13 @@ window.addEventListener('load', function () {
     }
 
     var table = $(tableId).DataTable({
-        "order": [[0, 'desc']],
+        "order": [[1, 'desc']],
         "pageLength": 25,
         "searching": true,
         "ordering": true,
         "paging": true,
         "columnDefs": [
             { "type": "num", "targets": 1 },
-            { "orderable": false, "targets": 0 },
         ],
         "language": {
             "search": "Filter Logs:",

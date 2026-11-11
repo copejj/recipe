@@ -60,6 +60,19 @@
     border-color: var(--color-danger, #e74c3c);
 }
 
+/* Delete button theme modifiers */
+.btn-action--unblock {
+    color: var(--color-danger, #d18843);
+    background-color: var(--color-bg-body, #ffffff);
+    border: 1px solid var(--color-danger, #e74c3c);
+}
+
+.btn-action--unblock:hover {
+    color: #ffffff;
+    background-color: #b95d12;
+    border-color: var(--color-danger, #b95d12);
+}
+
 /* Primary solid blue update variant (Save Changes / Submit) */
 .btn-action--primary {
     color: #ffffff;

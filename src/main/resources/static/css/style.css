@@ -458,7 +458,7 @@ p {
 .btn {
     display: inline-block;
     width: 100%;
-    padding: 12px 20px;
+    padding: 6px;
     font-size: 1rem;
     font-weight: 600;
     border: none;
@@ -479,7 +479,7 @@ p {
     width: 100%;
     max-width: 200px;
     text-align: center;
-    padding: 10px 16px;
+    padding: 6px;
     text-decoration: none;
     border-radius: 6px;
     font-weight: 600;
