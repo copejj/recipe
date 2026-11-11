@@ -7,7 +7,7 @@ $(document).ready(function () {
 
     // 2. Re-initialize with explicit width controls and all-row paging defaults
     $(tableId).DataTable({
-        "order": [[3, 'desc']],
+        "order": [[4, 'desc']],
         "ordering": true,
         "paging": true,
         "searching": true,
@@ -20,8 +20,8 @@ $(document).ready(function () {
         "columnDefs": [
             { "orderable": false, "targets": 0 }, // Disable sorting on actions
             { 
-                "targets": 3,                     // Target index 3 is Column 4
-                "type": "date",                   // Forces DataTables to treat it as a chronological date
+                "targets": [3, 4],                     // Target index 3 is Column 4
+                "type": "num",                   // Forces DataTables to treat it as a chronological date
             }
         ],
         "autoWidth": false // Prevents DataTables from guessing and forcing bad layout stretching
