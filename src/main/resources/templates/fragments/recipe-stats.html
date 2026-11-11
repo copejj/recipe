@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org">
+<head></head>
+<body>
+
+    <!-- 1. OVERVIEW METRIC BADGES FRAGMENT -->
+    <div th:fragment="overviewBadges(recipeStats)">
+        <link rel="stylesheet" type="text/css" th:href="@{/css/fragments/recipe-stats.css}" />
+
+        <div class="recipe-metric-badge-grid">
+            <div class="metric-tag tag--total" title="Total Recipes Created">
+                <span class="metric-label">Total</span>
+                <span class="metric-value"
+                      th:text="${recipeStats != null ? recipeStats.total : 0}">0</span>
+            </div>
+            <div class="metric-tag tag--public" title="Publicly Searchable Recipes">
+                <span class="metric-label">Public</span>
+                <span class="metric-value"
+                      th:text="${recipeStats != null ? recipeStats.publicCount : 0}">0</span>
+            </div>
+            <div class="metric-tag tag--shared" title="Direct Link Shared / Unlisted">
+                <span class="metric-label">Shared</span>
+                <span class="metric-value"
+                      th:text="${recipeStats != null ? recipeStats.sharedCount : 0}">0</span>
+            </div>
+            <div class="metric-tag tag--private" title="Private Draft Recipes">
+                <span class="metric-label">Private</span>
+                <span class="metric-value"
+                      th:text="${recipeStats != null ? recipeStats.privateCount : 0}">0</span>
+            </div>
+            <div class="metric-tag tag--saves" title="Total Times Recipes Were Saved by Others">
+                <span class="metric-label">Saved Me</span>
+                <span class="metric-value"
+                      th:text="${recipeStats != null ? recipeStats.savedMeCount : 0}">0</span>
+            </div>
+            <div class="metric-tag tag--i-saved" title="Total Recipes Saved by This User">
+                <span class="metric-label">I Saved</span>
+                <span class="metric-value"
+                    th:text="${recipeStats != null ? recipeStats.savedByMeCount : 0}">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. CREATED RECIPES SAVE BREAKDOWN TABLE FRAGMENT -->
+    <div th:fragment="recipeBreakdownTable(tableId, recipeBreakdown)" class="stats-breakdown-wrapper">
+        <div th:replace="~{fragments/datatable :: genericTableWithClass(
+            ${tableId}, 
+            ${recipeBreakdown}, 
+            ~{::recipeSavedHeaders}, 
+            ~{::recipeSavedRows},
+            'recipe-breakdown-table stats-table--breakdown'
+        )}">
+            <!-- Table Headers Slot -->
+            <tr th:fragment="recipeSavedHeaders">
+                <th>Recipe</th>
+                <th>Visibility</th>
+                <th class="text-right"># Saves</th>
+            </tr>
+
+            <!-- Table Rows Slot -->
+            <tr th:fragment="recipeSavedRows"
+                th:data-href="@{/view/{id}(id=${item.recipeId})}"
+                th:classappend="${iterStat != null and iterStat.even} ? 'row-even' : ''">
+                <td data-label="Recipe">
+                    <a th:href="@{/view/{id}(id=${item.recipeId})}"
+                       th:text="${item.title}">Recipe Title</a>
+                </td>
+                <td data-label="Visibility" th:text="${item.visibilityName}">Public</td>
+                <td data-label="# Saves" class="text-right save-count-cell"
+                    th:text="${item.saveCount}">0</td>
+            </tr>
+        </div>
+    </div>
+
+    <!-- 3. SAVED RECIPES BY USER TABLE FRAGMENT -->
+    <div th:fragment="savedRecipesTable(tableId, savedRecipes)" class="stats-saved-wrapper">
+        <div th:replace="~{fragments/datatable :: genericTableWithClass(
+            ${tableId}, 
+            ${savedRecipes}, 
+            ~{::savedByMeHeaders}, 
+            ~{::savedByMeRows},
+            'recipe-breakdown-table stats-table--saved'
+        )}">
+            <!-- Table Headers Slot -->
+            <tr th:fragment="savedByMeHeaders">
+                <th>Recipe</th>
+                <th>Chef</th>
+            </tr>
+
+            <!-- Table Rows Slot -->
+            <tr th:fragment="savedByMeRows"
+                th:data-href="@{/view/{id}(id=${item.recipeId})}"
+                th:classappend="${iterStat != null and iterStat.even} ? 'row-even' : ''">
+                <td data-label="Recipe">
+                    <a th:href="@{/view/{id}(id=${item.recipeId})}"
+                       th:text="${item.title}">Recipe Title</a>
+                </td>
+                <td  data-label="Chef" th:text="${item.authorName}">Chef Name</td>
+            </tr>
+        </div>
+    </div>
+
+    <!-- 4. FULL STATS DASHBOARD WRAPPER FRAGMENT -->
+    <div th:fragment="fullStatsDashboard(tablePrefix, recipeStats, recipeBreakdown, savedRecipes)"
+         class="stats-workspace">
+
+        <!-- SUMMARY METRIC BADGES CARD -->
+        <section class="stats-card">
+            <h3>Recipe Overview</h3>
+            <div th:replace="~{::overviewBadges(${recipeStats})}"></div>
+        </section>
+
+        <!-- PER-RECIPE BREAKDOWN CARD -->
+        <section class="stats-card">
+            <h3>Created Recipes &amp; Saves</h3>
+            <div th:replace="~{::recipeBreakdownTable(${tablePrefix} + 'RecipesSaved', ${recipeBreakdown})}"></div>
+        </section>
+
+        <!-- RECIPES SAVED BY USER CARD -->
+        <section class="stats-card">
+            <h3>Saved Recipes</h3>
+            <div th:replace="~{::savedRecipesTable(${tablePrefix} + 'RecipesIveSaved', ${savedRecipes})}"></div>
+        </section>
+
+    </div>
+
+</body>
+</html>

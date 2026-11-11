@@ -712,7 +712,6 @@ table.dataTable tbody td:first-child {
     white-space: nowrap;
     color: var(--color-text-muted);
     margin: auto;
-    text-align: center;
 }
 
 /* ==========================================================================

@@ -34,6 +34,8 @@ import com.braindribbler.recipe.service.recipe.RecipeCategoryService;
 import com.braindribbler.recipe.service.recipe.RecipeService;
 import com.braindribbler.recipe.util.RecipeUtility;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @Controller
 public class RecipeController {
 
@@ -313,7 +315,7 @@ public class RecipeController {
             } else {
                 redirectAttributes.addFlashAttribute("successMessage", "Recipe removed from your cookbook.");
             }
-        } catch (IllegalArgumentException | jakarta.persistence.EntityNotFoundException e) {
+        } catch (IllegalArgumentException | EntityNotFoundException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
 

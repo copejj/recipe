@@ -4,6 +4,8 @@ import com.braindribbler.recipe.domain.auth.IpOverride;
 import com.braindribbler.recipe.domain.auth.LoginHistory;
 import com.braindribbler.recipe.repository.auth.IpOverrideRepository;
 import com.braindribbler.recipe.repository.auth.LoginHistoryRepository;
+
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +15,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/admin/login-history")
+@PreAuthorize("hasAuthority('can_view_audit_logs')")
 public class LoginHistoryController {
 
     private final LoginHistoryRepository loginHistoryRepository;

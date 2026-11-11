@@ -15,9 +15,7 @@
     <p layout:fragment="page-subtitle">Manage global security tiers and permissions</p>
     
     <main layout:fragment="content">
-        <!-- Universal Admin Section Layout Controls -->
-        <div class="admin-header-flex">
-            <!-- Standardized clean button styling blueprint integration -->
+        <div class="">
             <div class="admin-btn-group">
                 <button type="button" class="btn btn-action btn-action--primary btn-action--header-cta"
                     onclick="openModal('roleModal')">+ Add New Role</button>
@@ -68,16 +66,7 @@
                     </tr>
                 </th:block>
             </div>
-
         </div>
-
-        <!-- Cleansed Footer Controls (FIXED: Zero inline style attributes remaining) -->
-        <div class="form-actions-footer">
-            <div class="modal-actions-footer">
-                <a th:replace="~{fragments/actions :: cancelLink(targetUrl=@{/admin/users})}"></a>
-            </div>
-        </div>
-
         <div th:replace="~{fragments/modals :: create_role_modal}"></div>
     </main>
     <th:block layout:fragment="page_scripts">
