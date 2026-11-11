@@ -117,68 +117,20 @@
                 </div>
             </div>
 
-                        <!-- FULL-WIDTH BOTTOM: COMBINED RECIPE STATS -->
+            <!-- FULL-WIDTH BOTTOM: COMBINED RECIPE STATS (REUSABLE FRAGMENTS) -->
             <div class="form-panel-stats">
                 <h3>Recipe Stats</h3>
 
-                <!-- Summary Metric Badges -->
-                <div class="recipe-metric-badge-grid stats-summary-grid">
-                    <div class="metric-tag tag--total" title="Total Recipes Created">
-                        <span class="metric-label">Total</span>
-                        <span class="metric-value"
-                            th:text="${recipeStats != null ? recipeStats.total : 0}">0</span>
-                    </div>
-                    <div class="metric-tag tag--public" title="Publicly Searchable Recipes">
-                        <span class="metric-label">Public</span>
-                        <span class="metric-value"
-                            th:text="${recipeStats != null ? recipeStats.publicCount : 0}">0</span>
-                    </div>
-                    <div class="metric-tag tag--shared" title="Direct Link Shared / Unlisted">
-                        <span class="metric-label">Shared</span>
-                        <span class="metric-value"
-                            th:text="${recipeStats != null ? recipeStats.sharedCount : 0}">0</span>
-                    </div>
-                    <div class="metric-tag tag--private" title="Private Draft Recipes">
-                        <span class="metric-label">Private</span>
-                        <span class="metric-value"
-                            th:text="${recipeStats != null ? recipeStats.privateCount : 0}">0</span>
-                    </div>
-                    <div class="metric-tag tag--saves" title="Total Times Recipes Were Saved by Others">
-                        <span class="metric-label">Saves</span>
-                        <span class="metric-value"
-                            th:text="${recipeStats != null ? recipeStats.totalSaves : 0}">0</span>
-                    </div>
-                </div>
+                <!-- 1. Overview Metric Badges -->
+                <div th:replace="~{fragments/recipe-stats :: overviewBadges(${recipeStats})}"></div>
 
-                <!-- Per-Recipe Breakdown Table -->
-                <div th:if="${recipeBreakdown != null and !#lists.isEmpty(recipeBreakdown)}"
-                     class="recipe-breakdown-scroll">
-                    <table class="recipe-breakdown-table">
-                        <thead>
-                            <tr>
-                                <th>Recipe</th>
-                                <th>Visibility</th>
-                                <th class="text-right">Saves</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="item : ${recipeBreakdown}">
-                                <td>
-                                    <a th:href="@{/view/{id}(id=${item.recipeId})}"
-                                       th:text="${item.title}">Recipe Title</a>
-                                </td>
-                                <td th:text="${item.visibilityName}">Public</td>
-                                <td class="text-right save-count-cell"
-                                    th:text="${item.saveCount}">0</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <!-- 2. Created Recipes & Saves Breakdown -->
+                <h4 class="stats-sub-heading">Created Recipes &amp; Saves</h4>
+                <div th:replace="~{fragments/recipe-stats :: recipeBreakdownTable('adminRecipesSaved', ${recipeBreakdown})}"></div>
 
-                <p th:if="${recipeBreakdown == null or #lists.isEmpty(recipeBreakdown)}"
-                   class="stats-empty-note">
-                    No recipes created yet.
-                </p>
+                <!-- 3. Recipes Saved by User -->
+                <h4 class="stats-sub-heading">Saved Recipes</h4>
+                <div th:replace="~{fragments/recipe-stats :: savedRecipesTable('adminRecipesIveSaved', ${savedRecipes})}"></div>
             </div>
         </form>
 
@@ -188,8 +140,10 @@
             class="delete-user-form">
         </form>
     </main>
+
     <th:block layout:fragment="page_scripts">
         <script th:src="@{/js/admin/user-edit.js}"></script>
+        <script th:src="@{/js/fragments/recipe-stats.js}"></script>
     </th:block>
 </body>
 </html>

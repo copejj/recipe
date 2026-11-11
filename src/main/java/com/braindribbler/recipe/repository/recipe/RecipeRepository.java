@@ -55,18 +55,20 @@ public interface RecipeRepository extends JpaRepository<Recipe, Integer> {
             @Param("isLoggedIn") boolean isLoggedIn,
             @Param("currentUserId") Integer currentUserId);
 
-    // 3. Clean JPQL Aggregate Constructor query with total saves included
+    // 3. Clean JPQL Aggregate Constructor query with "Saved Me" and "I Saved" counts
     @Query("""
             SELECT new com.braindribbler.recipe.dto.recipe.RecipeStats(
               CAST(COUNT(r) AS integer),
               CAST(COALESCE(SUM(CASE WHEN r.recipeVisibility.visibilityName = 'public' THEN 1 ELSE 0 END), 0) AS integer),
               CAST(COALESCE(SUM(CASE WHEN r.recipeVisibility.visibilityName = 'shared' THEN 1 ELSE 0 END), 0) AS integer),
               CAST(COALESCE(SUM(CASE WHEN r.recipeVisibility.visibilityName = 'private' THEN 1 ELSE 0 END), 0) AS integer),
-              CAST(COALESCE((SELECT COUNT(su) FROM Recipe r2 JOIN r2.savedByUsers su WHERE r2.user.userId = :userId AND su.userId <> :userId), 0) AS integer)
+              CAST(COALESCE((SELECT COUNT(su) FROM Recipe r2 JOIN r2.savedByUsers su WHERE r2.user.userId = :userId AND su.userId <> :userId), 0) AS integer),
+              CAST(COALESCE((SELECT COUNT(r3) FROM Recipe r3 JOIN r3.savedByUsers sbu WHERE sbu.userId = :userId AND (r3.user.userId = :userId OR r3.recipeVisibility.visibilityName <> 'private')), 0) AS integer)
             )
             FROM Recipe r WHERE r.user.userId = :userId
             """)
     RecipeStats getRecipeStatsByUserId(@Param("userId") Integer userId);
+
 
     // 4. Per-recipe save count breakdown (includes recipes with 0 saves)
     @Query("""

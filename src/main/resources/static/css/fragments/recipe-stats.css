@@ -107,3 +107,15 @@
 .recipe-breakdown-table a:hover {
     text-decoration: underline;
 }
+
+.tag--saves {
+    background-color: #fef3c7;
+    border-color: #fde68a;
+    color: #92400e;
+}
+
+.tag--i-saved {
+    background-color: #f3e8ff;
+    border-color: #e9d5ff;
+    color: #6b21a8;
+}

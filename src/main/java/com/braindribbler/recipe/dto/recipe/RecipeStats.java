@@ -5,18 +5,24 @@ public class RecipeStats {
     private final Integer publicCount;
     private final Integer sharedCount;
     private final Integer privateCount;
-    private final Integer totalSaves;
+    private final Integer savedMeCount;
+    private final Integer savedByMeCount;
 
     public RecipeStats(Integer total, Integer publicCount, Integer sharedCount, Integer privateCount) {
-        this(total, publicCount, sharedCount, privateCount, 0);
+        this(total, publicCount, sharedCount, privateCount, 0, 0);
     }
 
-    public RecipeStats(Integer total, Integer publicCount, Integer sharedCount, Integer privateCount, Integer totalSaves) {
+    public RecipeStats(Integer total, Integer publicCount, Integer sharedCount, Integer privateCount, Integer savedMeCount) {
+        this(total, publicCount, sharedCount, privateCount, savedMeCount, 0);
+    }
+
+    public RecipeStats(Integer total, Integer publicCount, Integer sharedCount, Integer privateCount, Integer savedMeCount, Integer savedByMeCount) {
         this.total = total;
         this.publicCount = publicCount;
         this.sharedCount = sharedCount;
         this.privateCount = privateCount;
-        this.totalSaves = totalSaves;
+        this.savedMeCount = savedMeCount;
+        this.savedByMeCount = savedByMeCount;
     }
 
     public Integer getTotal() {
@@ -35,7 +41,11 @@ public class RecipeStats {
         return privateCount;
     }
 
-    public Integer getTotalSaves() {
-        return totalSaves;
+    public Integer getSavedMeCount() {
+        return savedMeCount;
+    }
+
+    public Integer getSavedByMeCount() {
+        return savedByMeCount;
     }
 }

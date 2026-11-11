@@ -29,9 +29,14 @@
                       th:text="${recipeStats != null ? recipeStats.privateCount : 0}">0</span>
             </div>
             <div class="metric-tag tag--saves" title="Total Times Recipes Were Saved by Others">
-                <span class="metric-label">Total Saves</span>
+                <span class="metric-label">Saved Me</span>
                 <span class="metric-value"
-                      th:text="${recipeStats != null ? recipeStats.totalSaves : 0}">0</span>
+                      th:text="${recipeStats != null ? recipeStats.savedMeCount : 0}">0</span>
+            </div>
+            <div class="metric-tag tag--i-saved" title="Total Recipes Saved by This User">
+                <span class="metric-label">I Saved</span>
+                <span class="metric-value"
+                    th:text="${recipeStats != null ? recipeStats.savedByMeCount : 0}">0</span>
             </div>
         </div>
     </div>
