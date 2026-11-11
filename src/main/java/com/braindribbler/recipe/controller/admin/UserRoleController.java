@@ -2,6 +2,7 @@ package com.braindribbler.recipe.controller.admin;
 
 import com.braindribbler.recipe.domain.auth.Role;
 import com.braindribbler.recipe.domain.auth.User;
+import com.braindribbler.recipe.dto.recipe.RecipeSaveBreakdown;
 import com.braindribbler.recipe.dto.recipe.RecipeStats;
 import com.braindribbler.recipe.repository.auth.RoleRepository;
 import com.braindribbler.recipe.repository.auth.UserRepository;
@@ -74,15 +75,16 @@ public class UserRoleController {
                     .anyMatch(a -> a.getAuthority().equals("can_delete_users"));
         }
 
-        // --- 3. FETCH THE COMPREHENSIVE RECIPE COUNTS FROM POSTGRES ---
+        // 5. FETCH THE COMPREHENSIVE RECIPE COUNTS FROM POSTGRES ---
         RecipeStats recipeStats = recipeRepository.getRecipeStatsByUserId(targetUser.getUserId());
+        List<RecipeSaveBreakdown> recipeBreakdown = recipeRepository.getRecipeSaveBreakdownByUserId(targetUser.getUserId());
+
+        model.addAttribute("recipeStats", recipeStats);
+        model.addAttribute("recipeBreakdown", recipeBreakdown);
 
         model.addAttribute("targetUser", targetUser);
         model.addAttribute("assignableRoles", assignableRoles);
         model.addAttribute("canDelete", canDelete);
-
-        // --- 4. ATTACH THE STATS OBJECT TO THE THYMELEAF MODEL ---
-        model.addAttribute("recipeStats", recipeStats);
 
         return "admin/users/edit";
     }

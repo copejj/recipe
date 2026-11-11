@@ -1,0 +1,109 @@
+/* Main Stats Workspace & Cards */
+.stats-workspace {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-top: 30px;
+}
+
+.stats-card {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    box-sizing: border-box;
+}
+
+.stats-card h3 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: #0f172a;
+    font-size: 16px;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 8px;
+}
+
+/* Metric Badges Grid */
+.recipe-metric-badge-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+}
+
+.metric-tag {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid transparent;
+}
+
+.metric-tag .metric-label {
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+}
+
+.metric-tag .metric-value {
+    font-weight: 700;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.65);
+    padding: 2px 8px;
+    border-radius: 3px;
+}
+
+/* Badge Color Modifiers */
+.tag--total {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #334155;
+}
+
+.tag--public {
+    background-color: #ecfdf5;
+    border-color: #a7f3d0;
+    color: #065f46;
+}
+
+.tag--shared {
+    background-color: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1e40af;
+}
+
+.tag--private {
+    background-color: #fff7ed;
+    border-color: #fed7aa;
+    color: #9a3412;
+}
+
+.tag--saves {
+    background-color: #fef3c7;
+    border-color: #fde68a;
+    color: #92400e;
+}
+
+/* Table Adjustments */
+.recipe-breakdown-table th.text-right,
+.recipe-breakdown-table td.text-right {
+    text-align: right;
+}
+
+.recipe-breakdown-table .save-count-cell {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.recipe-breakdown-table a {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.recipe-breakdown-table a:hover {
+    text-decoration: underline;
+}

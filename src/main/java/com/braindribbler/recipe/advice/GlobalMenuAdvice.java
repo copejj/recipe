@@ -44,6 +44,7 @@ public class GlobalMenuAdvice {
             // Base culinary actions available to standard users or creators
             userChildren.add(new MenuItem("Create New Recipe", "/recipes/create"));
             userChildren.add(new MenuItem("My Cookbook", "/recipes/my-list"));
+            userChildren.add(new MenuItem("My Stats", "/recipes/my-stats"));
             userChildren.add(new MenuItem("My Profile", "/profile"));
             
             // Map the complete Recipes Parent Dropdown
@@ -52,24 +53,23 @@ public class GlobalMenuAdvice {
             // Build completely separate child options for technical System Administration
             List<MenuItem> adminChildren = new ArrayList<>();
 
+            if (authorities.contains("can_moderate_recipe_metadata")) {
+                adminChildren.add(new MenuItem("Recipe Admin", "/admin/metadata"));
+            }
             if (authorities.contains("can_manage_users")) {
                 adminChildren.add(new MenuItem("Users Panel", "/admin/users"));
-                adminChildren.add(new MenuItem("Blacklist Panel", "/admin/blacklist"));
-                adminChildren.add(new MenuItem("Login History", "/admin/login-history"));
             }
             if (authorities.contains("can_manage_roles")) {
                 adminChildren.add(new MenuItem("Role Customization", "/admin/roles"));
+            }
+            if (authorities.contains("can_view_audit_logs")) {
+                adminChildren.add(new MenuItem("Blacklist Panel", "/admin/blacklist"));
+                adminChildren.add(new MenuItem("Login History", "/admin/login-history"));
             }
             if (authorities.contains("can_manage_migrations")) {
                 adminChildren.add(new MenuItem("Migration History", "/admin/migrations"));
             }
 
-            // ◄ UPDATED TO MATCH EXPLICIT METADATA REQUEST PATH
-            if (authorities.contains("can_moderate_recipe_metadata")) {
-                adminChildren.add(new MenuItem("Recipe Admin", "/admin/metadata"));
-            }
-
-            // Only append the System Admin dropdown if the user has technical access rights
             if (!adminChildren.isEmpty()) {
                 menuItems.add(new MenuItem("Admin", adminChildren));
             }

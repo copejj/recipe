@@ -1,29 +1,30 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org">
-
+<html xmlns:th="http://www.thymeleaf.org">
 <head></head>
-
 <body>
+    <div th:fragment="genericTable(tableId, dataList, headerTemplate, rowTemplate)"
+         th:replace="~{::genericTableWithClass(${tableId}, ${dataList}, ${headerTemplate}, ${rowTemplate}, '')}">
+    </div>
 
-    <!-- Generalized Data Table Fragment -->
-    <div th:fragment="genericTable(tableId, dataList, headerTemplate, rowTemplate)" class="table-responsive-wrapper"
-        style="margin-top: 24px;">
+    <div th:fragment="genericTableWithClass(tableId, dataList, headerTemplate, rowTemplate, customClass)"
+         class="table-responsive-wrapper"
+         style="margin-top: 24px;">
 
         <link rel="stylesheet" type="text/css" th:href="@{/css/fragments/datatable.css}" />
-        <script type="text/javascript" th:src="@{/js/fragments/datatable.js}"></script>
 
-        <table th:id="${tableId}" class="dataTable stripe hover row-border">
+        <table th:id="${tableId}"
+               class="dataTable stripe hover row-border"
+               th:classappend="${customClass != null and !customClass.isEmpty()} ? ' ' + ${customClass} : ''">
             <thead>
                 <!-- Dynamically inserts the headers passed from the parent component -->
                 <tr th:replace="${headerTemplate}"></tr>
             </thead>
             <tbody>
                 <!-- Iterates through the generalized collection -->
-                <th:block th:each="item : ${dataList}">
+                <th:block th:each="item, iterStat : ${dataList}">
                     <!-- Dynamically inserts the row configuration, passing the current iteration item -->
                     <th:block th:replace="${rowTemplate}"></th:block>
                 </th:block>
-
             </tbody>
         </table>
 
@@ -37,19 +38,14 @@
                     "searching": true,
                     "ordering": true,
                     "info": true,
-                    "pageLength": 10,
+                    "pageLength": -1,
+                    "lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
                     "language": {
                         "emptyTable": "No data available in table"
                     },
-                    "columnDefs": [
-                        { "orderable": false, "targets": 0 }
-                    ]
                 });
             });
         </script>
-
     </div>
-
 </body>
-
 </html>

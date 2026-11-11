@@ -112,11 +112,11 @@
 /* Force numeric/date columns to keep left-aligned headers and right-side sort arrows */
 table.dataTable thead th.dt-type-numeric .dt-column-header,
 table.dataTable thead th.dt-type-date .dt-column-header {
-    flex-direction: row !important;
-    text-align: left !important;
+    flex-direction: row;
+    text-align: center;
 }
 
 table.dataTable tbody td.dt-type-numeric,
 table.dataTable tbody td.dt-type-date {
-    text-align: left !important;
+    text-align: center;
 }

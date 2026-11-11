@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
+<head>
+    <title>My Stats</title>
+</head>
+
+<body>
+    <!-- 3. Renders inside the standard page banner template. Do not change tag to div -->
+    <h1 layout:fragment="page-title">Your Recipe Stats</h1>
+    <p layout:fragment="page-subtitle">Some basic information on your recipes and activities. It's not a competition, but if you're curious.</p>
+    
+    <!-- 4. Primary functional content workspace area -->
+    <main layout:fragment="content">
+        <div th:replace="~{fragments/recipe-stats :: fullStatsDashboard('my', ${recipeStats}, ${recipeBreakdown}, ${savedRecipes})}"></div>
+    </main>
+
+    <th:block layout:fragment="page_scripts">
+        <script th:src="@{/js/fragments/recipe-stats.js}"></script>
+    </th:block> 
+</body>
+</html>

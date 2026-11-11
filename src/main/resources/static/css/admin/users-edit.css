@@ -3,18 +3,35 @@
     display: flex;
     gap: 30px;
     flex-wrap: wrap;
+    align-items: flex-start;
     margin-top: 30px;
 }
 
-/* Left Column - Input Control Panel */
-.form-panel-main {
+/* Left Column Vertical Stack */
+.form-column-left {
     flex: 1;
     min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Left Column Cards */
+.form-panel-main {
+    width: 100%;
+    box-sizing: border-box;
     background: #ffffff;
     padding: 25px;
     border-radius: 6px;
     border: 1px solid #e2e8f0;
-    height: fit-content;
+}
+
+.panel-section-title {
+    margin: 0 0 14px 0;
+    color: #0f172a;
+    font-size: 16px;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 8px;
 }
 
 /* Right Column - Side Documentation Bar Layout Panel */
@@ -32,7 +49,7 @@
     margin-bottom: 20px;
 }
 
-.form-field-group label {
+.form-field-group .form-label {
     display: block;
     font-weight: 600;
     margin-bottom: 8px;
@@ -40,19 +57,24 @@
     color: #475569;
 }
 
-.form-field-group input[type="text"] {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 10px;
-    border-radius: 4px;
-    border: 1px solid #cbd5e1;
-    font-size: 14px;
+.account-status-group {
+    margin-top: 25px;
+    margin-bottom: 0;
 }
 
 .form-actions-group {
     display: flex;
+    align-items: center;
     gap: 15px;
     margin-top: 30px;
+}
+
+.form-actions-delete {
+    margin-left: auto;
+}
+
+.delete-user-form {
+    display: none;
 }
 
 /* Documentation Content Typography */
@@ -68,13 +90,6 @@
     font-size: 13px;
     color: #475569;
     line-height: 1.5;
-}
-
-.form-panel-docs ul {
-    padding-left: 20px;
-    font-size: 13px;
-    color: #334155;
-    line-height: 1.8;
 }
 
 /* Callout Info Notification Panel */
@@ -101,34 +116,6 @@
     color: #78350f;
 }
 
-/* Reusable Button Modifier Color overrides */
-.btn-action--primary {
-    background-color: #2563eb;
-    color: #ffffff;
-    border: none;
-    border-radius: 4px;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.btn-action--danger {
-    background-color: #dc2626;
-    color: #ffffff;
-    border: none;
-    border-radius: 4px;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.btn-action--cancel {
-    background-color: #e2e8f0;
-    color: #334155;
-    text-decoration: none;
-    border-radius: 4px;
-    font-weight: 600;
-    font-size: 14px;
-}
-
 /* Base structural style for the hollow inline delete button */
 .inline-delete-btn {
     background-color: var(--color-bg-surface, #ffffff);
@@ -142,13 +129,11 @@
     padding: 0.5rem 1rem;
 }
 
-/* Hover state when unconfirmed */
 .inline-delete-btn[data-confirmed="false"]:hover {
     background-color: var(--color-danger, #dc3545);
     color: var(--color-bg-surface, #ffffff);
 }
 
-/* Active solid double-check warning state */
 .inline-delete-btn[data-confirmed="true"] {
     background-color: #bd2130 !important;
     color: #ffffff !important;
@@ -167,9 +152,7 @@
 .permission-checkbox-card {
     display: flex;
     align-items: flex-start;
-    /* Keeps checkbox level with the first row text */
     gap: 12px;
-    /* Horizontal space context padding link wrapper */
     padding: 14px;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
@@ -181,7 +164,6 @@
     background-color: #f8fafc;
 }
 
-/* Structural tweak forcing individual checkboxes to maintain geometry properties */
 .permission-checkbox-card input[type="checkbox"] {
     margin-top: 2px;
     flex-shrink: 0;
@@ -293,4 +275,162 @@
     background-color: #fff7ed;
     border-color: #fed7aa;
     color: #9a3412;
+}
+
+.tag--saves {
+    background-color: #fef3c7;
+    border-color: #fde68a;
+    color: #92400e;
+}
+
+/* Scrollable container for per-recipe save breakdown */
+.recipe-breakdown-scroll {
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.recipe-breakdown-table {
+    width: 100%;
+    font-size: 13px;
+    border-collapse: collapse;
+}
+
+.recipe-breakdown-table thead th {
+    position: sticky;
+    top: 0;
+    background: #ffffff;
+    color: #475569;
+    font-weight: 600;
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid #cbd5e1;
+}
+
+.recipe-breakdown-table tbody td {
+    padding: 9px 10px;
+    color: #0f172a;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.recipe-breakdown-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+.recipe-breakdown-table a {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.recipe-breakdown-table a:hover {
+    text-decoration: underline;
+}
+
+.recipe-breakdown-table th.text-right,
+.recipe-breakdown-table td.text-right {
+    text-align: right;
+}
+
+.recipe-breakdown-table .save-count-cell {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+/* Spacing between summary badges and breakdown table */
+.stats-summary-grid {
+    margin-bottom: 16px;
+}
+
+.stats-empty-note {
+    margin: 0;
+    font-size: 13px;
+    color: #64748b;
+}
+
+
+/* Core Workspace Form Dual Column Grid Wrapper Layout */
+.workspace-form {
+    display: grid;
+    grid-template-columns: minmax(300px, 1fr) 380px;
+    gap: 24px 30px;
+    align-items: start;
+    margin-top: 30px;
+}
+
+/* Top Left - Input Control Panel */
+.form-panel-main {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    box-sizing: border-box;
+}
+
+/* Top Right - Side Documentation Bar Layout Panel */
+.form-panel-docs {
+    background: #f8fafc;
+    padding: 25px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    box-sizing: border-box;
+}
+
+/* Full-Width Bottom - Combined Recipe Stats Panel */
+.form-panel-stats {
+    grid-column: 1 / -1;
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    box-sizing: border-box;
+}
+
+.form-panel-stats h3 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: #0f172a;
+    font-size: 16px;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 8px;
+}
+
+/* Spread the 5 summary badges horizontally across the full-width card */
+.form-panel-stats .stats-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.form-panel-stats .metric-tag {
+    padding: 10px 14px;
+    font-size: 13px;
+}
+
+.form-panel-stats .metric-tag .metric-label {
+    font-size: 11px;
+}
+
+.form-panel-stats .metric-tag .metric-value {
+    font-size: 14px;
+    padding: 2px 8px;
+}
+
+/* Sticky header matches white .form-panel-stats background */
+.recipe-breakdown-table thead th {
+    position: sticky;
+    top: 0;
+    background: #ffffff;
+    color: #475569;
+    font-weight: 600;
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid #cbd5e1;
+}
+
+/* Stack cleanly into a single column on tablets/mobile */
+@media (max-width: 900px) {
+    .workspace-form {
+        grid-template-columns: 1fr;
+    }
 }

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/admin/blacklist")
-@PreAuthorize("hasAuthority('can_manage_users')")
+@PreAuthorize("hasAuthority('can_view_audit_logs')")
 public class BlacklistController {
 
     private final BlacklistService blacklistService;
