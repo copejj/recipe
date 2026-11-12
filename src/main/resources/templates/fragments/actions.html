@@ -62,6 +62,27 @@
         Delete
     </button>
 
-</body>
+    <!-- Sticky Back Navigation Tray -->
+    <div th:fragment="backTray(targetUrl, label)" class="action-tray">
+        <a th:href="${targetUrl}" class="btn btn-secondary" th:text="'← ' + ${label}">
+            ← Back
+        </a>
+    </div>
 
+    <!-- fragments/actions.html -->
+    <div th:fragment="actionTray(content)" class="action-tray">
+        <th:block th:replace="${content}" />
+    </div>
+
+    <!-- fragments/actions.html -->
+    <div th:fragment="actionTrayWithBack(backUrl, backLabel, extraActions)" class="action-tray">
+        <a th:href="${backUrl}" class="btn btn-secondary" th:text="'← ' + ${backLabel}">
+            ← Back
+        </a>
+        
+        <th:block th:if="${extraActions != null}">
+            <th:block th:replace="${extraActions}" />
+        </th:block>
+    </div>
+</body>
 </html>

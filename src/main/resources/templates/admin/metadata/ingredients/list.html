@@ -14,16 +14,13 @@
     <div layout:fragment="page-title"> Master Ingredient Management </div>
     <p layout:fragment="page-subtitle"> View, modify, or remove verified ingredients globally active in the application database. </p>
 
-    <main layout:fragment="content" class="inventory-main">
-        <!-- UNIFIED RESPONSIVE HEADER GRID -->
-        <div class="header-grid">
-            <div class="action-tray">
-                <a th:href="@{/admin/metadata}" class="btn btn-secondary">← Metadata Dashboard</a>
-                <a th:href="@{/admin/metadata/ingredients/add}" class="btn btn--primary">+ Add Ingredient</a>
-                <a th:href="@{/admin/metadata/ingredients/grocery-categories}" class="btn btn-category-manager">🛒 Manage Grocery Categories</a>
-            </div>
-        </div>
+    <div layout:fragment="action-tray" class="action-tray">
+        <a th:href="@{/admin/metadata}" class="btn btn-secondary">← Metadata Dashboard</a>
+        <a th:href="@{/admin/metadata/ingredients/grocery-categories}" class="btn btn-secondary">🛒 Grocery Categories</a>
+        <a th:href="@{/admin/metadata/ingredients/add}" class="btn btn--primary">+ Add Ingredient</a>
+    </div>
 
+    <main layout:fragment="content" class="inventory-main">
         <!-- Feedback Alert Status Toasts -->
         <div th:if="${param.retracted}" class="alert-toast alert-toast--retracted">
             Ingredient successfully retracted from global view and returned to the moderation queue!
@@ -54,7 +51,7 @@
                         <th style="min-width: 240px; text-align: left;">Actions</th>
                         <th style="text-align: left;">Name</th>
                         <th style="text-align: left;">Type</th>
-                        <th style="text-align: left;">Grocery Category</th>
+                        <th style="text-align: left;">Category</th>
                     </tr>
                 </th:block>
 
@@ -62,7 +59,7 @@
                 <th:block th:fragment="ingredientRow">
                     <tr class="ingredients-data-row">
                         <!-- Column 1: Core Action Fragments -->
-                        <td>
+                        <td data-label="Actions">
                             <div class="row-actions-deck">
                                 <!-- ACTION 1: CENTRAL EDIT LINK -->
                                 <a th:replace="~{fragments/actions :: editLink(targetUrl=@{/admin/metadata/ingredients/edit/{id}(id=${item.ingredientId})})}"></a>
@@ -90,9 +87,9 @@
                         </td>
 
                         <!-- Column 2: Core Data Content Elements -->
-                        <td><strong class="ingredient-name-cell" th:text="${item.ingredientName}">Water</strong></td>
-                        <td><span class="classification-badge" th:text="${item.classification.name()}">SOLID</span></td>
-                        <td><span class="category-badge"
+                        <td data-label="Name"><strong class="ingredient-name-cell" th:text="${item.ingredientName}">Water</strong></td>
+                        <td data-label="Type"><span class="classification-badge" th:text="${item.classification.name()}">SOLID</span></td>
+                        <td data-label="Category"><span class="category-badge"
                                 th:text="${item.groceryCategory != null ? item.groceryCategory.categoryName : 'Unassigned'}">Beverages</span>
                         </td>
                     </tr>

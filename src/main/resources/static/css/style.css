@@ -1063,11 +1063,18 @@ textarea {
     pointer-events: auto;
     content: "";
 }
-
 .action-tray {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: var(--color-bg-card);
+    padding: 12px 0;
+    margin: 0 1rem 16px 1rem; /* Matches <main>'s 1rem side margins */
+    border-bottom: 1px solid var(--color-border);
+
     display: flex;
     gap: 12px;
-    width: 100%;
+    width: auto; /* Lets block element fill available space minus margins */
     justify-content: flex-start;
     align-items: center;
     flex-wrap: wrap;
@@ -1096,6 +1103,28 @@ textarea {
     background-color: var(--color-bg-body);
     color: var(--color-text-dark);
     border: 1px solid var(--color-border);
+}
+
+.header-grid {
+    margin: 0 1rem 16px 1rem;
+    width: auto;
+    box-sizing: border-box;
+}
+
+/* Sticky Bottom Footer Tray */
+.footer-tray {
+    position: sticky;
+    bottom: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 0;
+    margin: 1.5rem 1rem 0 1rem; /* Matches <main>'s 1rem side margins */
+    width: auto;
+    background-color: var(--color-bg-card, #ffffff); /* Fixed variable name & hex */
+    border-top: 1px solid var(--color-border, #e7e5e4); /* Fixed variable name */
 }
 
 /* ==========================================================================
@@ -1199,4 +1228,8 @@ textarea {
     span.shopping-item-text {
         white-space: normal;
     }
+}
+
+@media (max-width: 30rem) {
+
 }

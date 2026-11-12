@@ -189,6 +189,22 @@
     margin-left: auto;
 }
 
+.header-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin: 0 1rem 24px 1rem; 
+    width: auto;
+    box-sizing: border-box;
+}
+
+.action-tray {
+    position: sticky;
+    top: 0;
+    margin-top: -1rem; /* Pulls it flush with .container-fluid's top padding */
+    padding-top: 1rem;
+}
+
 @media (max-width: 576px) {
     .form-actions-delete {
         margin-left: 0;

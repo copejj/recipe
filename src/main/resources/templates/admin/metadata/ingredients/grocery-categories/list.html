@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org"
-      xmlns:layout="http://ultraq.net.nz"
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz"
       layout:decorate="~{fragments/layout}"
       lang="en">
 <head>
@@ -14,26 +14,28 @@
     <h1 layout:fragment="page-title">Grocery Category Management</h1>
     <p layout:fragment="page-subtitle">Organize and weigh store aisle display sequencing vectors to future-proof smart sorting shopping lists.</p>
     
-    <main layout:fragment="content">
-        <div class="header-grid">
-            <div class="action-tray">
-                <a th:href="@{/admin/metadata/ingredients/list}" class="btn btn-secondary">← Ingredients List</a>
-            </div>
+    <div layout:fragment="action-tray" class="action-tray">
+        <a th:href="@{/admin/metadata}" class="btn btn-secondary">← Metadata Dashboard</a>
+        <a th:href="@{/admin/metadata/ingredients/list}" class="btn btn-secondary">← Master Ingredients</a>
+    </div>
 
-            <form th:action="@{/admin/metadata/ingredients/grocery-categories/add}" method="post">
-                <div class="add-category-bar">
-                    <div class="input-wrapper--name">
-                        <input type="text" name="categoryName" class="form-input"
-                            placeholder="New Aisle Name (e.g., Produce, Bakery, Dairy)" required />
-                    </div>
-                    <div class="input-wrapper--weight">
-                        <input type="number" name="displayOrder" class="form-input" placeholder="Weight" value="10"
-                            required />
-                    </div>
-                    <button type="submit" class="btn btn--primary">+ Add Aisle</button>
+    <div layout:fragment="header-grid" class="header-grid">
+        <form th:action="@{/admin/metadata/ingredients/grocery-categories/add}" method="post">
+            <div class="add-category-bar">
+                <div class="input-wrapper--name">
+                    <input type="text" name="categoryName" class="form-input"
+                        placeholder="New Aisle Name (e.g., Produce, Bakery, Dairy)" required />
                 </div>
-            </form>
-        </div>
+                <div class="input-wrapper--weight">
+                    <input type="number" name="displayOrder" class="form-input" placeholder="Weight" value="10"
+                        required />
+                </div>
+                <button type="submit" class="btn btn--primary">+ Add Aisle</button>
+            </div>
+        </form>
+    </div>
+
+    <main layout:fragment="content">
 
         <!-- Feedback Alert Status Toasts -->
         <div th:if="${param.created}" class="alert-toast alert-toast--success">
@@ -71,7 +73,7 @@
                         <tr class="categories-data-row">
 
                             <!-- Column 1: Actions -->
-                            <td>
+                            <td data-label="Actions">
                                 <div class="row-actions-deck">
                                     <button th:replace="~{fragments/actions :: deleteConfBtn(
                                         targetFormId='deleteCatForm-' + ${item.groceryCategoryId},
@@ -81,7 +83,7 @@
                             </td>
 
                             <!-- Column 2: Sequence display order weight input -->
-                            <td th:data-order="${item.displayOrder}">
+                            <td data-label="Order" th:data-order="${item.displayOrder}">
                                 <span style="display: none;" th:text="${item.displayOrder}">0</span>
 
                                 <!-- We keep names index-free here so Thymeleaf compiles without error -->
@@ -93,7 +95,7 @@
 
 
                             <!-- Column 3: Name Display -->
-                            <td th:data-order="${item.categoryName}">
+                            <td data-label="Name" th:data-order="${item.categoryName}">
                                 <span style="display: none;" th:text="${item.categoryName}">Category</span>
                                 <strong class="category-title-text" th:text="${item.categoryName}">Produce</strong>
                             </td>
