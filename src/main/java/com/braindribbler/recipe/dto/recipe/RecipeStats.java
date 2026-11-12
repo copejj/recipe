@@ -7,6 +7,9 @@ public class RecipeStats {
     private final Integer privateCount;
     private final Integer savedMeCount;
     private final Integer savedByMeCount;
+    private long totalViews;
+    private long totalShares;
+    private long totalSharedViews;
 
     public RecipeStats(Integer total, Integer publicCount, Integer sharedCount, Integer privateCount) {
         this(total, publicCount, sharedCount, privateCount, 0, 0);
@@ -48,4 +51,29 @@ public class RecipeStats {
     public Integer getSavedByMeCount() {
         return savedByMeCount;
     }
+
+    public long getTotalViews() {
+        return totalViews;
+    }
+
+    public void setTotalViews(long totalViews) {
+        this.totalViews = totalViews;
+    }
+
+    public long getTotalShares() {
+        return totalShares;
+    }
+
+    public void setTotalShares(long totalShares) {
+        this.totalShares = totalShares;
+    }
+
+    public long getTotalSharedViews() {
+        return totalSharedViews;
+    }
+
+    public void setTotalSharedViews(long totalSharedViews) {
+        this.totalSharedViews = totalSharedViews;
+    }
+
 }

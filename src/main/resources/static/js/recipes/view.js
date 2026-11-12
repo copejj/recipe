@@ -255,6 +255,68 @@ $(document).ready(function () {
         }
     });
 
+    // --- SHARE RECIPE & ADDRESS-BAR TRACKING ---
+    // 1. Silently append /share to the browser bar for non-owners on non-private recipes
+    if (!window.RECIPE_IS_OWNER && window.RECIPE_VISIBILITY_ID !== 2) {
+        if (!window.location.pathname.endsWith("/share")) {
+            window.history.replaceState(null, "", window.location.pathname + "/share");
+        }
+    }
+
+    // Helper to read Spring Security's XSRF-TOKEN cookie
+    function getCookieValue(name) {
+        var match = document.cookie.match(new RegExp("(^|;\\s*)" + name + "=([^;]*)"));
+        return match ? decodeURIComponent(match[2]) : null;
+    }
+
+    // 2. Wire up the Share Recipe button
+    $("#shareRecipeBtn").on("click", async function () {
+        var $shareBtn = $(this);
+        var shareUrl = $shareBtn.data("share-url");
+        var recipeTitle = $shareBtn.data("recipe-title") || "Check out this recipe";
+
+        // Record the share click on the backend if viewer is not the recipe author
+        if (!window.RECIPE_IS_OWNER) {
+            var xsrfToken = getCookieValue("XSRF-TOKEN");
+            var headers = {};
+            if (xsrfToken) {
+                headers["X-XSRF-TOKEN"] = xsrfToken;
+            }
+
+            fetch(shareUrl, {
+                method: "POST",
+                headers: headers,
+                credentials: "same-origin"
+            }).catch(function () { /* Ignore background tracking errors */ });
+        }
+
+        // Use native mobile share sheet on phones/tablets when supported
+        if (navigator.share && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+            try {
+                await navigator.share({
+                    title: recipeTitle,
+                    url: shareUrl
+                });
+                return;
+            } catch (err) {
+                // User cancelled or share failed; fall back to clipboard copy
+            }
+        }
+
+        // Copy to clipboard on desktop
+        try {
+            await navigator.clipboard.writeText(shareUrl);
+            var originalText = $shareBtn.text();
+            $shareBtn.text("Link Copied!").addClass("is-copied");
+
+            setTimeout(function () {
+                $shareBtn.text(originalText).removeClass("is-copied");
+            }, 2000);
+        } catch (err) {
+            window.prompt("Copy this recipe link:", shareUrl);
+        }
+    });
+
     // Fire calculations instantly upon initial thread presentation
     runLiveScalingEngine();
 });

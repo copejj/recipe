@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz"
+<html xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
       layout:decorate="~{fragments/layout}"
       lang="en">
 
@@ -12,6 +12,7 @@
         <meta property="og:image" th:content="${apiHost} + '/images/chefbraindribbler.png'" />
         <meta property="og:url" th:content="${apiHost} + '/view/' + ${recipe.recipeId}" />
         <meta property="og:type" content="article" />
+        <link rel="canonical" th:href="${apiHost} + '/view/' + ${recipe.recipeId}" />
 
         <link rel="stylesheet" th:href="@{/css/recipes/view.css}" />
     </th:block>
@@ -30,7 +31,7 @@
                             Created by <span th:text="${recipe.user.displayName}">Author</span>
                         </div>
 
-                        <!-- ➡️ Category element placed directly under the name -->
+                        <!-- Category element placed directly under the name -->
                         <div class="recipe-meta-category" th:if="${recipe.recipeCategory != null}">
                             Category: <span th:text="${recipe.recipeCategory.name}">Course Type</span>
                         </div>
@@ -41,6 +42,7 @@
                         <a th:replace="~{fragments/actions :: editLink(targetUrl=@{/recipes/edit/{id}(id=${recipe.recipeId})})}"></a>
                     </th:block>
 
+                    <!-- ACTION 2: SAVE / UNSAVE RECIPE -->
                     <th:block th:unless="${canEdit}">
                         <th:block th:if="${currentUser != null}">
                             <form th:action="@{/recipes/save/{id}(id=${recipe.recipeId})}" method="POST" style="display: inline;">
@@ -53,8 +55,17 @@
                         </th:block>
                     </th:block>
 
-                    <!-- ACTION 2: CENTRAL UNPUBLISH CONFIRMATION CONTROLLER -->
-                    <!-- Swapped from deleteConfBtn to unpublishConfBtn for neutral formatting state -->
+                    <!-- ACTION 3: SHARE RECIPE BUTTON -->
+                    <button type="button"
+                            id="shareRecipeBtn"
+                            class="btn-action btn-action--share"
+                            th:if="${recipe.recipeVisibility.recipeVisibilityId != 2}"
+                            th:data-share-url="${apiHost} + '/view/' + ${recipe.recipeId} + '/share'"
+                            th:data-recipe-title="${recipe.title}">
+                        Share Recipe
+                    </button>
+
+                    <!-- ACTION 4: CENTRAL UNPUBLISH CONFIRMATION CONTROLLER -->
                     <th:block th:if="${canHide}">
                         <button th:replace="~{fragments/actions :: unpublishConfBtn(
                             targetFormId='hideRecipeForm',
@@ -62,7 +73,7 @@
                         )}"></button>
 
                         <!-- Always send to the unified numeric post action route -->
-                        <form id="hideRecipeForm" th:action="@{/recipes/view/{id}/hide(id=${recipe.recipeId})}" method="post" style="display: none;"> </form>
+                        <form id="hideRecipeForm" th:action="@{/recipes/view/{id}/hide(id=${recipe.recipeId})}" method="post" style="display: none;"></form>
                     </th:block>
                 </div>
             </div>
@@ -111,9 +122,12 @@
             <div th:insert="~{recipes/views/list :: list-view}"></div>
         </div>
     </main>
+
     <th:block layout:fragment="page_scripts">
         <script th:inline="javascript">
             window.MEASUREMENT_MATRIX = /*[[${globalMeasurementsPool}]]*/[];
+            window.RECIPE_IS_OWNER = /*[[${canEdit}]]*/ false;
+            window.RECIPE_VISIBILITY_ID = /*[[${recipe.recipeVisibility.recipeVisibilityId}]]*/ 1;
         </script>
         <script th:src="@{/js/recipes/view.js}"></script>
     </th:block> 

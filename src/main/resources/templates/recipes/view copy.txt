@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
+
+<head>
+    <title th:text="${recipe.title}">Tasty Recipe Title</title>
+    <th:block layout:fragment="page_styles">
+        <meta property="og:title" th:content="${recipe.title}" />
+        <meta property="og:description" th:content="${recipe.description}" />
+        <meta property="og:image" th:content="${apiHost} + '/images/chefbraindribbler.png'" />
+        <meta property="og:url" th:content="${apiHost} + '/view/' + ${recipe.recipeId}" />
+        <meta property="og:type" content="article" />
+
+        <link rel="stylesheet" th:href="@{/css/recipes/view.css}" />
+    </th:block>
+</head>
+
+<body>
+    <div layout:fragment="page-title" th:text="${recipe.title}">Tasty Recipe Title</div>
+    <p layout:fragment="page-subtitle" th:text="${recipe.description}">Mix, bake, and enjoy!</p>
+    <main layout:fragment="content">
+        <!-- JUMBO IDENTITY HEADER WITH LIVE SCALING CONTROLLERS -->
+        <div class="recipe-header-container">
+            <div class="recipe-title-block">
+                <div class="recipe-meta-tray">
+                    <div class="recipe-meta-attribution-stack">
+                        <div class="recipe-meta-author">
+                            Created by <span th:text="${recipe.user.displayName}">Author</span>
+                        </div>
+
+                        <!-- ➡️ Category element placed directly under the name -->
+                        <div class="recipe-meta-category" th:if="${recipe.recipeCategory != null}">
+                            Category: <span th:text="${recipe.recipeCategory.name}">Course Type</span>
+                        </div>
+                    </div>
+
+                    <!-- ACTION 1: CENTRAL EDIT LINK -->
+                    <th:block th:if="${canEdit}">
+                        <a th:replace="~{fragments/actions :: editLink(targetUrl=@{/recipes/edit/{id}(id=${recipe.recipeId})})}"></a>
+                    </th:block>
+
+                    <th:block th:unless="${canEdit}">
+                        <th:block th:if="${currentUser != null}">
+                            <form th:action="@{/recipes/save/{id}(id=${recipe.recipeId})}" method="POST" style="display: inline;">
+                                <input type="hidden" name="redirectContext" value="view" />
+                                
+                                <button type="submit" th:class="${isSaved} ? 'btn-action btn-unsave' : 'btn-action btn-save'">
+                                    <span th:text="${isSaved} ? 'Unsave Recipe' : 'Save to Cookbook'">Toggle Save</span>
+                                </button>
+                            </form>
+                        </th:block>
+                    </th:block>
+
+                    <!-- ACTION 2: CENTRAL UNPUBLISH CONFIRMATION CONTROLLER -->
+                    <!-- Swapped from deleteConfBtn to unpublishConfBtn for neutral formatting state -->
+                    <th:block th:if="${canHide}">
+                        <button th:replace="~{fragments/actions :: unpublishConfBtn(
+                            targetFormId='hideRecipeForm',
+                            confirmMessage='Are you sure you want to make this recipe private?'
+                        )}"></button>
+
+                        <!-- Always send to the unified numeric post action route -->
+                        <form id="hideRecipeForm" th:action="@{/recipes/view/{id}/hide(id=${recipe.recipeId})}" method="post" style="display: none;"> </form>
+                    </th:block>
+                </div>
+            </div>
+
+            <!-- SYSTEM MODE AND SERVINGS MULTIPLIER BUTTON GROUP PANELS -->
+            <div class="recipe-control-widgets">
+
+                <!-- US Imperial ⇄ Metric Switcher Component Widget -->
+                <div class="widget-card-panel">
+                    <span>System:</span>
+                    <div class="system-toggle-wrapper">
+                        <button type="button" id="system-imperial-btn" class="system-toggle-btn active"
+                            data-system="imperial">Imperial</button>
+                        <button type="button" id="system-metric-btn" class="system-toggle-btn"
+                            data-system="metric">Metric</button>
+                    </div>
+                </div>
+
+                <!-- Live Servings Input Scaler -->
+                <div class="widget-card-panel">
+                    <label for="servings-scaler">Servings:</label>
+                    <input type="number" id="servings-scaler" th:value="${recipe.servings}"
+                        th:data-original-servings="${recipe.servings}" min="1" step="1" onfocus="this.select()"
+                        class="servings-input-spinner" />
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW PANEL TABS SWITCH NAVIGATION HEADER BAR -->
+        <div class="view-mode-tabs">
+            <button type="button" class="tab-btn active" data-target="overview-panel">Overview</button>
+            <button type="button" class="tab-btn" data-target="prep-panel">Preparation</button>
+            <button type="button" class="tab-btn" data-target="list-panel">Item List</button>
+        </div>
+
+        <!-- MODULAR DISPLAY LAYOUT CHANNELS -->
+        <div id="overview-panel" class="tab-panel active-panel">
+            <div th:insert="~{recipes/views/overview :: overview-panel}"></div>
+        </div>
+
+        <div id="prep-panel" class="tab-panel" style="display: none;">
+            <div th:insert="~{recipes/views/prep :: prep-panel}"></div>
+        </div>
+
+        <div id="list-panel" class="tab-panel" style="display: none;">
+            <div th:insert="~{recipes/views/list :: list-view}"></div>
+        </div>
+    </main>
+    <th:block layout:fragment="page_scripts">
+        <script th:inline="javascript">
+            window.MEASUREMENT_MATRIX = /*[[${globalMeasurementsPool}]]*/[];
+        </script>
+        <script th:src="@{/js/recipes/view.js}"></script>
+    </th:block> 
+</body>
+</html>

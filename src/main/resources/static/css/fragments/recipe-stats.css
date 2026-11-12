@@ -119,3 +119,15 @@
     border-color: #e9d5ff;
     color: #6b21a8;
 }
+
+.metric-tag.tag--views {
+    border-left: 4px solid #0284c7; /* Sky Blue accent */
+}
+
+.metric-tag.tag--shares {
+    border-left: 4px solid #0d9488; /* Teal accent matching Share button */
+}
+
+.metric-tag.tag--shared-views {
+    border-left: 4px solid #6366f1; /* Indigo accent */
+}
