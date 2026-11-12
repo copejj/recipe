@@ -11,6 +11,7 @@ public class RecipeForm {
     private String recipeNote;
     private Integer recipeVisibilityId;
     private Integer recipeCategoryId;
+    private String sourceUrl;
     private List<StepForm> steps = new ArrayList<>();
 
     public RecipeForm() {
@@ -81,5 +82,18 @@ public class RecipeForm {
 
     public void setSteps(List<StepForm> steps) {
         this.steps = steps;
+    }
+
+    public String getSourceUrl() {
+        return sourceUrl;
+    }
+
+    public void setSourceUrl(String sourceUrl) {
+        if (sourceUrl == null) {
+            this.sourceUrl = null;
+            return;
+        }
+        String trimmed = sourceUrl.trim();
+        this.sourceUrl = trimmed.isEmpty() ? null : trimmed;
     }
 }

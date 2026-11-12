@@ -1,12 +1,25 @@
 package com.braindribbler.recipe.domain.recipe;
 
-import com.braindribbler.recipe.domain.auth.User;
-import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import com.braindribbler.recipe.domain.auth.User;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "recipes")
@@ -61,6 +74,9 @@ public class Recipe {
 
     @Column(name = "shared_view_count", nullable = false)
     private Integer sharedViewCount = 0;
+
+    @Column(name = "source_url", length=2048, nullable = true)
+    private String sourceUrl;
 
     public Recipe() {
     }
@@ -183,5 +199,31 @@ public class Recipe {
 
     public void setSharedViewCount(Integer sharedViewCount) {
         this.sharedViewCount = sharedViewCount;
+    }
+
+    public String getSourceUrl() {
+        return sourceUrl;
+    }
+
+    public void setSourceUrl(String sourceUrl) {
+        if (sourceUrl == null) {
+            this.sourceUrl = null;
+            return;
+        }
+        String trimmed = sourceUrl.trim();
+        this.sourceUrl = trimmed.isEmpty() ? null : trimmed;
+    }
+
+    @jakarta.persistence.Transient
+    public String getSourceDomain() {
+        if (this.sourceUrl == null || this.sourceUrl.isBlank()) {
+            return null;
+        }
+        try {
+            String host = java.net.URI.create(this.sourceUrl).getHost();
+            return (host != null && host.startsWith("www.")) ? host.substring(4) : host;
+        } catch (Exception e) {
+            return "Original Source";
+        }
     }
 }

@@ -1,0 +1,3 @@
+BEGIN;
+ALTER TABLE recipes ADD COLUMN source_url VARCHAR(2048);
+COMMIT;

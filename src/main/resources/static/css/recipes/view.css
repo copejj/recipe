@@ -10,6 +10,7 @@
 .recipe-meta-author span { font-weight: 600; color: var(--color-text-dark); }
 .recipe-meta-attribution-stack { display: flex; flex-direction: column; gap: 0.15rem; }
 .recipe-meta-category { font-size: 0.88rem; opacity: 0.85; color: var(--text-muted, #6c757d); }
+.recipe-meta-source { font-size: 0.88rem; opacity: 0.85; color: var(--text-muted, #6c757d); }
 .recipe-control-widgets { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 .widget-card-panel { background-color: var(--color-bg-card); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--color-border); display: flex; align-items: center; gap: 10px; }
 .widget-card-panel span, .widget-card-panel label { font-weight: 700; font-size: 0.9rem; color: var(--color-text-dark); margin: 0; }
