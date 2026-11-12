@@ -191,9 +191,12 @@
 
 .header-grid {
     display: flex;
-    flex-direction: column;
-    gap: 20px;
-    margin: 0 1rem 24px 1rem; 
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px 12px; /* 10px vertical gap when wrapped, 12px horizontal gap */
+    margin: 0 1rem 16px 1rem;
     width: auto;
     box-sizing: border-box;
 }
