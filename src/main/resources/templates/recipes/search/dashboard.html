@@ -7,7 +7,7 @@
 <head>
     <title>Recipe Discovery Hub</title>
     <th:block layout:fragment="page_styles">
-        <link rel="stylesheet" th:href="@{/css/recipes/search-dashboard.css}" />
+        <link rel="stylesheet" th:href="@{/css/recipes/cookbook.css}" />
     </th:block>
 </head>
 
@@ -85,7 +85,7 @@
         <div class="table-responsive-wrapper">
             <!-- Central DataTables Layout Component Integration Hook -->
             <div th:replace="~{fragments/datatable :: genericTable(
-                tableId='generalIndexTable',
+                tableId='generalCookbookTable',
                 dataList=${recipesIndexPool},
                 headerTemplate=~{::recipeHeaders},
                 rowTemplate=~{::recipeRow}
@@ -115,7 +115,7 @@
                         </td>
 
                         <td class="table-display-name-cell" data-label="Chef">
-                            <span class="badge-permission table-chef-badge" 
+                            <span class="badge-permission table-chef-badge clickable-chef-badge" 
                                     th:text="${item.user.displayName != null ? item.user.displayName : 'Anonymous'}">Anonymous</span>
                         </td>
 
@@ -132,7 +132,7 @@
         </div>
     </main>
     <th:block layout:fragment="page_scripts">
-        <script th:src="@{/js/recipes/search-dashboard.js}"></script>
+        <script th:src="@{/js/recipes/cookbook.js}"></script>
     </th:block> 
 </body>
 </html>
