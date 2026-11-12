@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    var tableId = '#generalIndexTable';
+    var tableId = '#generalCookbookTable';
 
     // Global client-side tracking state variables
     let activeChefFilter = null;
@@ -57,7 +57,7 @@ $(document).ready(function () {
             // Use the rows().nodes() API to access ALL rows in memory (visible + hidden)
             dataTableInstance.rows().nodes().to$().each(function() {
                 // Find chef badges within this row
-                $(this).find(".table-chef-badge").each(function() {
+                $(this).find(".clickable-chef-badge").each(function() {
                     const name = $(this).text().trim();
                     $(this).toggleClass("filter-matching", !!(activeChefFilter && name === activeChefFilter));
                 });
@@ -83,14 +83,14 @@ $(document).ready(function () {
     }
 
     // Unified Interceptor handling actions, redirects, and badge selections
-    $(document).on("click", "#generalIndexTable tbody tr", function (event) {
+    $(document).on("click", "table tbody tr", function (event) {
         const $target = $(event.target);
 
         // Discard routing execution if actions layout cell elements are clicked
         if ($target.closest(".table-action-cell").length) return;
 
         // Chef badge click toggle mechanics
-        if ($target.hasClass("table-chef-badge")) {
+        if ($target.hasClass("clickable-chef-badge")) {
             const clickedChef = $target.text().trim();
             activeChefFilter = (activeChefFilter === clickedChef) ? null : clickedChef;
             highlightMatchingBadges();

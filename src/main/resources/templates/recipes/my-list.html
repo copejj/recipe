@@ -6,7 +6,7 @@
 <head>
     <title>My Recipes</title>
     <th:block layout:fragment="page_styles">
-        <link rel="stylesheet" th:href="@{/css/recipes/my-list.css}" />
+        <link rel="stylesheet" th:href="@{/css/recipes/cookbook.css}" />
     </th:block>
 </head>
 
@@ -35,7 +35,7 @@
         </div>
 
         <div th:replace="~{fragments/datatable :: genericTable(
-            'myRecipesTable', 
+            'generalCookbookTable', 
             ${recipes}, 
             ~{::recipeHeaders}, 
             ~{::recipeRows}
@@ -44,6 +44,7 @@
             <!-- Table Headers Slot -->
             <tr th:fragment="recipeHeaders">
                 <th>Actions</th>
+                <th>Category</th>
                 <th>Chef</th>
                 <th>Title</th>
                 <th>Summary</th>
@@ -65,12 +66,16 @@
                         <a th:replace="~{fragments/actions :: viewLink(targetUrl=@{/view/{id}(id=${item.recipeId})})}"></a>
                     </div>
                 </td>
-                <td data-label="Chef" class="display-name-cell">
-                    <span class="badge-permission table-chef-badge" 
+                <td data-label="Category" class="table-category-cell">
+                    <span class="badge-permission table-category-badge clickable-category-badge" 
+                            th:text="${item.recipeCategory != null ? item.recipeCategory.name : 'General'}">General</span>
+                </td>
+                <td data-label="Chef" class="table-display-name-cell">
+                    <span class="badge-permission table-chef-badge clickable-chef-badge" 
                         th:text="${item.user.displayName != null ? item.user.displayName : 'Anonymous'}">Anonymous</span>
                 </td>
-                <td data-label="Title" class="recipe-title-cell" th:text="${item.title}">Title</td>
-                <td data-label="Summary" class="recipe-description-cell"
+                <td data-label="Title" class="table-title-cell" th:text="${item.title}">Title</td>
+                <td data-label="Summary" class="table-description-cell"
                     th:text="${item.description != null && !item.description.isEmpty() ? item.description : 'No description provided.'}">Description</td>
                 <td data-label="Servings" class="recipe-servings-cell">
                     <span th:text="${item.servings != null ? item.servings : '—'}">4</span> ppl
@@ -84,7 +89,7 @@
     </main>
 
     <th:block layout:fragment="page_scripts">
-        <script th:src="@{/js/recipes/my-list.js}"></script>
+        <script th:src="@{/js/recipes/cookbook.js}"></script>
     </th:block> 
 </body>
 </html>
