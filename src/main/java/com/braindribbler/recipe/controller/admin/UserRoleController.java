@@ -81,9 +81,29 @@ public class UserRoleController {
         List<RecipeSaveBreakdown> recipeBreakdown = recipeRepository.getRecipeSaveBreakdownByUserId(targetUser.getUserId());
         List<SavedRecipeSummary> savedRecipes = recipeRepository.findSavedRecipesByUserId(targetUser.getUserId());
 
+        long totalViews = recipeBreakdown.stream()
+                .mapToLong(item -> item != null && item.getViewCount() != null ? item.getViewCount() : 0L)
+                .sum();
+
+        long totalSharedViews = recipeBreakdown.stream()
+                .mapToLong(item -> item != null && item.getSharedViewCount() != null ? item.getSharedViewCount() : 0L)
+                .sum();
+
+        long totalShares = recipeBreakdown.stream()
+                .mapToLong(item -> item != null && item.getShareCount() != null ? item.getShareCount() : 0L)
+                .sum();
+
+
+        if (recipeStats != null) {
+            recipeStats.setTotalViews(totalViews);
+            recipeStats.setTotalSharedViews(totalSharedViews);
+            recipeStats.setTotalShares(totalShares);
+        }
+
         model.addAttribute("recipeStats", recipeStats);
         model.addAttribute("recipeBreakdown", recipeBreakdown);
         model.addAttribute("savedRecipes", savedRecipes);
+
 
         model.addAttribute("targetUser", targetUser);
         model.addAttribute("assignableRoles", assignableRoles);
