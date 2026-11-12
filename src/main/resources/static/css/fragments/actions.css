@@ -3,6 +3,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    width: auto;
+    flex: 0 0 auto;
     padding: 6px 12px;
     font-size: 0.85rem;
     font-weight: 600;
@@ -13,37 +15,32 @@
     box-sizing: border-box;
     transition: all 0.2s ease-in-out;
     height: 32px;
+    white-space: nowrap;
 }
 
 /* Warm Amber/Yellow theme for editing/modifying */
 .btn-action--edit {
     color: #b45309;
-    /* Dark Amber Text */
     background-color: #fef3c7;
-    /* Soft Warm Yellow BG */
     border: 1px solid #fde68a;
 }
 
 .btn-action--edit:hover {
     color: #78350f;
     background-color: #fde68a;
-    /* Deepens slightly on hover */
     border-color: #fcd34d;
 }
 
 /* Informational Cool Blue theme for viewing details */
 .btn-action--view {
     color: #1d4ed8;
-    /* Deep Blue Text */
     background-color: #dbeafe;
-    /* Soft Ice Blue BG */
     border: 1px solid #bfdbfe;
 }
 
 .btn-action--view:hover {
     color: #1e40af;
     background-color: #bfdbfe;
-    /* Deepens slightly on hover */
     border-color: #93c5fd;
 }
 
@@ -60,7 +57,19 @@
     border-color: var(--color-danger, #e74c3c);
 }
 
-/* Delete button theme modifiers */
+/* Solid red danger variant (used by saveBtn when disabling an item) */
+.btn-action--danger {
+    color: #ffffff;
+    background-color: var(--color-danger, #e74c3c);
+    border: 1px solid var(--color-danger, #e74c3c);
+}
+
+.btn-action--danger:hover {
+    background-color: #c0392b;
+    border-color: #c0392b;
+}
+
+/* Unblock button theme modifiers */
 .btn-action--unblock {
     color: var(--color-danger, #d18843);
     background-color: var(--color-bg-body, #ffffff);
@@ -94,7 +103,6 @@
 .btn-action--cancel:hover {
     background-color: #cbd5e1;
 }
-
 /* Fresh Emerald/Teal theme for sharing */
 .btn-action--share {
     color: #0f766e;
@@ -115,7 +123,7 @@
     border-color: #0d9488;
 }
 
-/* Optional matching Save / Unsave styles for .recipe-meta-tray */
+/* Matching Save / Unsave styles for .recipe-meta-tray */
 .btn-save {
     color: #15803d;
     background-color: #dcfce7;
@@ -138,4 +146,51 @@
     color: #1e293b;
     background-color: #e2e8f0;
     border-color: #94a3b8;
+}
+
+/* Hollow inline two-step confirm delete button */
+.inline-delete-btn {
+    background-color: var(--color-bg-surface, #ffffff);
+    color: var(--color-danger, #dc3545);
+    border: 2px solid var(--color-danger, #dc3545);
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    font-size: 0.95rem;
+    padding: 0.5rem 1rem;
+    height: auto;
+}
+
+.inline-delete-btn[data-confirmed="false"]:hover {
+    background-color: var(--color-danger, #dc3545);
+    color: var(--color-bg-surface, #ffffff);
+}
+
+.inline-delete-btn[data-confirmed="true"] {
+    background-color: #bd2130 !important;
+    color: #ffffff !important;
+    border-color: #bd2130 !important;
+    box-shadow: 0 0 8px rgba(220, 53, 69, 0.4);
+}
+
+/* Form action row container & responsive wrapping */
+.form-actions-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 12px;
+    margin-top: 30px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-actions-delete {
+    margin-left: auto;
+}
+
+@media (max-width: 576px) {
+    .form-actions-delete {
+        margin-left: 0;
+    }
 }

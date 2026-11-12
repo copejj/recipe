@@ -3,32 +3,23 @@
    ========================================================================== */
 :root {
     /* Brand Design Palette - Golden Bakery Theme */
-    --color-primary: #d97706;        /* Warm golden-honey / bread crust */
-    --color-primary-hover: #b45309;  /* Deep amber / toasted crust */
-    --color-text-dark: #292524;      /* Soft stone-charcoal with a hint of warmth */
-    --color-text-muted: #78716c;     /* Muted warm gray for descriptions */
-    --color-text-label: #57534e;     /* Medium dark warm gray for form labels */
-    --color-border: #e7e5e4;         /* Soft warm-gray divider line */
-    --color-border-input: #d6d3d1;   /* Subtle border for input fields */
-    --color-bg-card: #ffffff;        /* Solid white ensures crisp text contrast for recipes */
-    --color-bg-card-tp: #ffffff82;        /* Solid white ensures crisp text contrast for recipes */
-    --color-bg-body: #fdfbfc;        /* Warm flour/cream background (soft on the eyes) */
-    --color-bg-disabled: #f5f5f4;    /* Light disabled state */
-    
-    /* Isolated Header, Footer & Backdrop Elements (Matched to Crust Photo) */
-    --color-bg-head: #2d1302;        /* Rich, deeply baked mahogany mid-tone from the crust */
-    --color-bg-foot: #1c0a01;        /* Blistered near-black char tone from the top ridge */
-    --color-bg-backdrop: #421a05cc;  /* Deep toasted-amber overlay for backdrops (80% opacity) */
-    
-    /* Dedicated Text Color Tokens for Isolated Dark Components */
-    --color-text-head: #fef9c3;      /* Soft, buttery yellow-white for header links */
-    --color-text-foot: #e7e5e4;      /* Soft crumb warm-gray for legible footer metadata */
+    --color-primary: #d97706;
+    --color-primary-hover: #b45309;
+    --color-text-dark: #292524;
+    --color-text-muted: #78716c;
+    --color-text-label: #57534e;
+    --color-border: #e7e5e4;
+    --color-border-input: #d6d3d1;
+    --color-bg-card: #ffffff;
+    --color-bg-card-tp: #ffffff82;
+    --color-bg-body: #fdfbfc;
+    --color-bg-disabled: #f5f5f4;
     --color-page-title: #76554940;
 
     /* Theme Layout Color Tokens */
-    --color-dark-bg: #2d1302;        /* Deep molasses/dark chocolate for dark sections */
-    --color-dark-border: #5c2707;    /* Toasted brown border for dark sections */
-    --color-profile-dark-btn: #5c2707;/* Rich brown for dark-themed profile buttons */
+    --color-dark-bg: #2d1302;
+    --color-dark-border: #5c2707;
+    --color-profile-dark-btn: #5c2707;
 
     /* Global Typography System */
     --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Georgia, serif;
@@ -48,27 +39,24 @@
     --color-info-bg: #eff6ff;
     --color-info-border: #bfdbfe;
 
-    --color-warn-text: #713f12;      /* Deep golden brown warning text */
-    --color-warn-bg: #fef9c3;        /* Warm buttery warning background */
+    --color-warn-text: #713f12;
+    --color-warn-bg: #fef9c3;
 
-    --color-badge-blue-text: #b45309; /* Re-purposed to a "baking tip" amber badge */
-    --color-badge-blue-bg: #fef3c7;  /* Soft golden badge background */
+    --color-badge-blue-text: #b45309;
+    --color-badge-blue-bg: #fef3c7;
 
-    /* Isolated Header, Footer & Backdrop Elements (Matched to Crust Photo) */
-    --color-bg-head: #2d130280;        /* Rich, deeply baked mahogany mid-tone */
-    --color-bg-head-light: #52220499;  /* NEW: Warm toasted golden-brown variation */
-    --color-bg-foot: #110600c2;        /* Deeply blistered near-black char tone */
-    --color-bg-backdrop: #421a05cc;  
-    
+    /* Isolated Header, Footer & Backdrop Elements */
+    --color-bg-head: #2d130280;
+    --color-bg-head-light: #52220499;
+    --color-bg-foot: #110600c2;
+    --color-bg-backdrop: #421a05cc;
+
     /* Dedicated Text Color Tokens for Isolated Dark Components */
-    --color-text-head: #fef9c3;      
-    --color-text-foot: #e7e5e4;      
+    --color-text-head: #fef9c3;
+    --color-text-foot: #e7e5e4;
 
     --main-width: min(75rem, 100%);
-
 }
-
-
 
 /* ==========================================================================
    2. REUSABLE FOUNDATIONS & STRUCTURAL BASE
@@ -77,123 +65,9 @@
     box-sizing: border-box;
 }
 
-/* 1. Ensure the parent containers span the full height of the viewport */
 html, body {
-  height: 100%;
-  margin: 0;
-}
-
-/* 2. Turn the body into a vertical layout engine */
-body {
-  display: flex;
-  flex-direction: column;
-}
-
-/* 3. Tell main to aggressively expand and fill all empty space */
-main {
-  flex: 1 0 auto; /* Shorthand for: grow to fill space, don't shrink, auto base */
-  display: flex;  /* Turn main into a flexbox too so its child can stretch */
-  flex-direction: column;
-}
-
-/* 4. Tell the card to fill the newly expanded main element */
-.page-card {
-  justify-content: center; 
-}
-
-/* 5. Keep the footer anchored to the bottom structural floor */
-.recipe-footer {
-  flex-shrink: 0; /* Prevents the footer from getting squished on short screens */
-  border-radius: .5rem .5rem 0 0; /* Rounds the top corners of the header for a soft crust effect */
-}
-
-/* 1. The Main Header Banner */
-.recipe-header {
-  /* This creates a dark overlay gradient fading left-to-right, blending into your crust image */
-  background-image: linear-gradient( to right, 
-    rgb(38 21 11 / 10%) 20%, 
-    rgba(22, 11, 5, 0.6) 60%, 
-    rgb(22 11 5 / 21%) 100% )
-  , url(/images/crusty_bread.jpg);
-  background-size: var(--main-width) auto !important; /* Forces image to maintain its proportions, cutting off edges rather than stretching */
-  background-position: center;   /* Keeps the center of the crust in view on all screen sizes */
-  background-repeat: no-repeat;  /* Prevents tiling */
-  border-radius: 0 0 .5rem .5rem; /* Rounds the bottom corners of the header for a soft crust effect */
-}
-
-.recipe-header,
-.recipe-footer{
-    width: var(--main-width);
-    margin: 0 auto;
-}
-
-/* 2. Layout Alignment Container */
-.header-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/* 3. Global Text Adjustments for the Texture Overlay */
-.recipe-header .header-logo a,
-.recipe-header .nav-link {
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.2s ease;
-}
-
-/* Hover effects that look great over warm wood/bread tones */
-.recipe-header .nav-link:hover {
-  color: #f39c12; /* Warm amber/honey accent color */
-}
-
-/* 4. Dropdown Adjustments */
-.recipe-header .dropdown-caret {
-  font-size: 0.65rem;
-  margin-left: 5px;
-  vertical-align: middle;
-  color: rgba(255, 250, 245, 0.7);
-}
-
-
-/* Custom Header layout mimicking caramelized crust variance */
-header, .site-header {
-    /* 1. Color Variance: Smooth diagonal gradient between the mahogany and warm toasted highlights */
-    background: linear-gradient(135deg, var(--color-bg-head) 0%, var(--color-bg-head-light) 100%);
-    color: var(--color-text-head);
-    position: relative;
-    box-shadow: inset 0 -5px 15px rgba(0, 0, 0, 0.3); /* Simulates the shadow of a deep crust ridge */
-}
-
-/* Custom Footer layout mimicking the blistered base of the loaf */
-footer, .site-footer {
-    background-color: var(--color-bg-foot);
-    color: var(--color-text-foot);
-    position: relative;
-    box-shadow: inset 0 5px 15px rgba(0, 0, 0, 0.5);
-}
-
-/* 2. Texture Overlay: Injected grain effect using a pseudo-element */
-header::before, footer::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    width: 100%; height: 100%;
-    opacity: 0.04; /* Keeps the texture incredibly soft and professional */
-    pointer-events: none; /* Allows clicks to pass right through to links */
-    z-index: 1;
-    
-    /* Dynamic grain pattern built purely out of browser-safe SVG noise data */
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://w3.org id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-}
-
-/* Keep the navigation text sitting crisply above the texture layer */
-header > *, footer > * {
-    position: relative;
-    z-index: 2;
+    height: 100%;
+    margin: 0;
 }
 
 body {
@@ -209,24 +83,25 @@ body {
 }
 
 body::before {
-  content: "";
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  
-  background-image: url('/images/recipe_back.jpg');
-  background-repeat: repeat;
-  background-size: 45rem;
-  background-attachment: fixed;
-  
-  opacity: 0.08; 
-  z-index: -1; 
+    content: "";
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background-image: url('/images/recipe_back.jpg');
+    background-repeat: repeat;
+    background-size: 45rem;
+    background-attachment: fixed;
+    opacity: 0.08;
+    z-index: -1;
 }
 
-/* Base Typographic Hierarchy */
-h1,
-h2,
-h3 {
+main {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+h1, h2, h3 {
     font-weight: 700;
     line-height: 1.2;
     color: var(--color-text-dark);
@@ -237,35 +112,96 @@ p {
     margin-bottom: 1rem;
 }
 
+/* Header & Footer Visual Treatments */
+.recipe-header {
+    background-image: linear-gradient(
+        to right,
+        rgb(38 21 11 / 10%) 20%,
+        rgba(22, 11, 5, 0.6) 60%,
+        rgb(22 11 5 / 21%) 100%
+    ), url(/images/crusty_bread.jpg);
+    background-size: var(--main-width) auto !important;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 0 0 .5rem .5rem;
+}
+
+.recipe-header,
+.recipe-footer {
+    width: var(--main-width);
+    margin: 0 auto;
+}
+
+.recipe-header .header-logo a,
+.recipe-header .nav-link {
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.recipe-header .nav-link:hover {
+    color: #f39c12;
+}
+
+.recipe-header .dropdown-caret {
+    font-size: 0.65rem;
+    margin-left: 5px;
+    vertical-align: middle;
+    color: rgba(255, 250, 245, 0.7);
+}
+
+header, .site-header {
+    background: linear-gradient(135deg, var(--color-bg-head) 0%, var(--color-bg-head-light) 100%);
+    color: var(--color-text-head);
+    position: relative;
+    box-shadow: inset 0 -5px 15px rgba(0, 0, 0, 0.3);
+}
+
+footer, .site-footer {
+    background-color: var(--color-bg-foot);
+    color: var(--color-text-foot);
+    position: relative;
+    box-shadow: inset 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+header::before, footer::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.04;
+    pointer-events: none;
+    z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://w3.org id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+header > *, footer > * {
+    position: relative;
+    z-index: 2;
+}
 /* ==========================================================================
    3. SYSTEM STANDARD APP CONTAINER LAYOUTS
    ========================================================================== */
-/* 1. Ensure the parent flex container fills the viewport screen */
 .full-page-content {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
     margin: 0;
 }
-/* 2. Enforce flex calculations down to the wrapper deck element */
+
 .content-cont {
     flex: 1 0 auto;
     display: flex;
     flex-direction: column;
 }
 
-/* 3. Force your inner Bootstrap wrapper to fill out the workspace background height */
 .content-cont > .container-fluid {
     flex: 1 0 auto;
     display: flex;
     flex-direction: column;
     width: var(--main-width);
     margin: 1rem auto;
-    padding: 1rem 2rem;
-}
-
-/* 4. Force your view content to expand greedily down to your footer boundary */
-.content-cont > .container-fluid  {
     border: 1px solid var(--color-border);
     border-radius: 1rem;
     padding: 1rem 2rem;
@@ -289,12 +225,10 @@ p {
     background: transparent;
 }
 
-/* 5. Allow your system card component box to fully stretch */
 .page-card {
     flex: 1 0 auto;
     background-color: var(--color-bg-card);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
-    
     display: flex;
     flex-direction: column;
 }
@@ -311,7 +245,7 @@ p {
     margin-bottom: 30px;
 }
 
-/* Centralized Small Form Card Layouts (For Login & Registration Only) */
+/* Centralized Small Form Card Layouts (Login & Registration) */
 .auth-layout {
     max-width: 100%;
     background-color: var(--color-bg-card-tp);
@@ -325,8 +259,17 @@ p {
     margin: auto;
 }
 
+.auth-layout .page-title {
+    text-align: center;
+}
+
+.auth-layout .page-subtitle {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
 /* ==========================================================================
-   4. SHARED FRAGMENTS (HEADER & FOOTER)
+   4. SHARED FRAGMENTS (HEADER & FOOTER NAVIGATION)
    ========================================================================== */
 .main-header {
     background-color: var(--color-bg-head);
@@ -395,7 +338,27 @@ p {
     transition: color 0.15s ease;
 }
 
+nav.header-nav div.nav-dropdown button.nav-button.nav-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+nav.header-nav span.dropdown-caret {
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    transition: transform 0.2s ease;
+}
+
 .recipe-footer {
+    flex-shrink: 0;
+    border-radius: .5rem .5rem 0 0;
     text-align: center;
     padding: 1rem;
     color: var(--color-text-muted);
@@ -430,6 +393,11 @@ p {
     margin-bottom: 28px;
 }
 
+.form-group--lastlast {
+    margin-bottom: 0;
+    display: none !important;
+}
+
 .form-label {
     display: block;
     margin-bottom: 6px;
@@ -457,7 +425,7 @@ p {
 
 .btn {
     display: inline-block;
-    width: 100%;
+    width: auto;
     padding: 6px;
     font-size: 1rem;
     font-weight: 600;
@@ -469,9 +437,21 @@ p {
     transition: background-color 0.15s ease, transform 0.1s ease;
 }
 
+.auth-layout .btn {
+    width: 100%;
+}
+
 .btn--primary {
     background-color: var(--color-primary);
     color: var(--color-bg-card);
+}
+
+.btn--primary:hover {
+    background-color: var(--color-primary-hover);
+}
+
+.btn--primary:active {
+    transform: scale(0.98);
 }
 
 .add-primary-button {
@@ -485,17 +465,9 @@ p {
     font-weight: 600;
     display: inline-flex;
     align-items: center;
-    justify-content: center; 
-    height: 44px; 
+    justify-content: center;
+    height: 44px;
     box-sizing: border-box;
-}
-
-.btn--primary:hover {
-    background-color: var(--color-primary-hover);
-}
-
-.btn--primary:active {
-    transform: scale(0.98);
 }
 
 .form-error-msg {
@@ -505,7 +477,6 @@ p {
     font-weight: 600;
 }
 
-/* Explicit CSS States for Native System Disabling */
 .form-input:disabled,
 .profile-input-disabled {
     background-color: var(--color-bg-body);
@@ -522,7 +493,6 @@ p {
     box-shadow: none;
     transform: none;
 }
-
 /* ==========================================================================
    6. ATOMIC VIEWS & REUSE BLOCKS
    ========================================================================== */
@@ -536,9 +506,6 @@ p {
     text-decoration: underline;
 }
 
-/* Homepage Hero Components */
-
-/* System Infrastructure Status Grid (Dashboard) */
 .status-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -601,16 +568,28 @@ p {
     border: 1px solid transparent;
 }
 
-.alert--danger {
+.alert--danger,
+.danger-alert {
     color: var(--color-danger-text);
     background-color: var(--color-danger-bg);
     border-color: var(--color-danger-border);
 }
 
-.alert--success {
+.danger-alert .alert-text {
+    color: var(--color-danger-text);
+    font-weight: 700;
+}
+
+.alert--success,
+.success-alert {
     color: var(--color-success-text);
     background-color: var(--color-success-bg);
     border-color: var(--color-success-border);
+}
+
+.success-alert .alert-text {
+    color: var(--color-success-text);
+    font-weight: 700;
 }
 
 .alert--info {
@@ -620,8 +599,8 @@ p {
 }
 
 /* ==========================================================================
-    9. EXPLICIT ADMIN DROPDOWN LAYOUTS (GLOBAL SCOPE)
-========================================================================== */
+   8. EXPLICIT ADMIN DROPDOWN LAYOUTS
+   ========================================================================== */
 .nav-dropdown {
     position: relative;
     display: inline-block;
@@ -680,9 +659,8 @@ p {
 }
 
 /* ==========================================================================
-   10. INTERACTIVE DATATABLES COMPONENT STYLES & OVERRIDES
+   9. INTERACTIVE DATATABLES OVERRIDES
    ========================================================================== */
-
 table.dataTable {
     border-collapse: collapse;
     margin-bottom: 20px;
@@ -714,39 +692,38 @@ table.dataTable tbody td:first-child {
     margin: auto;
 }
 
+.page-card div.table-responsive-wrapper table#myRecipesTable {
+    table-layout: fixed;
+    width: 100%;
+}
+
 /* ==========================================================================
-   11. DEDICATED ADMIN MATRIX, ATOMIC UTILITIES, & USER PROFILE CONFIGS
+   10. ADMIN MATRIX, MODALS & PROFILE CONFIGS
    ========================================================================== */
 .admin-header-flex {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem;
     margin-bottom: 20px;
+    background-color: var(--color-page-title);
+    border-radius: 1rem;
 }
 
 .admin-header-flex .page-title {
     margin: 0;
     line-height: 1.2;
+    font-size: 2rem;
     color: var(--color-text-dark);
     font-weight: 700;
 }
 
-.auth-layout .page-title {
-    text-align: center;
-}
-
-.auth-layout .page-subtitle {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.form-group--lastlast {
-    margin-bottom: 0;
-    display: none !important;
-}
-
 .admin-header-flex .page-subtitle {
-    margin: 5px 0 0 0;
+    margin: 4px 0 0 0;
+    font-size: 1.15rem;
+    color: var(--color-text-muted, #78716c);
 }
 
 .admin-btn-group {
@@ -783,7 +760,7 @@ dialog.admin-modal h3 {
 .modal-actions-footer {
     display: flex;
     justify-content: flex-start;
-    gap: 10px;
+    gap: 12px;
 }
 
 .modal-actions-footer .btn--cancel {
@@ -817,6 +794,10 @@ dialog.admin-modal h3 {
     font-weight: 500;
 }
 
+.hide-cell {
+    display: none;
+}
+
 .auth-footer-links,
 .auth-footer-text {
     text-align: center;
@@ -836,7 +817,6 @@ dialog.admin-modal h3 {
     margin: 5px 0;
 }
 
-/* User Profile Workspace Base Classes */
 .profile-card {
     max-width: 650px;
     margin: 40px auto;
@@ -857,10 +837,9 @@ dialog.admin-modal h3 {
 .profile-password-btn {
     background-color: var(--color-profile-dark-btn);
 }
-
-/* --- CUSTOM SEARCHABLE SELECT2 COSMETIC ADJUSTMENTS --- */
-
-/* --- CARTOON COOKING BUBBLE TOOLTIP --- */
+/* ==========================================================================
+   11. RECIPE CONTROLS, TOOLTIPS, HERO & ERROR PAGES
+   ========================================================================== */
 .amount-wrapper {
     position: relative;
     flex: 1;
@@ -869,17 +848,14 @@ dialog.admin-modal h3 {
 .fraction-bubble {
     position: absolute;
     bottom: 125%;
-    /* Floats comfortably above the input box */
     left: 50%;
     transform: translateX(-50%) scale(0.8);
     background-color: #333;
-    /* Dark slate gray bubble */
     color: #fff;
     padding: 6px 12px;
     font-size: 0.85rem;
     font-weight: bold;
     border-radius: 20px;
-    /* Highly rounded cartoon aesthetic */
     white-space: nowrap;
     opacity: 0;
     pointer-events: none;
@@ -888,12 +864,10 @@ dialog.admin-modal h3 {
     z-index: 10;
 }
 
-/* The talking bubble triangle pointer */
 .fraction-bubble::after {
     content: "";
     position: absolute;
     top: 100%;
-    /* Points down to the input field */
     left: 50%;
     transform: translateX(-50%);
     border-width: 6px;
@@ -901,24 +875,16 @@ dialog.admin-modal h3 {
     border-color: #333 transparent transparent transparent;
 }
 
-/* ==========================================================================
-   12. RESPONSIVE COOKBOOK INGREDIENT CHECKLIST GRID
-   ========================================================================== */
 textarea {
     field-sizing: content;
-
     min-height: 3lh;
     max-height: 300px;
 }
 
-/* ==========================================================================
-   13. FLUID FLEX-WRAP INGREDIENT CONSOLE CONTROL PIPELINE
-   ========================================================================== */
 .ingredient-row {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    /* Permits wrapping natively if space drops below minimums */
     align-items: center;
     gap: 10px;
     width: 100%;
@@ -926,43 +892,12 @@ textarea {
     box-sizing: border-box;
 }
 
-.ingredient-row>select {
+.ingredient-row > select {
     flex: 3 1;
     min-width: 200px;
     height: 42px;
 }
 
-/* --- Desktop Base Layout --- */
-.page-card div.table-responsive-wrapper table#myRecipesTable {
-    table-layout: fixed;
-    width: 100%;
-}
-
-/* ==========================================================================
-   Base & Desktop Navigation Menu Adjustments
-   ========================================================================== */
-nav.header-nav div.nav-dropdown button.nav-button.nav-link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 6px;
-    /* Clean gap on desktop layouts */
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: inherit;
-}
-
-nav.header-nav span.dropdown-caret {
-    flex-shrink: 0;
-    font-size: 0.7rem;
-    /* Scales the fat '▼' symbol slightly for better balance */
-    transition: transform 0.2s ease;
-    /* Preps the arrow if you want to flip it on open */
-}
-
-/* Consolidated matrix view footer panel spacing blocks */
 .form-actions-footer {
     margin-top: 30px;
     display: flex;
@@ -973,30 +908,22 @@ nav.header-nav span.dropdown-caret {
     border-top: 1px solid var(--color-border, #e2e8f0);
 }
 
-.modal-actions-footer {
-    display: flex;
-    gap: 12px;
-}
-
-/* Container holding the text flow */
 .hero-flow-container {
     color: var(--color-text-dark);
     line-height: 1.7;
     margin-bottom: 40px;
 }
 
-/* Floats the image box left and handles margins */
 .hero-flow-image-wrapper {
     float: left;
     width: min(100%, 380px);
-    margin-right: 30px; /* Clean breathing room between the art and text */
+    margin-right: 30px;
     margin-bottom: 15px;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-/* Clean image adjustments without transformations */
 .hero-illustration {
     max-width: 100%;
     height: auto;
@@ -1004,12 +931,10 @@ nav.header-nav span.dropdown-caret {
     background-color: transparent !important;
 }
 
-/* Typography styles */
 .intro-paragraph {
     margin-bottom: 20px;
 }
 
-/* Link customization */
 .search-link {
     color: var(--color-primary);
     font-weight: 600;
@@ -1017,51 +942,53 @@ nav.header-nav span.dropdown-caret {
     margin-left: 6px;
 }
 
-/* Forces the brand name to stay together on a single line */
 .brand-nobreak {
     white-space: nowrap;
 }
 
-/* Base styling for the inline registration link */
 .register-link {
     color: var(--color-primary);
     font-weight: 600;
     text-decoration: none;
-    display: inline-block; /* Helps handle transitions cleanly */
+    display: inline-block;
     transition: transform 0.2s ease, letter-spacing 0.2s ease;
 }
 
-/* Hover effect: Swaps to UPPERCASE smoothly */
 .register-link:hover {
     text-transform: uppercase;
-    font-size: .72rem; /* Slightly smaller font size for a subtle effect */
+    font-size: .72rem;
 }
 
-/* Utility overrides to completely replace the complex, non-standard layout overrides */
+/* Error Pages & Admin Debug Panel */
 .page-card--error {
     text-align: center;
-    padding: 5rem 3rem; /* Emulates the balanced spacing found in auth-container blocks */
+    padding: 5rem 3rem;
 }
+
 .error-code {
     font-size: 4rem;
     font-weight: 800;
     color: var(--color-danger-raw);
     margin-bottom: 10px;
 }
+
 .error-actions {
     display: flex;
     gap: 12px;
     justify-content: center;
 }
+
 .btn--error-home {
     width: auto;
     padding: 10px 24px;
 }
+
 .admin-debug-panel {
     text-align: left;
     font-family: monospace;
     margin-top: 2rem;
 }
+
 .debug-header {
     margin-top: 0;
     border-bottom: 1px solid var(--color-danger-text);
@@ -1070,6 +997,7 @@ nav.header-nav span.dropdown-caret {
     justify-content: space-between;
     align-items: center;
 }
+
 .badge-debug-status {
     font-size: 0.8rem;
     background: var(--color-danger-text);
@@ -1077,10 +1005,12 @@ nav.header-nav span.dropdown-caret {
     padding: 2px 6px;
     border-radius: 3px;
 }
+
 .debug-accordion {
     margin-top: 1rem;
     cursor: pointer;
 }
+
 .debug-summary {
     font-weight: bold;
     padding: 0.5rem 0;
@@ -1088,11 +1018,12 @@ nav.header-nav span.dropdown-caret {
     user-select: none;
     color: var(--color-danger-text);
 }
+
 .debug-stacktrace {
     display: block;
     max-height: 350px;
     overflow: auto;
-    background-color: #212529; /* Kept dark theme to preserve console log legibility */
+    background-color: #212529;
     color: #f8f9fa;
     padding: 1rem;
     margin-top: 0.5rem;
@@ -1102,96 +1033,37 @@ nav.header-nav span.dropdown-caret {
     white-space: pre;
     word-break: normal;
     cursor: text;
-    box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
 }
 
-/* Custom additions for the updated standard dashboard layout header banner */
-.admin-header-flex {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-    padding: 1rem;
-    background-color: var(--color-page-title);
-    border-radius: 1rem;
-}
-
-.admin-header-flex .page-title {
-    margin: 0;
-    font-size: 2rem;
-}
-
-.admin-header-flex .page-subtitle {
-    margin: 4px 0 0 0;
-    font-size: 1.15rem;
-    color: var(--color-text-muted, #78716c);
-}
-
-.admin-btn-group {
-    display: inline-flex;
-    gap: 10px;
-}
-
-.hide-cell {
-    display: none;
-}
-
-/* 1. Make the card the boundary for the link */
+/* Clickable Cards & Action Tray */
 .clickable-card {
-    position: relative; 
-    /* Optional: add a cursor pointer and smooth hover transition for the whole card */
+    position: relative;
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Optional: visual feedback when hovering anywhere on the card */
 .clickable-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .stretched-link {
-    font-size: 0.85rem; 
-    color: var(--color-primary); 
-    margin-top: 6px; 
-    text-decoration: none; 
+    font-size: 0.85rem;
+    color: var(--color-primary);
+    margin-top: 6px;
+    text-decoration: none;
     font-weight: 600;
 }
 
-/* 2. The magic trick: stretch the link's pseudo-element to cover the parent */
 .stretched-link::after {
     position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
+    inset: 0;
     z-index: 1;
     pointer-events: auto;
     content: "";
 }
 
-.danger-alert{
-    border-color: var(--color-danger-border); 
-    background-color: var(--color-danger-bg);
-}
-
-.danger-alert .alert-text{
-    color: var(--color-danger-text);
-    font-weight: 700;
-}
-
-.success-alert{
-    border-color: var(--color-success-border); 
-    background-color: var(--color-success-bg);
-}
-
-.success-alert .alert-text{
-    color: var(--color-success-text);
-    font-weight: 700;
-}
-
-/* Action Utility Toolbar Tray */
 .action-tray {
     display: flex;
     gap: 12px;
@@ -1227,17 +1099,16 @@ nav.header-nav span.dropdown-caret {
 }
 
 /* ==========================================================================
-   8. RESPONSIVE LAYOUT BREAKPOINTS
+   12. RESPONSIVE LAYOUT BREAKPOINTS
    ========================================================================== */
 @media (max-width: 75rem) {
-    .recipe-header
-    , .recipe-footer 
-    , .page-card {
+    .recipe-header,
+    .recipe-footer,
+    .page-card {
         border-radius: 0;
     }
 }
 
-/* <= 768px */
 @media (max-width: 48rem) {
     .header-container {
         flex-direction: column;
@@ -1254,19 +1125,16 @@ nav.header-nav span.dropdown-caret {
         font-size: 1.65rem;
     }
 
-    /* Transform table element to basic block flow container layout */
     .page-card div.table-responsive-wrapper table#myRecipesTable {
         display: block;
         width: 100%;
         border: none;
     }
 
-    /* Hide table header cleanly on mobile screen */
     .page-card div.table-responsive-wrapper table#myRecipesTable thead {
         display: none;
     }
 
-    /* Re-shape container parts to form a vertical stacking deck */
     .page-card div.table-responsive-wrapper table#myRecipesTable tbody,
     .page-card div.table-responsive-wrapper table#myRecipesTable tbody tr {
         display: block;
@@ -1283,7 +1151,6 @@ nav.header-nav span.dropdown-caret {
         box-sizing: border-box;
     }
 
-    /* Convert table cells to full width block entries */
     .page-card div.table-responsive-wrapper table#myRecipesTable tbody td {
         display: block;
         width: 100%;
@@ -1293,22 +1160,18 @@ nav.header-nav span.dropdown-caret {
         box-sizing: border-box;
     }
 
-    /* Render clean inline titles dynamically using our HTML data attributes */
     .page-card div.table-responsive-wrapper table#myRecipesTable tbody td[data-label]::before {
         content: attr(data-label);
         font-weight: 700;
         color: var(--color-text-muted, #777);
         display: inline-block;
         width: 90px;
-        /* Aligns data text columns perfectly inside cards */
     }
 
-    /* Format your administrative action panel layout to wrap on mobile frames */
     .page-card div.table-responsive-wrapper table#myRecipesTable tbody td.actions-cell {
         margin-top: 12px;
         padding-top: 12px;
         order: 5;
-        /* Forces buttons block container straight to bottom stack */
     }
 
     .page-card div.table-responsive-wrapper table#myRecipesTable .admin-btn-group {
@@ -1319,7 +1182,6 @@ nav.header-nav span.dropdown-caret {
 
     .page-card div.table-responsive-wrapper table#myRecipesTable .admin-btn-group a {
         flex: 1;
-        /* Spreads Edit and View buttons to take 50% width space each */
         text-align: center;
         height: 36px;
         display: inline-flex;
@@ -1329,8 +1191,7 @@ nav.header-nav span.dropdown-caret {
 
     .container-fluid.py-3.page-card {
         padding: 0;
-        white-space: normal; 
-
+        white-space: normal;
         overflow-wrap: break-word;
         word-break: break-word;
     }
@@ -1338,7 +1199,4 @@ nav.header-nav span.dropdown-caret {
     span.shopping-item-text {
         white-space: normal;
     }
-}
-
-@media (max-width: 30rem) {
 }
