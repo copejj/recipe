@@ -17,6 +17,10 @@
     <p layout:fragment="page-subtitle"
         th:text="${ingredient.ingredientId != null} ? 'Update global lookup properties or fix lingering typos for this ingredient.' : 'Manually inject a pre-verified food definition straight into the global lookup pool.'">
             Dynamic subtext baseline describing the primary interface role or system domain.</p>
+
+    <div layout:fragment="action-tray" class="action-tray">
+        <a th:href="@{/admin/metadata/ingredients/list}" class="btn btn-secondary">← Master Ingredients</a>
+    </div>
     <main layout:fragment="content" class="form-card">
         <form
             th:action="${ingredient.ingredientId != null} ? @{/admin/metadata/ingredients/edit/{id}(id=${ingredient.ingredientId})} : @{/admin/metadata/ingredients/add}"
@@ -55,14 +59,8 @@
 
             <!-- ACTIONS FOOTER BUTTON GRID -->
             <div class="form-actions-tray">
-                <!-- Swaps in your primary save action button, passing the ID tracking check -->
-                <button
-                    th:replace="~{fragments/actions :: saveBtn(itemId=${ingredient.ingredientId != null ? ingredient.ingredientId : 0})}">Save</button>
-
-                <!-- Swaps in your neutral cancel link redirection action button -->
-                <a th:replace="~{fragments/actions :: cancelLink(targetUrl=@{/admin/metadata/ingredients/list})}">Cancel</a>
+                <button th:replace="~{fragments/actions :: saveBtn(itemId=${ingredient.ingredientId != null ? ingredient.ingredientId : 0})}">Save</button>
             </div>
-
         </form>
     </main>
 </body>

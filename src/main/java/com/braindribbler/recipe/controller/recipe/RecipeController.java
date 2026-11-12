@@ -301,7 +301,6 @@ public class RecipeController {
             recipeService.recordRecipeView(recipe.getRecipeId(), isSharedLink, userAgent, session);
         }
 
-        // FIXED: Safely evaluate save status using your active transactional service layer instead of lazy object properties
         boolean isSaved = false;
         if (userProfile != null) {
             isSaved = recipeService.isRecipeSavedByUser(recipe.getRecipeId(), userProfile.getUserId());

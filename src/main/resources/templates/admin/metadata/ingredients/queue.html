@@ -18,12 +18,10 @@
     <h1 layout:fragment="page-title">Ingredient Verification Queue</h1>
     <p layout:fragment="page-subtitle">Review crowd-sourced ingredient suggestions, verify food database definitions, or merge duplicate row constraints.</p>
     
+    <div layout:fragment="action-tray" class="action-tray">
+        <a th:href="@{/admin/metadata}" class="btn btn-secondary">← Metadata Dashboard</a>
+    </div>
     <main layout:fragment="content">
-        <div class="header-grid">
-            <div class="action-tray">
-                <a th:href="@{/admin/metadata}" class="btn btn-secondary">← Metadata Dashboard</a>
-            </div>
-        </div>
         <div class="queue-top-panel">
             <!-- Asynchronous Dynamic Notification Banners -->
             <div id="async-toast-alert" class="status-text--active toast-alert-banner"></div>

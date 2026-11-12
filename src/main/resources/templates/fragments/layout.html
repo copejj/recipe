@@ -92,9 +92,18 @@
                     </div>
                 </div>
 
+                <!-- Sticky Action Tray Slot -->
+                <th:block layout:fragment="action-tray"></th:block>
+
+                <!-- Header Grid / Toolbar Slot -->
+                <th:block layout:fragment="header-grid"></th:block>
+
                 <!-- Primary Content Fragment Hook (Where the unique body card markup mounts) -->
                 <main layout:fragment="content"></main>
                 
+                <!-- Sticky Bottom Footer Tray -->
+                <th:block layout:fragment="footer-tray"></th:block>
+
             </div>
         </div>
 

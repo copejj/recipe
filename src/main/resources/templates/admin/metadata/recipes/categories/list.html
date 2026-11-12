@@ -1,4 +1,3 @@
-<!-- your average page template -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz"
@@ -14,22 +13,26 @@
 <body>
     <div layout:fragment="page-title"> Recipe Category Management </div>
     <p layout:fragment="page-subtitle"> Configure, populate, and maintain overarching meal courses, dietary preferences, and lifestyle taxonomy nodes. </p>
-    <main layout:fragment="content">
-        <div class="header-grid">
-            <div class="action-tray">
-                <a th:href="@{/admin/metadata}" class="btn btn-secondary">← Metadata Dashboard</a>
-            </div>
 
-            <form th:action="@{/admin/metadata/recipes/categories/add}" th:object="${newCategory}" method="post" style="width: 100%; margin: 0; box-sizing: border-box;">
-                <div class="add-category-bar">
-                    <div class="input-wrapper--name" style="flex: 1;">
-                        <input type="text" th:field="*{name}" class="form-input" placeholder="New Category Name (e.g., Breakfast & Brunch, Keto, Vegan)" required />
-                    </div>
-                    <button type="submit" class="btn btn--primary">+ Add Category</button>
+    <!-- Slot 1: Sticky Top Action Tray -->
+    <div layout:fragment="action-tray" class="action-tray">
+        <a th:href="@{/admin/metadata}" class="btn btn-secondary">← Metadata Dashboard</a>
+    </div>
+
+    <!-- Slot 2: Header Grid / Toolbar -->
+    <div layout:fragment="header-grid" class="header-grid">
+        <form th:action="@{/admin/metadata/recipes/categories/add}" th:object="${newCategory}" method="post">
+            <div class="add-category-bar">
+                <div class="input-wrapper--name" style="flex: 1;">
+                    <input type="text" th:field="*{name}" class="form-input" placeholder="New Category Name (e.g., Breakfast & Brunch, Keto, Vegan)" required />
                 </div>
-            </form>
-        </div>
+                <button type="submit" class="btn btn--primary">+ Add Category</button>
+            </div>
+        </form>
+    </div>
 
+    <!-- Slot 3: Primary Content -->
+    <main layout:fragment="content">
         <!-- Feedback Alert Status Toasts -->
         <div th:if="${param.created}" class="alert-toast alert-toast--success">
             New recipe category node injected into lookup definitions successfully!
@@ -54,7 +57,7 @@
                 <th:block th:fragment="categoryHeaders">
                     <tr class="categories-header-row">
                         <th>Actions</th>
-                        <th>Recipe Category Name</th>
+                        <th>Name</th>
                     </tr>
                 </th:block>
 
@@ -63,7 +66,7 @@
                     <tr class="categories-data-row">
 
                         <!-- Column 1: Core Action Fragments -->
-                        <td>
+                        <td data-label="Actions">
                             <div class="row-actions-deck">
                                 <!-- ACTION 1: CENTRAL EDIT LINK LINKAGE -->
                                 <a th:replace="~{fragments/actions :: editLink(targetUrl=@{/admin/metadata/recipes/categories/edit/{id}(id=${item.recipeCategoryId})})}"></a>
@@ -84,7 +87,7 @@
                         </td>
 
                         <!-- Column 2: Display Node Content Value -->
-                        <td>
+                        <td data-label="Name">
                             <strong class="category-title-text" th:text="${item.name}">Breakfast</strong>
                         </td>
 
@@ -94,6 +97,7 @@
             </div>
         </div>
     </main>
+
     <th:block layout:fragment="page_scripts">
         <script th:src="@{/js/admin/recipe-categories-list.js}"></script>
     </th:block> 

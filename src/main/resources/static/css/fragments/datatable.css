@@ -76,6 +76,7 @@
         border: none !important;
         box-sizing: border-box;
         text-align: left !important;
+        white-space: normal;
     }
 
     /* 
