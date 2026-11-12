@@ -76,11 +76,15 @@
                         <div class="recipe-meta-category" th:if="${recipe.recipeCategory != null}">
                             Category: <span th:text="${recipe.recipeCategory.name}">Course Type</span>
                         </div>
-                    </div>
 
+                        <!-- Original Recipe Source Link -->
+                        <div class="recipe-meta-source" th:if="${recipe.sourceUrl != null and !recipe.sourceUrl.isBlank()}">
+                            Origin Story: <a th:href="${recipe.sourceUrl}" th:text="${recipe.sourceDomain} + ' ↗'" target="_blank" 
+                            rel="noopener noreferrer nofollow" class="auth-link"> Source URL ↗ </a>
+                        </div>
+                    </div>
                 </div>
             </div>
-
             <!-- SYSTEM MODE AND SERVINGS MULTIPLIER BUTTON GROUP PANELS -->
             <div class="recipe-control-widgets">
                 <!-- US Imperial ⇄ Metric Switcher Component Widget -->

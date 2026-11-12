@@ -13,7 +13,7 @@
 
 <body>
     <div layout:fragment="page-title" th:content="${isEditMode} ? 'Edit Your Recipe' : 'Create New Recipe'">Add/Edit Recipe</div>
-    <p layout:fragment="page-subtitle">Map out your instructions and attach step-scoped ingredients with exact quantities.</p>
+    <p layout:fragment="page-subtitle">Map out your instructions and attach step-scoped ingredients with exact quantities. <br><i>Please write your cooking steps in your own words.</i></p>
     
     <main layout:fragment="content">
         <div id="form-toast-notification" class="toast-notification">
@@ -45,6 +45,15 @@
                 <label class="form-label" for="description">Short Description / Subtitle</label>
                 <textarea th:field="*{description}" class="form-input" rows="2"
                     placeholder="Briefly describe the dish's background or tasting notes..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="sourceUrl">Source URL (Optional)</label>
+                <input type="url" id="sourceUrl" th:field="*{sourceUrl}" class="form-input" placeholder="https://example.com" />
+                <small class="profile-input-hint">
+                    Credit where you found this recipe.
+                </small>
+                <div class="form-error-msg" th:if="${#fields.hasErrors('sourceUrl')}" th:errors="*{sourceUrl}"> Invalid URL </div>
             </div>
 
             <!-- Metadata Metrics Layout Split Row Grid -->

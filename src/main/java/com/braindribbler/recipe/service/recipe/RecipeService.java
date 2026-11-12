@@ -71,6 +71,7 @@ public class RecipeService {
     public Recipe saveRecipeFromForm(RecipeForm form, User currentUser) {
         Recipe recipe = new Recipe();
         recipe.setTitle(form.getTitle());
+        recipe.setSourceUrl(form.getSourceUrl()); 
         recipe.setDescription(form.getDescription());
         recipe.setServings(form.getServings());
         recipe.setRecipeNote(form.getRecipeNote());
@@ -155,6 +156,7 @@ public class RecipeService {
     public RecipeForm prepareFormFromRecipe(Recipe recipe) {
         RecipeForm form = new RecipeForm();
         form.setTitle(recipe.getTitle());
+        form.setSourceUrl(recipe.getSourceUrl());
         form.setDescription(recipe.getDescription());
         form.setServings(recipe.getServings());
         form.setRecipeNote(recipe.getRecipeNote());
@@ -228,6 +230,12 @@ public class RecipeService {
         recipe.setTitle(form.getTitle().trim());
         recipe.setDescription(form.getDescription().trim());
         recipe.setServings(form.getServings());
+
+        if (form.getSourceUrl() != null && !form.getSourceUrl().trim().isEmpty()) {
+            recipe.setSourceUrl(form.getSourceUrl().trim());
+        } else {
+            recipe.setSourceUrl(null);
+        }
 
         if (form.getRecipeNote() != null) {
             recipe.setRecipeNote(form.getRecipeNote().trim());
