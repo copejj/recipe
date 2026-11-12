@@ -53,6 +53,14 @@ public class Recipe {
     @ManyToMany(mappedBy = "savedRecipes", fetch = FetchType.LAZY)
     private Set<User> savedByUsers = new java.util.HashSet<>();
 
+    @Column(name = "view_count", nullable = false)
+    private Integer viewCount = 0;
+
+    @Column(name = "share_count", nullable = false)
+    private Integer shareCount = 0;
+
+    @Column(name = "shared_view_count", nullable = false)
+    private Integer sharedViewCount = 0;
 
     public Recipe() {
     }
@@ -151,5 +159,29 @@ public class Recipe {
 
     public void setSavedByUsers(Set<User> savedByUsers) {
         this.savedByUsers = savedByUsers;
+    }
+
+    public Integer getViewCount() {
+        return viewCount;
+    }
+
+    public void setViewCount(Integer viewCount) {
+        this.viewCount = viewCount;
+    }
+
+    public Integer getShareCount() {
+        return shareCount;
+    }
+
+    public void setShareCount(Integer shareCount) {
+        this.shareCount = shareCount;
+    }
+
+    public Integer getSharedViewCount() {
+        return sharedViewCount;
+    }
+
+    public void setSharedViewCount(Integer sharedViewCount) {
+        this.sharedViewCount = sharedViewCount;
     }
 }

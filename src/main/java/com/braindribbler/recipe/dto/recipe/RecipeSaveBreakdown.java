@@ -7,14 +7,28 @@ public class RecipeSaveBreakdown {
     private final UUID publicId;
     private final String title;
     private final String visibilityName;
+    private final Integer viewCount;
+    private final Integer shareCount;
+    private final Integer sharedViewCount;
     private final Long saveCount;
 
-    public RecipeSaveBreakdown(Integer recipeId, UUID publicId, String title, String visibilityName, Long saveCount) {
+    public RecipeSaveBreakdown(
+            Integer recipeId,
+            UUID publicId,
+            String title,
+            String visibilityName,
+            Integer viewCount,
+            Integer sharedViewCount,
+            Integer shareCount,
+            Long saveCount) {
         this.recipeId = recipeId;
         this.publicId = publicId;
         this.title = title;
         this.visibilityName = visibilityName;
-        this.saveCount = saveCount;
+        this.viewCount = viewCount != null ? viewCount : 0;
+        this.sharedViewCount = sharedViewCount != null ? sharedViewCount : 0;
+        this.shareCount = shareCount != null ? shareCount : 0;
+        this.saveCount = saveCount != null ? saveCount : 0L;
     }
 
     public Integer getRecipeId() {
@@ -31,6 +45,18 @@ public class RecipeSaveBreakdown {
 
     public String getVisibilityName() {
         return visibilityName;
+    }
+
+    public Integer getViewCount() {
+        return viewCount;
+    }
+
+    public Integer getShareCount() {
+        return shareCount;
+    }
+
+    public Integer getSharedViewCount() {
+        return sharedViewCount;
     }
 
     public Long getSaveCount() {

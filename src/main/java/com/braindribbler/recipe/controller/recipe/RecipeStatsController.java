@@ -37,6 +37,18 @@ public class RecipeStatsController {
         List<RecipeSaveBreakdown> recipeBreakdown = recipeRepository.getRecipeSaveBreakdownByUserId(currentUser.getUserId());
         List<SavedRecipeSummary> savedRecipes = recipeRepository.findSavedRecipesByUserId(currentUser.getUserId());
 
+        // Sum total views and shares across all of the user's created recipes
+        long totalViews = recipeBreakdown.stream().mapToLong(RecipeSaveBreakdown::getViewCount).sum();
+        long totalSharedViews = recipeBreakdown.stream().mapToLong(RecipeSaveBreakdown::getSharedViewCount).sum();
+        long totalShares = recipeBreakdown.stream().mapToLong(RecipeSaveBreakdown::getShareCount).sum();
+
+        if (recipeStats != null) {
+            recipeStats.setTotalViews(totalViews);
+            recipeStats.setTotalSharedViews(totalSharedViews);
+            recipeStats.setTotalShares(totalShares);
+        }
+
+
         model.addAttribute("currentUser", currentUser);
         model.addAttribute("recipeStats", recipeStats);
         model.addAttribute("recipeBreakdown", recipeBreakdown);

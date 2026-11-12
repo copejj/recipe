@@ -6,12 +6,16 @@ import com.braindribbler.recipe.dto.recipe.*;
 import com.braindribbler.recipe.repository.recipe.*;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpSession;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -499,5 +503,76 @@ public class RecipeService {
                 .map(recipe -> recipe.getSavedByUsers().stream()
                         .anyMatch(user -> user.getUserId().equals(userId)))
                 .orElse(false);
+    }
+
+    @Transactional
+    public void incrementViewCount(Integer recipeId) {
+        if (recipeId != null) {
+            recipeRepository.incrementViewCount(recipeId);
+        }
+    }
+
+    @Transactional
+    public void incrementShareCount(Integer recipeId) {
+        if (recipeId != null) {
+            recipeRepository.incrementShareCount(recipeId);
+        }
+    }
+
+    @Transactional
+    @SuppressWarnings("unchecked")
+    public void recordRecipeView(Integer recipeId, boolean isSharedLink, String userAgent, HttpSession session) {
+        if (recipeId == null || isSocialPreviewBot(userAgent)) {
+            return;
+        }
+
+        String sessionKey = isSharedLink ? "sharedRecipesViewed" : "organicRecipesViewed";
+        Set<Integer> trackedIds = (Set<Integer>) session.getAttribute(sessionKey);
+
+        if (trackedIds == null) {
+            trackedIds = new HashSet<>();
+            session.setAttribute(sessionKey, trackedIds);
+        }
+
+        if (trackedIds.add(recipeId)) {
+            if (isSharedLink) {
+                recipeRepository.incrementSharedViewCount(recipeId);
+            } else {
+                recipeRepository.incrementViewCount(recipeId);
+            }
+        }
+    }
+
+    @Transactional
+    @SuppressWarnings("unchecked")
+    public void recordRecipeShare(Integer recipeId, HttpSession session) {
+        if (recipeId == null) {
+            return;
+        }
+
+        Set<Integer> sharedIds = (Set<Integer>) session.getAttribute("recipesSharedByMe");
+        if (sharedIds == null) {
+            sharedIds = new HashSet<>();
+            session.setAttribute("recipesSharedByMe", sharedIds);
+        }
+
+        if (sharedIds.add(recipeId)) {
+            recipeRepository.incrementShareCount(recipeId);
+        }
+    }
+
+    public boolean isSocialPreviewBot(String userAgent) {
+        if (userAgent == null || userAgent.isBlank()) {
+            return false;
+        }
+        String ua = userAgent.toLowerCase();
+        return ua.contains("facebookexternalhit")
+            || ua.contains("whatsapp")
+            || ua.contains("twitterbot")
+            || ua.contains("slackbot")
+            || ua.contains("discordbot")
+            || ua.contains("linkedinbot")
+            || ua.contains("telegrambot")
+            || ua.contains("applebot");
     }
 }

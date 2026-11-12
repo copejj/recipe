@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -35,6 +36,7 @@ import com.braindribbler.recipe.service.recipe.RecipeService;
 import com.braindribbler.recipe.util.RecipeUtility;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class RecipeController {
@@ -227,19 +229,64 @@ public class RecipeController {
         }
     }
 
-    @GetMapping("/view/{id}")
-    public String viewPublicRecipe(@PathVariable("id") Integer id, Model model, @AuthenticationPrincipal RecipeUserDetails currentUser) {
+    @GetMapping({"/view/{id}", "/view/{id}/"})
+    public String viewPublicRecipe(
+            @PathVariable("id") Integer id,
+            @RequestHeader(value = "User-Agent", defaultValue = "") String userAgent,
+            HttpSession session,
+            Model model,
+            @AuthenticationPrincipal RecipeUserDetails currentUser) {
         try {
             Recipe recipe = recipeService.getRecipeById(id);
             if (recipe == null) return "redirect:/search?notFound";
 
-            return populateAndRenderProfileView(recipe, model, currentUser);
+            return populateAndRenderProfileView(recipe, model, currentUser, userAgent, session, false);
         } catch (IllegalArgumentException e) {
             return "redirect:/search?notFound";
         }
     }
 
-    private String populateAndRenderProfileView(Recipe recipe, Model model, RecipeUserDetails currentUser) {
+    @GetMapping({"/view/{id}/share", "/view/{id}/share/"})
+    public String viewSharedRecipe(
+            @PathVariable("id") Integer id,
+            @RequestHeader(value = "User-Agent", defaultValue = "") String userAgent,
+            HttpSession session,
+            Model model,
+            @AuthenticationPrincipal RecipeUserDetails currentUser) {
+        try {
+            Recipe recipe = recipeService.getRecipeById(id);
+            if (recipe == null) return "redirect:/search?notFound";
+
+            return populateAndRenderProfileView(recipe, model, currentUser, userAgent, session, true);
+        } catch (IllegalArgumentException e) {
+            return "redirect:/search?notFound";
+        }
+    }
+
+    @PostMapping("/view/{id}/share")
+    @ResponseBody
+    public ResponseEntity<Void> trackRecipeShareClick(
+            @PathVariable("id") Integer id,
+            HttpSession session,
+            @AuthenticationPrincipal RecipeUserDetails currentUser) {
+        Recipe recipe = recipeService.getRecipeById(id);
+        if (recipe == null || recipe.getRecipeVisibility().getRecipeVisibilityId() == 2) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        User userProfile = (currentUser != null) ? currentUser.getUserProfile() : null;
+        boolean isOwner = (userProfile != null) && recipe.getUser().getUserId().equals(userProfile.getUserId());
+
+        if (!isOwner) {
+            recipeService.recordRecipeShare(id, session);
+        }
+
+        return ResponseEntity.ok().build();
+    }
+
+    private String populateAndRenderProfileView( Recipe recipe, Model model, RecipeUserDetails currentUser, String userAgent, HttpSession session, boolean isSharedLink)
+    {
+
         User userProfile = (currentUser != null) ? currentUser.getUserProfile() : null;
         
         boolean canEdit = (userProfile != null) && recipe.getUser().getUserId().equals(userProfile.getUserId());
@@ -249,7 +296,10 @@ public class RecipeController {
         int visibilityId = recipe.getRecipeVisibility().getRecipeVisibilityId();
 
         if (visibilityId == 2 && !canEdit && !hasHidePermission) return "redirect:/search?unauthorized";
-        if (visibilityId == 3 && !canEdit) return "redirect:/search?unauthorized";
+
+        if (!canEdit) {
+            recipeService.recordRecipeView(recipe.getRecipeId(), isSharedLink, userAgent, session);
+        }
 
         // FIXED: Safely evaluate save status using your active transactional service layer instead of lazy object properties
         boolean isSaved = false;

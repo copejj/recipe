@@ -36,12 +36,27 @@
             <div class="metric-tag tag--i-saved" title="Total Recipes Saved by This User">
                 <span class="metric-label">I Saved</span>
                 <span class="metric-value"
-                    th:text="${recipeStats != null ? recipeStats.savedByMeCount : 0}">0</span>
+                      th:text="${recipeStats != null ? recipeStats.savedByMeCount : 0}">0</span>
+            </div>
+            <div class="metric-tag tag--views" title="Total Organic Views Across Your Recipes">
+                <span class="metric-label">Views</span>
+                <span class="metric-value"
+                    th:text="${recipeStats != null ? recipeStats.totalViews : 0}">0</span>
+            </div>
+            <div class="metric-tag tag--shares" title="Total Times Recipes Were Shared">
+                <span class="metric-label">Shares</span>
+                <span class="metric-value"
+                    th:text="${recipeStats != null ? recipeStats.totalShares : 0}">0</span>
+            </div>
+            <div class="metric-tag tag--shared-views" title="Total Shared Link Visits">
+                <span class="metric-label">Shared Views</span>
+                <span class="metric-value"
+                    th:text="${recipeStats != null ? recipeStats.totalSharedViews : 0}">0</span>
             </div>
         </div>
     </div>
 
-    <!-- 2. CREATED RECIPES SAVE BREAKDOWN TABLE FRAGMENT -->
+    <!-- 2. CREATED RECIPES BREAKDOWN TABLE FRAGMENT -->
     <div th:fragment="recipeBreakdownTable(tableId, recipeBreakdown)" class="stats-breakdown-wrapper">
         <div th:replace="~{fragments/datatable :: genericTableWithClass(
             ${tableId}, 
@@ -54,7 +69,10 @@
             <tr th:fragment="recipeSavedHeaders">
                 <th>Recipe</th>
                 <th>Visibility</th>
-                <th class="text-right"># Saves</th>
+                <th># Views</th>
+                <th># Shares</th>
+                <th># Shared Views</th>
+                <th># Saves</th>
             </tr>
 
             <!-- Table Rows Slot -->
@@ -66,8 +84,10 @@
                        th:text="${item.title}">Recipe Title</a>
                 </td>
                 <td data-label="Visibility" th:text="${item.visibilityName}">Public</td>
-                <td data-label="# Saves" class="text-right save-count-cell"
-                    th:text="${item.saveCount}">0</td>
+                <td data-label="# Views" th:text="${item.viewCount}">0</td>
+                <td data-label="# Shares" th:text="${item.shareCount}">0</td>
+                <td data-label="# Shared Views" th:text="${item.sharedViewCount}">0</td>
+                <td data-label="# Saves" th:text="${item.saveCount}">0</td>
             </tr>
         </div>
     </div>
@@ -95,7 +115,7 @@
                     <a th:href="@{/view/{id}(id=${item.recipeId})}"
                        th:text="${item.title}">Recipe Title</a>
                 </td>
-                <td  data-label="Chef" th:text="${item.authorName}">Chef Name</td>
+                <td data-label="Chef" th:text="${item.authorName}">Chef Name</td>
             </tr>
         </div>
     </div>
@@ -112,7 +132,7 @@
 
         <!-- PER-RECIPE BREAKDOWN CARD -->
         <section class="stats-card">
-            <h3>Created Recipes &amp; Saves</h3>
+            <h3>Created Recipes &amp; Engagement</h3>
             <div th:replace="~{::recipeBreakdownTable(${tablePrefix} + 'RecipesSaved', ${recipeBreakdown})}"></div>
         </section>
 

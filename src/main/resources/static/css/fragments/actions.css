@@ -94,3 +94,48 @@
 .btn-action--cancel:hover {
     background-color: #cbd5e1;
 }
+
+/* Fresh Emerald/Teal theme for sharing */
+.btn-action--share {
+    color: #0f766e;
+    background-color: #ccfbf1;
+    border: 1px solid #99f6e4;
+}
+
+.btn-action--share:hover {
+    color: #115e59;
+    background-color: #99f6e4;
+    border-color: #5eead4;
+}
+
+/* Confirmed "Copied!" feedback state */
+.btn-action--share.is-copied {
+    color: #ffffff;
+    background-color: #0d9488;
+    border-color: #0d9488;
+}
+
+/* Optional matching Save / Unsave styles for .recipe-meta-tray */
+.btn-save {
+    color: #15803d;
+    background-color: #dcfce7;
+    border: 1px solid #bbf7d0;
+}
+
+.btn-save:hover {
+    color: #166534;
+    background-color: #bbf7d0;
+    border-color: #86efac;
+}
+
+.btn-unsave {
+    color: #475569;
+    background-color: #f1f5f9;
+    border: 1px solid #cbd5e1;
+}
+
+.btn-unsave:hover {
+    color: #1e293b;
+    background-color: #e2e8f0;
+    border-color: #94a3b8;
+}
