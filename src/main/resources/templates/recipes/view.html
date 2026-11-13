@@ -105,6 +105,13 @@
                         th:data-original-servings="${recipe.servings}" min="1" step="1" onfocus="this.select()"
                         class="servings-input-spinner" />
                 </div>
+
+                <!-- Reset View State Button (Hidden until user modifies defaults) -->
+                <div id="reset-widget-panel" class="widget-card-panel" style="display: none;">
+                    <button type="button" id="reset-view-btn" class="btn-action" title="Reset servings, units, and checkboxes">
+                        Reset
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -131,6 +138,7 @@
 
     <th:block layout:fragment="page_scripts">
         <script th:inline="javascript">
+            window.RECIPE_ID = /*[[${recipe.recipeId}]]*/ 0;
             window.MEASUREMENT_MATRIX = /*[[${globalMeasurementsPool}]]*/[];
             window.RECIPE_IS_OWNER = /*[[${canEdit}]]*/ false;
             window.RECIPE_VISIBILITY_ID = /*[[${recipe.recipeVisibility.recipeVisibilityId}]]*/ 1;

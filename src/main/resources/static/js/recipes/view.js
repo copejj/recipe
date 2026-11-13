@@ -4,6 +4,142 @@
  */
 $(document).ready(function () {
 
+    // --- LOCAL STORAGE STATE PERSISTENCE ---
+    var storageKey = window.RECIPE_ID ? ("recipe_view_state_" + window.RECIPE_ID) : null;
+
+    function saveViewState() {
+        var uncheckedKeys = [];
+        $(".shopping-item-checkbox").each(function () {
+            if (!$(this).is(":checked")) {
+                uncheckedKeys.push(String($(this).data("item-key")));
+            }
+        });
+
+        var state = {
+            activeTab: $(".tab-btn.active").data("target") || "overview-panel",
+            system: currentActiveSystem,
+            servings: $("#servings-scaler").val(),
+            uncheckedItems: uncheckedKeys
+        };
+
+        try {
+            localStorage.setItem(storageKey, JSON.stringify(state));
+            var resumeData = {
+                recipeId: window.RECIPE_ID,
+                url: window.location.pathname.replace(/\/share\/?$/, ""),
+                title: document.title,
+                updatedAt: Date.now()
+            };
+            localStorage.setItem("active_cooking_recipe", JSON.stringify(resumeData));
+        } catch (e) {
+            // Ignore storage quota or private browsing errors
+        }
+        updateResetButtonVisibility();
+    }
+
+    function applyCheckboxVisuals($checkbox) {
+            var itemRow = $checkbox.closest(".recipe-ingredient-row");
+            var textWrapper = itemRow.find(".shopping-item-text");
+            var noteInput = itemRow.find(".shopping-note-input");
+
+            if (!$checkbox.is(":checked")) {
+                textWrapper.addClass("crossed-out-text");
+                itemRow.addClass("pantry-owned-item");
+                if (noteInput.length) noteInput.prop("disabled", true).css("opacity", "0.3");
+            } else {
+                textWrapper.removeClass("crossed-out-text");
+                itemRow.removeClass("pantry-owned-item");
+                if (noteInput.length) noteInput.prop("disabled", false).css("opacity", "1");
+            }
+        }
+
+        function updateResetButtonVisibility() {
+        var $servingsInput = $("#servings-scaler");
+        var currentServings = parseFloat($servingsInput.val());
+        var originalServings = parseFloat($servingsInput.data("original-servings"));
+        var activeTab = $(".tab-btn.active").data("target") || "overview-panel";
+        var hasUncheckedItems = $(".shopping-item-checkbox:not(:checked)").length > 0;
+
+        var isModified = (currentServings !== originalServings) ||
+                        (currentActiveSystem !== "imperial") ||
+                        (activeTab !== "overview-panel") ||
+                        hasUncheckedItems;
+
+        var $resetPanel = $("#reset-widget-panel");
+
+        if (isModified) {
+            if (!$resetPanel.is(":visible")) {
+                $resetPanel.fadeIn(200);
+            }
+        } else {
+            if (storageKey) {
+                localStorage.removeItem(storageKey);
+            }
+            // Clear the global resume pointer if it points to this recipe
+            try {
+                var activeData = JSON.parse(localStorage.getItem("active_cooking_recipe") || "{}");
+                if (activeData.recipeId === window.RECIPE_ID) {
+                    localStorage.removeItem("active_cooking_recipe");
+                }
+            } catch (e) {
+                localStorage.removeItem("active_cooking_recipe");
+            }
+
+            if ($resetPanel.is(":visible")) {
+                $resetPanel.fadeOut(200);
+            }
+        }
+    }
+
+
+    function restoreViewState() {
+        var rawState = localStorage.getItem(storageKey);
+        if (!rawState) return;
+
+        try {
+            var state = JSON.parse(rawState);
+
+            // 1. Restore System (Imperial / Metric)
+            if (state.system && (state.system === "imperial" || state.system === "metric")) {
+                currentActiveSystem = state.system;
+                $(".system-toggle-btn").removeClass("active").css({ "background-color": "transparent", "color": "var(--color-text-muted)" });
+                $('.system-toggle-btn[data-system="' + state.system + '"]')
+                    .addClass("active")
+                    .css({ "background-color": "var(--color-primary)", "color": "white" });
+            }
+
+            // 2. Restore Servings
+            if (state.servings && parseFloat(state.servings) > 0) {
+                $("#servings-scaler").val(state.servings);
+            }
+
+            // 3. Restore Unchecked Shopping List Items
+            if (Array.isArray(state.uncheckedItems)) {
+                $(".shopping-item-checkbox").each(function () {
+                    var $cb = $(this);
+                    var key = String($cb.data("item-key"));
+                    var shouldBeChecked = state.uncheckedItems.indexOf(key) === -1;
+                    $cb.prop("checked", shouldBeChecked);
+                    applyCheckboxVisuals($cb);
+                });
+            }
+
+            // 4. Restore Active Tab (without fade delay on initial load)
+            if (state.activeTab && $("#" + state.activeTab).length) {
+                $(".tab-btn").removeClass("active").css({ "color": "var(--color-text-muted, #6c757d)", "border-bottom": "none", "margin-bottom": "0" });
+                $('.tab-btn[data-target="' + state.activeTab + '"]')
+                    .addClass("active")
+                    .css({ "color": "var(--color-primary, #0d6efd)", "border-bottom": "3px solid var(--color-primary, #0d6efd)", "margin-bottom": "-13px" });
+
+                $(".tab-panel").hide();
+                $("#" + state.activeTab).show();
+            }
+        } catch (e) {
+            localStorage.removeItem(storageKey);
+        }
+        updateResetButtonVisibility();
+    }
+
     // Global tracking parameter for active display system lane
     var currentActiveSystem = "imperial";
 
@@ -21,6 +157,7 @@ $(document).ready(function () {
 
         $(".tab-btn").removeClass("active").css({ "color": "var(--color-text-muted, #6c757d)", "border-bottom": "none", "margin-bottom": "0" });
         clickedTab.addClass("active").css({ "color": "var(--color-primary, #0d6efd)", "border-bottom": "3px solid var(--color-primary, #0d6efd)", "margin-bottom": "-13px" });
+        saveViewState();
 
         $(".tab-panel").hide();
         $("#" + targetPanelId).fadeIn(150, function() {
@@ -44,6 +181,7 @@ $(document).ready(function () {
 
         // Force recalculation engine pass over layout elements
         runLiveScalingEngine();
+        saveViewState();
     });
 
     // --- FRACTION VISUAL FORMATTER TOOL ---
@@ -236,23 +374,12 @@ $(document).ready(function () {
     // --- INTERACTIVE ELEMENT ACTIONS ---
     $("#servings-scaler").on("input change", function () {
         runLiveScalingEngine();
+        saveViewState();
     });
 
     $(document).on("change", ".shopping-item-checkbox", function () {
-        var checkbox = $(this);
-        var itemRow = checkbox.closest(".shopping-item-row");
-        var textWrapper = itemRow.find(".shopping-item-text");
-        var noteInput = itemRow.find(".shopping-note-input");
-
-        if (!checkbox.is(":checked")) {
-            textWrapper.addClass("crossed-out-text");
-            itemRow.addClass("pantry-owned-item");
-            if (noteInput.length) noteInput.prop("disabled", true).css("opacity", "0.3");
-        } else {
-            textWrapper.removeClass("crossed-out-text");
-            itemRow.removeClass("pantry-owned-item");
-            if (noteInput.length) noteInput.prop("disabled", false).css("opacity", "1");
-        }
+        applyCheckboxVisuals($(this));
+        saveViewState();
     });
 
     // --- SHARE RECIPE & ADDRESS-BAR TRACKING ---
@@ -317,6 +444,59 @@ $(document).ready(function () {
         }
     });
 
+    // --- RESET VIEW STATE HANDLER ---
+    $("#reset-view-btn").on("click", function (e) {
+        e.preventDefault();
+
+        // 1. Clear saved state from localStorage
+        if (storageKey) {
+            localStorage.removeItem(storageKey);
+        }
+        localStorage.removeItem("active_cooking_recipe");
+
+        // 2. Reset Servings back to original recipe default
+        var $servingsInput = $("#servings-scaler");
+        var originalServings = $servingsInput.data("original-servings");
+        $servingsInput.val(originalServings);
+
+        // 3. Reset System toggle back to Imperial
+        currentActiveSystem = "imperial";
+        $(".system-toggle-btn").removeClass("active").css({
+            "background-color": "transparent",
+            "color": "var(--color-text-muted)"
+        });
+        $("#system-imperial-btn").addClass("active").css({
+            "background-color": "var(--color-primary)",
+            "color": "white"
+        });
+
+        // 4. Re-check all shopping list checkboxes and restore visual styling
+        $(".shopping-item-checkbox").each(function () {
+            var $cb = $(this);
+            $cb.prop("checked", true);
+            applyCheckboxVisuals($cb);
+        });
+
+        // 5. Return to the Overview tab (optional — remove this block if you prefer staying on the current tab)
+        $(".tab-btn").removeClass("active").css({
+            "color": "var(--color-text-muted, #6c757d)",
+            "border-bottom": "none",
+            "margin-bottom": "0"
+        });
+        $('.tab-btn[data-target="overview-panel"]').addClass("active").css({
+            "color": "var(--color-primary, #0d6efd)",
+            "border-bottom": "3px solid var(--color-primary, #0d6efd)",
+            "margin-bottom": "-13px"
+        });
+        $(".tab-panel").hide();
+        $("#overview-panel").show();
+
+        // 6. Recalculate all ingredient amounts
+        runLiveScalingEngine();
+        updateResetButtonVisibility();
+    });
+
     // Fire calculations instantly upon initial thread presentation
+    restoreViewState();
     runLiveScalingEngine();
 });
