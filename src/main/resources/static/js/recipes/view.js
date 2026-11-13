@@ -6,12 +6,11 @@ $(document).ready(function () {
 
     // --- LOCAL STORAGE STATE PERSISTENCE ---
     var storageKey = window.RECIPE_ID ? ("recipe_view_state_" + window.RECIPE_ID) : null;
-
     function saveViewState() {
-        var uncheckedKeys = [];
+        var checkedKeys = [];
         $(".shopping-item-checkbox").each(function () {
-            if (!$(this).is(":checked")) {
-                uncheckedKeys.push(String($(this).data("item-key")));
+            if ($(this).is(":checked")) {
+                checkedKeys.push(String($(this).data("item-key")));
             }
         });
 
@@ -19,7 +18,7 @@ $(document).ready(function () {
             activeTab: $(".tab-btn.active").data("target") || "overview-panel",
             system: currentActiveSystem,
             servings: $("#servings-scaler").val(),
-            uncheckedItems: uncheckedKeys
+            checkedItems: checkedKeys
         };
 
         try {
@@ -38,32 +37,33 @@ $(document).ready(function () {
     }
 
     function applyCheckboxVisuals($checkbox) {
-            var itemRow = $checkbox.closest(".recipe-ingredient-row");
-            var textWrapper = itemRow.find(".shopping-item-text");
-            var noteInput = itemRow.find(".shopping-note-input");
+        var itemRow = $checkbox.closest(".recipe-ingredient-row");
+        var textWrapper = itemRow.find(".shopping-item-text");
+        var noteInput = itemRow.find(".shopping-note-input");
 
-            if (!$checkbox.is(":checked")) {
-                textWrapper.addClass("crossed-out-text");
-                itemRow.addClass("pantry-owned-item");
-                if (noteInput.length) noteInput.prop("disabled", true).css("opacity", "0.3");
-            } else {
-                textWrapper.removeClass("crossed-out-text");
-                itemRow.removeClass("pantry-owned-item");
-                if (noteInput.length) noteInput.prop("disabled", false).css("opacity", "1");
-            }
+        if ($checkbox.is(":checked")) {
+            textWrapper.addClass("crossed-out-text");
+            itemRow.addClass("pantry-owned-item");
+            if (noteInput.length) noteInput.prop("disabled", true).css("opacity", "0.3");
+        } else {
+            textWrapper.removeClass("crossed-out-text");
+            itemRow.removeClass("pantry-owned-item");
+            if (noteInput.length) noteInput.prop("disabled", false).css("opacity", "1");
         }
+    }
 
-        function updateResetButtonVisibility() {
+    function updateResetButtonVisibility() {
         var $servingsInput = $("#servings-scaler");
         var currentServings = parseFloat($servingsInput.val());
         var originalServings = parseFloat($servingsInput.data("original-servings"));
         var activeTab = $(".tab-btn.active").data("target") || "overview-panel";
-        var hasUncheckedItems = $(".shopping-item-checkbox:not(:checked)").length > 0;
+        var hasCheckedItems = $(".shopping-item-checkbox:checked").length > 0;
 
         var isModified = (currentServings !== originalServings) ||
                         (currentActiveSystem !== "imperial") ||
                         (activeTab !== "overview-panel") ||
-                        hasUncheckedItems;
+                        hasCheckedItems;
+
 
         var $resetPanel = $("#reset-widget-panel");
 
@@ -113,12 +113,12 @@ $(document).ready(function () {
                 $("#servings-scaler").val(state.servings);
             }
 
-            // 3. Restore Unchecked Shopping List Items
-            if (Array.isArray(state.uncheckedItems)) {
+            // 3. Restore Checked Shopping List Items
+            if (Array.isArray(state.checkedItems)) {
                 $(".shopping-item-checkbox").each(function () {
                     var $cb = $(this);
                     var key = String($cb.data("item-key"));
-                    var shouldBeChecked = state.uncheckedItems.indexOf(key) === -1;
+                    var shouldBeChecked = state.checkedItems.indexOf(key) !== -1;
                     $cb.prop("checked", shouldBeChecked);
                     applyCheckboxVisuals($cb);
                 });
@@ -473,7 +473,7 @@ $(document).ready(function () {
         // 4. Re-check all shopping list checkboxes and restore visual styling
         $(".shopping-item-checkbox").each(function () {
             var $cb = $(this);
-            $cb.prop("checked", true);
+            $cb.prop("checked", false);
             applyCheckboxVisuals($cb);
         });
 
