@@ -7,7 +7,11 @@
         <ul class="recipe-ingredient-list standard-list-reset">
             <li th:each="item : ${entry.value}" class="recipe-ingredient-row shopping-item-modifier">
                 <div class="shopping-item-content">
-                    <input type="checkbox" checked="checked" class="shopping-item-checkbox" />
+                    <input type="checkbox" 
+                        checked="checked" 
+                        class="shopping-item-checkbox" 
+                        th:data-item-key="${item.ingredient.ingredientId != null ? item.ingredient.ingredientId : item.ingredient.ingredientName}" />
+
 
                     <span class="shopping-item-text">
                         <span th:text="${item.ingredient.ingredientName}" class="ingredient-name">Chicken Broth</span>
