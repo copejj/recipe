@@ -5,7 +5,7 @@
 $(document).ready(function () {
 
     // --- LOCAL STORAGE STATE PERSISTENCE ---
-    var storageKey = "recipe_view_state_" + (window.RECIPE_ID || window.location.pathname);
+    var storageKey = window.RECIPE_ID ? ("recipe_view_state_" + window.RECIPE_ID) : null;
 
     function saveViewState() {
         var uncheckedKeys = [];
@@ -24,6 +24,13 @@ $(document).ready(function () {
 
         try {
             localStorage.setItem(storageKey, JSON.stringify(state));
+            var resumeData = {
+                recipeId: window.RECIPE_ID,
+                url: window.location.pathname.replace(/\/share\/?$/, ""),
+                title: document.title,
+                updatedAt: Date.now()
+            };
+            localStorage.setItem("active_cooking_recipe", JSON.stringify(resumeData));
         } catch (e) {
             // Ignore storage quota or private browsing errors
         }
@@ -65,7 +72,19 @@ $(document).ready(function () {
                 $resetPanel.fadeIn(200);
             }
         } else {
-            localStorage.removeItem(storageKey);
+            if (storageKey) {
+                localStorage.removeItem(storageKey);
+            }
+            // Clear the global resume pointer if it points to this recipe
+            try {
+                var activeData = JSON.parse(localStorage.getItem("active_cooking_recipe") || "{}");
+                if (activeData.recipeId === window.RECIPE_ID) {
+                    localStorage.removeItem("active_cooking_recipe");
+                }
+            } catch (e) {
+                localStorage.removeItem("active_cooking_recipe");
+            }
+
             if ($resetPanel.is(":visible")) {
                 $resetPanel.fadeOut(200);
             }
@@ -430,7 +449,10 @@ $(document).ready(function () {
         e.preventDefault();
 
         // 1. Clear saved state from localStorage
-        localStorage.removeItem(storageKey);
+        if (storageKey) {
+            localStorage.removeItem(storageKey);
+        }
+        localStorage.removeItem("active_cooking_recipe");
 
         // 2. Reset Servings back to original recipe default
         var $servingsInput = $("#servings-scaler");
