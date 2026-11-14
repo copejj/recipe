@@ -1,12 +1,16 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://thymeleaf.org">
 <head></head>
 <body>
     <div th:fragment="genericTable(tableId, dataList, headerTemplate, rowTemplate)"
-         th:replace="~{::genericTableWithClass(${tableId}, ${dataList}, ${headerTemplate}, ${rowTemplate}, '')}">
+         th:replace="~{::genericTableFull(${tableId}, ${dataList}, ${headerTemplate}, ${rowTemplate}, '', false)}">
     </div>
 
     <div th:fragment="genericTableWithClass(tableId, dataList, headerTemplate, rowTemplate, customClass)"
+         th:replace="~{::genericTableFull(${tableId}, ${dataList}, ${headerTemplate}, ${rowTemplate}, ${customClass}, false)}">
+    </div>
+
+    <div th:fragment="genericTableFull(tableId, dataList, headerTemplate, rowTemplate, customClass, skipAutoInit)"
          class="table-responsive-wrapper"
          style="margin-top: 24px;">
 
@@ -28,22 +32,24 @@
             </tbody>
         </table>
 
-        <!-- 2. Self-Contained Initialization Script -->
-        <script th:inline="javascript">
+        <!-- Self-Contained Initialization Script (skipped when custom JS manages the table) -->
+        <script th:if="${skipAutoInit == null or !skipAutoInit}" th:inline="javascript">
             $(document).ready(function () {
                 var targetTableId = /*[[${tableId}]]*/ 'genericTable';
 
-                $('#' + targetTableId).DataTable({
-                    "paging": true,
-                    "searching": true,
-                    "ordering": true,
-                    "info": true,
-                    "pageLength": -1,
-                    "lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
-                    "language": {
-                        "emptyTable": "No data available in table"
-                    },
-                });
+                if (!$.fn.DataTable.isDataTable('#' + targetTableId)) {
+                    $('#' + targetTableId).DataTable({
+                        "paging": true,
+                        "searching": true,
+                        "ordering": true,
+                        "info": true,
+                        "pageLength": -1,
+                        "lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
+                        "language": {
+                            "emptyTable": "No data available in table"
+                        }
+                    });
+                }
             });
         </script>
     </div>

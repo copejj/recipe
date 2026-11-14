@@ -42,7 +42,7 @@
     margin: 2px 0 12px 0;
 }
 
-/* Custom utility for your unified native selects */
+/* Custom utility for unified native selects */
 select.form-input-unified {
     width: 100%;
     height: 42px;
@@ -57,7 +57,7 @@ select.form-input-unified {
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* Highly specific selector to cleanly override Select2's container style */
+/* Select2 container overrides */
 html body .select2-container--default .select2-selection--single {
     width: 100%;
     height: 42px;
@@ -119,7 +119,7 @@ select.form-input-unified:focus,
     background-color: var(--color-badge-blue-bg);
     color: var(--color-badge-blue-text);
     border: 1px solid var(--color-border);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
 .badge-row-container .remove-fridge-item {
@@ -128,41 +128,18 @@ select.form-input-unified:focus,
     font-weight: 700;
 }
 
-/* Master Data Table Interactive Badge Elements */
-.table-chef-badge,
-.clickable-category-badge {
+/* Synchronized DataTable Row & Cell Styles */
+.recipe-table-row {
     cursor: pointer;
-    transition: all 0.15s ease-in-out;
+    transition: background-color 0.2s ease-in-out;
 }
 
-.table-chef-badge:hover,
-.clickable-category-badge:hover {
-    filter: brightness(0.85);
-    transform: scale(1.05);
+.recipe-table-row.row-even {
+    background-color: var(--color-bg-alt, #f9f9f9);
 }
 
-/* High contrast selection styles for client-side search filtering matches */
-.table-chef-badge.filter-matching,
-.clickable-category-badge.filter-matching {
-    background-color: var(--color-accent-secondary, #ffc107) !important;
-    color: #1a1a1a !important;
-    font-weight: 700;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.table-category-badge {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.85rem;
-    background-color: var(--color-bg-body);
-    border: 1px solid var(--color-border);
-    font-weight: 600;
-}
-
-.table-action-cell {
-    text-align: center;
-    vertical-align: middle;
+.recipe-table-row:hover {
+    background-color: var(--color-bg-hover, #f1f1f1);
 }
 
 td.table-title-cell {
@@ -174,10 +151,25 @@ td.table-description-cell {
     font-size: small;
 }
 
-/* Master Data Table Interactive Badge Elements */
+.recipe-title-link {
+    color: var(--color-primary, #0d6efd);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.15s ease-in-out;
+}
+
+.recipe-table-row:hover .recipe-title-link,
+.recipe-title-link:hover,
+.recipe-title-link:focus {
+    color: var(--color-badge-blue-text, #0056b3);
+    text-decoration: underline;
+}
+
+/* Interactive Table Badges (Chef & Category) */
 .table-chef-badge,
 .clickable-category-badge {
     cursor: pointer;
+    display: inline-block;
     transition: all 0.15s ease-in-out;
 }
 
@@ -187,25 +179,43 @@ td.table-description-cell {
     transform: scale(1.05);
 }
 
-/* 1. Keep Chef Active Highlight: High contrast amber yellow */
+.table-category-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    background-color: var(--color-bg-body);
+    border: 1px solid var(--color-border);
+    font-weight: 600;
+}
+
+.table-visibility-badge {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    background-color: var(--color-bg-disabled, #eee);
+    color: var(--color-text-dark, #333);
+}
+
+/* Chef Active Filter Highlight: High-contrast amber yellow */
 .table-chef-badge.filter-matching {
     background-color: var(--color-accent-secondary, #ffc107) !important;
     color: #1a1a1a !important;
     font-weight: 700;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
     border: 1px solid rgba(0, 0, 0, 0.1);
+    transform: scale(1.02);
 }
 
-/* 2. NEW Category Active Highlight: Colored inline with text color (Subtle Blueprint Theme) */
+/* Category Active Filter Highlight: Subtle blueprint tint */
 .clickable-category-badge.filter-matching {
-    /* Uses a transparent variation of your text/primary color for a beautiful matching tint */
     background-color: var(--color-badge-blue-bg, rgba(0, 123, 255, 0.12)) !important;
-    color: var(--color-badge-blue-text, #0056b3) !important; 
+    color: var(--color-badge-blue-text, #0056b3) !important;
     border: 1px solid var(--color-badge-blue-text, #0056b3) !important;
     font-weight: 700;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
+/* Sign-in / Register Links */
 .cookbook-signin-link {
     color: var(--color-primary, #007bff);
     text-decoration: none;
@@ -215,7 +225,7 @@ td.table-description-cell {
 
 .cookbook-signin-link:hover {
     color: var(--color-badge-blue-text, #0056b3);
-    text-decoration: underline; /* Optional: adds underline back only when hovering */
+    text-decoration: underline;
 }
 
 /* Layout Action Controls Bar */
@@ -271,61 +281,4 @@ td.table-description-cell {
 
 .alert-icon {
     font-size: 1.1rem;
-}
-
-/* Base Datatable Row Structural Overrides */
-.recipe-table-row {
-    cursor: pointer;
-    transition: background-color 0.2s ease-in-out;
-}
-
-.recipe-table-row.row-even {
-    background-color: var(--color-bg-alt, #f9f9f9);
-}
-
-.recipe-table-row:hover {
-    background-color: var(--color-bg-hover, #f1f1f1);
-}
-
-/* Table Cells Alignment and Target Modifications */
-.actions-cell {
-    text-align: right;
-}
-
-.actions-cell .admin-btn-group {
-    display: inline-flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 0.5rem;
-    width: 100%;
-}
-
-.table-visibility-badge {
-    padding: 4px 8px;
-    font-size: 0.8rem;
-    border-radius: 4px;
-    background-color: var(--color-bg-disabled, #eee);
-    color: var(--color-text-dark, #333);
-}
-
-/* Base Chef Badge Layout setup */
-.table-chef-badge {
-    cursor: pointer;
-    display: inline-block;
-    transition: all 0.15s ease-in-out;
-}
-
-.table-chef-badge:hover {
-    filter: brightness(0.85);
-    transform: scale(1.05);
-}
-
-/* Styling for ALL matching chef badges currently isolated */
-.table-chef-badge.filter-matching {
-    background-color: var(--color-accent-secondary, #ffc107) !important; /* High contrast amber yellow background */
-    color: #1a1a1a !important;                                         /* Sharp dark text for clean readability */
-    font-weight: 700;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    transform: scale(1.02);
 }
