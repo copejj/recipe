@@ -29,6 +29,27 @@
 }
 
 /* ==========================================================================
+   STICKY DESKTOP TABLE HEADERS
+   ========================================================================== */
+@media screen and (min-width: 769px) {
+    /* Ensure no ancestor clips sticky positioning */
+    .dt-container,
+    .dt-layout-table,
+    .dt-layout-full,
+    .table-responsive-wrapper {
+        overflow: visible !important;
+    }
+
+    .table-responsive-wrapper table.dataTable thead th {
+        position: sticky;
+        top: 0; /* If your .recipe-header navbar is sticky/fixed, change 0 to its height (e.g., 64px) */
+        z-index: 10;
+        background-color: var(--color-bg-card, #ffffff);
+        box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
+    }
+}
+
+/* ==========================================================================
    UNIVERSAL DATA TABLES PORTRAIT MOBILE OVERRIDES (STACKED CARDS ENGINE)
    ========================================================================== */
 @media screen and (max-width: 768px) {
@@ -39,7 +60,6 @@
         width: 100% !important;
         border: none !important;
         table-layout: auto !important;
-        /* Overrides desktop fixed layouts */
     }
 
     /* 2. Hide traditional horizontal desktop headers entirely from view */
@@ -79,20 +99,14 @@
         white-space: normal;
     }
 
-    /* 
-       6. DYNAMIC LABEL INJECTION:
-       Reads the 'data-label' attribute from the HTML and prints it as a bold 
-       header column inside the mobile card view.
-    */
+    /* 6. Dynamic Label Injection from data-label attribute */
     .table-responsive-wrapper table.dataTable tbody td[data-label]::before {
         content: attr(data-label);
         font-weight: 700;
         color: var(--color-text-muted, #6c757d);
         display: inline-block;
         width: 110px;
-        /* Fixed inline column label track width */
         flex-shrink: 0;
-        /* Prevents label text from crushing down */
         font-size: 0.85rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -101,11 +115,10 @@
     /* 7. Specific font sizing adjustment for role names inside mobile view cards */
     .table-responsive-wrapper table.dataTable tbody td.role-name-cell {
         font-size: 0.9rem !important;
-        /* Slightly scales up the compressed .75rem size for mobile legibility */
     }
 
-    /* 8. Fix background styling striping for DataTables on mobile cards */
-    .table-responsive-wrapper table.dataTable.stripe tbody tr:nth-child(odd) {
+    /* 8. Fix background styling striping while preserving hover/tap feedback */
+    .table-responsive-wrapper table.dataTable.stripe tbody tr:nth-child(odd):not(:hover) {
         background-color: var(--color-bg-card, #ffffff) !important;
     }
 }

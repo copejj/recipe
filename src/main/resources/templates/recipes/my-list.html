@@ -12,7 +12,10 @@
 
 <body>
     <div layout:fragment="page-title">My Cookbook</div>
-    <p layout:fragment="page-subtitle">Browse, review, or modify your personalized library of culinary concoctions.</p>
+    <p layout:fragment="page-subtitle">
+        Browse, review, or modify your library. Tap or click any recipe row to view it
+        , or click a <em>Category</em> or <em>Chef</em> badge to filter and unfilter.
+    </p>
     
     <main layout:fragment="content">
         <div class="action-bar">
@@ -34,21 +37,21 @@
             </div>
         </div>
 
-        <div th:replace="~{fragments/datatable :: genericTable(
+        <div th:replace="~{fragments/datatable :: genericTableFull(
             'generalCookbookTable', 
             ${recipes}, 
             ~{::recipeHeaders}, 
-            ~{::recipeRows}
+            ~{::recipeRows},
+            '',
+            true
         )}">
 
             <!-- Table Headers Slot -->
             <tr th:fragment="recipeHeaders">
-                <th>Actions</th>
                 <th>Category</th>
                 <th>Chef</th>
                 <th>Title</th>
                 <th>Summary</th>
-                <th>Servings</th>
                 <th>Visibility</th>
             </tr>
 
@@ -58,31 +61,24 @@
                 th:classappend="${iterStat != null and iterStat.even} ? 'row-even' : ''"
                 class="recipe-table-row">
                 
-                <td data-label="Actions" class="actions-cell">
-                    <div class="admin-btn-group">
-                        <th:block th:if="${item.user.userId == currentUserId}">
-                            <a th:replace="~{fragments/actions :: editLink(targetUrl=@{/recipes/edit/{id}(id=${item.recipeId})})}"></a>
-                        </th:block>
-                        <a th:replace="~{fragments/actions :: viewLink(targetUrl=@{/view/{id}(id=${item.recipeId})})}"></a>
-                    </div>
-                </td>
                 <td data-label="Category" class="table-category-cell">
                     <span class="badge-permission table-category-badge clickable-category-badge" 
-                            th:text="${item.recipeCategory != null ? item.recipeCategory.name : 'General'}">General</span>
+                          th:text="${item.recipeCategory != null ? item.recipeCategory.name : 'General'}">General</span>
                 </td>
                 <td data-label="Chef" class="table-display-name-cell">
                     <span class="badge-permission table-chef-badge clickable-chef-badge" 
-                        th:text="${item.user.displayName != null ? item.user.displayName : 'Anonymous'}">Anonymous</span>
+                          th:text="${item.user.displayName != null ? item.user.displayName : 'Anonymous'}">Anonymous</span>
                 </td>
-                <td data-label="Title" class="table-title-cell" th:text="${item.title}">Title</td>
+                <td data-label="Title" class="table-title-cell">
+                    <a th:href="@{/view/{id}(id=${item.recipeId})}" 
+                       th:text="${item.title}" 
+                       class="recipe-title-link">Title</a>
+                </td>
                 <td data-label="Summary" class="table-description-cell"
                     th:text="${item.description != null && !item.description.isEmpty() ? item.description : 'No description provided.'}">Description</td>
-                <td data-label="Servings" class="recipe-servings-cell">
-                    <span th:text="${item.servings != null ? item.servings : '—'}">4</span> ppl
-                </td>
                 <td data-label="Visibility" class="recipe-visibility-cell">
                     <span class="badge-permission table-visibility-badge"
-                        th:text="${item.recipeVisibility != null ? item.recipeVisibility.visibilityName : 'Public'}">Public</span>
+                          th:text="${item.recipeVisibility != null ? item.recipeVisibility.visibilityName : 'Public'}">Public</span>
                 </td>
             </tr>
         </div>

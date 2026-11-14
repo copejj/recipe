@@ -14,31 +14,38 @@
 <body>
     <div layout:fragment="page-title">Recipe Discovery Hub</div>
     <p layout:fragment="page-subtitle">
-        Browse the complete available catalog generally, or add specific ingredients and categories to find tailored meal matches.
+        Browse the complete available catalog generally, or add specific ingredients to find tailored meal matches.
     </p>
     <main layout:fragment="content">
         <div>
             <h4 th:if="${#authorization.expression('isAuthenticated()')}">
-                    As a registered member, you can also save your favorite discoveries straight 
-                    to your personal cookbook!
+                As a registered member, you can also save your favorite discoveries straight 
+                to your personal cookbook!
             </h4>
             <h4 th:unless="${#authorization.expression('isAuthenticated()')}">
-                    Have you <a th:href="@{/register}" class="cookbook-signin-link">Registered</a>?
-                    As a registered member, you can <a th:href="@{/login}" class="cookbook-signin-link">Sign in</a> 
-                    to save these recipes directly to your personal cookbook.
+                Have you <a th:href="@{/register}" class="cookbook-signin-link">Registered</a>?
+                As a registered member, you can <a th:href="@{/login}" class="cookbook-signin-link">Sign in</a> 
+                to save these recipes directly to your personal cookbook.
             </h4>
         </div>
 
-        <div>
-            <h3>Unified Catalog Filters</h3>
+        <!-- THE DYNAMIC CATALOG DATA TABLE INDEX -->
+        <div class="index-section-header" th:if="${isFilteredView}">
+            <h2 >Filtered Recipe Matches</h2>
             <p class="filter-column-subtitle">
-                Optimize your search by adding specific ingredients on hand.
+                Showing recipes matching your active ingredients. 
+                Tap or click any recipe row to view it. or click a <em>Category</em> or <em>Chef</em> badge to filter and unfilter.
             </p>
-            <p class="filter-column-subtitle">
-                You can also click directly on any <em>Chef</em> or <em>Category</em> badge in the table 
-                below to instantly refine your view by that specific attribute.
-            </p>
+        </div>
 
+        <div class="index-section-header" th:unless="${isFilteredView}">
+            <h2>Browse All Available Recipes</h2>
+            <p class="filter-column-subtitle">
+                Tap or click any recipe row to view it. Add ingredient or click a <em>Category</em> or <em>Chef</em> badge to filter and unfilter.
+            </p>
+        </div>
+
+        <div>
             <form id="searchForm" th:action="@{/search}" method="get">
                 <!-- PARALLEL GRID LAYOUT FOR BALANCED FILTER FIELDS -->
                 <div class="filter-row">
@@ -71,65 +78,55 @@
             </form>
         </div>
 
-        <!-- THE DYNAMIC CATALOG DATA TABLE INDEX -->
-        <div class="index-section-header">
-            <h2 th:if="${isFilteredView}">Filtered Recipe Matches</h2>
-            <h2 th:unless="${isFilteredView}">Browse All Available Recipes</h2>
+        <!-- Central DataTables Layout Component Integration Hook -->
+        <div th:replace="~{fragments/datatable :: genericTableFull(
+            'generalCookbookTable',
+            ${recipesIndexPool},
+            ~{::recipeHeaders},
+            ~{::recipeRow},
+            '',
+            true
+        )}">
 
-            <p class="filter-column-subtitle">
-                <span th:if="${isFilteredView}">Showing recipes matching your active taxonomy criteria parameters. Click highlighted badges to remove column filters.</span>
-                <span th:unless="${isFilteredView}">Explore our complete public recipe database catalog instantly. Click table badges to isolate specific chefs or styles.</span>
-            </p>
+            <!-- 1. Define Header Structure Fragment Layout -->
+            <th:block th:fragment="recipeHeaders">
+                <tr>
+                    <th class="col-category">Category</th>
+                    <th class="col-displayName">Chef</th>
+                    <th class="col-title">Recipe Title</th>
+                    <th class="col-description">Description</th>
+                </tr>
+            </th:block>
+
+            <!-- 2. Define Row Structure Fragment Layout -->
+            <th:block th:fragment="recipeRow">
+                <tr th:data-href="@{/view/{recipeId}(recipeId=${item.recipeId})}"
+                    th:classappend="${iterStat != null and iterStat.even} ? 'row-even' : ''"
+                    class="recipe-table-row">
+
+                    <td class="table-category-cell" data-label="Category">
+                        <span class="badge-permission table-category-badge clickable-category-badge" 
+                              th:text="${item.recipeCategory != null ? item.recipeCategory.name : 'General'}">General</span>
+                    </td>
+
+                    <td class="table-display-name-cell" data-label="Chef">
+                        <span class="badge-permission table-chef-badge clickable-chef-badge" 
+                              th:text="${item.user.displayName != null ? item.user.displayName : 'Anonymous'}">Anonymous</span>
+                    </td>
+
+                    <td class="table-title-cell" data-label="Title">
+                        <a th:href="@{/view/{recipeId}(recipeId=${item.recipeId})}" 
+                           th:text="${item.title}" 
+                           class="recipe-title-link">Recipe Title</a>
+                    </td>
+
+                    <td class="table-description-cell" data-label="Description">
+                        <span th:text="${item.description != null and item.description.length() > 140} ? ${item.description.substring(0, 140)} + '...' : ${item.description}">Description snippet...</span>
+                    </td>
+                </tr>
+            </th:block>
         </div>
 
-        <div class="table-responsive-wrapper">
-            <!-- Central DataTables Layout Component Integration Hook -->
-            <div th:replace="~{fragments/datatable :: genericTable(
-                tableId='generalCookbookTable',
-                dataList=${recipesIndexPool},
-                headerTemplate=~{::recipeHeaders},
-                rowTemplate=~{::recipeRow}
-            )}">
-
-                <!-- 1. Define Header Structure Fragment Layout -->
-                <th:block th:fragment="recipeHeaders">
-                    <tr>
-                        <th class="col-actions">Actions</th>
-                        <th class="col-category">Category</th>
-                        <th class="col-displayName">Chef</th>
-                        <th class="col-title">Recipe Title</th>
-                        <th class="col-description">Description</th>
-                    </tr>
-                </th:block>
-
-                <!-- 2. Define Row Structure Fragment Layout -->
-                <th:block th:fragment="recipeRow">
-                    <tr th:data-href="@{/view/{recipeId}(recipeId=${item.recipeId})}">
-                        <td class="table-action-cell" data-label="Actions">
-                            <a th:replace="~{fragments/actions :: viewLink(targetUrl=@{/view/{recipeId}(recipeId=${item.recipeId})})}"></a>
-                        </td>
-
-                        <td class="table-category-cell" data-label="Category">
-                            <span class="badge-permission table-category-badge clickable-category-badge" 
-                                    th:text="${item.recipeCategory != null ? item.recipeCategory.name : 'General'}">General</span>
-                        </td>
-
-                        <td class="table-display-name-cell" data-label="Chef">
-                            <span class="badge-permission table-chef-badge clickable-chef-badge" 
-                                    th:text="${item.user.displayName != null ? item.user.displayName : 'Anonymous'}">Anonymous</span>
-                        </td>
-
-                        <td class="table-title-cell" data-label="Recipe Title" th:text="${item.title}">
-                            Recipe Title
-                        </td>
-
-                        <td class="table-description-cell" data-label="Description">
-                            <span th:text="${item.description != null and item.description.length() > 140} ? ${item.description.substring(0, 140)} + '...' : ${item.description}">Description snippet...</span>
-                        </td>
-                    </tr>
-                </th:block>
-            </div>
-        </div>
     </main>
     <th:block layout:fragment="page_scripts">
         <script th:src="@{/js/recipes/cookbook.js}"></script>
