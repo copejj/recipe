@@ -126,10 +126,12 @@ $(document).ready(function () {
 
             // 4. Restore Active Tab (without fade delay on initial load)
             if (state.activeTab && $("#" + state.activeTab).length) {
-                $(".tab-btn").removeClass("active").css({ "color": "var(--color-text-muted, #6c757d)", "border-bottom": "none", "margin-bottom": "0" });
+                $(".tab-btn").removeClass("active").attr("aria-selected", "false").css({ "color": "var(--color-text-muted, #6c757d)", "border-bottom": "none", "margin-bottom": "0" });
                 $('.tab-btn[data-target="' + state.activeTab + '"]')
                     .addClass("active")
+                    .attr("aria-selected", "true")
                     .css({ "color": "var(--color-primary, #0d6efd)", "border-bottom": "3px solid var(--color-primary, #0d6efd)", "margin-bottom": "-13px" });
+
 
                 $(".tab-panel").hide();
                 $("#" + state.activeTab).show();
@@ -155,13 +157,20 @@ $(document).ready(function () {
         var clickedTab = $(this);
         var targetPanelId = clickedTab.data("target");
 
-        $(".tab-btn").removeClass("active").css({ "color": "var(--color-text-muted, #6c757d)", "border-bottom": "none", "margin-bottom": "0" });
-        clickedTab.addClass("active").css({ "color": "var(--color-primary, #0d6efd)", "border-bottom": "3px solid var(--color-primary, #0d6efd)", "margin-bottom": "-13px" });
+        $(".tab-btn")
+            .removeClass("active")
+            .attr("aria-selected", "false")
+            .css({ "color": "var(--color-text-muted, #6c757d)", "border-bottom": "none", "margin-bottom": "0" });
+
+        clickedTab
+            .addClass("active")
+            .attr("aria-selected", "true")
+            .css({ "color": "var(--color-primary, #0d6efd)", "border-bottom": "3px solid var(--color-primary, #0d6efd)", "margin-bottom": "-13px" });
+
         saveViewState();
 
         $(".tab-panel").hide();
-        $("#" + targetPanelId).fadeIn(150, function() {
-            // Fire scaling engine after fade-in finishes to ensure exact layout sizes are known
+        $("#" + targetPanelId).fadeIn(150, function () {
             runLiveScalingEngine();
         });
     });
@@ -478,16 +487,17 @@ $(document).ready(function () {
         });
 
         // 5. Return to the Overview tab (optional — remove this block if you prefer staying on the current tab)
-        $(".tab-btn").removeClass("active").css({
+        $(".tab-btn").removeClass("active").attr("aria-selected", "false").css({
             "color": "var(--color-text-muted, #6c757d)",
             "border-bottom": "none",
             "margin-bottom": "0"
         });
-        $('.tab-btn[data-target="overview-panel"]').addClass("active").css({
+        $('.tab-btn[data-target="overview-panel"]').addClass("active").attr("aria-selected", "true").css({
             "color": "var(--color-primary, #0d6efd)",
             "border-bottom": "3px solid var(--color-primary, #0d6efd)",
             "margin-bottom": "-13px"
         });
+
         $(".tab-panel").hide();
         $("#overview-panel").show();
 

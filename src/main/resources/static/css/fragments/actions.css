@@ -208,6 +208,20 @@
     padding-top: 1rem;
 }
 
+/* Soft Slate/Indigo theme for resetting view state */
+.btn-action--reset {
+    color: #4338ca;
+    background-color: #eef2ff;
+    border: 1px solid #c7d2fe;
+}
+
+.btn-action--reset:hover {
+    color: #3730a3;
+    background-color: #e0e7ff;
+    border-color: #a5b4fc;
+}
+`
+
 @media (max-width: 576px) {
     .form-actions-delete {
         margin-left: 0;

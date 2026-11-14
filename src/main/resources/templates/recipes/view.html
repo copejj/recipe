@@ -85,41 +85,46 @@
                     </div>
                 </div>
             </div>
-            <!-- SYSTEM MODE AND SERVINGS MULTIPLIER BUTTON GROUP PANELS -->
+
+            <!-- UNIFIED RECIPE CONTROL TOOLBAR -->
             <div class="recipe-control-widgets">
-                <!-- US Imperial ⇄ Metric Switcher Component Widget -->
-                <div class="widget-card-panel">
-                    <span>System:</span>
-                    <div class="system-toggle-wrapper">
-                        <button type="button" id="system-imperial-btn" class="system-toggle-btn active"
-                            data-system="imperial">Imperial</button>
-                        <button type="button" id="system-metric-btn" class="system-toggle-btn"
-                            data-system="metric">Metric</button>
+                <div class="widget-card-panel unified-control-bar">
+                    <!-- Group 1: US Imperial ⇄ Metric Switcher -->
+                    <div class="control-group">
+                        <span>System:</span>
+                        <div class="system-toggle-wrapper">
+                            <button type="button" id="system-imperial-btn" class="system-toggle-btn active"
+                                aria-pressed="true" data-system="imperial">Imperial</button>
+                            <button type="button" id="system-metric-btn" class="system-toggle-btn"
+                                aria-pressed="false" data-system="metric">Metric</button>
+                        </div>
+                    </div>
+
+                    <!-- Group 2: Live Servings Input Scaler -->
+                    <div class="control-group">
+                        <label for="servings-scaler">Servings:</label>
+                        <input type="number" id="servings-scaler" th:value="${recipe.servings}"
+                            th:data-original-servings="${recipe.servings}" min="1" step="1" onfocus="this.select()"
+                            class="servings-input-spinner" />
+                    </div>
+
+                    <!-- Group 3: Reset View State Button (Hidden until user modifies defaults) -->
+                    <div id="reset-widget-panel" class="control-group" style="display: none;">
+                        <button type="button" id="reset-view-btn" class="btn-action btn-action--reset"
+                            title="Reset servings, units, and checkboxes">
+                            Reset
+                        </button>
                     </div>
                 </div>
-
-                <!-- Live Servings Input Scaler -->
-                <div class="widget-card-panel">
-                    <label for="servings-scaler">Servings:</label>
-                    <input type="number" id="servings-scaler" th:value="${recipe.servings}"
-                        th:data-original-servings="${recipe.servings}" min="1" step="1" onfocus="this.select()"
-                        class="servings-input-spinner" />
-                </div>
-
-                <!-- Reset View State Button (Hidden until user modifies defaults) -->
-                <div id="reset-widget-panel" class="widget-card-panel" style="display: none;">
-                    <button type="button" id="reset-view-btn" class="btn-action" title="Reset servings, units, and checkboxes">
-                        Reset
-                    </button>
-                </div>
             </div>
+
         </div>
 
         <!-- VIEW PANEL TABS SWITCH NAVIGATION HEADER BAR -->
-        <div class="view-mode-tabs">
-            <button type="button" class="tab-btn active" data-target="overview-panel">Overview</button>
-            <button type="button" class="tab-btn" data-target="prep-panel">Preparation</button>
-            <button type="button" class="tab-btn" data-target="list-panel">Item List</button>
+        <div class="view-mode-tabs" role="tablist" aria-label="Recipe view modes">
+            <button type="button" class="tab-btn active" role="tab" aria-selected="true" data-target="overview-panel">Overview</button>
+            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-target="prep-panel">Preparation</button>
+            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-target="list-panel">Item List</button>
         </div>
 
         <!-- MODULAR DISPLAY LAYOUT CHANNELS -->

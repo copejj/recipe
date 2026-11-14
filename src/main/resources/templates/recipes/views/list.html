@@ -6,7 +6,7 @@
 
         <ul class="recipe-ingredient-list standard-list-reset">
             <li th:each="item : ${entry.value}" class="recipe-ingredient-row shopping-item-modifier">
-                <div class="shopping-item-content">
+                <label class="shopping-item-content">
                     <input type="checkbox" 
                         class="shopping-item-checkbox" 
                         th:data-item-key="${item.ingredient.ingredientId != null ? item.ingredient.ingredientId : item.ingredient.ingredientName}" />
@@ -35,7 +35,7 @@
                             th:if="${item.ingredientNote != null && !#strings.isEmpty(item.ingredientNote)}" 
                             th:text="' - [' + ${item.ingredientNote} + ']'">Some Note</span>
                     </span>
-                </div>
+                </label>
             </li>
         </ul>
     </div>
