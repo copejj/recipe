@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
+<head>
+    <title>Edit Grocery Category</title>
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" th:href="@{/css/admin/ingredients-edit.css}" />
+    </th:block>
+</head>
+
+<body>
+    <h1 layout:fragment="page-title"
+        th:text="${category.groceryCategoryId != null} ? 'Modify Grocery Aisle Category' : 'Add Grocery Aisle Category'">
+        Modify Grocery Aisle Category
+    </h1>
+    <p layout:fragment="page-subtitle">Update the store aisle name or default display sort weight for shopping lists.</p>
+
+    <div layout:fragment="action-tray" class="action-tray sticky-stack-item">
+        <a th:href="@{/admin/metadata/ingredients/grocery-categories}" class="btn btn-secondary">← Grocery Categories</a>
+    </div>
+
+    <main layout:fragment="content" class="form-card">
+        <form th:action="${category.groceryCategoryId != null} ? @{/admin/metadata/ingredients/grocery-categories/edit/{id}(id=${category.groceryCategoryId})} : @{/admin/metadata/ingredients/grocery-categories/edit}"
+            th:object="${category}"
+            method="post" class="ingredient-entry-form">
+
+            <!-- FIELD 1: GROCERY AISLE NAME -->
+            <div class="form-field-group">
+                <label for="categoryName">Grocery Aisle Name</label>
+                <input type="text" id="categoryName" th:field="*{categoryName}" class="form-input" required />
+            </div>
+
+            <!-- FIELD 2: DISPLAY ORDER WEIGHT -->
+            <div class="form-field-group">
+                <label for="displayOrder">Display Sequence Weight</label>
+                <input type="number" id="displayOrder" th:field="*{displayOrder}" class="form-input" required />
+            </div>
+
+            <!-- ACTIONS FOOTER BUTTON GRID -->
+            <div class="form-actions-group">
+                <button th:replace="~{fragments/actions :: saveBtn(itemId=${category.groceryCategoryId != null ? category.groceryCategoryId : 0})}">Save Changes</button>
+
+                <div th:if="${category.groceryCategoryId != null}" class="form-actions-delete">
+                    <button th:replace="~{fragments/actions :: deleteConfBtn(
+                        targetFormId='deleteCatForm-' + ${category.groceryCategoryId},
+                        confirmMessage='Are you sure you want to permanently delete this grocery aisle category? This cannot be undone.'
+                    )}"></button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Isolated Delete Form (kept outside the Update form so forms are never nested) -->
+        <form th:if="${category.groceryCategoryId != null}"
+              th:id="'deleteCatForm-' + ${category.groceryCategoryId}"
+              th:action="@{/admin/metadata/ingredients/grocery-categories/delete/{id}(id=${category.groceryCategoryId})}"
+              method="post"
+              style="display:none;">
+        </form>
+    </main>
+</body>
+</html>

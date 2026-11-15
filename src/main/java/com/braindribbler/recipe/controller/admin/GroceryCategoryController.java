@@ -27,27 +27,30 @@ public class GroceryCategoryController {
         return "admin/metadata/ingredients/grocery-categories/list";
     }
 
-    @PostMapping("/add")
-    public String createNewCategory(@RequestParam("categoryName") String name,
-            @RequestParam("displayOrder") Integer displayOrder) {
-        groceryCategoryService.createNewCategory(name, displayOrder);
-        return "redirect:/admin/metadata/ingredients/grocery-categories?created=true";
+    @GetMapping({"/edit", "/edit/{id}"})
+    public String showEditForm(@PathVariable(value = "id", required = false) Integer id, Model model) {
+        GroceryCategory category = (id != null)
+                ? groceryCategoryService.getAllCategoriesSorted().stream()
+                    .filter(c -> c.getGroceryCategoryId().equals(id))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid Grocery Category Id: " + id))
+                : new GroceryCategory();
+
+        model.addAttribute("category", category);
+        return "admin/metadata/ingredients/grocery-categories/edit";
     }
 
-    @PostMapping("/edit/{id}")
-    public String modifyCategoryProperties(@PathVariable("id") Integer id,
-            @RequestParam("categoryName") String name,
-            @RequestParam("displayOrder") Integer displayOrder) {
-        groceryCategoryService.updateCategory(id, name, displayOrder);
-        return "redirect:/admin/metadata/ingredients/grocery-categories?updated=true";
-    }
-
-    @PostMapping("/save-all")
-    public String saveAllCategoriesUpdates(@ModelAttribute("formWrapper") GroceryCategoryForm form) {
-        if (form != null && form.getItems() != null) {
-            groceryCategoryService.saveAllCategories(form.getItems());
+    @PostMapping({"/edit", "/edit/{id}"})
+    public String saveOrUpdateCategory(@PathVariable(value = "id", required = false) Integer id,
+                                       @RequestParam("categoryName") String name,
+                                       @RequestParam("displayOrder") Integer displayOrder) {
+        if (id != null) {
+            groceryCategoryService.updateCategory(id, name, displayOrder);
+            return "redirect:/admin/metadata/ingredients/grocery-categories?updated=true";
+        } else {
+            groceryCategoryService.createNewCategory(name, displayOrder);
+            return "redirect:/admin/metadata/ingredients/grocery-categories?created=true";
         }
-        return "redirect:/admin/metadata/ingredients/grocery-categories?updated=true";
     }
 
     @PostMapping("/delete/{id}")

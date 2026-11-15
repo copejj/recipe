@@ -168,3 +168,33 @@
     height: 44px;
     cursor: pointer;
 }
+
+/* Make the entire admin row interactive */
+.categories-data-row.clickable-admin-row {
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out;
+}
+
+.categories-data-row.clickable-admin-row:hover {
+    background-color: var(--color-bg-hover, #f1f5f9);
+}
+
+/* Styled category link (matches .recipe-title-link) */
+.category-title-link {
+    color: var(--color-primary, #2563eb);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.15s ease-in-out;
+}
+
+/* Underline and darken the link whenever the user hovers anywhere on the row */
+.categories-data-row.clickable-admin-row:hover .category-title-link,
+.category-title-link:hover,
+.category-title-link:focus {
+    color: var(--color-badge-blue-text, #1d4ed8);
+    text-decoration: underline;
+}

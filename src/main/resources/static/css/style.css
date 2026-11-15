@@ -1064,47 +1064,6 @@ textarea {
     pointer-events: auto;
     content: "";
 }
-.action-tray {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background-color: var(--color-bg-card);
-    padding: 12px 0;
-    margin: 0 1rem 16px 1rem; /* Matches <main>'s 1rem side margins */
-    border-bottom: 1px solid var(--color-border);
-
-    display: flex;
-    gap: 12px;
-    width: auto; /* Lets block element fill available space minus margins */
-    justify-content: flex-start;
-    align-items: center;
-    flex-wrap: wrap;
-    box-sizing: border-box;
-}
-
-.action-tray .btn {
-    width: auto;
-    min-width: 180px;
-    text-align: center;
-    text-decoration: none;
-    padding: 10px 16px;
-    border-radius: 6px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    white-space: nowrap;
-    line-height: 20px;
-    height: 44px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
-}
-
-.action-tray .btn-secondary {
-    background-color: var(--color-bg-body);
-    color: var(--color-text-dark);
-    border: 1px solid var(--color-border);
-}
 
 .header-grid {
     margin: 0 1rem 16px 1rem;

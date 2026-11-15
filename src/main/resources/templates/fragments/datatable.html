@@ -2,34 +2,42 @@
 <html xmlns:th="http://thymeleaf.org">
 <head></head>
 <body>
-    <div th:fragment="genericTable(tableId, dataList, headerTemplate, rowTemplate)"
-         th:replace="~{::genericTableFull(${tableId}, ${dataList}, ${headerTemplate}, ${rowTemplate}, '', false)}">
+        <div th:fragment="genericTable(tableId, dataList, headerTemplate, rowTemplate)"
+         th:replace="~{::genericTableFull(${tableId}, ${dataList}, ${headerTemplate}, ${rowTemplate}, '', false, '[[0, &quot;asc&quot;]]')}">
+    </div>
+
+    <div th:fragment="genericTableWithOrder(tableId, dataList, headerTemplate, rowTemplate, defaultOrder)"
+         th:replace="~{::genericTableFull(${tableId}, ${dataList}, ${headerTemplate}, ${rowTemplate}, '', false, ${defaultOrder})}">
     </div>
 
     <div th:fragment="genericTableWithClass(tableId, dataList, headerTemplate, rowTemplate, customClass)"
-         th:replace="~{::genericTableFull(${tableId}, ${dataList}, ${headerTemplate}, ${rowTemplate}, ${customClass}, false)}">
+         th:replace="~{::genericTableFull(${tableId}, ${dataList}, ${headerTemplate}, ${rowTemplate}, ${customClass}, false, '[[0, &quot;asc&quot;]]')}">
     </div>
 
-    <div th:fragment="genericTableFull(tableId, dataList, headerTemplate, rowTemplate, customClass, skipAutoInit)"
+    <div th:fragment="genericTableFull(tableId, dataList, headerTemplate, rowTemplate, customClass, skipAutoInit, defaultOrder)"
          class="table-responsive-wrapper"
          style="margin-top: 24px;">
+
 
         <link rel="stylesheet" type="text/css" th:href="@{/css/fragments/datatable.css}" />
 
         <table th:id="${tableId}"
-               class="dataTable stripe hover row-border"
-               th:classappend="${customClass != null and !customClass.isEmpty()} ? ' ' + ${customClass} : ''">
-            <thead>
+            class="dataTable stripe hover row-border"
+            th:attr="data-order=${defaultOrder}"
+            th:classappend="${customClass != null and !customClass.isEmpty()} ? ' ' + ${customClass} : ''">
+
+            <thead class="sticky-stack-item">
                 <!-- Dynamically inserts the headers passed from the parent component -->
                 <tr th:replace="${headerTemplate}"></tr>
             </thead>
+
             <tbody>
                 <!-- Iterates through the generalized collection -->
                 <th:block th:each="item, iterStat : ${dataList}">
-                    <!-- Dynamically inserts the row configuration, passing the current iteration item -->
-                    <th:block th:replace="${rowTemplate}"></th:block>
+                    <tr th:replace="${rowTemplate}"></tr>
                 </th:block>
             </tbody>
+
         </table>
 
         <!-- Self-Contained Initialization Script (skipped when custom JS manages the table) -->

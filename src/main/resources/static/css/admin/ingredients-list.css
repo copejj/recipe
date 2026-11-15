@@ -57,7 +57,7 @@
     color: #856404;
 }
 
-/* Cleaned Data Table Presentation Rules (Removed Right-Alignment Conflicts) */
+/* Cleaned Data Table Presentation Rules */
 .ingredients-header-row {
     background-color: var(--color-bg-body);
     border-bottom: 2px solid var(--color-border);
@@ -71,7 +71,15 @@
 
 .ingredients-data-row {
     border-bottom: 1px solid var(--color-border);
-    transition: background-color 0.2s;
+    transition: background-color 0.15s ease-in-out;
+}
+
+.ingredients-data-row.clickable-admin-row {
+    cursor: pointer;
+}
+
+.ingredients-data-row.clickable-admin-row:hover {
+    background-color: var(--color-bg-hover, #f1f5f9);
 }
 
 .ingredients-data-row td {
@@ -79,8 +87,20 @@
     vertical-align: middle;
 }
 
-.ingredient-name-cell {
-    color: var(--color-text-dark);
+/* Styled Ingredient Link (matches .recipe-title-link and .category-title-link) */
+.ingredient-title-link {
+    color: var(--color-primary, #2563eb);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: color 0.15s ease-in-out;
+}
+
+.ingredients-data-row.clickable-admin-row:hover .ingredient-title-link,
+.ingredient-title-link:hover,
+.ingredient-title-link:focus {
+    color: var(--color-badge-blue-text, #1d4ed8);
+    text-decoration: underline;
 }
 
 .classification-badge {
@@ -96,25 +116,4 @@
     border-radius: 4px;
     font-size: 0.85rem;
     white-space: nowrap;
-    /* Keeps long categories onto a single clean line */
-}
-
-/* Button Container Constraints - Refactored to limit expansion widths */
-.row-actions-deck {
-    display: inline-flex !important;
-    gap: 8px !important;
-    align-items: center !important;
-    justify-content: flex-start !important;
-    flex-wrap: nowrap !important;
-    width: max-content !important;
-    /* Snaps the cell right to the action buttons boundary */
-}
-
-.row-actions-deck .btn,
-.row-actions-deck .btn-action,
-.row-actions-deck button,
-.row-actions-deck a {
-    flex: 0 0 auto !important;
-    width: auto !important;
-    white-space: nowrap !important;
 }

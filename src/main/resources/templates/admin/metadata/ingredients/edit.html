@@ -18,9 +18,10 @@
         th:text="${ingredient.ingredientId != null} ? 'Update global lookup properties or fix lingering typos for this ingredient.' : 'Manually inject a pre-verified food definition straight into the global lookup pool.'">
             Dynamic subtext baseline describing the primary interface role or system domain.</p>
 
-    <div layout:fragment="action-tray" class="action-tray">
+    <div layout:fragment="action-tray" class="action-tray sticky-stack-item">
         <a th:href="@{/admin/metadata/ingredients/list}" class="btn btn-secondary">← Master Ingredients</a>
     </div>
+
     <main layout:fragment="content" class="form-card">
         <form
             th:action="${ingredient.ingredientId != null} ? @{/admin/metadata/ingredients/edit/{id}(id=${ingredient.ingredientId})} : @{/admin/metadata/ingredients/add}"
@@ -37,7 +38,6 @@
             <div class="form-field-group field-group--extended">
                 <label for="classification">Scaling Track Classification</label>
                 <select id="classification" name="classification" class="form-input" required>
-                    <!-- Loops dynamically over the classifications exposed globally via the controller -->
                     <option th:each="enumType : ${classifications}" th:value="${enumType.name()}"
                         th:text="${enumType.name() + ' — (' + enumType.description + ')'}"
                         th:selected="${ingredient.classification != null and enumType.name() == ingredient.classification.name()}">
@@ -58,10 +58,36 @@
             </div>
 
             <!-- ACTIONS FOOTER BUTTON GRID -->
-            <div class="form-actions-tray">
+            <div class="form-actions-group">
                 <button th:replace="~{fragments/actions :: saveBtn(itemId=${ingredient.ingredientId != null ? ingredient.ingredientId : 0})}">Save</button>
+
+                <!-- Destructive / Moderation Actions (Only shown when editing an existing ingredient) -->
+                <div th:if="${ingredient.ingredientId != null}" class="form-actions-delete" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button th:replace="~{fragments/actions :: unpublishConfBtn(
+                        targetFormId='retractForm-' + ${ingredient.ingredientId},
+                        confirmMessage='Retract this ingredient from the public pool and send it back to moderation?'
+                    )}"></button>
+
+                    <button th:replace="~{fragments/actions :: deleteConfBtn(
+                        targetFormId='deleteForm-' + ${ingredient.ingredientId},
+                        confirmMessage='Are you sure you want to permanently delete this ingredient from the system? This cannot be undone.'
+                    )}"></button>
+                </div>
             </div>
         </form>
+
+        <!-- Isolated Safe-Zone Forms (kept outside the main form so forms are never nested) -->
+        <th:block th:if="${ingredient.ingredientId != null}">
+            <form th:id="'retractForm-' + ${ingredient.ingredientId}"
+                  th:action="@{/admin/metadata/ingredients/retract/{id}(id=${ingredient.ingredientId})}"
+                  method="post"
+                  style="display:none;"></form>
+
+            <form th:id="'deleteForm-' + ${ingredient.ingredientId}"
+                  th:action="@{/admin/metadata/ingredients/delete/{id}(id=${ingredient.ingredientId})}"
+                  method="post"
+                  style="display:none;"></form>
+        </th:block>
     </main>
 </body>
 </html>

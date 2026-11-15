@@ -40,12 +40,16 @@
         overflow: visible !important;
     }
 
-    .table-responsive-wrapper table.dataTable thead th {
+    .table-responsive-wrapper table.dataTable thead.sticky-stack-item {
         position: sticky;
-        top: 0; /* If your .recipe-header navbar is sticky/fixed, change 0 to its height (e.g., 64px) */
-        z-index: 10;
+        top: 0; /* Dynamically updated by updateStickyStack() in main.js */
+        z-index: 90;
         background-color: var(--color-bg-card, #ffffff);
         box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .table-responsive-wrapper table.dataTable thead.sticky-stack-item th {
+        background-color: var(--color-bg-card, #ffffff);
     }
 }
 

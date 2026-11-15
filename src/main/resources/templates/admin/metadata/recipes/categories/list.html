@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz"
+<html xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
       layout:decorate="~{fragments/layout}"
       lang="en">
 <head>
@@ -12,10 +12,13 @@
 
 <body>
     <div layout:fragment="page-title"> Recipe Category Management </div>
-    <p layout:fragment="page-subtitle"> Configure, populate, and maintain overarching meal courses, dietary preferences, and lifestyle taxonomy nodes. </p>
+    <p layout:fragment="page-subtitle">
+        Configure, populate, and maintain overarching meal courses, dietary preferences, and lifestyle taxonomy nodes.
+        Tap or click any category to edit or delete it.
+    </p>
 
     <!-- Slot 1: Sticky Top Action Tray -->
-    <div layout:fragment="action-tray" class="action-tray">
+    <div layout:fragment="action-tray" class="action-tray sticky-stack-item">
         <a th:href="@{/admin/metadata}" class="btn btn-secondary">← Metadata Dashboard</a>
     </div>
 
@@ -38,10 +41,10 @@
             New recipe category node injected into lookup definitions successfully!
         </div>
         <div th:if="${param.updated}" class="alert-toast alert-toast--success">
-            ✏️ Category label details updated successfully!
+            <span aria-hidden="true">✏️</span> Category label details updated successfully!
         </div>
         <div th:if="${param.deleted}" class="alert-toast alert-toast--deleted">
-            🗑️ Category successfully dropped from lookup taxonomy.
+            <span aria-hidden="true">🗑️</span> Category successfully dropped from lookup taxonomy.
         </div>
 
         <!-- DATA MATRIX DATA GRID -->
@@ -56,39 +59,20 @@
                 <!-- Define Header Structure -->
                 <th:block th:fragment="categoryHeaders">
                     <tr class="categories-header-row">
-                        <th>Actions</th>
                         <th>Name</th>
                     </tr>
                 </th:block>
 
                 <!-- Define Row Structure -->
                 <th:block th:fragment="categoryRow">
-                    <tr class="categories-data-row">
+                    <tr class="categories-data-row clickable-admin-row"
+                        th:data-href="@{/admin/metadata/recipes/categories/edit/{id}(id=${item.recipeCategoryId})}">
 
-                        <!-- Column 1: Core Action Fragments -->
-                        <td data-label="Actions">
-                            <div class="row-actions-deck">
-                                <!-- ACTION 1: CENTRAL EDIT LINK LINKAGE -->
-                                <a th:replace="~{fragments/actions :: editLink(targetUrl=@{/admin/metadata/recipes/categories/edit/{id}(id=${item.recipeCategoryId})})}"></a>
-
-                                <!-- ACTION 2: DEDICATED CONFIRMATION DELETE ACTION BUTTON -->
-                                <button th:replace="~{fragments/actions :: deleteConfBtn(
-                                    targetFormId='deleteRecipeCatForm-' + ${item.recipeCategoryId},
-                                    confirmMessage='Are you sure you want to permanently drop this recipe category label taxonomy entry? This cannot be undone.'
-                                )}"></button>
-                            </div>
-
-                            <!-- Isolated Safe Zone Form Placement -->
-                            <form th:id="'deleteRecipeCatForm-' + ${item.recipeCategoryId}"
-                                  th:action="@{/admin/metadata/recipes/categories/delete/{id}(id=${item.recipeCategoryId})}"
-                                  method="get"
-                                  style="display:none; width:0; height:0; margin:0; padding:0; position:absolute;">
-                            </form>
-                        </td>
-
-                        <!-- Column 2: Display Node Content Value -->
+                        <!-- Column 1: Clickable Category Name -->
                         <td data-label="Name">
-                            <strong class="category-title-text" th:text="${item.name}">Breakfast</strong>
+                            <a th:href="@{/admin/metadata/recipes/categories/edit/{id}(id=${item.recipeCategoryId})}"
+                               th:text="${item.name}"
+                               class="category-title-link">Breakfast</a>
                         </td>
 
                     </tr>
@@ -97,9 +81,5 @@
             </div>
         </div>
     </main>
-
-    <th:block layout:fragment="page_scripts">
-        <script th:src="@{/js/admin/recipe-categories-list.js}"></script>
-    </th:block> 
 </body>
 </html>
