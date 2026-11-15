@@ -31,24 +31,13 @@ public class GlobalMenuAdvice {
         // 2. Handle Logged-In Authenticated User Base Links
         menuItems.add(new MenuItem("Home", "/dashboard"));
         menuItems.add(new MenuItem("Search", "/search"));
+        menuItems.add(new MenuItem("Profile", "/profile"));
 
         // 3. Collect Authorities for Permission-Based Links
         if (auth.getAuthorities() != null) {
             Set<String> authorities = auth.getAuthorities().stream()
                     .map(a -> a.getAuthority())
                     .collect(Collectors.toSet());
-
-            // Build isolated child options for operational user management
-            List<MenuItem> userChildren = new ArrayList<>();
-
-            // Base culinary actions available to standard users or creators
-            userChildren.add(new MenuItem("Create New Recipe", "/recipes/create"));
-            userChildren.add(new MenuItem("My Cookbook", "/recipes/my-list"));
-            userChildren.add(new MenuItem("My Stats", "/recipes/my-stats"));
-            userChildren.add(new MenuItem("My Profile", "/profile"));
-            
-            // Map the complete Recipes Parent Dropdown
-            menuItems.add(new MenuItem("My Stuff", userChildren));
 
             // Build completely separate child options for technical System Administration
             List<MenuItem> adminChildren = new ArrayList<>();
