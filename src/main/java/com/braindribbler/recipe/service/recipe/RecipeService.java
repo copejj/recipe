@@ -41,7 +41,7 @@ public class RecipeService {
 
     @Transactional(readOnly = true)
     public long getRecipeCountByUserId(Integer userId) {
-        return recipeRepository.findByUserUserId(Long.valueOf(userId)).size();
+        return recipeRepository.countCookbookRecipes(userId);
     }
 
     @Transactional(readOnly = true)

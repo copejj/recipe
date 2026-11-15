@@ -32,32 +32,29 @@
 
         <div class="status-grid">
             <div class="status-item clickable-card">
-                <span class="status-icon">🍳</span>
+                <span class="status-icon">🔍</span>
                 <div class="status-info">
-                    <span class="status-label">Recipe Collection</span>
-                    <span class="status-value"><span th:text="${myRecipesCount}">0</span> Recipes Saved</span>
-                    <a th:href="@{/recipes/my-list}" 
-                        class="status-link stretched-link">View My Collection →</a>
+                    <span class="status-value">Looking for Ideas?</span>
+                    <a th:href="@{/search}"
+                        class="status-link stretched-link">Search Public Recipes →</a>
                 </div>
             </div>
 
             <div class="status-item clickable-card">
                 <span class="status-icon">➕</span>
                 <div class="status-info">
-                    <span class="status-label">Creation Studio</span>
-                    <span class="status-value">Add a New Recipe</span>
+                    <span class="status-value">Adding a New Idea?</span>
                     <a th:href="@{/recipes/create}"
-                        class="status-link stretched-link">Open Form Wizard →</a>
+                        class="status-link stretched-link">Create New Recipe →</a>
                 </div>
             </div>
 
             <div class="status-item clickable-card">
-                <span class="status-icon">🔍</span>
+                <span class="status-icon">🍳</span>
                 <div class="status-info">
-                    <span class="status-label">Discovery Hub</span>
-                    <span class="status-value">Search Public Catalog</span>
-                    <a th:href="@{/search}"
-                        class="status-link stretched-link">Find Inspiration →</a>
+                    <span class="status-value">Saved Favorite?</span>
+                    <a th:href="@{/recipes/my-list}" 
+                        class="status-link stretched-link">View <span th:text="${myRecipesCount}">0</span> Recipes Saved →</a>
                 </div>
             </div>
 
