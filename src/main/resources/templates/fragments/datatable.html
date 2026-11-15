@@ -2,7 +2,7 @@
 <html xmlns:th="http://thymeleaf.org">
 <head></head>
 <body>
-        <div th:fragment="genericTable(tableId, dataList, headerTemplate, rowTemplate)"
+    <div th:fragment="genericTable(tableId, dataList, headerTemplate, rowTemplate)"
          th:replace="~{::genericTableFull(${tableId}, ${dataList}, ${headerTemplate}, ${rowTemplate}, '', false, '[[0, &quot;asc&quot;]]')}">
     </div>
 
@@ -14,6 +14,10 @@
          th:replace="~{::genericTableFull(${tableId}, ${dataList}, ${headerTemplate}, ${rowTemplate}, ${customClass}, false, '[[0, &quot;asc&quot;]]')}">
     </div>
 
+    <div th:fragment="genericTableWithInit(tableId, dataList, headerTemplate, rowTemplate, customClass, hasInit)"
+         th:replace="~{::genericTableFull(${tableId}, ${dataList}, ${headerTemplate}, ${rowTemplate}, ${customClass}, ${hasInit}, '[[0, &quot;asc&quot;]]')}">
+    </div>
+
     <div th:fragment="genericTableFull(tableId, dataList, headerTemplate, rowTemplate, customClass, skipAutoInit, defaultOrder)"
          class="table-responsive-wrapper"
          style="margin-top: 24px;">
@@ -22,22 +26,22 @@
         <link rel="stylesheet" type="text/css" th:href="@{/css/fragments/datatable.css}" />
 
         <table th:id="${tableId}"
-            class="dataTable stripe hover row-border"
-            th:attr="data-order=${defaultOrder}"
-            th:classappend="${customClass != null and !customClass.isEmpty()} ? ' ' + ${customClass} : ''">
+               class="dataTable stripe hover row-border"
+               th:attr="data-order=${defaultOrder}"
+               th:classappend="${customClass != null and !customClass.isEmpty()} ? ' ' + ${customClass} : ''">
+
 
             <thead class="sticky-stack-item">
                 <!-- Dynamically inserts the headers passed from the parent component -->
                 <tr th:replace="${headerTemplate}"></tr>
             </thead>
-
             <tbody>
                 <!-- Iterates through the generalized collection -->
                 <th:block th:each="item, iterStat : ${dataList}">
-                    <tr th:replace="${rowTemplate}"></tr>
+                    <!-- Dynamically inserts the row configuration, passing the current iteration item -->
+                    <th:block th:replace="${rowTemplate}"></th:block>
                 </th:block>
             </tbody>
-
         </table>
 
         <!-- Self-Contained Initialization Script (skipped when custom JS manages the table) -->

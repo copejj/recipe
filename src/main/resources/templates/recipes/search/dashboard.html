@@ -79,7 +79,7 @@
         </div>
 
         <!-- Central DataTables Layout Component Integration Hook -->
-        <div th:replace="~{fragments/datatable :: genericTableFull(
+        <div th:replace="~{fragments/datatable :: genericTableWithInit(
             'generalCookbookTable',
             ${recipesIndexPool},
             ~{::recipeHeaders},
