@@ -90,7 +90,7 @@ public class IngredientService {
         ingredient.setGroceryCategory(category);
         ingredient.setCreatedByUser(creator);
         ingredient.setIsVerified(false);
-        ingredient.setClassification(classification != null ? classification : IngredientClassification.SOLID);
+        ingredient.setClassification(classification != null ? classification : IngredientClassification.DRY);
 
         return ingredientRepository.save(ingredient);
     }
@@ -158,7 +158,7 @@ public class IngredientService {
                 .orElseThrow(() -> new EntityNotFoundException("Grocery category section not found with ID: " + categoryId));
         ingredient.setGroceryCategory(category);
 
-        ingredient.setClassification(classification != null ? classification : com.braindribbler.recipe.domain.recipe.IngredientClassification.SOLID);
+        ingredient.setClassification(classification != null ? classification : IngredientClassification.DRY);
 
         return ingredientRepository.save(ingredient);
     }

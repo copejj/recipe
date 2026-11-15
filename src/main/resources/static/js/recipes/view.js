@@ -235,7 +235,7 @@ $(document).ready(function () {
             var baseUnitEquivalent = parseFloat($amountLabel.data("base-unit-equivalent"));
             var originalUnitId = parseInt($amountLabel.data("original-unit-id"));
             var isPromotable = $amountLabel.data("is-promotable") === true;
-            var classification = ($amountLabel.data("ingredient-classification") || "SOLID").toUpperCase().trim();
+            var classification = ($amountLabel.data("ingredient-classification") || "DRY").toUpperCase().trim();
 
             if (isNaN(baseAmount) || isNaN(baseTypeId) || isNaN(baseUnitEquivalent)) return;
 
@@ -258,54 +258,51 @@ $(document).ready(function () {
             // Only process promotions for volumetric liquids (1) and masses (2)
             if (baseTypeId === 1 || baseTypeId === 2) {
 
+                // In Metric mode, DRY volume items switch to Weight (baseTypeId = 2 -> Grams/Kilograms)
+                var effectiveTargetBaseTypeId = (targetMetricFlag && baseTypeId === 1 && classification === "DRY")
+                    ? 2
+                    : baseTypeId;
+
                 var candidates = poolMatrix.filter(function (m) {
-                    return m.baseTypeId === baseTypeId && m.isMetric === targetMetricFlag;
+                    return m.baseTypeId === effectiveTargetBaseTypeId && m.isMetric === targetMetricFlag;
                 });
 
-                // --- ROBUST CLASSIFICATION-DRIVEN FILTERING ---
-                // Prevents dry ingredients from accessing liquid volume units dynamically
-                if (classification === "DRY") {
-                    // Filter down to units explicitly configured for dry scaling (Teaspoon, Tablespoon, Cup)
-                    // This dynamically removes Pints, Quarts, Gallons, and Fluid Ounces regardless of database IDs
+                // Only restrict DRY volume units in IMPERIAL mode (tsp, tbsp, cup, pinch)
+                if (effectiveTargetBaseTypeId === 1 && !targetMetricFlag && classification === "DRY") {
                     candidates = candidates.filter(function (m) {
                         var nameLower = m.unitName.toLowerCase();
                         return nameLower.includes("teaspoon") ||
                             nameLower.includes("tablespoon") ||
                             nameLower.includes("cup") ||
-                            nameLower.includes("pinch"); 
+                            nameLower.includes("pinch");
                     });
-                } else if (classification === "WET") {
-                    // Wet ingredients should also gracefully restrict dry-exclusive scaling steps if required
-                    // Otherwise they retain access to teaspoons, cups, pints, quarts, gallons
                 }
 
-                // Sort largest unit rank descending (Gallon -> Quart -> Pint -> Cup -> Tbsp -> Tsp)
+                // Sort largest unit rank descending (Gallon -> Quart -> Pint -> Cup -> Tbsp -> Tsp, or L -> ml, kg -> g)
                 candidates.sort(function (a, b) { return b.scalingRank - a.scalingRank; });
 
-                // Find baseline fallback matching system
-                var baseUnitFallback = candidates.find(function (m) { return m.scalingRank === 1; });
+                // Find baseline fallback matching the active system (ml for metric volume, g for metric weight)
+                var baseUnitFallback = candidates.find(function (m) { return m.scalingRank === 1; }) || candidates[candidates.length - 1];
                 if (baseUnitFallback) {
                     finalTargetUnitText = baseUnitFallback.unitName;
                     finalDisplayQuantity = absoluteBaseUnitsSum / parseFloat(baseUnitFallback.baseUnitEquivalent);
                 }
 
-                // Check for dynamic size upgrades if unit is promotable
-                // Check for dynamic size upgrades if unit is promotable
-                if (isPromotable) {
+                // Check for dynamic size upgrades if unit is promotable OR if we are converting across systems
+                var originalIsMetric = originalUnitMeta ? Boolean(originalUnitMeta.isMetric) : false;
+                var isCrossSystemConversion = (originalIsMetric !== targetMetricFlag);
+
+                if (isPromotable || isCrossSystemConversion) {
                     var unitPromoted = false;
 
                     for (var i = 0; i < candidates.length; i++) {
                         var candidate = candidates[i];
                         var equivValue = parseFloat(candidate.baseUnitEquivalent);
-
-                        // Calculate total equivalent quantity relative to this candidate unit
                         var quantityInCandidateUnit = absoluteBaseUnitsSum / equivValue;
 
-                        // Extract the database-driven promotion floor threshold limit (default to 0.85 fallback)
                         var dynamicFloorThreshold = parseFloat(candidate.minPromotionFloor) || 0.85;
                         var satisfiesThreshold = false;
 
-                        // If the threshold is explicitly configured as a unit fraction (like 0.25 for Cups/Pounds)
                         if (dynamicFloorThreshold < 1.0 && dynamicFloorThreshold > 0.0 && dynamicFloorThreshold !== 0.85) {
                             satisfiesThreshold = (quantityInCandidateUnit >= dynamicFloorThreshold);
                         } else {
@@ -322,7 +319,8 @@ $(document).ready(function () {
                         }
                     }
 
-                    if (!unitPromoted && originalUnitMeta) {
+                    // Only revert to the original unit if we are STILL in the same measurement system
+                    if (!unitPromoted && !isCrossSystemConversion && originalUnitMeta) {
                         finalTargetUnitText = originalUnitMeta.unitName;
                         finalDisplayQuantity = totalScaledValue;
                     }
@@ -335,6 +333,7 @@ $(document).ready(function () {
             } else {
                 $amountLabel.text(formatToKitchenFraction(finalDisplayQuantity));
             }
+
 
             if ($unitLabel.length) {
                 // --- DATABASE-DRIVEN PLURALIZATION ENGINE ---

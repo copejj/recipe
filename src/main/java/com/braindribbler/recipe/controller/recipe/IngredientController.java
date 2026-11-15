@@ -33,7 +33,7 @@ public class IngredientController {
     @ResponseBody
     public ResponseEntity<?> quickAddIngredient(@RequestParam("name") String ingredientName,
             @RequestParam("groceryCategoryId") Integer groceryCategoryId,
-            @RequestParam(value = "classification", defaultValue = "SOLID") String classificationStr,
+            @RequestParam(value = "classification", defaultValue = "DRY") String classificationStr,
             @AuthenticationPrincipal RecipeUserDetails currentUser) {
         try {
             if (currentUser == null) {

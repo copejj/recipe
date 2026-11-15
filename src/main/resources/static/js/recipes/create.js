@@ -111,7 +111,9 @@ $(document).ready(function () {
             '        <option value="0.75">3/4</option>' +
             '      </select>' +
             '    </div>' +
-            '    <select class="form-input select-width-weight-medium" required>' + measurementOptions + '</select>' +
+            '    <select class="form-input select-width-weight-medium" disabled required>' +
+            '      <option value="">-- Unit --</option>' +
+            '    </select>' +
             '  </div>' +
             '  <div class="row-lane lane-three">' +
             '    <input type="text" class="form-input select-width-weight-large" placeholder="Note (e.g., melted, chilled)" />' +
@@ -143,10 +145,10 @@ $(document).ready(function () {
         activeSelectDropdown = $(this).closest('.ingredients-section').find(".ingredients-container .ingredient-row:last-child select").first();
         $("#quickIngredientName").val("");
         $("#quickGroceryCategoryId").val("");
-        $("#quickIngredientClassification").val("SOLID");
+        $("#quickIngredientClassification").val("DRY");
         
         $(".class-selector-card").removeClass("active");
-        $('.class-selector-card[data-value="SOLID"]').addClass("active");
+        $('.class-selector-card[data-value="DRY"]').addClass("active");
         
         $("#modal-feedback-msg").hide().text("");
         if (modal) modal.showModal();
@@ -185,77 +187,6 @@ $(document).ready(function () {
     });
 
     $("#closeQuickIngBtn").click(function () { if (modal) modal.close(); });
-
-    // --- REAL-TIME VALIDATION ENGINE ---
-    function validateStepIngredients() {
-        $(".ingredient-row").removeClass("row-error-highlight");
-        $(".ingredient-error-msg").remove();
-        var formIsValid = true;
-
-        $("#steps-container .step-card").each(function () {
-            var seenIngredients = {};
-            $(this).find(".ingredient-row").each(function () {
-                var $row = $(this);
-                var id = $row.find("select").eq(0).val();
-                if (!id) return;
-
-                if (seenIngredients[id]) {
-                    formIsValid = false;
-                    seenIngredients[id].addClass("row-error-highlight");
-                    $row.addClass("row-error-highlight");
-                    if ($row.next(".ingredient-error-msg").length === 0) {
-                        $row.after('<span class="ingredient-error-msg">⚠️ "' + $row.find("select").eq(0).find("option:selected").text() + '" is listed multiple times. Please combine rows.</span>');
-                    }
-                } else { seenIngredients[id] = $row; }
-            });
-        });
-        return formIsValid;
-    }
-
-    function validateRecipeForm(skipMetadata) {
-        $(".form-input-error, .select2-selection--single").removeClass("form-input-error");
-        $(".ingredient-error-msg, .field-error-msg").remove();
-        var isFormValid = true;
-
-        if (!skipMetadata) {
-            if ($("#title").length && $("#title").val().trim() === "") {
-                isFormValid = false; $("#title").addClass("form-input-error").after('<span class="field-error-msg">⚠️ Title required.</span>');
-            }
-            if ($("#servings").length && ($("#servings").val().trim() === "" || parseInt($("#servings").val()) <= 0)) {
-                isFormValid = false; $("#servings").addClass("form-input-error").after('<span class="field-error-msg">⚠️ Servings must be > 0.</span>');
-            }
-            if ($("#recipeVisibilityId").length && !$("#recipeVisibilityId").val()) {
-                isFormValid = false; $("#recipeVisibilityId").addClass("form-input-error").after('<span class="field-error-msg">⚠️ Visibility required.</span>');
-            }
-        }
-
-        $("#steps-container .step-card").each(function (idx) {
-            var $textarea = $(this).find("textarea");
-            if (!skipMetadata && $textarea.length && $textarea.val().trim() === "") {
-                isFormValid = false; $textarea.addClass("form-input-error").after('<span class="field-error-msg">⚠️ Step ' + (idx + 1) + ' text missing.</span>');
-            }
-
-            $(this).find(".ingredients-container .ingredient-row").each(function () {
-                var $row = $(this);
-                var empty = false;
-                if (!skipMetadata) {
-                    if (!$row.find("select").eq(0).val()) { $row.find(".select2-container .select2-selection--single").addClass("form-input-error"); empty = true; }
-                    
-                    // Validate Split Inputs: Fail validation if both Whole and Fraction values are set to zero
-                    var wholeVal = parseFloat($row.find(".whole-amount-input").val()) || 0;
-                    var fracVal = parseFloat($row.find(".fraction-dropdown-select").val()) || 0;
-                    if (wholeVal <= 0 && fracVal <= 0) { 
-                        $row.find(".whole-amount-input, .fraction-dropdown-select").addClass("form-input-error"); 
-                        empty = true; 
-                    }
-                    
-                    if (!$row.find("select.select-width-weight-medium").val()) { $row.find("select.select-width-weight-medium").addClass("form-input-error"); empty = true; }
-                    if (empty && $row.next(".field-error-msg").length === 0) { isFormValid = false; $row.after('<span class="field-error-msg">⚠️ Incomplete fields.</span>'); }
-                }
-            });
-        });
-        return isFormValid && validateStepIngredients();
-    }
 
     // --- REINDEXING LOGIC & SELECT2 RE-BINDING ---
     function reindexForm() {
@@ -370,34 +301,70 @@ $(document).ready(function () {
     // --- DYNAMIC UNIT FILTERING ENGINE ---
     function filterMeasurementsByIngredient($ingredientSelect) {
         var $measurementSelect = $ingredientSelect.closest(".ingredient-row").find("select.select-width-weight-medium");
-        
         var classification = $ingredientSelect.find("option:selected").attr("data-classification");
-        if (!classification) { $measurementSelect.html($('#measurement-options-pool').html()); return; }
 
-        var currentUnitValue = $measurementSelect.val(); var validOptionsArray = [];
+        if (!classification) {
+            $measurementSelect
+                .html('<option value="">-- Unit --</option>')
+                .val("")
+                .prop("disabled", true);
+            return;
+        }
+
+        $measurementSelect.prop("disabled", false);
+        // ... rest of your existing filtering & sorting logic ...
+
+        var currentUnitValue = $measurementSelect.val(); 
+        var validOptionsArray = [];
         var $masterOptions = $('<div>').append($('#measurement-options-pool').html()).find('option');
 
         $masterOptions.each(function () {
-            var $opt = $(this); var idAttr = $opt.attr('data-unit-id'); if (!idAttr) return;
-            var baseType = parseInt($opt.attr('data-base-type')); var unitId = parseInt(idAttr);
-            var isMetric = $opt.attr('data-is-metric') === 'true'; var matchesTrack = false;
+            var $opt = $(this); 
+            var idAttr = $opt.attr('data-unit-id'); 
+            if (!idAttr) return;
 
-            if (classification === "SOLID") matchesTrack = (baseType === 2 || baseType === 3 || (baseType === 4 && unitId !== 19));
-            else if (classification === "WET") matchesTrack = (baseType === 1 || baseType === 4);
-            else if (classification === "DRY") matchesTrack = ((baseType === 1 && [18, 1, 2, 3, 5].includes(unitId)) || baseType === 2 || (baseType === 4 && unitId !== 19));
+            var baseType = parseInt($opt.attr('data-base-type')); 
+            var unitId = parseInt(idAttr);
+            var isMetric = $opt.attr('data-is-metric') === 'true'; 
+            var matchesTrack = false;
 
-            if (matchesTrack && (baseType === 1 || baseType === 2) && isMetric) matchesTrack = false;
+            if (classification === "WET") {
+                // All non-metric volumes (including fl oz, pt, qt, gal, splash) + weight + count + to taste
+                matchesTrack = (baseType === 1 || baseType === 2 || baseType === 3 || baseType === 4);
+            } else {
+                // DRY (and fallback): small volumes (pinch, tsp, tbsp, cup) + weight + count + to taste (no splash)
+                matchesTrack = (
+                    (baseType === 1 && [18, 2, 3, 5].includes(unitId)) ||
+                    baseType === 2 ||
+                    baseType === 3 ||
+                    (baseType === 4 && unitId !== 19)
+                );
+            }
+
+            if (matchesTrack && (baseType === 1 || baseType === 2) && isMetric) {
+                matchesTrack = false;
+            }
             if (matchesTrack) validOptionsArray.push($opt);
         });
 
-        validOptionsArray.sort((a, b) => (parseInt($(a).attr('data-scaling-rank')) || 0) - (parseInt($(b).attr('data-scaling-rank')) || 0));
+        // Sort by baseType first (Volume -> Weight -> Count -> Text), then scalingRank
+        validOptionsArray.sort(function(a, b) {
+            var typeDiff = (parseInt($(a).attr('data-base-type')) || 0) - (parseInt($(b).attr('data-base-type')) || 0);
+            if (typeDiff !== 0) return typeDiff;
+            return (parseInt($(a).attr('data-scaling-rank')) || 0) - (parseInt($(b).attr('data-scaling-rank')) || 0);
+        });
+
         var $outputHTML = $('<select>').append('<option value="">-- Unit --</option>');
         $.each(validOptionsArray, function (i, $opt) { $outputHTML.append($opt); });
-        $measurementSelect.html($outputHTML.html()).val($measurementSelect.find('option[value="' + currentUnitValue + '"]').length > 0 ? currentUnitValue : "");
+        $measurementSelect.html($outputHTML.html()).val(
+            $measurementSelect.find('option[value="' + currentUnitValue + '"]').length > 0 ? currentUnitValue : ""
+        );
     }
 
     function filterExistingSavedRowsOnLoad() {
-        $(".ingredient-row select:first-child").each(function () { if ($(this).val()) filterMeasurementsByIngredient($(this)); });
+        $(".ingredient-row select.select-width-weight-large").each(function () {
+            filterMeasurementsByIngredient($(this));
+        });
     }
 
     // --- DELETION SAFETY ENGINE ---
@@ -498,6 +465,7 @@ $(document).ready(function () {
 
 
     // 2. The Hydration Logic: Rebuilds DOM nodes and populates saved values
+        // 2. The Hydration Logic: Rebuilds DOM nodes and populates saved values
     function restoreRecipeDraft(savedData) {
         if (!savedData || !savedData.structure) return;
 
@@ -506,12 +474,8 @@ $(document).ready(function () {
 
         // Loop through the tracked structure and spawn empty containers matching the draft
         $.each(savedData.structure, function(i, stepStruct) {
-            // Re-trigger your click logic programmatically to build clean step card clones
             var firstCardPool = $("#steps-container .step-card").length === 0;
             if (firstCardPool) {
-                // If container is empty, temporarily drop in master pool template step to clone from
-                var fallbackOptions = $('#ingredient-options-pool').html();
-                var fallbackUnits = $('#measurement-options-pool').html();
                 var initialStep = $('<div class="step-card form-group template-step-card-blueprint">' +
                     '<div class="step-card-header-bar"><h3 class="step-card-main-title">Step <span class="step-number-label">1</span></h3><button type="button" class="btn remove-step-btn btn-danger-action-pill">Remove Step</button></div>' +
                     '<div class="form-group"><label class="form-label">Instructions</label><textarea class="form-input" rows="2" required></textarea></div>' +
@@ -520,7 +484,6 @@ $(document).ready(function () {
                 $("#steps-container").append(initialStep);
             }
 
-            // Target your standard add-step button logic
             if (i > 0) {
                 var firstCard = $("#steps-container .step-card").first();
                 var stepClone = firstCard.clone();
@@ -530,11 +493,10 @@ $(document).ready(function () {
                 $("#steps-container").append(stepClone);
             }
 
-            // Spawn ingredient rows inside this step
+            // Spawn ingredient rows inside this step (unit dropdown starts disabled with "-- Unit --")
             var currentStepCard = $("#steps-container .step-card").eq(i);
             var ingContainer = currentStepCard.find(".ingredients-container");
             var ingredientOptions = $('#ingredient-options-pool').html();
-            var measurementOptions = $('#measurement-options-pool').html();
 
             for (var j = 0; j < stepStruct.ingredientCount; j++) {
                 var newRowHtml = 
@@ -556,7 +518,9 @@ $(document).ready(function () {
                     '        <option value="0.75">3/4</option>' +
                     '      </select>' +
                     '    </div>' +
-                    '    <select class="form-input select-width-weight-medium" required>' + measurementOptions + '</select>' +
+                    '    <select class="form-input select-width-weight-medium" disabled required>' +
+                    '      <option value="">-- Unit --</option>' +
+                    '    </select>' +
                     '  </div>' +
                     '  <div class="row-lane lane-three">' +
                     '    <input type="text" class="form-input select-width-weight-large" placeholder="Note (e.g., melted, chilled)" />' +
@@ -570,29 +534,32 @@ $(document).ready(function () {
         // Reindex input names so they match arrays sequentially before assigning data
         reindexForm();
 
-        // Populate fields with the matching key value strings
+        var deferredMeasurementFields = [];
+
+        // Pass 1: Populate all non-measurement fields first (including ingredient selects)
         $.each(savedData.formData, function(i, field) {
-            if (field.name === "recipeId" || field.name === "actionType") return; // Skip unique system tokens
-            
+            if (field.name === "recipeId" || field.name === "actionType") return;
+
+            if (field.name.endsWith(".measurementId")) {
+                deferredMeasurementFields.push(field);
+                return;
+            }
+
             var $input = $('[name="' + field.name + '"]');
-            
+
             if ($input.is("select")) {
                 $input.val(field.value).trigger('change.select2');
             } 
-            // NEW LOGIC LAYER: Intercept the combined amount fields being reloaded
             else if ($input.hasClass("combined-decimal-amount")) {
-                // Set the actual backend hidden field value
                 $input.val(field.value);
-                
+
                 var totalAmount = parseFloat(field.value) || 0;
                 var wholePart = Math.floor(totalAmount);
                 var decimalPart = Math.round((totalAmount - wholePart) * 1000) / 1000;
-                
-                // Find adjacent wrapper fields
+
                 var $wrapper = $input.closest(".amount-wrapper");
-                $wrapper.find(".whole-amount-input").val(wholePart);
-                
-                // Fallback fuzzy selection matching target decimal patterns
+                $wrapper.find(".whole-amount-input").val(wholePart > 0 ? wholePart : "");
+
                 var targetedOption = "0";
                 if (decimalPart >= 0.08 && decimalPart <= 0.18) targetedOption = "0.125";
                 else if (decimalPart > 0.18 && decimalPart <= 0.29) targetedOption = "0.25";
@@ -601,11 +568,10 @@ $(document).ready(function () {
                 else if (decimalPart > 0.58 && decimalPart <= 0.71) targetedOption = "0.667";
                 else if (decimalPart > 0.71 && decimalPart <= 0.90) targetedOption = "0.75";
                 else if (decimalPart > 0.90) {
-                    // Edge case handling calculation: Round up if total overflowed closer to next unit
                     $wrapper.find(".whole-amount-input").val(wholePart + 1);
                     targetedOption = "0";
                 }
-                
+
                 $wrapper.find(".fraction-dropdown-select").val(targetedOption);
             } 
             else {
@@ -613,7 +579,17 @@ $(document).ready(function () {
             }
         });
 
+        // Pass 2: Filter and enable unit dropdowns based on the restored ingredients
         filterExistingSavedRowsOnLoad();
+
+        // Pass 3: Now that valid options exist in each enabled unit dropdown, set their saved values
+        $.each(deferredMeasurementFields, function(i, field) {
+            var $unitSelect = $('[name="' + field.name + '"]');
+            if ($unitSelect.length && !$unitSelect.prop("disabled")) {
+                $unitSelect.val(field.value);
+            }
+        });
+
         showToast("Draft restored successfully!", true);
     }
 
@@ -808,4 +784,140 @@ $(document).ready(function () {
         });
     });
 
+        // Helper to attach a light-yellow speech bubble pointing directly to an element
+    function attachSpeechBubble($target, message, alignRight) {
+        $target.addClass("form-input-error");
+        var alignClass = alignRight ? " bubble-align-right" : "";
+        var $bubble = $('<div class="field-speech-bubble' + alignClass + '">💬 ' + message + '</div>');
+        $target.after($bubble);
+    }
+
+    // Clear all speech bubbles and highlights cleanly
+    function clearValidationBubbles() {
+        $(".form-input-error, .select2-selection--single").removeClass("form-input-error");
+        $(".ingredient-row").removeClass("row-error-highlight");
+        $(".field-speech-bubble, .ingredient-error-msg, .field-error-msg").remove();
+    }
+
+    // Auto-clear a field's speech bubble as soon as the user interacts with/fixes it
+    $(document).on("input change select2:select", "#recipeForm input, #recipeForm textarea, #recipeForm select", function () {
+        var $el = $(this);
+        if ($el.hasClass("form-input-error")) {
+            $el.removeClass("form-input-error");
+            $el.next(".field-speech-bubble").fadeOut(150, function () { $(this).remove(); });
+        }
+        // Handle Select2 container highlight removal
+        if ($el.hasClass("select-width-weight-large") && $el.is("select")) {
+            var $s2Selection = $el.next(".select2-container").find(".select2-selection--single");
+            if ($s2Selection.hasClass("form-input-error")) {
+                $s2Selection.removeClass("form-input-error");
+                $el.closest(".lane-one").find(".field-speech-bubble").fadeOut(150, function () { $(this).remove(); });
+            }
+        }
+        // Handle Split Amount (Whole + Fraction) highlight removal
+        if ($el.hasClass("whole-amount-input") || $el.hasClass("fraction-dropdown-select")) {
+            var $wrapper = $el.closest(".amount-wrapper");
+            $wrapper.find(".whole-amount-input, .fraction-dropdown-select").removeClass("form-input-error");
+            $wrapper.find(".field-speech-bubble").fadeOut(150, function () { $(this).remove(); });
+        }
+    });
+
+    // --- REAL-TIME VALIDATION ENGINE ---
+    function validateStepIngredients() {
+        $(".ingredient-row").removeClass("row-error-highlight");
+        $(".ingredient-error-msg").remove();
+        var formIsValid = true;
+
+        $("#steps-container .step-card").each(function () {
+            var seenIngredients = {};
+            $(this).find(".ingredient-row").each(function () {
+                var $row = $(this);
+                var $ingSelect = $row.find("select.select-width-weight-large");
+                var id = $ingSelect.val();
+                if (!id) return;
+
+                if (seenIngredients[id]) {
+                    formIsValid = false;
+                    var $s2Selection = $ingSelect.next(".select2-container").find(".select2-selection--single");
+                    $s2Selection.addClass("form-input-error");
+                    var ingName = $ingSelect.find("option:selected").text();
+                    if ($row.find(".lane-one .field-speech-bubble").length === 0) {
+                        $row.find(".lane-one").append(
+                            '<div class="field-speech-bubble ingredient-error-msg">💬 "' + ingName + '" is already in this step—combine them!</div>'
+                        );
+                    }
+                } else {
+                    seenIngredients[id] = $row;
+                }
+            });
+        });
+        return formIsValid;
+    }
+
+    function validateRecipeForm(skipMetadata) {
+        clearValidationBubbles();
+        var isFormValid = true;
+
+        if (!skipMetadata) {
+            if ($("#title").length && $("#title").val().trim() === "") {
+                isFormValid = false;
+                attachSpeechBubble($("#title"), "Give your recipe a title!");
+            }
+            if ($("#servings").length && ($("#servings").val().trim() === "" || parseInt($("#servings").val()) <= 0)) {
+                isFormValid = false;
+                attachSpeechBubble($("#servings"), "Enter at least 1 serving.");
+            }
+            if ($("#recipeCategoryId").length && !$("#recipeCategoryId").val()) {
+                isFormValid = false;
+                attachSpeechBubble($("#recipeCategoryId"), "Pick a category.");
+            }
+            if ($("#recipeVisibilityId").length && !$("#recipeVisibilityId").val()) {
+                isFormValid = false;
+                attachSpeechBubble($("#recipeVisibilityId"), "Choose who can see this.");
+            }
+        }
+
+        $("#steps-container .step-card").each(function (idx) {
+            var $textarea = $(this).find("textarea");
+            if (!skipMetadata && $textarea.length && $textarea.val().trim() === "") {
+                isFormValid = false;
+                attachSpeechBubble($textarea, "Describe what to do in Step " + (idx + 1) + ".");
+            }
+
+            $(this).find(".ingredients-container .ingredient-row").each(function () {
+                var $row = $(this);
+                if (!skipMetadata) {
+                    var $ingSelect = $row.find("select.select-width-weight-large");
+                    var hasIngredient = !!$ingSelect.val();
+
+                    // 1. Check Ingredient Dropdown
+                    if (!hasIngredient) {
+                        isFormValid = false;
+                        var $s2Selection = $ingSelect.next(".select2-container").find(".select2-selection--single");
+                        $s2Selection.addClass("form-input-error");
+                        $row.find(".lane-one").append('<div class="field-speech-bubble">💬 Pick an ingredient first!</div>');
+                    }
+
+                    // 2. Check Split Amount (Whole + Fraction)
+                    var wholeVal = parseFloat($row.find(".whole-amount-input").val()) || 0;
+                    var fracVal = parseFloat($row.find(".fraction-dropdown-select").val()) || 0;
+                    if (wholeVal <= 0 && fracVal <= 0) {
+                        isFormValid = false;
+                        var $amountWrapper = $row.find(".amount-wrapper");
+                        $amountWrapper.find(".whole-amount-input, .fraction-dropdown-select").addClass("form-input-error");
+                        $amountWrapper.append('<div class="field-speech-bubble">💬 How much do you need?</div>');
+                    }
+
+                    // 3. Check Unit Dropdown (only flag separately if an ingredient is already selected)
+                    var $unitSelect = $row.find("select.select-width-weight-medium");
+                    if (hasIngredient && !$unitSelect.val()) {
+                        isFormValid = false;
+                        attachSpeechBubble($unitSelect, "Pick a unit!", true);
+                    }
+                }
+            });
+        });
+
+        return isFormValid && validateStepIngredients();
+    }
 });
