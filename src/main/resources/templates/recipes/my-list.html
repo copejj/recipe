@@ -37,7 +37,7 @@
             </div>
         </div>
 
-        <div th:replace="~{fragments/datatable :: genericTableFull(
+        <div th:replace="~{fragments/datatable :: genericTableWithInit(
             'generalCookbookTable', 
             ${recipes}, 
             ~{::recipeHeaders}, 
