@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz"
+<html xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
       layout:decorate="~{fragments/layout}"
       lang="en">
 <head>
@@ -12,11 +12,14 @@
 
 <body>
     <div layout:fragment="page-title"> Master Ingredient Management </div>
-    <p layout:fragment="page-subtitle"> View, modify, or remove verified ingredients globally active in the application database. </p>
+    <p layout:fragment="page-subtitle">
+        View, modify, or remove verified ingredients globally active in the application database.
+        Tap or click any ingredient to edit, retract, or delete it.
+    </p>
 
-    <div layout:fragment="action-tray" class="action-tray">
+    <div layout:fragment="action-tray" class="action-tray sticky-stack-item">
         <a th:href="@{/admin/metadata}" class="btn btn-secondary">← Metadata Dashboard</a>
-        <a th:href="@{/admin/metadata/ingredients/grocery-categories}" class="btn btn-secondary">🛒 Grocery Categories</a>
+        <a th:href="@{/admin/metadata/ingredients/grocery-categories}" class="btn btn-secondary"><span aria-hidden="true">🛒</span> Grocery Categories</a>
         <a th:href="@{/admin/metadata/ingredients/add}" class="btn btn--primary">+ Add Ingredient</a>
     </div>
 
@@ -26,14 +29,14 @@
             Ingredient successfully retracted from global view and returned to the moderation queue!
         </div>
         <div th:if="${param.updated}" class="alert-toast alert-toast--updated">
-            ✏️ Ingredient details updated successfully!
+            <span aria-hidden="true">✏️</span> Ingredient details updated successfully!
         </div>
         <div th:if="${param.deleted}" class="alert-toast alert-toast--deleted">
-            🗑️ Ingredient successfully purged from the global dictionary.
+            <span aria-hidden="true">🗑️</span> Ingredient successfully purged from the global dictionary.
         </div>
         <div th:if="${param.error}">
             <div th:if="${param.error == 'inUse'}" class="alert-toast alert-toast--error">
-                ⚠️ Relational Violation: This ingredient is currently bound to active recipe steps and cannot be
+                <span aria-hidden="true">⚠️</span> Relational Violation: This ingredient is currently bound to active recipe steps and cannot be
                 deleted! Try merging it instead.
             </div>
         </div>
@@ -48,7 +51,6 @@
 
                 <th:block th:fragment="ingredientHeaders">
                     <tr class="ingredients-header-row">
-                        <th style="min-width: 240px; text-align: left;">Actions</th>
                         <th style="text-align: left;">Name</th>
                         <th style="text-align: left;">Type</th>
                         <th style="text-align: left;">Category</th>
@@ -57,48 +59,30 @@
 
                 <!-- Define Row Structure -->
                 <th:block th:fragment="ingredientRow">
-                    <tr class="ingredients-data-row">
-                        <!-- Column 1: Core Action Fragments -->
-                        <td data-label="Actions">
-                            <div class="row-actions-deck">
-                                <!-- ACTION 1: CENTRAL EDIT LINK -->
-                                <a th:replace="~{fragments/actions :: editLink(targetUrl=@{/admin/metadata/ingredients/edit/{id}(id=${item.ingredientId})})}"></a>
+                    <tr class="ingredients-data-row clickable-admin-row"
+                        th:data-href="@{/admin/metadata/ingredients/edit/{id}(id=${item.ingredientId})}">
 
-                                <!-- ACTION 2: DEDICATED UNPUBLISH CONFIRMATION CONTROLLER -->
-                                <button th:replace="~{fragments/actions :: unpublishConfBtn(
-                                    targetFormId='retractForm-' + ${item.ingredientId},
-                                    confirmMessage='Retract this ingredient from the public pool and send it back to moderation?'
-                                )}"></button>
-
-                                <!-- ACTION 3: DEDICATED DELETE CONFIRMATION CONTROLLER -->
-                                <button th:replace="~{fragments/actions :: deleteConfBtn(
-                                    targetFormId='deleteForm-' + ${item.ingredientId},
-                                    confirmMessage='Are you sure you want to permanently delete this ingredient from the system? This cannot be undone.'
-                                )}"></button>
-                            </div>
-
-                            <!-- Safe Zone Form Placement: Completely isolated from layout styling constraints -->
-                            <form th:id="'retractForm-' + ${item.ingredientId}"
-                                th:action="@{/admin/metadata/ingredients/retract/{id}(id=${item.ingredientId})}" method="post"
-                                style="display:none; width:0; height:0; margin:0; padding:0; position:absolute;"></form>
-                            <form th:id="'deleteForm-' + ${item.ingredientId}"
-                                th:action="@{/admin/metadata/ingredients/delete/{id}(id=${item.ingredientId})}" method="post"
-                                style="display:none; width:0; height:0; margin:0; padding:0; position:absolute;"></form>
+                        <!-- Column 1: Clickable Ingredient Name -->
+                        <td data-label="Name">
+                            <a th:href="@{/admin/metadata/ingredients/edit/{id}(id=${item.ingredientId})}"
+                               th:text="${item.ingredientName}"
+                               class="ingredient-title-link">Water</a>
                         </td>
 
-                        <!-- Column 2: Core Data Content Elements -->
-                        <td data-label="Name"><strong class="ingredient-name-cell" th:text="${item.ingredientName}">Water</strong></td>
-                        <td data-label="Type"><span class="classification-badge" th:text="${item.classification.name()}">SOLID</span></td>
-                        <td data-label="Category"><span class="category-badge"
-                                th:text="${item.groceryCategory != null ? item.groceryCategory.categoryName : 'Unassigned'}">Beverages</span>
+                        <!-- Column 2: Scaling Track Classification -->
+                        <td data-label="Type">
+                            <span class="classification-badge" th:text="${item.classification.name()}">SOLID</span>
+                        </td>
+
+                        <!-- Column 3: Grocery Section Category -->
+                        <td data-label="Category">
+                            <span class="category-badge"
+                                  th:text="${item.groceryCategory != null ? item.groceryCategory.categoryName : 'Unassigned'}">Beverages</span>
                         </td>
                     </tr>
                 </th:block>
             </div>
         </div>
     </main>
-    <th:block layout:fragment="page_scripts">
-        <script th:src="@{/js/admin/ingredients-list.js}"></script>
-    </th:block> 
 </body>
 </html>

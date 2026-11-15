@@ -1,31 +1,51 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz"
+<html xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
       layout:decorate="~{fragments/layout}"
       lang="en">
 <head>
     <title>Edit Recipe Category</title>
-    <link rel="stylesheet" th:href="@{/css/admin/ingredients-edit.css}" />
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" th:href="@{/css/admin/ingredients-edit.css}" />
+    </th:block>
 </head>
 
 <body>
     <div layout:fragment="page-title"> Modify Category Label </div>
     <p layout:fragment="page-subtitle"> Update global system lookup properties or fix structural errors for this recipe category taxonomy definition element.</p>
+
+    <div layout:fragment="action-tray" class="action-tray sticky-stack-item">
+        <a th:href="@{/admin/metadata/recipes/categories}" class="btn btn-secondary">← Recipe Category Management</a>
+    </div>
+
     <main layout:fragment="content">
-        <div th:replace="~{fragments/actions :: backTray(targetUrl=@{/admin/metadata/recipes/categories}, label='Recipe Category Management')}"></div>
         <form th:action="@{/admin/metadata/recipes/categories/update/{id}(id=${category.recipeCategoryId})}"
               th:object="${category}" method="post" class="ingredient-entry-form">
 
-            <!-- FIELD 2: CATEGORY UNIQUE STRING LABELLING INPUT BOX -->
+            <!-- FIELD 1: CATEGORY UNIQUE STRING LABELLING INPUT BOX -->
             <div class="form-field-group">
                 <label for="categoryName">Updated Category Label Name</label>
                 <input type="text" id="categoryName" th:field="*{name}" class="form-input" required />
             </div>
 
             <!-- ACTIONS FOOTER BUTTON SECTIONS GRID -->
-            <div class="form-actions-tray">
+            <div class="form-actions-group">
                 <button th:replace="~{fragments/actions :: saveBtn(itemId=${category.recipeCategoryId})}">Save Changes</button>
+
+                <div class="form-actions-delete">
+                    <button th:replace="~{fragments/actions :: deleteConfBtn(
+                        targetFormId='deleteRecipeCatForm-' + ${category.recipeCategoryId},
+                        confirmMessage='Are you sure you want to permanently drop this recipe category label taxonomy entry? This cannot be undone.'
+                    )}"></button>
+                </div>
             </div>
+        </form>
+
+        <!-- Isolated Delete Form (kept outside the Update form so forms are never nested) -->
+        <form th:id="'deleteRecipeCatForm-' + ${category.recipeCategoryId}"
+              th:action="@{/admin/metadata/recipes/categories/delete/{id}(id=${category.recipeCategoryId})}"
+              method="post"
+              style="display:none;">
         </form>
     </main>
 </body>

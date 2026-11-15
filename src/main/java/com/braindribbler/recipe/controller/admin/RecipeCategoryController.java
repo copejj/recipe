@@ -30,7 +30,7 @@ public class RecipeCategoryController {
         if (category.getName() != null && !category.getName().trim().isEmpty()) {
             recipeCategoryService.saveCategory(category);
         }
-        return "redirect:/admin/metadata/recipes/categories";
+        return "redirect:/admin/metadata/recipes/categories?created=true";
     }
 
     @GetMapping("/edit/{id}")
@@ -45,12 +45,12 @@ public class RecipeCategoryController {
     public String updateCategory(@PathVariable("id") Integer id, @ModelAttribute("category") RecipeCategory category) {
         category.setRecipeCategoryId(id);
         recipeCategoryService.saveCategory(category);
-        return "redirect:/admin/metadata/recipes/categories";
+        return "redirect:/admin/metadata/recipes/categories?updated=true";
     }
 
-    @GetMapping("/delete/{id}")
+    @PostMapping("/delete/{id}")
     public String deleteCategory(@PathVariable("id") Integer id) {
         recipeCategoryService.deleteCategoryById(id);
-        return "redirect:/admin/metadata/recipes/categories";
+        return "redirect:/admin/metadata/recipes/categories?deleted=true";
     }
 }

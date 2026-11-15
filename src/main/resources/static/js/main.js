@@ -42,6 +42,11 @@ document.addEventListener("DOMContentLoaded", () => {
             localStorage.removeItem("active_cooking_recipe");
         } catch (e) { /* Ignore storage errors */ }
     });
+
+    // 4. Calculate stacked offsets for sticky headers (.action-tray + DataTable thead)
+    updateStickyStack();
+    window.addEventListener("resize", updateStickyStack);
+    $(document).on("draw.dt", updateStickyStack);
 });
 
 function formatDisplayTimestamps() {
@@ -68,3 +73,33 @@ function formatDisplayTimestamps() {
         }
     });
 }
+
+function updateStickyStack() {
+    // Automatically includes every .action-tray and every <thead class="sticky-stack-item"> in top-to-bottom order
+    const items = document.querySelectorAll(".action-tray, .sticky-stack-item");
+    if (!items.length) return;
+
+    let offsetFromTop = 0;
+
+    items.forEach((el, index) => {
+        // Skip hidden elements (such as thead on mobile screens or empty trays)
+        if (el.offsetParent === null) return;
+
+        el.style.zIndex = String(100 - index);
+        el.style.top = offsetFromTop + "px";
+        offsetFromTop += el.offsetHeight;
+    });
+}
+
+$(document).on("click", ".clickable-admin-row", function (event) {
+    // Ignore clicks on native links or buttons so they work normally
+    if ($(event.target).closest("a, button").length) return;
+
+    // Ignore click if the user is selecting text to copy
+    if (window.getSelection && window.getSelection().toString().length > 0) return;
+
+    const href = $(this).data("href");
+    if (href) {
+        window.location.href = href;
+    }
+});

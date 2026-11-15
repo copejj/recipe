@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz"
+<html xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
       layout:decorate="~{fragments/layout}"
       lang="en">
 <head>
@@ -12,120 +12,71 @@
 
 <body>
     <h1 layout:fragment="page-title">Grocery Category Management</h1>
-    <p layout:fragment="page-subtitle">Organize and weigh store aisle display sequencing vectors to future-proof smart sorting shopping lists.</p>
+    <p layout:fragment="page-subtitle">
+        Organize and weigh store aisle display sequencing vectors to future-proof smart sorting shopping lists.
+        Tap or click any aisle to rename, reorder, or delete it.
+    </p>
     
-    <div layout:fragment="action-tray" class="action-tray">
+    <div layout:fragment="action-tray" class="action-tray sticky-stack-item">
         <a th:href="@{/admin/metadata}" class="btn btn-secondary">← Metadata Dashboard</a>
-        <a th:href="@{/admin/metadata/ingredients/list}" class="btn btn-secondary">← Master Ingredients</a>
-    </div>
-
-    <div layout:fragment="header-grid" class="header-grid">
-        <form th:action="@{/admin/metadata/ingredients/grocery-categories/add}" method="post">
-            <div class="add-category-bar">
-                <div class="input-wrapper--name">
-                    <input type="text" name="categoryName" class="form-input"
-                        placeholder="New Aisle Name (e.g., Produce, Bakery, Dairy)" required />
-                </div>
-                <div class="input-wrapper--weight">
-                    <input type="number" name="displayOrder" class="form-input" placeholder="Weight" value="10"
-                        required />
-                </div>
-                <button type="submit" class="btn btn--primary">+ Add Aisle</button>
-            </div>
-        </form>
+        <a th:href="@{/admin/metadata/ingredients/list}" class="btn btn-secondary"><span aria-hidden="true">←</span> Master Ingredients</a>
+        <a th:href="@{/admin/metadata/ingredients/grocery-categories/edit}" class="btn btn--primary">+ Add Aisle</a>
     </div>
 
     <main layout:fragment="content">
-
         <!-- Feedback Alert Status Toasts -->
         <div th:if="${param.created}" class="alert-toast alert-toast--success">
             New grocery category created successfully!
         </div>
         <div th:if="${param.updated}" class="alert-toast alert-toast--success">
-            Grocery categories saved!
+            <span aria-hidden="true">✏️</span> Grocery category updated successfully!
+        </div>
+        <div th:if="${param.deleted}" class="alert-toast alert-toast--deleted">
+            <span aria-hidden="true">🗑️</span> Grocery aisle category deleted successfully!
         </div>
         <div th:if="${param.error != null and param.error == 'inUse'}" class="alert-toast alert-toast--warning">
-            Relational Warning: Grocery category holds active mapped ingredients and cannot be dropped!
+            <span aria-hidden="true">⚠️</span> Relational Warning: Grocery category holds active mapped ingredients and cannot be dropped!
         </div>
 
-        <!-- DATA REPLACEMENT INDEX GRID MATRIX (DATATABLE SWAP) -->
+        <!-- DATA REPLACEMENT INDEX GRID MATRIX -->
         <div class="admin-table-wrapper">
-            <form th:action="@{/admin/metadata/ingredients/grocery-categories/save-all}" th:object="${formWrapper}" method="post">
-
-                <div th:replace="~{fragments/datatable :: genericTable(
-                    tableId='masterCategoriesTable',
-                    dataList=${formWrapper.items},
-                    headerTemplate=~{::categoryHeaders},
-                    rowTemplate=~{::categoryRow}
-                )}">
-
-                    <!-- Define Header Structure -->
-                    <th:block th:fragment="categoryHeaders">
-                        <tr class="categories-header-row">
-                            <th style="text-align: left;">Actions</th>
-                            <th>Order</th>
-                            <th>Name</th>
-                        </tr>
-                    </th:block>
-
-                    <!-- Define Row Structure -->
-                    <th:block th:fragment="categoryRow">
-                        <tr class="categories-data-row">
-
-                            <!-- Column 1: Actions -->
-                            <td data-label="Actions">
-                                <div class="row-actions-deck">
-                                    <button th:replace="~{fragments/actions :: deleteConfBtn(
-                                        targetFormId='deleteCatForm-' + ${item.groceryCategoryId},
-                                        confirmMessage='Are you sure you want to permanently delete this grocery aisle category? This cannot be undone.'
-                                    )}"></button>
-                                </div>
-                            </td>
-
-                            <!-- Column 2: Sequence display order weight input -->
-                            <td data-label="Order" th:data-order="${item.displayOrder}">
-                                <span style="display: none;" th:text="${item.displayOrder}">0</span>
-
-                                <!-- We keep names index-free here so Thymeleaf compiles without error -->
-                                <input type="hidden" data-name="groceryCategoryId" th:value="${item.groceryCategoryId}" class="data-field"/>
-                                <input type="hidden" data-name="categoryName" th:value="${item.categoryName}" class="data-field" />
-                                <input type="number" data-name="displayOrder" th:value="${item.displayOrder}" class="data-field form-input display-weight-input" required />
-
-                            </td>
+            <div th:replace="~{fragments/datatable :: genericTableWithOrder(
+                tableId='masterCategoriesTable',
+                dataList=${formWrapper.items},
+                headerTemplate=~{::categoryHeaders},
+                rowTemplate=~{::categoryRow},
+                defaultOrder='[[1, &quot;asc&quot;]]'
+            )}">
 
 
-                            <!-- Column 3: Name Display -->
-                            <td data-label="Name" th:data-order="${item.categoryName}">
-                                <span style="display: none;" th:text="${item.categoryName}">Category</span>
-                                <strong class="category-title-text" th:text="${item.categoryName}">Produce</strong>
-                            </td>
+                <!-- Define Header Structure -->
+                <th:block th:fragment="categoryHeaders">
+                    <tr class="categories-header-row">
+                        <th style="text-align: left;">Name</th>
+                        <th>Order</th>
+                    </tr>
+                </th:block>
 
-                        </tr>
-                    </th:block>
+                <!-- Define Row Structure -->
+                <th:block th:fragment="categoryRow">
+                    <tr class="categories-data-row clickable-admin-row"
+                        th:data-href="@{/admin/metadata/ingredients/grocery-categories/edit/{id}(id=${item.groceryCategoryId})}">
 
-                </div>
+                        <!-- Column 1: Clickable Name Display -->
+                        <td data-label="Name">
+                            <a th:href="@{/admin/metadata/ingredients/grocery-categories/edit/{id}(id=${item.groceryCategoryId})}"
+                               th:text="${item.categoryName}"
+                               class="category-title-link">Produce</a>
+                        </td>
 
-                <!-- Global Bulk Save Action Tray Execution Trigger -->
-                <div class="bulk-footer-tray">
-                    <button type="submit" class="btn btn--primary">
-                        Save Updates
-                    </button>
-                </div>
+                        <!-- Column 2: Read-Only Display Order Weight -->
+                        <td data-label="Order" th:text="${item.displayOrder}">10</td>
 
-            </form>
+                    </tr>
+                </th:block>
+
+            </div>
         </div>
-
-        <!-- SAFE PLACEMENT: Standalone single-delete forms decoupled from DataTables parsing rows -->
-        <th:block th:each="item : ${formWrapper.items}">
-            <form th:id="'deleteCatForm-' + ${item.groceryCategoryId}"
-                  th:action="@{/admin/metadata/ingredients/grocery-categories/delete/{id}(id=${item.groceryCategoryId})}"
-                  method="post" style="display:none;">
-            </form>
-        </th:block>
     </main>
-
-    <th:block layout:fragment="page_scripts">
-        <script th:src="@{/js/admin/grocery-categories-list.js}"></script>
-    </th:block> 
 </body>
 </html>
