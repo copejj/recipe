@@ -44,7 +44,7 @@ public class Ingredient {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM) // <-- Add this line
     @Column(name = "classification", nullable = false)
-    private IngredientClassification classification = IngredientClassification.SOLID;
+    private IngredientClassification classification = IngredientClassification.DRY;
 
     public Ingredient() {
     }

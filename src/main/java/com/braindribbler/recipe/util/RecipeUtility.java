@@ -1,6 +1,7 @@
 package com.braindribbler.recipe.util;
 
 import com.braindribbler.recipe.domain.recipe.GroceryCategory;
+import com.braindribbler.recipe.domain.recipe.IngredientClassification;
 import com.braindribbler.recipe.domain.recipe.Measurement;
 import com.braindribbler.recipe.domain.recipe.Recipe;
 import com.braindribbler.recipe.domain.recipe.RecipeStepIngredient;
@@ -118,9 +119,9 @@ public class RecipeUtility {
                 ));
     }
 
-    /**
+        /**
      * Aggregates, normalizes, and auto-promotes multi-recipe ingredient batches
-     * driven entirely by your database is_promotable and is_metric configurations.
+     * driven by database base_type, is_promotable, is_metric, and classification rules.
      */
     public static Map<String, List<RecipeStepIngredient>> aggregateAndPromoteShoppingList(
             List<Recipe> recipes,
@@ -138,86 +139,91 @@ public class RecipeUtility {
                 .filter(item -> item.getIngredient() != null && item.getMeasurement() != null)
                 .toList();
 
-        Map<Integer, BigDecimal> ingredientBaseSums = new HashMap<>();
-        Map<Integer, Measurement> referenceMeasurements = new HashMap<>();
-        Map<Integer, List<String>> accumulatedNotes = new HashMap<>();
+        Map<String, BigDecimal> ingredientBaseSums = new HashMap<>();
+        Map<String, Measurement> referenceMeasurements = new HashMap<>();
+        Map<String, List<String>> accumulatedNotes = new HashMap<>();
+        Map<String, RecipeStepIngredient> sampleItems = new HashMap<>();
 
         for (RecipeStepIngredient item : flatIngredients) {
             Integer ingId = item.getIngredient().getIngredientId();
             Measurement unit = item.getMeasurement();
+            Integer baseTypeId = unit.getBaseType().getBaseTypeId();
+
+            // Combine Volume (1) and Weight (2) across compatible units;
+            // keep Count (3) and Text (4) separated by exact measurementId
+            String bucketKey = (baseTypeId.equals(1) || baseTypeId.equals(2))
+                    ? ingId + ":" + baseTypeId
+                    : ingId + ":" + baseTypeId + ":" + unit.getMeasurementId();
 
             BigDecimal amountBd = BigDecimal.valueOf(((Number) item.getAmount()).doubleValue());
             BigDecimal baseAmount = amountBd.multiply(unit.getBaseUnitEquivalent());
 
-            ingredientBaseSums.put(ingId, ingredientBaseSums.getOrDefault(ingId, BigDecimal.ZERO).add(baseAmount));
-            referenceMeasurements.put(ingId, unit);
+            ingredientBaseSums.put(
+                    bucketKey,
+                    ingredientBaseSums.getOrDefault(bucketKey, BigDecimal.ZERO).add(baseAmount)
+            );
+
+            // Prefer retaining a promotable measurement as the reference unit if mixed with non-promotable (e.g., Pinch + Cup)
+            Measurement existingRef = referenceMeasurements.get(bucketKey);
+            if (existingRef == null || (!Boolean.TRUE.equals(existingRef.getIsPromotable()) && Boolean.TRUE.equals(unit.getIsPromotable()))) {
+                referenceMeasurements.put(bucketKey, unit);
+            }
+
+            sampleItems.putIfAbsent(bucketKey, item);
 
             if (item.getIngredientNote() != null && !item.getIngredientNote().trim().isEmpty()) {
-                accumulatedNotes.computeIfAbsent(ingId, k -> new ArrayList<>()).add(item.getIngredientNote().trim());
+                accumulatedNotes.computeIfAbsent(bucketKey, k -> new ArrayList<>()).add(item.getIngredientNote().trim());
             }
         }
 
         List<RecipeStepIngredient> finalShoppingList = new ArrayList<>();
 
-        for (Map.Entry<Integer, BigDecimal> entry : ingredientBaseSums.entrySet()) {
-            Integer ingId = entry.getKey();
+        for (Map.Entry<String, BigDecimal> entry : ingredientBaseSums.entrySet()) {
+            String bucketKey = entry.getKey();
             BigDecimal totalBaseAmount = entry.getValue();
-            Measurement originalUnit = referenceMeasurements.get(ingId);
+            Measurement originalUnit = referenceMeasurements.get(bucketKey);
+            RecipeStepIngredient sample = sampleItems.get(bucketKey);
 
             Integer targetBaseTypeId = originalUnit.getBaseType().getBaseTypeId();
-            boolean isOriginalMetric = originalUnit.getIsMetric() != null ? originalUnit.getIsMetric() : false;
+            boolean isOriginalMetric = Boolean.TRUE.equals(originalUnit.getIsMetric());
+            boolean isDryIngredient = sample.getIngredient().getClassification() == IngredientClassification.DRY;
 
             Measurement optimizedTargetUnit = originalUnit;
-            BigDecimal scaledFinalAmount = totalBaseAmount;
+            BigDecimal scaledFinalAmount = totalBaseAmount.divide(originalUnit.getBaseUnitEquivalent(), 4, RoundingMode.HALF_UP);
 
-            if ((targetBaseTypeId.equals(1) || targetBaseTypeId.equals(2)) && originalUnit.getIsPromotable()) {
+            if ((targetBaseTypeId.equals(1) || targetBaseTypeId.equals(2)) && Boolean.TRUE.equals(originalUnit.getIsPromotable())) {
 
                 List<Measurement> candidateUnits = allMeasurementsPool.stream()
                         .filter(m -> m.getBaseType().getBaseTypeId().equals(targetBaseTypeId))
                         .filter(m -> {
-                            boolean isCandidateMetric = m.getIsMetric() != null ? m.getIsMetric() : false;
-                            return m.getIsPromotable() && (isCandidateMetric == isOriginalMetric);
+                            boolean isCandidateMetric = Boolean.TRUE.equals(m.getIsMetric());
+                            return Boolean.TRUE.equals(m.getIsPromotable()) && (isCandidateMetric == isOriginalMetric);
                         })
+                        // Prevent DRY ingredients from promoting into liquid-only volumes (Pint=6, Quart=7, Gallon=9)
+                        .filter(m -> !(isDryIngredient && targetBaseTypeId.equals(1) && List.of(6, 7, 9).contains(m.getMeasurementId())))
                         .sorted((m1, m2) -> Short.compare(m2.getScalingRank(), m1.getScalingRank()))
                         .toList();
 
                 for (Measurement candidate : candidateUnits) {
-                    String unitText = candidate.getUnitName().toLowerCase().trim();
+                    BigDecimal promotionFloor = (candidate.getMinPromotionFloor() != null && candidate.getMinPromotionFloor().compareTo(BigDecimal.ZERO) > 0)
+                            ? candidate.getMinPromotionFloor()
+                            : BigDecimal.valueOf(0.85);
 
-                    if (unitText.equals("qt") && totalBaseAmount.compareTo(BigDecimal.valueOf(946.352946)) < 0)
-                        continue;
-                    if (unitText.equals("gal") && totalBaseAmount.compareTo(BigDecimal.valueOf(3785.411784)) < 0)
-                        continue;
-
-                    BigDecimal threshold = candidate.getBaseUnitEquivalent().multiply(BigDecimal.valueOf(0.85));
+                    BigDecimal threshold = candidate.getBaseUnitEquivalent().multiply(promotionFloor);
 
                     if (totalBaseAmount.compareTo(threshold) >= 0) {
                         optimizedTargetUnit = candidate;
-                        scaledFinalAmount = totalBaseAmount.divide(candidate.getBaseUnitEquivalent(), 4,
-                                RoundingMode.HALF_UP);
+                        scaledFinalAmount = totalBaseAmount.divide(candidate.getBaseUnitEquivalent(), 4, RoundingMode.HALF_UP);
                         break;
                     }
                 }
-            } else {
-                optimizedTargetUnit = originalUnit;
-                scaledFinalAmount = totalBaseAmount.divide(originalUnit.getBaseUnitEquivalent(), 4,
-                        RoundingMode.HALF_UP);
-            }
-
-            if (optimizedTargetUnit.equals(originalUnit)) {
-                scaledFinalAmount = totalBaseAmount.divide(originalUnit.getBaseUnitEquivalent(), 4, RoundingMode.HALF_UP);
             }
 
             RecipeStepIngredient shoppingItem = new RecipeStepIngredient();
-            RecipeStepIngredient sample = flatIngredients.stream()
-                    .filter(i -> i.getIngredient().getIngredientId().equals(ingId))
-                    .findFirst()
-                    .orElse(flatIngredients.get(0));
-
             shoppingItem.setIngredient(sample.getIngredient());
             shoppingItem.setMeasurement(optimizedTargetUnit);
 
-            List<String> notes = accumulatedNotes.get(ingId);
+            List<String> notes = accumulatedNotes.get(bucketKey);
             if (notes != null && !notes.isEmpty()) {
                 String joinedNotes = notes.stream()
                         .distinct()
@@ -246,7 +252,8 @@ public class RecipeUtility {
                         entry -> {
                             List<RecipeStepIngredient> aisleIngredients = entry.getValue();
                             aisleIngredients.sort(Comparator.comparing(
-                                    item -> item.getIngredient().getIngredientName().toLowerCase()));
+                                    (RecipeStepIngredient item) -> item.getIngredient().getIngredientName().toLowerCase())
+                                    .thenComparingInt(item -> item.getMeasurement().getBaseType().getBaseTypeId()));
                             return aisleIngredients;
                         },
                         (oldValue, newValue) -> oldValue,

@@ -54,7 +54,7 @@ public class IngredientAdminController {
             @PathVariable("id") Integer ingredientId,
             @RequestParam(value = "updatedName", required = false) String updatedName,
             @RequestParam(value = "updatedCategoryId", required = false) Integer updatedCategoryId,
-            @RequestParam(value = "classification", defaultValue = "SOLID") String classificationStr) {
+            @RequestParam(value = "classification", defaultValue = "DRY") String classificationStr) {
         try {
             IngredientClassification classification = IngredientClassification.valueOf(classificationStr.toUpperCase());
             ingredientService.approveAndModifyIngredient(ingredientId, updatedName, updatedCategoryId, classification);
