@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" lang="en">
+<body>
+    <th:block th:fragment="user-stats-panel">
+        <div th:replace="~{fragments/recipe-stats :: fullStatsDashboard('my', ${recipeStats}, ${recipeBreakdown}, ${savedRecipes})}"></div>
+    </th:block>
+</body>
+</html>
