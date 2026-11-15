@@ -103,7 +103,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, Integer> {
                 JOIN r.user author
                 JOIN r.savedByUsers sbu
                 WHERE sbu.userId = :userId
-                AND (author.userId = :userId OR r.recipeVisibility.visibilityName <> 'private')
+                AND (author.userId = :userId OR r.recipeVisibility.visibilityName in ('public', 'shared'))
                 ORDER BY r.title ASC
                 """)
         List<SavedRecipeSummary> findSavedRecipesByUserId(@Param("userId") Integer userId);
@@ -113,9 +113,20 @@ public interface RecipeRepository extends JpaRepository<Recipe, Integer> {
                 SELECT r FROM Recipe r
                 LEFT JOIN r.user u
                 WHERE u.userId = :userId
-                OR (r.recipeVisibility.visibilityName = 'public' AND :userId IN (SELECT su.userId FROM r.savedByUsers su))
+                OR (r.recipeVisibility.visibilityName in ('public', 'shared') 
+                        AND :userId IN (SELECT su.userId FROM r.savedByUsers su))
                 """)
         List<Recipe> findCookbookRecipes(@Param("userId") Integer userId);
+
+        @Query("""
+                SELECT COUNT(DISTINCT r.recipeId)
+                FROM Recipe r
+                WHERE r.user.userId = :userId
+                OR (r.recipeVisibility.visibilityName IN ('public', 'shared')
+                        AND :userId IN (SELECT su.userId FROM r.savedByUsers su))
+                """)
+        long countCookbookRecipes(@Param("userId") Integer userId);
+
 
         @Modifying
         @Transactional

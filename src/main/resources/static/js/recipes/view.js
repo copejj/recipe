@@ -328,11 +328,17 @@ $(document).ready(function () {
             }
 
             // Output clean, naturally cased values directly from your database records
-            if (targetMetricFlag && finalDisplayQuantity >= 1) {
-                $amountLabel.text(Math.round(finalDisplayQuantity * 10) / 10);
-            } else {
+            if (targetMetricFlag && (baseTypeId === 1 || baseTypeId === 2)) {
+                var unitLower = finalTargetUnitText.toLowerCase();
+                var isLargeMetricUnit = (unitLower === "kilogram" || unitLower === "liter");
+                var precisionFactor = isLargeMetricUnit ? 100 : (finalDisplayQuantity >= 10 ? 1 : 10);
+                var roundedMetric = Math.round(finalDisplayQuantity * precisionFactor) / precisionFactor;
+                $amountLabel.text(roundedMetric);
+            }
+            else {
                 $amountLabel.text(formatToKitchenFraction(finalDisplayQuantity));
             }
+
 
 
             if ($unitLabel.length) {
