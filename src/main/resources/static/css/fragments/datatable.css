@@ -138,3 +138,45 @@ table.dataTable tbody td.dt-type-numeric,
 table.dataTable tbody td.dt-type-date {
     text-align: center;
 }
+
+@media (max-width: 576px) {
+    /* --- DataTables 2.x --- */
+    .dt-container .dt-layout-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 0.75rem;
+    }
+
+    .dt-container .dt-layout-cell {
+        width: 100% !important;
+        justify-content: flex-start !important;
+    }
+
+    .dt-container .dt-search {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .dt-container .dt-search input {
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-top: 0.25rem;
+    }
+
+    /* --- DataTables 1.x (Legacy / Bootstrap 5) --- */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        float: none !important;
+        text-align: left !important;
+        width: 100%;
+        margin-bottom: 0.75rem;
+    }
+
+    .dataTables_wrapper .dataTables_filter input {
+        width: 100% !important;
+        margin-left: 0 !important;
+        display: block;
+        margin-top: 0.25rem;
+    }
+}

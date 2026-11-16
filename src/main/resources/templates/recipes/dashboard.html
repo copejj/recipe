@@ -61,12 +61,11 @@
             <div th:if="${freshIngredientsCount > 0}" class="status-item clickable-card success-alert" >
                 <span class="status-icon">🌱</span>
                 <div class="status-info">
-                    <span class="status-label">My Fresh Ingredients</span>
                     <span class="status-value">
-                        <span th:text="${freshIngredientsCount}" class="alert-text">0</span>Modifiable Ingredients
+                        Ingredient Change?
                     </span>
                     <a th:href="@{/ingredients/my-fresh}"
-                        class="status-link stretched-link"> Manage My Submissions →
+                        class="status-link stretched-link"> Manage <span th:text="${freshIngredientsCount}" class="alert-text">0</span> New Ingredients →
                     </a>
                 </div>
             </div>
@@ -87,13 +86,9 @@
                         th:classappend="${pendingIngredientsCount > 0} ? 'danger-alert' : ''">
                     <span class="status-icon">🌿</span>
                     <div class="status-info">
-                        <span class="status-label">Ingredients Pool</span>
-                        <span class="status-value">
-                            <span th:text="${pendingIngredientsCount}"
-                                th:classappend="${pendingIngredientsCount > 0} ? 'alert-text' : ''">0</span> Unverified Options
-                        </span>
-                        <a th:href="@{/admin/metadata/ingredients}"
-                            class="status-link stretched-link">Review Ingestion Queue →</a>
+                        <span class="status-value">Ingredients Pool</span>
+                        <a th:href="@{/admin/metadata/ingredients}" class="status-link stretched-link">
+                            Manage <span th:text="${pendingIngredientsCount}" th:classappend="${pendingIngredientsCount > 0} ? 'alert-text' : ''">0</span> Unverified Ingredients → </span></a>
                     </div>
                 </div>
 
@@ -106,18 +101,6 @@
                         <span class="status-value"><span th:text="${totalRecipesCount}">0</span> Public Postings</span>
                         <a th:href="@{/search}" 
                             class="status-link stretched-link">Moderate Catalog →</a>
-                    </div>
-                </div>
-
-                <!-- Community Safety Monitor -->
-                <div sec:authorize="hasAuthority('can_delete_any_comment')" class="status-item">
-                    <span class="status-icon">💬</span>
-                    <div class="status-info">
-                        <span class="status-label">Community Board</span>
-                        <span class="status-value">Discussion Safety</span>
-                        <span class="status-text--active"
-                            style="font-size: 0.85rem; margin-top: 6px; font-weight: 600;">Live Safety Watch
-                            Active</span>
                     </div>
                 </div>
             </div>
