@@ -16,11 +16,12 @@
     <main layout:fragment="content">
         <div class="admin-table-wrapper">
 
-            <div th:replace="~{fragments/datatable :: genericTable(
+            <div th:replace="~{fragments/datatable :: genericTableWithOrder(
                 tableId='userTable',
                 dataList=${chefs},
                 headerTemplate=~{::chefHeaders},
-                rowTemplate=~{::chefRow}
+                rowTemplate=~{::chefRow},
+                defaultOrder='[[4, &quot;desc&quot;]]'
             )}">
 
                 <!-- Define Header Structure -->

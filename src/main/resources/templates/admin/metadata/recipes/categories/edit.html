@@ -31,6 +31,7 @@
             <!-- ACTIONS FOOTER BUTTON SECTIONS GRID -->
             <div class="form-actions-group">
                 <button th:replace="~{fragments/actions :: saveBtn(itemId=${category.recipeCategoryId})}">Save Changes</button>
+                <a th:replace="~{fragments/actions :: cancelLink(targetUrl=@{/admin/metadata/recipes/categories})}"></a>
 
                 <div class="form-actions-delete">
                     <button th:replace="~{fragments/actions :: deleteConfBtn(

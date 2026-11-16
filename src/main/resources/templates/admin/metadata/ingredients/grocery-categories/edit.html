@@ -41,6 +41,7 @@
             <!-- ACTIONS FOOTER BUTTON GRID -->
             <div class="form-actions-group">
                 <button th:replace="~{fragments/actions :: saveBtn(itemId=${category.groceryCategoryId != null ? category.groceryCategoryId : 0})}">Save Changes</button>
+                <a th:replace="~{fragments/actions :: cancelLink(targetUrl=@{/admin/metadata/ingredients/grocery-categories})}"></a>
 
                 <div th:if="${category.groceryCategoryId != null}" class="form-actions-delete">
                     <button th:replace="~{fragments/actions :: deleteConfBtn(
