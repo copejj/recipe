@@ -15,17 +15,10 @@
     <p layout:fragment="page-subtitle">Manage global security tiers and permissions</p>
     <div layout:fragment="action-tray" class="action-tray sticky-stack-item">
         <a th:href="@{/admin}" class="btn btn-secondary">← Admin Dashboard</a>
+        <a th:href="@{/admin/roles/add}" class="btn btn--primary">+ Add New Role</a>
     </div>
     <main layout:fragment="content">
-        <div class="">
-            <div class="admin-btn-group">
-                <button type="button" class="btn btn-action btn-action--primary btn-action--header-cta"
-                    onclick="openModal('roleModal')">+ Add New Role</button>
-            </div>
-        </div>
-
         <div class="admin-table-wrapper">
-
             <!-- CENTRALIZED DATATABLE COMPONENT INJECTION -->
             <div th:replace="~{fragments/datatable :: genericTable(
                 tableId='roleMatrixTable', 

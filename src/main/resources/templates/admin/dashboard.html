@@ -64,7 +64,7 @@
                             <span th:text="${pendingCount}">0</span> Items Waiting
                         </span>
                         <!-- Added 'stretched-link' to the anchor tag -->
-                        <a th:href="@{/admin/metadata/ingredients}"
+                        <a th:href="@{/admin/metadata/ingredients/queue}"
                             class="status-link stretched-link"
                             th:classappend="${pendingCount > 0} ? 'alert-link' : ''">Moderate Ingestion Queue →</a>
                     </div>
@@ -75,7 +75,7 @@
             <h2>User Management</h2>
             <div class="status-grid">
                 <div class="status-item clickable-card" sec:authorize="hasAuthority('can_manage_users')">
-                    <span class="status-icon">🛡️</span>
+                    <span class="status-icon">👥</span>
                     <div class="status-info">
                         <span class="status-label">Manage Site Users</span>
                         <span class="status-value"> Manage Users </span>
@@ -83,7 +83,7 @@
                     </div>
                 </div>
                 <div class="status-item clickable-card" sec:authorize="hasAuthority('can_manage_roles')">
-                    <span class="status-icon">🛡️</span>
+                    <span class="status-icon">🔐️</span>
                     <div class="status-info">
                         <span class="status-label">Manage Site Permissions</span>
                         <span class="status-value"> User Roles </span>
@@ -96,7 +96,7 @@
             <h2>Site Management</h2>
             <div class="status-grid">
                 <div class="status-item clickable-card" sec:authorize="hasAuthority('can_view_audit_logs')">
-                    <span class="status-icon">🛡️</span>
+                    <span class="status-icon">🕒️</span>
                     <div class="status-info">
                         <span class="status-label">View Login History</span>
                         <span class="status-value"> Login History </span>
@@ -104,7 +104,7 @@
                     </div>
                 </div>
                 <div class="status-item clickable-card" sec:authorize="hasAuthority('can_view_audit_logs')">
-                    <span class="status-icon">🛡️</span>
+                    <span class="status-icon">⛔️</span>
                     <div class="status-info">
                         <span class="status-label">Manage Blacklist Registry</span>
                         <span class="status-value"> Blacklist Registry </span>
@@ -112,7 +112,7 @@
                     </div>
                 </div>
                 <div class="status-item clickable-card" sec:authorize="hasAuthority('can_manage_migrations')">
-                    <span class="status-icon">🛡️</span>
+                    <span class="status-icon">🗄️️</span>
                     <div class="status-info">
                         <span class="status-label">View Database Migrations</span>
                         <span class="status-value"> Database Migrations </span>

@@ -2,38 +2,49 @@
 <html xmlns:th="http://thymeleaf.org"
       xmlns:layout="http://ultraq.net.nz"
       layout:decorate="~{fragments/layout}"
-      lang="en">
+      lang="en"
+      th:with="isEdit=${category.recipeCategoryId != null}">
 <head>
-    <title>Edit Recipe Category</title>
+    <title th:text="${isEdit ? 'Edit Recipe Category' : 'Add Recipe Category'}">Edit Recipe Category</title>
     <th:block layout:fragment="page_styles">
         <link rel="stylesheet" th:href="@{/css/admin/ingredients-edit.css}" />
     </th:block>
 </head>
 
 <body>
-    <div layout:fragment="page-title"> Modify Category Label </div>
-    <p layout:fragment="page-subtitle"> Update global system lookup properties or fix structural errors for this recipe category taxonomy definition element.</p>
+    <div layout:fragment="page-title"
+         th:text="${isEdit ? 'Modify Category Label' : 'Add New Category Label'}">
+        Modify Category Label
+    </div>
+    <p layout:fragment="page-subtitle"
+       th:text="${isEdit ? 'Update global system lookup properties or fix structural errors for this recipe category taxonomy definition element.' : 'Create a new recipe category taxonomy definition element.'}">
+        Update global system lookup properties or fix structural errors for this recipe category taxonomy definition element.
+    </p>
 
     <div layout:fragment="action-tray" class="action-tray sticky-stack-item">
         <a th:href="@{/admin/metadata/recipes/categories}" class="btn btn-secondary">← Recipe Category Management</a>
     </div>
 
     <main layout:fragment="content">
-        <form th:action="@{/admin/metadata/recipes/categories/update/{id}(id=${category.recipeCategoryId})}"
+        <form th:action="${isEdit} ? @{/admin/metadata/recipes/categories/update/{id}(id=${category.recipeCategoryId})} : @{/admin/metadata/recipes/categories/add}"
               th:object="${category}" method="post" class="ingredient-entry-form">
 
             <!-- FIELD 1: CATEGORY UNIQUE STRING LABELLING INPUT BOX -->
             <div class="form-field-group">
-                <label for="categoryName">Updated Category Label Name</label>
+                <label for="categoryName"
+                       th:text="${isEdit ? 'Updated Category Label Name' : 'Category Label Name'}">
+                    Updated Category Label Name
+                </label>
                 <input type="text" id="categoryName" th:field="*{name}" class="form-input" required />
             </div>
 
             <!-- ACTIONS FOOTER BUTTON SECTIONS GRID -->
             <div class="form-actions-group">
-                <button th:replace="~{fragments/actions :: saveBtn(itemId=${category.recipeCategoryId})}">Save Changes</button>
+                <button th:replace="~{fragments/actions :: saveBtn(itemId=${category.recipeCategoryId})}"></button>
                 <a th:replace="~{fragments/actions :: cancelLink(targetUrl=@{/admin/metadata/recipes/categories})}"></a>
 
-                <div class="form-actions-delete">
+                <!-- Only render Delete button when editing an existing category -->
+                <div class="form-actions-delete" th:if="${isEdit}">
                     <button th:replace="~{fragments/actions :: deleteConfBtn(
                         targetFormId='deleteRecipeCatForm-' + ${category.recipeCategoryId},
                         confirmMessage='Are you sure you want to permanently drop this recipe category label taxonomy entry? This cannot be undone.'
@@ -42,8 +53,9 @@
             </div>
         </form>
 
-        <!-- Isolated Delete Form (kept outside the Update form so forms are never nested) -->
-        <form th:id="'deleteRecipeCatForm-' + ${category.recipeCategoryId}"
+        <!-- Isolated Delete Form (only rendered in Edit mode) -->
+        <form th:if="${isEdit}"
+              th:id="'deleteRecipeCatForm-' + ${category.recipeCategoryId}"
               th:action="@{/admin/metadata/recipes/categories/delete/{id}(id=${category.recipeCategoryId})}"
               method="post"
               style="display:none;">

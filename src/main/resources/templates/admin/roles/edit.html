@@ -2,24 +2,30 @@
 <html xmlns:th="http://thymeleaf.org"
       xmlns:layout="http://ultraq.net.nz"
       layout:decorate="~{fragments/layout}"
-      lang="en">
+      lang="en"
+      th:with="isEdit=${role.roleId != null}">
 <head>
-    <title>Modify Role Tiers</title>
+    <title th:text="${isEdit ? 'Modify Role Tiers' : 'Create New Role Tier'}">Modify Role Tiers</title>
     <th:block layout:fragment="page_styles">
         <link rel="stylesheet" type="text/css" th:href="@{/css/admin/roles-edit.css}" />
     </th:block>
 </head>
 
 <body>
-    <h1 layout:fragment="page-title">Edit Role</h1>
-    <p layout:fragment="page-subtitle">Assign functional authority parameters and adjust platform access access tokens for this application user tier.</p>
+    <h1 layout:fragment="page-title"
+        th:text="${isEdit ? 'Edit Role' : 'Create New Role'}">Edit Role</h1>
+    <p layout:fragment="page-subtitle"
+       th:text="${isEdit ? 'Assign functional authority parameters and adjust platform access tokens for this application user tier.' : 'Define a new security tier, rank level, and initial functional permissions.'}">
+        Assign functional authority parameters and adjust platform access tokens for this application user tier.
+    </p>
     <div layout:fragment="action-tray" class="action-tray sticky-stack-item">
         <a th:href="@{/admin/roles}" class="btn btn-secondary">← Roles List </a>
     </div>
     
     <main layout:fragment="content">
-        <form th:action="@{/admin/roles/edit/{id}(id=${role.roleId})}" th:object="${role}" method="POST"
-            class="role-edit-form">
+        <form th:action="${isEdit} ? @{/admin/roles/edit/{id}(id=${role.roleId})} : @{/admin/roles/add}"
+              th:object="${role}" method="POST"
+              class="role-edit-form">
             <input type="hidden" th:field="*{roleId}" />
 
             <!-- Core Text Inputs -->
@@ -29,10 +35,16 @@
                     placeholder="e.g. ROLE_MODERATOR" />
             </div>
 
-            <div class="form-group--last">
+            <div class="form-group">
                 <label class="form-label">Role Purpose / Description</label>
                 <input type="text" class="form-input" th:field="*{description}"
                     placeholder="e.g. Can manage recipe categories and reviews" />
+            </div>
+
+            <div class="form-group--last">
+                <label class="form-label">Hierarchy Rank (0–2)</label>
+                <input type="number" class="form-input" th:field="*{roleRank}" min="0" max="2"
+                    th:disabled="${isEdit and role.roleRank >= 3}" />
             </div>
 
             <!-- Permission Selection Framework Console -->
@@ -42,12 +54,11 @@
                     security profile:</p>
 
                 <div class="permissions-grid-pipeline">
-                    <!-- Iterates over available database authority items -->
                     <div th:each="perm : ${allPermissions}" class="permission-item-row">
                         <div class="permission-checkbox-cell">
                             <input type="checkbox" name="permissionIds" th:value="${perm.permissionId}"
                                 th:id="'perm-' + ${perm.permissionId}"
-                                th:checked="${role.permissions.contains(perm)}" />
+                                th:checked="${role.permissions != null and role.permissions.contains(perm)}" />
                         </div>
 
                         <div class="permission-checkbox-details">
@@ -55,7 +66,6 @@
                                 th:text="${perm.permissionName}">can_manage_users</label>
                             <small th:text="${perm.description}">Grants access to administration parameters.</small>
                         </div>
-
                     </div>
                 </div>
             </div>
