@@ -13,7 +13,9 @@
 <body>
     <h1 layout:fragment="page-title">Role & Authority Matrix</h1>
     <p layout:fragment="page-subtitle">Manage global security tiers and permissions</p>
-
+    <div layout:fragment="action-tray" class="action-tray sticky-stack-item">
+        <a th:href="@{/admin}" class="btn btn-secondary">← Admin Dashboard</a>
+    </div>
     <main layout:fragment="content">
         <div class="">
             <div class="admin-btn-group">

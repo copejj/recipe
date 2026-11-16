@@ -10,7 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-@RequestMapping("/admin/metadata/ingredients/grocery-categories") // ◄ EXACT FOLDER MATCH
+@RequestMapping("/admin/metadata/grocery/categories") 
 @PreAuthorize("hasAuthority('can_moderate_recipe_metadata')")
 public class GroceryCategoryController {
 
@@ -24,7 +24,7 @@ public class GroceryCategoryController {
     public String showCategoriesIndex(Model model) {
         List<GroceryCategory> categories = groceryCategoryService.getAllCategoriesSorted();
         model.addAttribute("formWrapper", new GroceryCategoryForm(categories));
-        return "admin/metadata/ingredients/grocery-categories/list";
+        return "admin/metadata/grocery-categories/list";
     }
 
     @GetMapping({"/edit", "/edit/{id}"})
@@ -37,7 +37,7 @@ public class GroceryCategoryController {
                 : new GroceryCategory();
 
         model.addAttribute("category", category);
-        return "admin/metadata/ingredients/grocery-categories/edit";
+        return "admin/metadata/grocery-categories/edit";
     }
 
     @PostMapping({"/edit", "/edit/{id}"})
@@ -46,10 +46,10 @@ public class GroceryCategoryController {
                                        @RequestParam("displayOrder") Integer displayOrder) {
         if (id != null) {
             groceryCategoryService.updateCategory(id, name, displayOrder);
-            return "redirect:/admin/metadata/ingredients/grocery-categories?updated=true";
+            return "redirect:/admin/metadata/grocery/categories?updated=true";
         } else {
             groceryCategoryService.createNewCategory(name, displayOrder);
-            return "redirect:/admin/metadata/ingredients/grocery-categories?created=true";
+            return "redirect:/admin/metadata/grocery/categories?created=true";
         }
     }
 
@@ -57,9 +57,9 @@ public class GroceryCategoryController {
     public String removeCategory(@PathVariable("id") Integer id) {
         try {
             groceryCategoryService.deleteCategory(id);
-            return "redirect:/admin/metadata/ingredients/grocery-categories?deleted=true";
+            return "redirect:/admin/metadata/grocery/categories?deleted=true";
         } catch (Exception e) {
-            return "redirect:/admin/metadata/ingredients/grocery-categories?error=inUse";
+            return "redirect:/admin/metadata/grocery/categories?error=inUse";
         }
     }
 }

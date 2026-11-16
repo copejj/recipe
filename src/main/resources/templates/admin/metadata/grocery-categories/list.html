@@ -19,8 +19,8 @@
     
     <div layout:fragment="action-tray" class="action-tray sticky-stack-item">
         <a th:href="@{/admin}" class="btn btn-secondary">← Admin Dashboard</a>
-        <a th:href="@{/admin/metadata/ingredients/list}" class="btn btn-secondary"><span aria-hidden="true">🛒</span> Master Ingredients</a>
-        <a th:href="@{/admin/metadata/ingredients/grocery-categories/edit}" class="btn btn--primary">+ Add Aisle</a>
+        <a th:href="@{/admin/metadata/ingredients}" class="btn btn-secondary"><span aria-hidden="true">🛒</span> Master Ingredients</a>
+        <a th:href="@{/admin/metadata/grocery/categories/edit}" class="btn btn--primary">+ Add Aisle</a>
     </div>
 
     <main layout:fragment="content">
@@ -60,11 +60,11 @@
                 <!-- Define Row Structure -->
                 <th:block th:fragment="categoryRow">
                     <tr class="categories-data-row clickable-admin-row"
-                        th:data-href="@{/admin/metadata/ingredients/grocery-categories/edit/{id}(id=${item.groceryCategoryId})}">
+                        th:data-href="@{/admin/metadata/grocery/categories/edit/{id}(id=${item.groceryCategoryId})}">
 
                         <!-- Column 1: Clickable Name Display -->
                         <td data-label="Name">
-                            <a th:href="@{/admin/metadata/ingredients/grocery-categories/edit/{id}(id=${item.groceryCategoryId})}"
+                            <a th:href="@{/admin/metadata/grocery/categories/edit/{id}(id=${item.groceryCategoryId})}"
                                th:text="${item.categoryName}"
                                class="category-title-link">Produce</a>
                         </td>

@@ -13,6 +13,9 @@
 <body>
     <div layout:fragment="page-title"> Chef Registry </div>
     <p layout:fragment="page-subtitle"> Manage system user access privileges, administrative account bans, and profile states. </p>
+    <div layout:fragment="action-tray" class="action-tray sticky-stack-item">
+        <a th:href="@{/admin}" class="btn btn-secondary">← Admin Dashboard</a>
+    </div>
     <main layout:fragment="content">
         <div class="admin-table-wrapper">
 

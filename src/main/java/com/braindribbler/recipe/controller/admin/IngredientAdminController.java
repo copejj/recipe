@@ -31,6 +31,12 @@ public class IngredientAdminController {
     }
 
     @GetMapping
+    public String listAllIngredients(Model model) {
+        model.addAttribute("ingredients", ingredientService.getAllIngredientsSorted(null));
+        return "admin/metadata/ingredients/list";
+    }
+
+    @GetMapping("/queue")
     public String showModerationDashboard(Model model) {
         List<PendingIngredientProjection> pendingQueue = ingredientService.getUnverifiedIngredients();
         java.util.Map<Integer, Integer> conflictMap = new java.util.HashMap<>();
@@ -77,12 +83,6 @@ public class IngredientAdminController {
         }
     }
 
-    @GetMapping("/list")
-    public String listAllIngredients(Model model) {
-        model.addAttribute("ingredients", ingredientService.getAllIngredientsSorted(null));
-        return "admin/metadata/ingredients/list";
-    }
-
     @GetMapping("/edit/{id}")
     public String showEditIngredientForm(@PathVariable("id") Integer id, Model model) {
         Ingredient ingredient = ingredientService.getIngredientById(id);
@@ -99,9 +99,9 @@ public class IngredientAdminController {
         try {
             IngredientClassification classification = IngredientClassification.valueOf(classificationStr.toUpperCase());
             ingredientService.approveAndModifyIngredient(id, ingredientName, groceryCategoryId, classification);
-            return "redirect:/admin/metadata/ingredients/list?updated=true";
+            return "redirect:/admin/metadata/ingredients?updated=true";
         } catch (Exception e) {
-            return "redirect:/admin/metadata/ingredients/list?error=updateFailed";
+            return "redirect:/admin/metadata/ingredients?error=updateFailed";
         }
     }
 
@@ -109,11 +109,11 @@ public class IngredientAdminController {
     public String deleteIngredient(@PathVariable("id") Integer id) {
         try {
             ingredientService.deleteIngredientById(id);
-            return "redirect:/admin/metadata/ingredients/list?deleted=true";
+            return "redirect:/admin/metadata/ingredients?deleted=true";
         } catch (IllegalStateException e) {
-            return "redirect:/admin/metadata/ingredients/list?error=inUse";
+            return "redirect:/admin/metadata/ingredients?error=inUse";
         } catch (Exception e) {
-            return "redirect:/admin/metadata/ingredients/list?error=deleteFailed";
+            return "redirect:/admin/metadata/ingredients?error=deleteFailed";
         }
     }
 
@@ -131,9 +131,9 @@ public class IngredientAdminController {
         try {
             IngredientClassification classification = IngredientClassification.valueOf(classificationStr.toUpperCase());
             ingredientService.registerVerifiedIngredient(name, categoryId, classification);
-            return "redirect:/admin/metadata/ingredients/list?created=true";
+            return "redirect:/admin/metadata/ingredients?created=true";
         } catch (Exception e) {
-            return "redirect:/admin/metadata/ingredients/list?error=createFailed";
+            return "redirect:/admin/metadata/ingredients?error=createFailed";
         }
     }
 
@@ -141,9 +141,9 @@ public class IngredientAdminController {
     public String retractApprovedIngredient(@PathVariable("id") Integer id) {
         try {
             ingredientService.retractIngredientFromGlobalPool(id);
-            return "redirect:/admin/metadata/ingredients/list?retracted=true";
+            return "redirect:/admin/metadata/ingredients?retracted=true";
         } catch (Exception e) {
-            return "redirect:/admin/metadata/ingredients/list?error=retractFailed";
+            return "redirect:/admin/metadata/ingredients?error=retractFailed";
         }
     }
 

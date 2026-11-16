@@ -14,7 +14,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 @Controller
-@RequestMapping("/admin/login-history")
+@RequestMapping("/admin/logins")
 @PreAuthorize("hasAuthority('can_view_audit_logs')")
 public class LoginHistoryController {
 

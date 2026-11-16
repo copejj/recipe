@@ -13,6 +13,9 @@
 <body>
     <div layout:fragment="page-title"> Login Audit History </div>
     <p layout:fragment="page-subtitle"> Real-time telemetry monitoring for connection attempts, network IP whitelists, and intrusion probing records. </p>
+    <div layout:fragment="action-tray" class="action-tray sticky-stack-item">
+        <a th:href="@{/admin}" class="btn btn-secondary">← Admin Dashboard</a>
+    </div>
     <main layout:fragment="content">
         <!-- Whitelist Feedback Success Alert -->
         <div th:if="${param.override_success}" class="alert alert--success">
