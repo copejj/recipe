@@ -6,13 +6,11 @@
 
 <head>
     <title>Dashboard</title>
-
 </head>
 
 <body>
     <div layout:fragment="page-title"> Welcome <span th:text="${userDisplayName != null ? userDisplayName : 'Chef'}">Chef</span>!</div>
     <p layout:fragment="page-subtitle">My Kitchen Workspace</p>
-
     <main layout:fragment="content">
         <div th:if="${dbMessageText != null}" class="alert"
             th:classappend="${dbMessageClass != null ? dbMessageClass : 'alert--info'}">
@@ -30,6 +28,7 @@
             </div>
         </div>
 
+        <h2>Your Cookbook</h2>
         <div class="status-grid">
             <div class="status-item clickable-card">
                 <span class="status-icon">🔍</span>
@@ -69,38 +68,18 @@
                     </a>
                 </div>
             </div>
-
         </div>
-
-        <!-- ==========================================================================
-           SECTION 2: LIVE CONTENT MODERATION MATRIX (Preserved Tasks Review Center)
-           ========================================================================== -->
-        <div
-            sec:authorize="hasAnyAuthority('can_moderate_recipe_metadata', 'can_hide_any_recipe', 'can_delete_any_comment')">
+        <div sec:authorize="hasAnyAuthority('can_moderate_recipe_metadata')">
             <hr class="dashboard-divider" />
             <h2 style=>Pending Review Items</h2>
             <div class="status-grid">
                 <!-- Ingredient Queue Card - Highlights RED if items are waiting -->
-                <div sec:authorize="hasAuthority('can_moderate_recipe_metadata')" 
-                    class="status-item clickable-card"
-                        th:classappend="${pendingIngredientsCount > 0} ? 'danger-alert' : ''">
+                <div class="status-item clickable-card" th:classappend="${pendingIngredientsCount > 0} ? 'danger-alert' : ''">
                     <span class="status-icon">🌿</span>
                     <div class="status-info">
                         <span class="status-value">Ingredients Pool</span>
-                        <a th:href="@{/admin/metadata/ingredients}" class="status-link stretched-link">
+                        <a th:href="@{/admin/metadata/ingredients/queue}" class="status-link stretched-link">
                             Manage <span th:text="${pendingIngredientsCount}" th:classappend="${pendingIngredientsCount > 0} ? 'alert-text' : ''">0</span> Unverified Ingredients → </span></a>
-                    </div>
-                </div>
-
-                <!-- Global Content Metric Monitor -->
-                <div sec:authorize="hasAuthority('can_hide_any_recipe')" 
-                    class="status-item clickable-card">
-                    <span class="status-icon">🛡️</span>
-                    <div class="status-info">
-                        <span class="status-label">Recipe Moderation</span>
-                        <span class="status-value"><span th:text="${totalRecipesCount}">0</span> Public Postings</span>
-                        <a th:href="@{/search}" 
-                            class="status-link stretched-link">Moderate Catalog →</a>
                     </div>
                 </div>
             </div>

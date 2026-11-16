@@ -16,16 +16,14 @@
         Browse, review, or modify your library. Tap or click any recipe row to view it
         , or click a <em>Category</em> or <em>Chef</em> badge to filter and unfilter.
     </p>
+    <div layout:fragment="action-tray" class="action-tray">
+        <a th:href="@{/}" class="btn btn-secondary">← Home</a>
+        <a th:href="@{/recipes/create}" class="btn btn--primary btn-add-recipe">
+            + Add Recipe
+        </a>
+    </div>
     
     <main layout:fragment="content">
-        <div class="action-bar">
-            <th:block th:fragment="cookbookButtons">
-                <a th:href="@{/recipes/create}" class="btn btn--primary btn-add-recipe">
-                    + Add Recipe
-                </a>
-            </th:block>
-        </div>
-
         <div class="notifications-wrapper">
             <div th:if="${successMessage}" class="alert alert--success">
                 <span class="alert-icon">💾</span> 

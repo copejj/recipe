@@ -11,6 +11,7 @@ import com.braindribbler.recipe.repository.recipe.RecipeRepository;
 import com.braindribbler.recipe.service.auth.RoleRankCache;
 
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin/users/edit/{publicId}")
+@PreAuthorize("hasAuthority('can_manage_roles')")
 public class UserRoleController {
 
     private final UserRepository userRepository;

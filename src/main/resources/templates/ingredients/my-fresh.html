@@ -13,14 +13,11 @@
 <body>
     <h1 layout:fragment="page-title"> My Fresh Ingredients Workspace </h1>
     <p layout:fragment="page-subtitle"> Modify and save ingredient properties inline. Changes apply instantly to your pending moderation queue.</p>
+    <div layout:fragment="action-tray" class="action-tray">
+        <a th:href="@{/}" class="btn btn-secondary">← Home</a>
+    </div>
     
     <main layout:fragment="content">
-        <div class="header-grid">
-            <div class="action-tray">
-                <a th:href="@{/dashboard}" class="btn btn-secondary">← Back to Dashboard</a>
-            </div>
-        </div>
-
         <div th:if="${param.success}" class="alert-banner alert-success">
             ✓ Ingredient changes saved successfully.
         </div>

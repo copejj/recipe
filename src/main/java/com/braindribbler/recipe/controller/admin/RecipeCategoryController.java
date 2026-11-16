@@ -8,7 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-@RequestMapping("/admin/metadata/recipes/categories") // ◄ EXACT FOLDER MATCH
+@RequestMapping("/admin/metadata/recipes/categories") 
 @PreAuthorize("hasAuthority('can_moderate_recipe_metadata')")
 public class RecipeCategoryController {
 
@@ -22,23 +22,28 @@ public class RecipeCategoryController {
     public String showCategoryDashboard(Model model) {
         model.addAttribute("categories", recipeCategoryService.getAllCategories());
         model.addAttribute("newCategory", new RecipeCategory()); 
-        return "admin/metadata/recipes/categories/list";
+        return "admin/metadata/recipes-categories/list";
+    }
+
+    @GetMapping("/add")
+    public String showAddNewCategory(Model model) {
+        model.addAttribute("category", new RecipeCategory());
+        return "admin/metadata/recipes-categories/edit";
     }
 
     @PostMapping("/add")
-    public String addNewCategory(@ModelAttribute("newCategory") RecipeCategory category) {
+    public String addNewCategory(@ModelAttribute("category") RecipeCategory category) {
         if (category.getName() != null && !category.getName().trim().isEmpty()) {
             recipeCategoryService.saveCategory(category);
         }
         return "redirect:/admin/metadata/recipes/categories?created=true";
     }
-
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable("id") Integer id, Model model) {
         RecipeCategory category = recipeCategoryService.getCategoryById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid Category Id:" + id));
         model.addAttribute("category", category);
-        return "admin/metadata/recipes/categories/edit";
+        return "admin/metadata/recipes-categories/edit";
     }
 
     @PostMapping("/update/{id}")

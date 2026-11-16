@@ -10,6 +10,9 @@
 <body>
     <div layout:fragment="page-title"> Database Schema Migrations </div>
     <p layout:fragment="page-subtitle"> Monitor systemic schema DDL execution states across deployment nodes. </p>
+    <div layout:fragment="action-tray" class="action-tray sticky-stack-item">
+        <a th:href="@{/admin}" class="btn btn-secondary">← Admin Dashboard</a>
+    </div>
     <main layout:fragment="content">
         <!-- STATE A: THE TABLE CONTEXT DOES NOT EXIST (LOCAL DEV FALLBACK STATE) -->
         <div th:if="${!tableExists}" class="alert alert--info">

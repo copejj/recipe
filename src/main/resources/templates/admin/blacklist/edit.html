@@ -14,6 +14,9 @@
 <body>
     <h1 layout:fragment="page-title" th:text="${itemId == 0} ? 'Register New Blacklist Threat Rule' : 'Modify Security Blacklist Entry'"> Threat Workspace </h1>
     <p layout:fragment="page-subtitle"> Configure strict application protection protocols to shield database queries and system interfaces.  </p>
+    <div layout:fragment="action-tray" class="action-tray sticky-stack-item">
+        <a th:href="@{/admin/blacklist}" class="btn btn-secondary">← Blacklist Registry</a>
+    </div>
     <main layout:fragment="content">
         <form th:action="@{/admin/blacklist/save}" th:object="${item}" method="POST" class="workspace-form-narrow">
 

@@ -70,7 +70,7 @@ public class RecipeSearchController {
         model.addAttribute("recipesIndexPool", tableRowsPool); 
         model.addAttribute("isFilteredView", isFilteredView); 
 
-        return "recipes/search/dashboard";
+        return "recipes/search";
     }
 
     // Handles: /view/4de5677f-3370-4ff9-af60-8f9c44fc4d88
