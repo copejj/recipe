@@ -60,6 +60,7 @@
             <!-- ACTIONS FOOTER BUTTON GRID -->
             <div class="form-actions-group">
                 <button th:replace="~{fragments/actions :: saveBtn(itemId=${ingredient.ingredientId != null ? ingredient.ingredientId : 0})}">Save</button>
+                <a th:replace="~{fragments/actions :: cancelLink(targetUrl=@{/admin/metadata/ingredients/list})}"></a>
 
                 <!-- Destructive / Moderation Actions (Only shown when editing an existing ingredient) -->
                 <div th:if="${ingredient.ingredientId != null}" class="form-actions-delete" style="display: flex; gap: 10px; flex-wrap: wrap;">

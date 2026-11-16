@@ -13,6 +13,10 @@
 <body>
     <h1 layout:fragment="page-title">Edit Role</h1>
     <p layout:fragment="page-subtitle">Assign functional authority parameters and adjust platform access access tokens for this application user tier.</p>
+    <div layout:fragment="action-tray" class="action-tray sticky-stack-item">
+        <a th:href="@{/admin/roles}" class="btn btn-secondary">← Roles List </a>
+    </div>
+    
     <main layout:fragment="content">
         <form th:action="@{/admin/roles/edit/{id}(id=${role.roleId})}" th:object="${role}" method="POST"
             class="role-edit-form">

@@ -281,18 +281,19 @@ $(document).ready(function () {
                 // Sort largest unit rank descending (Gallon -> Quart -> Pint -> Cup -> Tbsp -> Tsp, or L -> ml, kg -> g)
                 candidates.sort(function (a, b) { return b.scalingRank - a.scalingRank; });
 
-                // Find baseline fallback matching the active system (ml for metric volume, g for metric weight)
-                var baseUnitFallback = candidates.find(function (m) { return m.scalingRank === 1; }) || candidates[candidates.length - 1];
-                if (baseUnitFallback) {
-                    finalTargetUnitText = baseUnitFallback.unitName;
-                    finalDisplayQuantity = absoluteBaseUnitsSum / parseFloat(baseUnitFallback.baseUnitEquivalent);
-                }
-
-                // Check for dynamic size upgrades if unit is promotable OR if we are converting across systems
                 var originalIsMetric = originalUnitMeta ? Boolean(originalUnitMeta.isMetric) : false;
                 var isCrossSystemConversion = (originalIsMetric !== targetMetricFlag);
 
+                // Only run promotion/conversion logic if the unit is promotable OR switching systems (Imperial <-> Metric)
                 if (isPromotable || isCrossSystemConversion) {
+
+                    // Set the system's lowest-rank unit ONLY as a starting baseline for conversion
+                    var baseUnitFallback = candidates.find(function (m) { return m.scalingRank === 1; }) || candidates[candidates.length - 1];
+                    if (baseUnitFallback) {
+                        finalTargetUnitText = baseUnitFallback.unitName;
+                        finalDisplayQuantity = absoluteBaseUnitsSum / parseFloat(baseUnitFallback.baseUnitEquivalent);
+                    }
+
                     var unitPromoted = false;
 
                     for (var i = 0; i < candidates.length; i++) {
@@ -319,7 +320,7 @@ $(document).ready(function () {
                         }
                     }
 
-                    // Only revert to the original unit if we are STILL in the same measurement system
+                    // If it was promotable in the same system, but didn't hit a promotion floor, keep the original unit
                     if (!unitPromoted && !isCrossSystemConversion && originalUnitMeta) {
                         finalTargetUnitText = originalUnitMeta.unitName;
                         finalDisplayQuantity = totalScaledValue;

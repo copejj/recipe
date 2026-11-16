@@ -201,6 +201,12 @@
     box-sizing: border-box;
 }
 
+.action-tray,
+.sticky-stack-item {
+    position: sticky;
+    background-color: var(--color-surface, #ffffff);
+}
+
 .action-tray {
     position: sticky;
     top: 0;

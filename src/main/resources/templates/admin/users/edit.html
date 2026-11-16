@@ -13,6 +13,9 @@
 <body>
     <div layout:fragment="page-title"> Manage Permissions </div>
     <p layout:fragment="page-subtitle" th:text="'Modifying role clusters for: ' + ${targetUser.displayName}"> Page Subtitle text </p>
+    <div layout:fragment="action-tray" class="action-tray sticky-stack-item">
+        <a th:href="@{/admin/users}" class="btn btn-secondary">← Users List </a>
+    </div>
     <main layout:fragment="content">
         <form th:action="@{/admin/users/edit/{publicId}/roles(publicId=${targetUser.publicId})}" method="post" class="workspace-form">
             <!-- TOP LEFT: ASSIGNABLE ROLES -->
