@@ -79,9 +79,11 @@
                 <button type="submit" class="btn btn--primary">Sign Up</button>
             </form>
 
-            <p class="auth-footer-text">
-                Already have an account? <a th:href="@{/login}" class="auth-link">Sign in here</a>
-            </p>
+            <div class="auth-footer-links">
+                <p class="auth-footer-text">
+                    Already have an account? <a th:href="@{/login}" class="auth-link">Sign in here</a>
+                </p>
+            </div>
         </div>
     </main>
     <th:block layout:fragment="page_scripts">
