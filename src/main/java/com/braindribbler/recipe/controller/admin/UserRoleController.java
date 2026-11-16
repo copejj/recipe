@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin/users/edit/{publicId}")
-@PreAuthorize("hasAuthority('can_manage_roles')")
+@PreAuthorize("hasAuthority('can_manage_users')")
 public class UserRoleController {
 
     private final UserRepository userRepository;
