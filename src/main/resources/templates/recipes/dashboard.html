@@ -6,7 +6,6 @@
 
 <head>
     <title>Dashboard</title>
-
 </head>
 
 <body>
@@ -69,7 +68,21 @@
                     </a>
                 </div>
             </div>
-
+        </div>
+        <div sec:authorize="hasAnyAuthority('can_moderate_recipe_metadata')">
+            <hr class="dashboard-divider" />
+            <h2 style=>Pending Review Items</h2>
+            <div class="status-grid">
+                <!-- Ingredient Queue Card - Highlights RED if items are waiting -->
+                <div class="status-item clickable-card" th:classappend="${pendingIngredientsCount > 0} ? 'danger-alert' : ''">
+                    <span class="status-icon">🌿</span>
+                    <div class="status-info">
+                        <span class="status-value">Ingredients Pool</span>
+                        <a th:href="@{/admin/metadata/ingredients}" class="status-link stretched-link">
+                            Manage <span th:text="${pendingIngredientsCount}" th:classappend="${pendingIngredientsCount > 0} ? 'alert-text' : ''">0</span> Unverified Ingredients → </span></a>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 </body>
