@@ -19,7 +19,8 @@
 
     <!-- Slot 1: Sticky Top Action Tray -->
     <div layout:fragment="action-tray" class="action-tray sticky-stack-item">
-        <a th:href="@{/admin/metadata}" class="btn btn-secondary">← Metadata Dashboard</a>
+        <a th:href="@{/admin}" class="btn btn-secondary">← Admin Dashboard</a>
+        <a th:href="@{/admin/metadata/ingredients/list}" class="btn btn-secondary"><span aria-hidden="true">🛒</span> Master Ingredients</a>
     </div>
 
     <!-- Slot 2: Header Grid / Toolbar -->

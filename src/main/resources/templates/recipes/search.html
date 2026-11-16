@@ -16,6 +16,9 @@
     <p layout:fragment="page-subtitle">
         Browse the complete available catalog generally, or add specific ingredients to find tailored meal matches.
     </p>
+    <div layout:fragment="action-tray" class="action-tray">
+        <a th:href="@{/}" class="btn btn-secondary">← Home</a>
+    </div>
     <main layout:fragment="content">
         <div>
             <h4 th:if="${#authorization.expression('isAuthenticated()')}">

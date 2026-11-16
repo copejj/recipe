@@ -1,6 +1,8 @@
 package com.braindribbler.recipe.advice;
 
 import com.braindribbler.recipe.domain.auth.MenuItem;
+
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -20,18 +22,16 @@ public class GlobalMenuAdvice {
         List<MenuItem> menuItems = new ArrayList<>();
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
+        menuItems.add(new MenuItem("Home", "/"));
+        menuItems.add(new MenuItem("Search", "/search"));
+
         // 1. Handle Guest User (Not authenticated or anonymous)
-        if (auth == null || !auth.isAuthenticated() ||
-                auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken) {
-            menuItems.add(new MenuItem("Home", "/"));
-            menuItems.add(new MenuItem("Search", "/search"));
+        if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
             menuItems.add(new MenuItem("Register", "/register", "nav-button nav-link--cta"));
             return menuItems;
         }
 
         // 2. Handle Logged-In Authenticated User Base Links
-        menuItems.add(new MenuItem("Home", "/dashboard"));
-        menuItems.add(new MenuItem("Search", "/search"));
         menuItems.add(new MenuItem("Profile", "/profile"));
 
         // 3. Collect Authorities for Permission-Based Links

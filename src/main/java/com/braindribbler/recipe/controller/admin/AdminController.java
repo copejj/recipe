@@ -9,14 +9,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/admin/metadata") // ◄ EXACT FOLDER MATCH
+@RequestMapping("/admin")
 @PreAuthorize("hasAuthority('can_moderate_recipe_metadata')")
-public class RecipeMetadataController {
+public class AdminController {
 
     private final IngredientService ingredientService;
     private final RecipeCategoryService recipeCategoryService;
 
-    public RecipeMetadataController(IngredientService ingredientService, RecipeCategoryService recipeCategoryService) {
+    public AdminController(IngredientService ingredientService, RecipeCategoryService recipeCategoryService) {
         this.ingredientService = ingredientService;
         this.recipeCategoryService = recipeCategoryService;
     }
@@ -33,6 +33,6 @@ public class RecipeMetadataController {
         model.addAttribute("categoryCount", groceryAisles);
         model.addAttribute("recipeCategoriesCount", recipeCategoriesCount);
 
-        return "admin/metadata/dashboard";
+        return "admin/dashboard";
     }
 }

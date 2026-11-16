@@ -57,7 +57,14 @@ public class RecipeController {
     }
 
     @GetMapping("/")
-    public String getDashboard(Model model) {
+    public String home(Model model, @AuthenticationPrincipal RecipeUserDetails currentUser) {
+        if (currentUser == null) {
+            return showLandingPage(model);
+        }
+        return showDashboard(model, currentUser);
+    }
+
+    private String showLandingPage(Model model) {
         Recipe sampleRecipe = new Recipe();
         sampleRecipe.setTitle("Chocolate Chip Cookies");
         sampleRecipe.setDescription("Mix, bake, and enjoy!");
@@ -65,33 +72,23 @@ public class RecipeController {
         return "index";
     }
 
-    @GetMapping("/dashboard")
-    public String showHome(Model model, @AuthenticationPrincipal RecipeUserDetails currentUser) {
-        if (currentUser == null) {
-            return "redirect:/login";
-        }
-
+    private String showDashboard(Model model, RecipeUserDetails currentUser) {
         User domainUser = currentUser.getUserProfile();
+        Integer userId = domainUser.getUserId();
         model.addAttribute("userDisplayName", domainUser.getDisplayName());
 
         // 1. Gather baseline counter metrics via services
-        long myRecipesCount = recipeService.getRecipeCountByUserId(domainUser.getUserId());
+        long myRecipesCount = recipeService.getRecipeCountByUserId(userId);
         int pendingIngredients = ingredientService.getUnverifiedIngredients().size();
+        int freshCount = (int) ingredientService.getFreshIngredientsCount(userId);
 
-        int freshCount = 0;
-        if (currentUser != null) {
-            Integer userId = currentUser.getUserProfile().getUserId();
-            freshCount = (int) ingredientService.getFreshIngredientsCount(userId);
-        }
-
-        // Inject the total count variable to the view engine
         model.addAttribute("freshIngredientsCount", freshCount);
         model.addAttribute("myRecipesCount", myRecipesCount);
         model.addAttribute("pendingIngredientsCount", pendingIngredients);
         model.addAttribute("totalRecipesCount", recipeService.getTotalRecipesCount());
 
-        // 2. Fetch message cleanly via service layer wrapper ---
-        ingredientService.getLatestActiveMessageForUser(domainUser.getUserId())
+        // 2. Fetch message cleanly via service layer wrapper
+        ingredientService.getLatestActiveMessageForUser(userId)
                 .ifPresent(msg -> {
                     model.addAttribute("dbMessageText", msg.getMessageText());
                     model.addAttribute("dbMessageClass", "alert--" + msg.getAlertType());
@@ -99,16 +96,18 @@ public class RecipeController {
 
         // 3. Dynamic Moderator Action Alerts
         List<String> dashboardAlerts = new ArrayList<>();
-        if (currentUser.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("can_moderate_recipe_metadata"))) {
-            if (pendingIngredients > 0) {
-                dashboardAlerts.add("There are " + pendingIngredients
-                        + " unverified ingredients in the master pool requiring moderator review.");
-            }
+        boolean canModerate = currentUser.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("can_moderate_recipe_metadata"));
+
+        if (canModerate && pendingIngredients > 0) {
+            dashboardAlerts.add("There are " + pendingIngredients
+                    + " unverified ingredients in the master pool requiring moderator review.");
         }
         model.addAttribute("dashboardAlerts", dashboardAlerts);
 
         return "recipes/dashboard";
     }
+
     @GetMapping("/recipes/create")
     public String showCreateForm(Model model, @AuthenticationPrincipal RecipeUserDetails currentUser) {
         model.addAttribute("recipeForm", new RecipeForm());

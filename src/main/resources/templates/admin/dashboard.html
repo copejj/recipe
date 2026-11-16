@@ -11,6 +11,9 @@
 <body>
     <div layout:fragment="page-title"> Recipe Metadata Control Center </div>
     <p layout:fragment="page-subtitle"> High-level system health metrics, global database distributions, and centralized taxonomy gateways. </p>
+    <div layout:fragment="action-tray" class="action-tray">
+        <a th:href="@{/}" class="btn btn-secondary">← Home</a>
+    </div>
     <main layout:fragment="content">
         <!-- METRICS EXECUTIVE OVERVIEW WIDGET DATA GRID -->
         <div class="status-grid">

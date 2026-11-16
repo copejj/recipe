@@ -114,7 +114,7 @@ public class SecurityConfig {
                                 .formLogin(form -> form
                                         .loginPage("/login")
                                         .loginProcessingUrl("/login")
-                                        .defaultSuccessUrl("/dashboard", true)
+                                        .defaultSuccessUrl("/", true)
                                         .failureHandler((request, response, exception) -> {
                                                 if (exception instanceof AuthenticationExceptions.IpBruteForceLockedException) {
                                                         response.sendRedirect("/login?iplocked");
