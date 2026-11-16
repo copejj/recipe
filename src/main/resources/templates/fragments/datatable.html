@@ -30,8 +30,7 @@
                th:attr="data-order=${defaultOrder}"
                th:classappend="${customClass != null and !customClass.isEmpty()} ? ' ' + ${customClass} : ''">
 
-
-            <thead class="sticky-stack-item">
+            <thead class="sticky-stack-item" data-sticky-level="2">
                 <!-- Dynamically inserts the headers passed from the parent component -->
                 <tr th:replace="${headerTemplate}"></tr>
             </thead>

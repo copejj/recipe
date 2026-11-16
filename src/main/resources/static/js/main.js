@@ -75,21 +75,46 @@ function formatDisplayTimestamps() {
 }
 
 function updateStickyStack() {
-    // Automatically includes every .action-tray and every <thead class="sticky-stack-item"> in top-to-bottom order
-    const items = document.querySelectorAll(".action-tray, .sticky-stack-item");
+    const items = Array.from(document.querySelectorAll(".action-tray, .sticky-stack-item"))
+        .filter(el => el.offsetParent !== null); // Skip hidden elements (e.g., mobile card view)
+
     if (!items.length) return;
 
-    let offsetFromTop = 0;
+    // 1. Find the tallest visible element at each sticky level
+    const maxHeightByLevel = {};
+    items.forEach((el) => {
+        const level = parseInt(el.dataset.stickyLevel || "1", 10);
+        const height = el.offsetHeight;
+        if (!maxHeightByLevel[level] || height > maxHeightByLevel[level]) {
+            maxHeightByLevel[level] = height;
+        }
+    });
 
-    items.forEach((el, index) => {
-        // Skip hidden elements (such as thead on mobile screens or empty trays)
-        if (el.offsetParent === null) return;
+    // 2. Sort active levels ascending (1, 2, 3...) and calculate cumulative top offsets
+    const sortedLevels = Object.keys(maxHeightByLevel)
+        .map(Number)
+        .sort((a, b) => a - b);
 
-        el.style.zIndex = String(100 - index);
-        el.style.top = offsetFromTop + "px";
-        offsetFromTop += el.offsetHeight;
+    const topOffsetByLevel = {};
+    let cumulativeOffset = 0;
+
+    sortedLevels.forEach((level) => {
+        topOffsetByLevel[level] = cumulativeOffset;
+        cumulativeOffset += maxHeightByLevel[level];
+    });
+
+    // 3. Apply calculated top offset and descending z-index by level
+    items.forEach((el) => {
+        const level = parseInt(el.dataset.stickyLevel || "1", 10);
+        el.style.top = topOffsetByLevel[level] + "px";
+        el.style.zIndex = String(100 - level);
     });
 }
+
+// Run on initial page load and whenever the viewport resizes
+document.addEventListener("DOMContentLoaded", updateStickyStack);
+window.addEventListener("resize", updateStickyStack);
+
 
 $(document).on("click", ".clickable-admin-row", function (event) {
     // Ignore clicks on native links or buttons so they work normally
