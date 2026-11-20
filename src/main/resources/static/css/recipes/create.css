@@ -271,8 +271,6 @@ div[aria-hidden="true"] select {
 .ingredient-row .select2-container--default .select2-selection--single .select2-selection__arrow { height: 40px; top: 0; right: 8px; }
 
 .alert-restore-banner {
-    position: sticky;
-    top: 0;
     z-index: 9998;
     background-color: #fff3cd;
     color: #856404;

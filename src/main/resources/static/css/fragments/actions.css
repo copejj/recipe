@@ -203,13 +203,12 @@
 
 .action-tray,
 .sticky-stack-item {
+    top: 0;
     position: sticky;
     background-color: var(--color-surface, #ffffff);
 }
 
 .action-tray {
-    position: sticky;
-    top: 0;
     z-index: 100;
     background-color: var(--color-bg-card);
 

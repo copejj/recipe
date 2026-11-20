@@ -75,7 +75,7 @@ function formatDisplayTimestamps() {
 }
 
 function updateStickyStack() {
-    const items = Array.from(document.querySelectorAll(".action-tray, .sticky-stack-item"))
+    const items = Array.from(document.querySelectorAll(".sticky-stack-item"))
         .filter(el => el.offsetParent !== null); // Skip hidden elements (e.g., mobile card view)
 
     if (!items.length) return;
@@ -111,9 +111,18 @@ function updateStickyStack() {
     });
 }
 
-// Run on initial page load and whenever the viewport resizes
-document.addEventListener("DOMContentLoaded", updateStickyStack);
-window.addEventListener("resize", updateStickyStack);
+document.addEventListener("DOMContentLoaded", () => {
+    updateStickyStack();
+
+    const observer = new ResizeObserver(() => {
+        updateStickyStack();
+    });
+
+    document.querySelectorAll(".sticky-stack-item").forEach((el) => {
+        observer.observe(el);
+    });
+});
+
 
 
 $(document).on("click", ".clickable-admin-row", function (event) {
