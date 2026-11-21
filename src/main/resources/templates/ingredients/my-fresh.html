@@ -49,7 +49,8 @@
                         <!-- FIELD 1: INLINE INGREDIENT NAME INPUT -->
                         <td class="table-cell">
                             <input type="text" name="ingredientName" th:value="${ing.ingredientName}" required
-                                th:form="'form-' + ${ing.ingredientId}" onfocus="this.select()"
+                                th:form="'form-' + ${ing.ingredientId}" 
+                                data-select-on-focus="true"
                                 class="inline-text-input" />
                         </td>
 
