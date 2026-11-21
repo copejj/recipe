@@ -137,3 +137,43 @@ $(document).on("click", ".clickable-admin-row", function (event) {
         window.location.href = href;
     }
 });
+
+// 1. Delegated confirm() for buttons (replaces th:onclick="return confirm(...)")
+$(document).on("click", "[data-confirm]", function (event) {
+    const message = $(this).attr("data-confirm");
+    if (message && !window.confirm(message)) {
+        event.preventDefault();
+    }
+});
+
+// 2. Delegated confirm() for forms (replaces onsubmit="return confirm(...)")
+$(document).on("submit", "form[data-confirm]", function (event) {
+    const message = $(this).attr("data-confirm");
+    if (message && !window.confirm(message)) {
+        event.preventDefault();
+    }
+});
+
+// 3. Select-all on focus (replaces onfocus="this.select()")
+$(document).on("focus", "[data-select-on-focus]", function () {
+    this.select();
+});
+
+// 4. Auto-initialize generic DataTables (replaces inline <script> in fragments/datatable.html)
+document.addEventListener("DOMContentLoaded", () => {
+    $("table[data-auto-init='true']").each(function () {
+        if (!$.fn.DataTable.isDataTable(this)) {
+            $(this).DataTable({
+                paging: true,
+                searching: true,
+                ordering: true,
+                info: true,
+                pageLength: -1,
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                language: {
+                    emptyTable: "No data available in table"
+                }
+            });
+        }
+    });
+});

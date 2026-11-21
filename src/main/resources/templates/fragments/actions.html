@@ -31,7 +31,6 @@
     <span th:fragment="lockedBadge" class="badge-locked">
         Locked
     </span>
-    <!-- Add inside templates/fragments/actions.html -->
 
     <!-- Save Button -->
     <button th:fragment="saveBtn(itemId)" type="submit" class="btn btn-action"
@@ -52,13 +51,13 @@
 
     <!-- Unpublish Confirmation Button Component with Dynamic Message -->
     <button th:fragment="unpublishConfBtn(targetFormId, confirmMessage)" type="submit" th:form="${targetFormId}"
-        class="btn-action btn-action--cancel" th:onclick="return confirm([[${confirmMessage}]]);">
+        class="btn btn-action btn-action--cancel" th:data-confirm="${confirmMessage}">
         Unpublish
     </button>
 
     <!-- Delete Confirmation Button Component with Dynamic Message -->
     <button th:fragment="deleteConfBtn(targetFormId, confirmMessage)" type="submit" th:form="${targetFormId}"
-        class="btn btn-action btn-action--delete" th:onclick="return confirm([[${confirmMessage}]]);">
+        class="btn btn-action btn-action--delete" th:data-confirm="${confirmMessage}">
         Delete
     </button>
 
@@ -69,12 +68,10 @@
         </a>
     </div>
 
-    <!-- fragments/actions.html -->
     <div th:fragment="actionTray(content)" class="action-tray">
         <th:block th:replace="${content}" />
     </div>
 
-    <!-- fragments/actions.html -->
     <div th:fragment="actionTrayWithBack(backUrl, backLabel, extraActions)" class="action-tray">
         <a th:href="${backUrl}" class="btn btn-secondary" th:text="'← ' + ${backLabel}">
             ← Back
@@ -85,4 +82,5 @@
         </th:block>
     </div>
 </body>
+
 </html>

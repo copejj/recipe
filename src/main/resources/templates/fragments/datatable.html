@@ -22,12 +22,11 @@
          class="table-responsive-wrapper"
          style="margin-top: 24px;">
 
-
         <link rel="stylesheet" type="text/css" th:href="@{/css/fragments/datatable.css}" />
 
         <table th:id="${tableId}"
                class="dataTable stripe hover row-border"
-               th:attr="data-order=${defaultOrder}"
+               th:attr="data-order=${defaultOrder}, data-auto-init=${skipAutoInit == null or !skipAutoInit}"
                th:classappend="${customClass != null and !customClass.isEmpty()} ? ' ' + ${customClass} : ''">
 
             <thead class="sticky-stack-item" data-sticky-level="2">
@@ -42,27 +41,6 @@
                 </th:block>
             </tbody>
         </table>
-
-        <!-- Self-Contained Initialization Script (skipped when custom JS manages the table) -->
-        <script th:if="${skipAutoInit == null or !skipAutoInit}" th:inline="javascript">
-            $(document).ready(function () {
-                var targetTableId = /*[[${tableId}]]*/ 'genericTable';
-
-                if (!$.fn.DataTable.isDataTable('#' + targetTableId)) {
-                    $('#' + targetTableId).DataTable({
-                        "paging": true,
-                        "searching": true,
-                        "ordering": true,
-                        "info": true,
-                        "pageLength": -1,
-                        "lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
-                        "language": {
-                            "emptyTable": "No data available in table"
-                        }
-                    });
-                }
-            });
-        </script>
     </div>
 </body>
 </html>

@@ -3,9 +3,21 @@
  * Manages tab toggling, metric conversion triggers, and data-driven unit promotion.
  */
 $(document).ready(function () {
+    // --- READ PAGE METADATA FROM DOM ---
+    const metaEl = document.getElementById("recipe-page-meta");
+    const RECIPE_ID = metaEl ? Number(metaEl.dataset.recipeId) : 0;
+    const RECIPE_IS_OWNER = metaEl ? metaEl.dataset.isOwner === "true" : false;
+    const RECIPE_VISIBILITY_ID = metaEl ? Number(metaEl.dataset.visibilityId) : 1;
+    let MEASUREMENT_MATRIX = [];
+    try {
+        MEASUREMENT_MATRIX = metaEl && metaEl.dataset.measurements ? JSON.parse(metaEl.dataset.measurements) : [];
+    } catch (e) {
+        console.error("Failed to parse measurement matrix:", e);
+    }
 
     // --- LOCAL STORAGE STATE PERSISTENCE ---
-    var storageKey = window.RECIPE_ID ? ("recipe_view_state_" + window.RECIPE_ID) : null;
+    var storageKey = RECIPE_ID ? ("recipe_view_state_" + RECIPE_ID) : null;
+
     function saveViewState() {
         var checkedKeys = [];
         $(".shopping-item-checkbox").each(function () {
@@ -24,7 +36,7 @@ $(document).ready(function () {
         try {
             localStorage.setItem(storageKey, JSON.stringify(state));
             var resumeData = {
-                recipeId: window.RECIPE_ID,
+                recipeId: RECIPE_ID,
                 url: window.location.pathname.replace(/\/share\/?$/, ""),
                 title: document.title,
                 updatedAt: Date.now()
@@ -78,7 +90,7 @@ $(document).ready(function () {
             // Clear the global resume pointer if it points to this recipe
             try {
                 var activeData = JSON.parse(localStorage.getItem("active_cooking_recipe") || "{}");
-                if (activeData.recipeId === window.RECIPE_ID) {
+                if (activeData.recipeId === RECIPE_ID) {
                     localStorage.removeItem("active_cooking_recipe");
                 }
             } catch (e) {
@@ -144,13 +156,6 @@ $(document).ready(function () {
 
     // Global tracking parameter for active display system lane
     var currentActiveSystem = "imperial";
-
-    function toTitleCase(str) {
-        if (!str) return "";
-        return str.replace(/\w\S*/g, function (txt) {
-            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-        });
-    }
 
     // --- PERSPECTIVE PANEL TABS TOGGLER ---
     $(".tab-btn").click(function () {
@@ -221,7 +226,7 @@ $(document).ready(function () {
         if (isNaN(customServings) || customServings <= 0 || isNaN(originalServings) || originalServings <= 0) return;
 
         var scalingFactor = customServings / originalServings;
-        var poolMatrix = window.MEASUREMENT_MATRIX || [];
+        var poolMatrix = MEASUREMENT_MATRIX;
         var targetMetricFlag = (currentActiveSystem === "metric");
 
         $(".scalable-amount").each(function () {
@@ -243,11 +248,7 @@ $(document).ready(function () {
             var absoluteBaseUnitsSum = totalScaledValue * baseUnitEquivalent;
 
             // 1. Grab the existing text from the HTML element to use as the absolute fallback
-            var nativeDatabaseUnitText = $unitLabel.length ? ($unitLabel.data("original-unit-name") || $unitLabel.text().trim()) : "Units";
-
-            // To look strictly for the data attribute first:
             var nativeDatabaseUnitText = $unitLabel.length ? ($unitLabel.attr("data-original-unit-name") || $unitLabel.text().trim() || "Units") : "Units";
-
 
             // 2. Direct ID match to find the initial configuration inside the matrix array
             var originalUnitMeta = poolMatrix.find(function (m) { return m.measurementId === originalUnitId; });
@@ -399,7 +400,7 @@ $(document).ready(function () {
 
     // --- SHARE RECIPE & ADDRESS-BAR TRACKING ---
     // 1. Silently append /share to the browser bar for non-owners on non-private recipes
-    if (!window.RECIPE_IS_OWNER && window.RECIPE_VISIBILITY_ID !== 2) {
+    if (!RECIPE_IS_OWNER && RECIPE_VISIBILITY_ID !== 2) {
         if (!window.location.pathname.endsWith("/share")) {
             window.history.replaceState(null, "", window.location.pathname + "/share");
         }
@@ -418,7 +419,7 @@ $(document).ready(function () {
         var recipeTitle = $shareBtn.data("recipe-title") || "Check out this recipe";
 
         // Record the share click on the backend if viewer is not the recipe author
-        if (!window.RECIPE_IS_OWNER) {
+        if (!RECIPE_IS_OWNER) {
             var xsrfToken = getCookieValue("XSRF-TOKEN");
             var headers = {};
             if (xsrfToken) {

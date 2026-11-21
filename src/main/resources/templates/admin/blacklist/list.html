@@ -53,7 +53,7 @@
                                 <!-- Native Local Form Wrapper targeting the plain button fragment -->
                                 <form th:action="@{/admin/blacklist/delete/{id}(id=${item.id})}" method="POST"
                                     class="btn-action-form"
-                                    onsubmit="return confirm('Are you sure you want to remove this restriction rule?');">
+                                    data-confirm="Are you sure you want to remove this restriction rule?">
 
                                     <!-- Injects just the stylized button element natively with zero compilation risks -->
                                     <button th:replace="~{fragments/actions :: deleteBtn}"></button>

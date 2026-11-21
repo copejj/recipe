@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import tools.jackson.databind.ObjectMapper;
+
 @ControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class GlobalAdvice {
@@ -38,12 +40,14 @@ public class GlobalAdvice {
 
     private final GitProperties gitProperties;
     private final RecipeService recipeService;
+    private final ObjectMapper objectMapper;
 
-    // Unified constructor handling both dependencies gracefully
-    GlobalAdvice(GitProperties gitProperties, RecipeService recipeService) {
+    GlobalAdvice(GitProperties gitProperties, RecipeService recipeService, ObjectMapper objectMapper) {
         this.gitProperties = gitProperties;
         this.recipeService = recipeService;
+        this.objectMapper = objectMapper;
     }
+
 
     @ModelAttribute("apiHost")
     public String getApiHost() {
@@ -114,7 +118,12 @@ public class GlobalAdvice {
                 return map;
             }).toList();
 
-            model.addAttribute("globalMeasurementsPool", flatMatrix);
+            try {
+                model.addAttribute("globalMeasurementsPoolJson", objectMapper.writeValueAsString(flatMatrix));
+            } catch (Exception e) {
+                logger.error("Failed to serialize measurement pool", e);
+                model.addAttribute("globalMeasurementsPoolJson", "[]");
+            }
         }
     }
 

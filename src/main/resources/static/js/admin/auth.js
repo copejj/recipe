@@ -1,3 +1,8 @@
+$(document).on("click", "[data-toggle-password]", function () {
+    const fieldId = $(this).attr("data-toggle-password");
+    togglePasswordVisibility(fieldId, this);
+});
+
 function togglePasswordVisibility(fieldId, button) {
     const passwordInput = document.getElementById(fieldId);
     const icon = button.querySelector('i');

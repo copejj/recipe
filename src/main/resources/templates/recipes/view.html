@@ -35,7 +35,6 @@
                 confirmMessage='Are you sure you want to make this recipe private?'
             )}"></button>
 
-            <!-- Always send to the unified numeric post action route -->
             <form id="hideRecipeForm" th:action="@{/recipes/view/{id}/hide(id=${recipe.recipeId})}" method="post" style="display: none;"></form>
         </th:block>
 
@@ -72,12 +71,10 @@
                             Created by <span th:text="${recipe.user.displayName}">Author</span>
                         </div>
 
-                        <!-- Category element placed directly under the name -->
                         <div class="recipe-meta-category" th:if="${recipe.recipeCategory != null}">
                             Category: <span th:text="${recipe.recipeCategory.name}">Course Type</span>
                         </div>
 
-                        <!-- Original Recipe Source Link -->
                         <div class="recipe-meta-source" th:if="${recipe.sourceUrl != null and !recipe.sourceUrl.isBlank()}">
                             Origin Story: <a th:href="${recipe.sourceUrl}" th:text="${recipe.sourceDomain} + ' ↗'" target="_blank" 
                             rel="noopener noreferrer nofollow" class="auth-link"> Source URL ↗ </a>
@@ -104,11 +101,11 @@
                     <div class="control-group">
                         <label for="servings-scaler">Servings:</label>
                         <input type="number" id="servings-scaler" th:value="${recipe.servings}"
-                            th:data-original-servings="${recipe.servings}" min="1" step="1" onfocus="this.select()"
+                            th:data-original-servings="${recipe.servings}" min="1" step="1" data-select-on-focus="true"
                             class="servings-input-spinner" />
                     </div>
 
-                    <!-- Group 3: Reset View State Button (Hidden until user modifies defaults) -->
+                    <!-- Group 3: Reset View State Button -->
                     <div id="reset-widget-panel" class="control-group" style="display: none;">
                         <button type="button" id="reset-view-btn" class="btn-action btn-action--reset"
                             title="Reset servings, units, and checkboxes">
@@ -142,12 +139,12 @@
     </main>
 
     <th:block layout:fragment="page_scripts">
-        <script th:inline="javascript">
-            window.RECIPE_ID = /*[[${recipe.recipeId}]]*/ 0;
-            window.MEASUREMENT_MATRIX = /*[[${globalMeasurementsPool}]]*/[];
-            window.RECIPE_IS_OWNER = /*[[${canEdit}]]*/ false;
-            window.RECIPE_VISIBILITY_ID = /*[[${recipe.recipeVisibility.recipeVisibilityId}]]*/ 1;
-        </script>
+        <div id="recipe-page-meta"
+             th:data-recipe-id="${recipe.recipeId}"
+             th:data-is-owner="${canEdit}"
+             th:data-visibility-id="${recipe.recipeVisibility.recipeVisibilityId}"
+             th:data-measurements="${globalMeasurementsPoolJson}"
+             hidden></div>
         <script th:src="@{/js/recipes/view.js}"></script>
     </th:block> 
 </body>
