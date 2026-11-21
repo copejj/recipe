@@ -145,13 +145,6 @@ $(document).ready(function () {
     // Global tracking parameter for active display system lane
     var currentActiveSystem = "imperial";
 
-    function toTitleCase(str) {
-        if (!str) return "";
-        return str.replace(/\w\S*/g, function (txt) {
-            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-        });
-    }
-
     // --- PERSPECTIVE PANEL TABS TOGGLER ---
     $(".tab-btn").click(function () {
         var clickedTab = $(this);
@@ -243,11 +236,7 @@ $(document).ready(function () {
             var absoluteBaseUnitsSum = totalScaledValue * baseUnitEquivalent;
 
             // 1. Grab the existing text from the HTML element to use as the absolute fallback
-            var nativeDatabaseUnitText = $unitLabel.length ? ($unitLabel.data("original-unit-name") || $unitLabel.text().trim()) : "Units";
-
-            // To look strictly for the data attribute first:
             var nativeDatabaseUnitText = $unitLabel.length ? ($unitLabel.attr("data-original-unit-name") || $unitLabel.text().trim() || "Units") : "Units";
-
 
             // 2. Direct ID match to find the initial configuration inside the matrix array
             var originalUnitMeta = poolMatrix.find(function (m) { return m.measurementId === originalUnitId; });
