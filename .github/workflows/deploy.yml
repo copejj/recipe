@@ -69,27 +69,18 @@ jobs:
         with:
           name: deployment-war-package
           path: .
-
-      - name: Setup Cloudflared & SSH Config
+      - name: Install Cloudflared
+        uses: AnimMouse/setup-cloudflared@v2
+      - name: Setup SSH Config
         run: |
-          curl -fsSL https://cloudflare.com | sudo tee /usr/share/keyrings/cloudflare-public-v2.gpg >/dev/null
-          echo "deb [signed-by=/usr/share/keyrings/cloudflare-public-v2.gpg] https://cloudflare.com any main" | sudo tee /etc/apt/sources.list.d/cloudflared.list
-          sudo apt-get update && sudo apt-get install -y cloudflared
-
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
 
-          cat <<EOF > ~/.ssh/config
-          Host ${{ vars.PROD_HOST }}
-            User ${{ secrets.SSH_PRIVATE_USERNAME }}
-            IdentityFile ~/.ssh/id_ed25519
-            StrictHostKeyChecking no
-            ProxyCommand /usr/bin/cloudflared access ssh --hostname %h
-          EOF
+          printf "Host %s\n  User %s\n  IdentityFile ~/.ssh/id_ed25519\n  StrictHostKeyChecking no\n  ProxyCommand cloudflared access ssh --hostname %%h\n" \
+            "${{ vars.PROD_HOST }}" "${{ secrets.SSH_PRIVATE_USERNAME }}" > ~/.ssh/config
           chmod 600 ~/.ssh/config
-
       - name: Copy WAR over to Server Target Staging Path
         run: |
           scp "${{ vars.PROD_APP_NAME }}.war" "${{ vars.PROD_HOST }}:${{ vars.PROD_APP_PATH }}/target/"
