@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" lang="en">
+<body>
+    <th:block th:fragment="pool-panel">
+        <div th:if="${unscheduledPool.isEmpty()}" class="alert alert--info">
+            Your unscheduled recipe shortlist is empty. Leave Day/Date blank when adding a recipe to save ideas here first.
+        </div>
+
+        <div th:each="entry : ${unscheduledPool}" class="pool-item-row">
+            <div>
+                <a th:href="@{/view/{id}(id=${entry.recipe.recipeId})}"
+                   class="pool-item-title"
+                   th:text="${entry.recipe.title}">Recipe Title</a>
+                <span class="plan-card-meta" th:text="${entry.recipe.description}">Description</span>
+            </div>
+
+            <form th:if="${canEdit}"
+                  th:action="@{/meal-plans/{id}/entries/{eid}/schedule(id=${plan.publicId}, eid=${entry.mealPlanRecipeId})}"
+                  method="post" class="inline-flex-form inline-flex-form--tight">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                <select th:if="${plan.isRecurring}" name="dayOfWeek" class="form-input" required>
+                    <option value="1">Monday</option>
+                    <option value="2">Tuesday</option>
+                    <option value="3">Wednesday</option>
+                    <option value="4">Thursday</option>
+                    <option value="5">Friday</option>
+                    <option value="6">Saturday</option>
+                    <option value="7">Sunday</option>
+                </select>
+
+                <input th:unless="${plan.isRecurring}" type="date" name="scheduledDate" class="form-input" required />
+
+                <select name="mealType" class="form-input">
+                    <option value="Dinner">Dinner</option>
+                    <option value="Lunch">Lunch</option>
+                    <option value="Breakfast">Breakfast</option>
+                    <option value="Snack">Snack</option>
+                </select>
+
+                <button type="submit" class="btn btn--primary">Assign to Day</button>
+            </form>
+        </div>
+    </th:block>
+</body>
+</html>

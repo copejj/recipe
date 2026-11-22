@@ -45,8 +45,10 @@ public class RecipeUserDetailsService implements UserDetailsService {
             throw new AuthenticationExceptions.IpBruteForceLockedException("IP temporary restriction active.");
         }
 
-        UserAuth userAuth = userAuthRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("No active account matching email: " + email));
+        String normalizedEmail = (email != null) ? email.trim().toLowerCase() : "";
+
+        UserAuth userAuth = userAuthRepository.findByEmail(normalizedEmail)
+                .orElseThrow(() -> new UsernameNotFoundException("No active account matching email: " + normalizedEmail));
 
         return new RecipeUserDetails(userAuth);
     }

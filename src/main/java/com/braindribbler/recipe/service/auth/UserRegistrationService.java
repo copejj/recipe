@@ -15,6 +15,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -27,6 +30,9 @@ public class UserRegistrationService {
     private final PasswordEncoder passwordEncoder;
     private final MailgunEmailService mailgunEmailService;
     private final RoleRepository roleRepository;
+
+    private static final long VERIFICATION_RESEND_COOLDOWN_MINUTES = 15;
+    private static final long VERIFICATION_TOKEN_VALIDITY_HOURS = 24;
 
     @Value("${app.api.host}")
     private String appApiHost;
@@ -45,48 +51,6 @@ public class UserRegistrationService {
         this.roleRepository = roleRepository;
     }
 
-    @Transactional
-    public User registerNewUser(String email, String rawPassword, String firstName, String lastName,
-            String displayName, Set<Role> assignedRoles) {
-
-        if (userRepository.existsByUserAuthEmail(email)) {
-            throw new IllegalArgumentException("An account with this email address already exists.");
-        }
-
-        ProfileVisibility defaultVisibility = profileVisibilityRepository.findByVisibilityName("PUBLIC")
-                .orElseThrow(() -> new IllegalStateException("Default profile visibility configuration not found."));
-
-        User user = new User();
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setDisplayName(displayName);
-        user.setProfileVisibility(defaultVisibility);
-
-        // 🔑 THE FIX: If no special roles are explicitly passed (like by
-        // DataInitializer),
-        // automatically attach the baseline ROLE_USER from the database!
-        if (assignedRoles != null && !assignedRoles.isEmpty()) {
-            user.setRoles(assignedRoles);
-        } else {
-            Role defaultRole = roleRepository.findByRoleName("ROLE_USER")
-                    .orElseThrow(() -> new IllegalStateException(
-                            "Required database role configuration 'ROLE_USER' not found."));
-            user.addRole(defaultRole); // Seamlessly drops a record into your user_roles mapping table
-        }
-
-        UserAuth auth = new UserAuth();
-        auth.setEmail(email);
-        auth.setPassword(passwordEncoder.encode(rawPassword));
-        auth.setUser(user);
-        auth.setVerified(false);
-
-        UUID token = UUID.randomUUID();
-        auth.setVerificationToken(token);
-        user.setUserAuth(auth);
-
-        return userRepository.save(user);
-    }
-
     public void sendVerificationEmail(User user) {
         UserAuth auth = user.getUserAuth();
         String verificationLink = appApiHost + "/verify?token=" + auth.getVerificationToken();
@@ -99,13 +63,81 @@ public class UserRegistrationService {
 
         String email = auth.getEmail();
         try {
-            mailgunEmailService.sendEmail(email, emailSubject, emailBody);
+            mailgunEmailService.sendHtmlEmail(
+                    email,
+                    emailSubject,
+                    "email/verify-email",
+                    Map.of(
+                            "firstName", user.getFirstName(),
+                            "actionUrl", verificationLink
+                    ),
+                    emailBody
+            );
         } catch (Exception e) {
-            // Log the error but allow the method to complete so the user's browser doesn't
-            // throw a 500 error
             System.err.println(
                     "CRITICAL: Failed to dispatch verification email to " + email + ". Error: " + e.getMessage());
         }
+    }
+
+    @Transactional
+    public Optional<User> registerNewUser(String email, String rawPassword, String firstName, String lastName,
+            String displayName, Set<Role> assignedRoles) {
+
+        Optional<UserAuth> existingAuthOpt = userAuthRepository.findByEmail(email);
+
+        if (existingAuthOpt.isPresent()) {
+            UserAuth existingAuth = existingAuthOpt.get();
+
+            // 1. Already verified -> Silently ignore to prevent account enumeration
+            if (existingAuth.isVerified()) {
+                return Optional.empty();
+            }
+
+            // 2. Unverified, but within cooldown window -> Silently hold off
+            if (existingAuth.getVerificationSentAt() != null &&
+                existingAuth.getVerificationSentAt().isAfter(
+                        OffsetDateTime.now().minusMinutes(VERIFICATION_RESEND_COOLDOWN_MINUTES))) {
+                return Optional.empty();
+            }
+
+            // 3. Unverified and past cooldown -> Issue fresh token & resend
+            existingAuth.setVerificationToken(UUID.randomUUID());
+            existingAuth.setVerificationSentAt(OffsetDateTime.now());
+            existingAuth.setUpdatedAt(OffsetDateTime.now());
+            userAuthRepository.save(existingAuth);
+
+            return Optional.of(existingAuth.getUser());
+        }
+
+        // 4. New user registration
+        ProfileVisibility defaultVisibility = profileVisibilityRepository.findByVisibilityName("PUBLIC")
+                .orElseThrow(() -> new IllegalStateException("Default profile visibility configuration not found."));
+
+        User user = new User();
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setDisplayName(displayName);
+        user.setProfileVisibility(defaultVisibility);
+
+        if (assignedRoles != null && !assignedRoles.isEmpty()) {
+            user.setRoles(assignedRoles);
+        } else {
+            Role defaultRole = roleRepository.findByRoleName("ROLE_USER")
+                    .orElseThrow(() -> new IllegalStateException(
+                            "Required database role configuration 'ROLE_USER' not found."));
+            user.addRole(defaultRole);
+        }
+
+        UserAuth auth = new UserAuth();
+        auth.setEmail(email);
+        auth.setPassword(passwordEncoder.encode(rawPassword));
+        auth.setUser(user);
+        auth.setVerified(false);
+        auth.setVerificationToken(UUID.randomUUID());
+        auth.setVerificationSentAt(OffsetDateTime.now());
+        user.setUserAuth(auth);
+
+        return Optional.of(userRepository.save(user));
     }
 
     @Transactional
@@ -113,8 +145,16 @@ public class UserRegistrationService {
         UserAuth authObj = userAuthRepository.findByVerificationToken(token)
                 .orElseThrow(() -> new IllegalArgumentException("This verification link is invalid or has expired."));
 
+        if (authObj.getVerificationSentAt() != null &&
+            authObj.getVerificationSentAt().isBefore(
+                    OffsetDateTime.now().minusHours(VERIFICATION_TOKEN_VALIDITY_HOURS))) {
+            throw new IllegalArgumentException("This verification link has expired. Please register again to receive a new link.");
+        }
+
         authObj.setVerified(true);
-        authObj.setVerificationToken(null); // Wipe the token footprint right away so it can't be clicked again
+        authObj.setVerificationToken(null);
+        authObj.setVerificationSentAt(null);
+        authObj.setUpdatedAt(OffsetDateTime.now());
 
         userAuthRepository.save(authObj);
     }

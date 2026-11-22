@@ -6,6 +6,7 @@ import com.braindribbler.recipe.service.auth.UserRegistrationService;
 
 import jakarta.validation.Valid;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -69,16 +70,16 @@ public class AuthController {
 
         try {
             // 3. Map DTO input strings directly to your core service layer
-            User newUser = userRegistrationService.registerNewUser(
-                    registrationDto.getEmail(),
-                    registrationDto.getPassword(),
-                    registrationDto.getFirstName(),
-                    registrationDto.getLastName(),
-                    registrationDto.getDisplayName(),
-                    null
+            Optional<User> userToVerify = userRegistrationService.registerNewUser(
+                registrationDto.getEmail(),
+                registrationDto.getPassword(),
+                registrationDto.getFirstName(),
+                registrationDto.getLastName(),
+                registrationDto.getDisplayName(),
+                null
             );
 
-            userRegistrationService.sendVerificationEmail(newUser);
+            userToVerify.ifPresent(userRegistrationService::sendVerificationEmail);
             return "redirect:/login?success";
 
         } catch (IllegalArgumentException e) {

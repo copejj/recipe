@@ -49,6 +49,9 @@ public class UserAuth {
     @Column(name = "reset_password_expires_at")
     private OffsetDateTime resetPasswordExpiresAt;
 
+    @Column(name = "verification_sent_at")
+    private OffsetDateTime verificationSentAt;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
@@ -69,8 +72,12 @@ public class UserAuth {
     }
 
     public void setEmail(String email) {
-        this.email = email;
+        if (email == null) {
+            throw new IllegalArgumentException("Email cannot be null");
+        }
+        this.email = email.trim().toLowerCase();
     }
+
 
     public String getPassword() {
         return password;
@@ -142,5 +149,13 @@ public class UserAuth {
 
     public void setResetPasswordExpiresAt(OffsetDateTime resetPasswordExpiresAt) {
         this.resetPasswordExpiresAt = resetPasswordExpiresAt;
+    }
+
+    public OffsetDateTime getVerificationSentAt() {
+        return verificationSentAt;
+    }
+
+    public void setVerificationSentAt(OffsetDateTime verificationSentAt) {
+        this.verificationSentAt = verificationSentAt;
     }
 }
