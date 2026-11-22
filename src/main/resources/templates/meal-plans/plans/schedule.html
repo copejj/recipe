@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" lang="en">
+<body>
+    <th:block th:fragment="schedule-panel">
+        <div th:if="${scheduledMeals.isEmpty()}" class="alert alert--info">
+            No meals scheduled yet. Add a recipe with a date/day above or assign one from your Saved Recipe Pool!
+        </div>
+
+        <form th:unless="${scheduledMeals.isEmpty()}"
+              th:action="@{/meal-plans/{id}/shopping-list/generate(id=${plan.publicId})}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+            <div th:replace="~{fragments/datatable :: genericTableWithOrder(
+                'scheduledMealsTable',
+                ${scheduledMeals},
+                ~{::scheduledMealHeaders},
+                ~{::scheduledMealRow},
+                '[[1, &quot;asc&quot;]]'
+            )}">
+
+                <th:block th:fragment="scheduledMealHeaders">
+                    <tr>
+                        <th class="col-check-narrow" data-orderable="false">Shop</th>
+                        <th>Day / Date</th>
+                        <th>Meal</th>
+                        <th>Recipe</th>
+                        <th>Servings</th>
+                        <th th:if="${canEdit}" data-orderable="false">Actions</th>
+                    </tr>
+                </th:block>
+
+                <th:block th:fragment="scheduledMealRow">
+                    <tr th:data-href="@{/view/{id}(id=${item.recipe.recipeId})}"
+                        th:classappend="${iterStat != null and iterStat.even} ? 'row-even' : ''"
+                        class="clickable-admin-row">
+
+                        <td data-label="Shop">
+                            <input type="checkbox" name="selectedEntryIds" th:value="${item.mealPlanRecipeId}" checked />
+                        </td>
+
+                        <td data-label="Day / Date"
+                            th:data-order="${plan.isRecurring ? item.dayOfWeek : item.scheduledDate}">
+                            <span th:if="${plan.isRecurring}"
+                                  th:text="${#strings.arraySplit('Mon,Tue,Wed,Thu,Fri,Sat,Sun', ',')[item.dayOfWeek - 1]}">Mon</span>
+                            <span th:unless="${plan.isRecurring}" th:text="${item.scheduledDate}">2026-11-23</span>
+                        </td>
+
+                        <td data-label="Meal">
+                            <span class="badge-permission"
+                                  th:text="${item.mealType != null ? item.mealType : 'Any'}">Dinner</span>
+                        </td>
+
+                        <td data-label="Recipe">
+                            <a th:href="@{/view/{id}(id=${item.recipe.recipeId})}"
+                               th:text="${item.recipe.title}"
+                               class="pool-item-title">Recipe Title</a>
+                        </td>
+
+                        <td data-label="Servings"
+                            th:text="${item.servingsOverride != null ? item.servingsOverride : item.recipe.servings}">4</td>
+
+                        <td th:if="${canEdit}" data-label="Actions" class="actions-cell">
+                            <button type="submit"
+                                    th:formaction="@{/meal-plans/{id}/entries/{eid}/remove(id=${plan.publicId}, eid=${item.mealPlanRecipeId})}"
+                                    class="btn btn-action btn-action--delete">
+                                Remove
+                            </button>
+                        </td>
+                    </tr>
+                </th:block>
+            </div>
+
+            <button type="submit" class="btn btn--primary">
+                Create Shopping List from Checked Meals
+            </button>
+        </form>
+    </th:block>
+</body>
+</html>
