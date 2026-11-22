@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -99,10 +100,17 @@ public class UserRegistrationService {
 
         String email = auth.getEmail();
         try {
-            mailgunEmailService.sendEmail(email, emailSubject, emailBody);
+            mailgunEmailService.sendHtmlEmail(
+                    email,
+                    emailSubject,
+                    "email/verify-email",
+                    Map.of(
+                            "firstName", user.getFirstName(),
+                            "actionUrl", verificationLink
+                    ),
+                    emailBody
+            );
         } catch (Exception e) {
-            // Log the error but allow the method to complete so the user's browser doesn't
-            // throw a 500 error
             System.err.println(
                     "CRITICAL: Failed to dispatch verification email to " + email + ". Error: " + e.getMessage());
         }

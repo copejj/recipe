@@ -1,0 +1,110 @@
+/* ==========================================================================
+   MEAL PLANS & SHOPPING LIST LAYOUT HELPERS
+   ========================================================================== */
+.meal-plan-card-wide {
+    max-width: 100%;
+    margin: 0 0 24px 0;
+    padding: 24px;
+    background-color: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+}
+
+.inline-flex-form {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.inline-flex-form--tight {
+    gap: 8px;
+    align-items: center;
+}
+
+.inline-form-reset {
+    display: inline;
+    margin: 0;
+}
+
+.flex-field-grow {
+    flex: 2;
+    min-width: 220px;
+    margin-bottom: 0;
+}
+
+.flex-field-med {
+    min-width: 150px;
+    margin-bottom: 0;
+}
+
+.flex-field-sm {
+    width: 100px;
+    margin-bottom: 0;
+}
+
+.checkbox-label-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    margin-bottom: 8px;
+}
+
+.plan-card-meta {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+}
+
+.pool-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 18px;
+    margin-bottom: 12px;
+    background-color: var(--color-bg-body);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+}
+
+.pool-item-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.pool-item-title:hover {
+    text-decoration: underline;
+}
+
+.shopping-row-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.badge-extra-item {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-left: 6px;
+    background-color: var(--color-badge-blue-bg);
+    color: var(--color-badge-blue-text);
+}
+
+.sync-status-pill {
+    margin-left: auto;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+}
+
+.col-check-narrow {
+    width: 44px;
+}

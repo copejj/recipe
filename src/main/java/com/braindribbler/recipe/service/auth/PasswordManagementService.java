@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,16 +41,32 @@ public class PasswordManagementService {
         userAuthRepository.save(auth);
 
         String resetLink = baseUrl + "/password/reset?token=" + auth.getResetPasswordToken();
-        String emailText = "Click the link below to reset your recipe site password:\n\n" + resetLink;
+        String firstName = (auth.getUser() != null && auth.getUser().getFirstName() != null)
+                ? auth.getUser().getFirstName()
+                : "Chef";
+
+        String emailText = "Hi " + firstName + ",\n\n" +
+                "We received a request to reset your Brain Dribbler Recipes password. Click the link below to choose a new one:\n\n" +
+                resetLink + "\n\n" +
+                "This link will expire in 2 hours. If you didn't request a password reset, you can safely ignore this email.\n\n" +
+                "Happy Cooking!";
 
         try {
-            emailService.sendEmail(auth.getEmail(), "Password Reset Request", emailText);
+            emailService.sendHtmlEmail(
+                    auth.getEmail(),
+                    "Password Reset Request",
+                    "email/reset-password",
+                    Map.of(
+                            "firstName", firstName,
+                            "actionUrl", resetLink
+                    ),
+                    emailText
+            );
         } catch (Exception e) {
-            // Log the error but allow the method to complete so the user's browser doesn't
-            // throw a 500 error
             System.err.println(
                     "CRITICAL: Failed to dispatch password reset email to " + email + ". Error: " + e.getMessage());
         }
+
         return true;
     }
 

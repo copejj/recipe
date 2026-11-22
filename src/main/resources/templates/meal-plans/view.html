@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
+
+<head>
+    <title th:text="${plan.planName}">Meal Plan</title>
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" th:href="@{/css/recipes/view.css}" />
+        <link rel="stylesheet" th:href="@{/css/meal-plans/meal-plan.css}" />
+    </th:block>
+</head>
+
+<body>
+    <h1 layout:fragment="page-title" th:text="${plan.planName}">Meal Plan</h1>
+    <p layout:fragment="page-subtitle"
+       th:text="${plan.description != null && !plan.description.isBlank()} ? ${plan.description} : 'Organize recipes by day and build your shopping list.'"></p>
+
+    <div layout:fragment="action-tray" class="action-tray">
+        <a th:href="@{/meal-plans}" class="btn btn-secondary">← All Meal Plans</a>
+
+        <a th:if="${activeShoppingList != null}"
+           th:href="@{/shopping-lists/{id}(id=${activeShoppingList.publicId})}"
+           class="btn btn-action btn-action--view">
+            View Current Shopping List
+        </a>
+
+        <form th:action="@{/meal-plans/{id}/shopping-list/generate(id=${plan.publicId})}" method="post" class="inline-form-reset">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <button type="submit" class="btn btn-action btn-action--primary"
+                    th:disabled="${scheduledMeals.isEmpty()}">
+                Generate / Sync Shopping List
+            </button>
+        </form>
+    </div>
+
+    <main layout:fragment="content">
+        <div th:if="${successMessage}" class="alert alert--success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert--danger" th:text="${errorMessage}"></div>
+
+        <!-- ADD RECIPE BAR -->
+        <div th:if="${canEdit}" class="meal-plan-card-wide">
+            <h3 class="profile-section-title">Add Recipe to Plan</h3>
+            <form th:action="@{/meal-plans/{id}/recipes/add(id=${plan.publicId})}" method="post" class="inline-flex-form">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                <div class="form-group flex-field-grow">
+                    <label class="form-label">Recipe</label>
+                    <select name="recipeId" class="form-input select2-enable" required>
+                        <option value="">-- Choose a Recipe --</option>
+                        <optgroup label="My Created Recipes" th:if="${!availableRecipes.isEmpty()}">
+                            <option th:each="r : ${availableRecipes}" th:value="${r.recipeId}" th:text="${r.title}"></option>
+                        </optgroup>
+                        <optgroup label="Saved Cookbook Recipes" th:if="${!savedCookbookRecipes.isEmpty()}">
+                            <option th:each="r : ${savedCookbookRecipes}" th:value="${r.recipeId}" th:text="${r.title}"></option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div th:if="${plan.isRecurring}" class="form-group flex-field-med">
+                    <label class="form-label">Day of Week</label>
+                    <select name="dayOfWeek" class="form-input">
+                        <option value="">(Save to Pool Only)</option>
+                        <option value="1">Monday</option>
+                        <option value="2">Tuesday</option>
+                        <option value="3">Wednesday</option>
+                        <option value="4">Thursday</option>
+                        <option value="5">Friday</option>
+                        <option value="6">Saturday</option>
+                        <option value="7">Sunday</option>
+                    </select>
+                </div>
+
+                <div th:unless="${plan.isRecurring}" class="form-group flex-field-med">
+                    <label class="form-label">Date (Blank = Pool)</label>
+                    <input type="date" name="scheduledDate" class="form-input" th:value="${plan.startDate}" />
+                </div>
+
+                <div class="form-group flex-field-med">
+                    <label class="form-label">Meal</label>
+                    <select name="mealType" class="form-input">
+                        <option value="Dinner">Dinner</option>
+                        <option value="Lunch">Lunch</option>
+                        <option value="Breakfast">Breakfast</option>
+                        <option value="Snack">Snack</option>
+                    </select>
+                </div>
+
+                <div class="form-group flex-field-sm">
+                    <label class="form-label">Servings</label>
+                    <input type="number" name="servingsOverride" min="1" class="form-input" placeholder="Default" />
+                </div>
+
+                <button type="submit" class="btn btn--primary">Add</button>
+            </form>
+        </div>
+        <!-- TABS -->
+        <div class="view-mode-tabs" role="tablist">
+            <button type="button" class="tab-btn active" role="tab" aria-selected="true" data-target="schedule-panel">
+                Scheduled Meals (<span th:text="${scheduledMeals.size()}">0</span>)
+            </button>
+            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-target="pool-panel">
+                Saved Recipe Pool (<span th:text="${unscheduledPool.size()}">0</span>)
+            </button>
+            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-target="share-panel">
+                Sharing (<span th:text="${plan.shares.size()}">0</span>)
+            </button>
+        </div>
+
+        <!-- TAB 1: SCHEDULED MEALS -->
+        <div id="schedule-panel" class="tab-panel active-panel">
+            <div th:if="${scheduledMeals.isEmpty()}" class="alert alert--info">
+                No meals scheduled yet. Add a recipe with a date/day above or assign one from your Saved Recipe Pool!
+            </div>
+
+            <form th:unless="${scheduledMeals.isEmpty()}"
+                  th:action="@{/meal-plans/{id}/shopping-list/generate(id=${plan.publicId})}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                <div class="table-responsive-wrapper">
+                    <table class="dataTable stripe hover row-border">
+                        <thead>
+                            <tr>
+                                <th class="col-check-narrow">Shop</th>
+                                <th>Day / Date</th>
+                                <th>Meal</th>
+                                <th>Recipe</th>
+                                <th>Servings</th>
+                                <th th:if="${canEdit}">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="entry : ${scheduledMeals}">
+                                <td>
+                                    <input type="checkbox" name="selectedEntryIds" th:value="${entry.mealPlanRecipeId}" checked />
+                                </td>
+                                <td>
+                                    <span th:if="${plan.isRecurring}"
+                                          th:text="${#strings.arraySplit('Mon,Tue,Wed,Thu,Fri,Sat,Sun', ',')[entry.dayOfWeek - 1]}">Mon</span>
+                                    <span th:unless="${plan.isRecurring}" th:text="${entry.scheduledDate}">2026-11-23</span>
+                                </td>
+                                <td th:text="${entry.mealType != null ? entry.mealType : 'Any'}">Dinner</td>
+                                <td>
+                                    <a th:href="@{/view/{id}(id=${entry.recipe.recipeId})}" th:text="${entry.recipe.title}">Recipe Title</a>
+                                </td>
+                                <td th:text="${entry.servingsOverride != null ? entry.servingsOverride : entry.recipe.servings}">4</td>
+                                <td th:if="${canEdit}">
+                                    <button type="submit"
+                                            th:formaction="@{/meal-plans/{id}/entries/{eid}/remove(id=${plan.publicId}, eid=${entry.mealPlanRecipeId})}"
+                                            class="btn btn-action btn-action--delete">
+                                        Remove
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <button type="submit" class="btn btn--primary">
+                    Create Shopping List from Checked Meals
+                </button>
+            </form>
+        </div>
+
+                <!-- TAB 2: UNSCHEDULED POOL -->
+        <div id="pool-panel" class="tab-panel hide-cell">
+            <div th:if="${unscheduledPool.isEmpty()}" class="alert alert--info">
+                Your unscheduled recipe shortlist is empty. Leave Day/Date blank when adding a recipe to save ideas here first.
+            </div>
+
+            <div th:each="entry : ${unscheduledPool}" class="pool-item-row">
+                <div>
+                    <a th:href="@{/view/{id}(id=${entry.recipe.recipeId})}"
+                       class="pool-item-title"
+                       th:text="${entry.recipe.title}">Recipe Title</a>
+                    <span class="plan-card-meta" th:text="${entry.recipe.description}">Description</span>
+                </div>
+
+                <form th:if="${canEdit}"
+                      th:action="@{/meal-plans/{id}/entries/{eid}/schedule(id=${plan.publicId}, eid=${entry.mealPlanRecipeId})}"
+                      method="post" class="inline-flex-form inline-flex-form--tight">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                    <select th:if="${plan.isRecurring}" name="dayOfWeek" class="form-input" required>
+                        <option value="1">Monday</option>
+                        <option value="2">Tuesday</option>
+                        <option value="3">Wednesday</option>
+                        <option value="4">Thursday</option>
+                        <option value="5">Friday</option>
+                        <option value="6">Saturday</option>
+                        <option value="7">Sunday</option>
+                    </select>
+
+                    <input th:unless="${plan.isRecurring}" type="date" name="scheduledDate" class="form-input" required />
+
+                    <select name="mealType" class="form-input">
+                        <option value="Dinner">Dinner</option>
+                        <option value="Lunch">Lunch</option>
+                        <option value="Breakfast">Breakfast</option>
+                        <option value="Snack">Snack</option>
+                    </select>
+
+                    <button type="submit" class="btn btn--primary">Assign to Day</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- TAB 3: SHARING -->
+        <div id="share-panel" class="tab-panel hide-cell">
+            <div class="meal-plan-card-wide">
+                <h3 class="profile-section-title">Share This Meal Plan</h3>
+                <p>Shared collaborators can view this meal plan and check off or add items on its shopping list.</p>
+
+                <form th:if="${isOwner}" th:action="@{/meal-plans/{id}/share(id=${plan.publicId})}" method="post" class="inline-flex-form">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                    <div class="form-group flex-field-grow">
+                        <label class="form-label">User Email</label>
+                        <input type="email" name="email" class="form-input" required placeholder="friend@example.com" />
+                    </div>
+
+                    <div class="form-group flex-field-med">
+                        <label class="form-label">Permission</label>
+                        <select name="accessLevelId" class="form-input">
+                            <option th:each="lvl : ${accessLevels}"
+                                    th:value="${lvl.accessLevelId}"
+                                    th:text="${lvl.accessName}">VIEW</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn--primary">Share</button>
+                </form>
+
+                <h4 class="profile-section-title">People with Access</h4>
+                <ul>
+                    <li><strong th:text="${plan.user.displayName}">Owner</strong> (Owner)</li>
+                    <li th:each="share : ${plan.shares}">
+                        <span th:text="${share.sharedUser.displayName}">Collaborator</span>
+                        — <span th:text="${share.accessLevel.accessName}">VIEW</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <th:block layout:fragment="page_scripts">
+        <script th:src="@{/js/meal-plans/meal-plan.js}"></script>
+    </th:block>
+</body>
+</html>
