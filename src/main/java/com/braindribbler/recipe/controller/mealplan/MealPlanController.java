@@ -21,7 +21,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Controller
@@ -105,9 +107,14 @@ public class MealPlanController {
         model.addAttribute("unscheduledPool", unscheduledPool);
         model.addAttribute("scheduledMeals", scheduledMeals);
         model.addAttribute("availableRecipes", recipeService.getRecipesByUserId(user.getUserId()));
-        model.addAttribute("savedCookbookRecipes", user.getSavedRecipes());
         model.addAttribute("activeShoppingList", activeShoppingList);
         model.addAttribute("accessLevels", accessLevelRepository.findAll());
+
+        Set<Recipe> savedCookbookRecipes = userRepository.findByIdWithSavedRecipes(user.getUserId())
+            .map(u -> u.getSavedRecipes())
+            .orElse(Collections.emptySet());
+
+        model.addAttribute("savedCookbookRecipes", savedCookbookRecipes);
 
         return "meal-plans/view";
     }

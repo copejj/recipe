@@ -28,4 +28,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsByPublicId(UUID publicId);
 
     void deleteByPublicId(UUID publicId);
+
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.savedRecipes WHERE u.userId = :userId")
+    Optional<User> findByIdWithSavedRecipes(@Param("userId") Integer userId);
 }
