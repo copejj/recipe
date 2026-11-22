@@ -39,7 +39,7 @@ public class RegistrationDto {
     }
 
     public void setEmail(String email) {
-        this.email = email;
+        this.email = (email != null) ? email.trim() : null;
     }
 
     public String getPassword() {
@@ -63,7 +63,7 @@ public class RegistrationDto {
     }
 
     public void setFirstName(String firstName) {
-        this.firstName = firstName;
+        this.firstName = (firstName != null) ? firstName.trim() : null;
     }
 
     public String getLastName() {
@@ -71,7 +71,7 @@ public class RegistrationDto {
     }
 
     public void setLastName(String lastName) {
-        this.lastName = lastName;
+        this.lastName = (lastName != null) ? lastName.trim() : null;
     }
 
     public String getDisplayName() {
@@ -79,6 +79,6 @@ public class RegistrationDto {
     }
 
     public void setDisplayName(String displayName) {
-        this.displayName = displayName;
+        this.displayName = (displayName != null) ? displayName.trim() : null;
     }
 }

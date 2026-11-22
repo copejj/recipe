@@ -19,10 +19,11 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     List<User> findAllWithAuth();
 
     @Query("SELECT u FROM User u " +
-            "JOIN FETCH u.userAuth ua " +
-            "LEFT JOIN FETCH u.roles " +
-            "WHERE ua.email = :email")
+        "JOIN FETCH u.userAuth ua " +
+        "LEFT JOIN FETCH u.roles " +
+        "WHERE LOWER(ua.email) = TRIM(LOWER(:email))")
     Optional<User> findByUserAuthEmail(@Param("email") String email);
+
 
     boolean existsByPublicId(UUID publicId);
 

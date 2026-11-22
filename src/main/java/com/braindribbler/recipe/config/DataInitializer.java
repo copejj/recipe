@@ -65,12 +65,14 @@ public class DataInitializer implements CommandLineRunner {
                     adminFirstName,
                     adminLastName,
                     adminDisplayName,
-                    Set.of(adminRole));
+                    Set.of(adminRole))
+                    .orElse(null);
 
             if (adminUser != null && adminUser.getUserAuth() != null) {
                 UserAuth adminAuth = adminUser.getUserAuth();
                 adminAuth.setVerified(true);
                 adminAuth.setVerificationToken(null);
+                adminAuth.setVerificationSentAt(null); // Keeps seeded admin state clean
                 userAuthRepository.save(adminAuth);
                 System.out.println("Super Admin verification state explicitly forced to ACTIVE.");
             }
