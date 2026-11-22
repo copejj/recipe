@@ -57,6 +57,15 @@
                 </div>
             </div>
 
+            <div class="status-item clickable-card">
+                <span class="status-icon">📅</span>
+                <div class="status-info">
+                    <span class="status-value">Planning Your Week?</span>
+                    <a th:href="@{/meal-plans}" 
+                        class="status-link stretched-link">View Meal Plans &amp; Shopping Lists →</a>
+                </div>
+            </div>
+
             <div th:if="${freshIngredientsCount > 0}" class="status-item clickable-card success-alert" >
                 <span class="status-icon">🌱</span>
                 <div class="status-info">
