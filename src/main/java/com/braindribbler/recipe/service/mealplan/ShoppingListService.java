@@ -154,4 +154,46 @@ public class ShoppingListService {
                 .findFirst()
                 .orElse(all.get(all.size() - 1));
     }
+
+    @Transactional
+    public void resetFromMealPlan(ShoppingList list, User triggeredBy) {
+        if (list.getMealPlan() == null) {
+            // Standalone list: just uncheck everything and remove manual additions
+            list.getItems().removeIf(item -> Boolean.TRUE.equals(item.getIsManualAddition()));
+            list.getItems().forEach(item -> item.setIsChecked(false));
+            shoppingListRepository.save(list);
+            return;
+        }
+
+        // Wipe all items (clears checkmarks and old extra items) and rebuild fresh from scheduled meals
+        list.getItems().clear();
+        shoppingListRepository.saveAndFlush(list);
+
+        List<MealPlanRecipe> scheduledEntries = list.getMealPlan().getPlannedRecipes().stream()
+                .filter(e -> e.isScheduled())
+                .toList();
+
+        List<Recipe> recipes = recipeScaler.prepareRecipesForAggregation(scheduledEntries);
+        Map<String, List<RecipeStepIngredient>> aggregated =
+                RecipeUtility.aggregateAndPromoteShoppingList(recipes, metadataLookupService.getAllMeasurements());
+
+        int order = 1;
+        for (List<RecipeStepIngredient> aisleItems : aggregated.values()) {
+            for (RecipeStepIngredient agg : aisleItems) {
+                list.getItems().add(toPersistentItem(list, agg, triggeredBy, Collections.emptySet(), order++));
+            }
+        }
+        shoppingListRepository.save(list);
+    }
+
+    @Transactional
+    public void syncIfExistsForMealPlan(MealPlan plan, User triggeredBy) {
+        shoppingListRepository.findFirstByMealPlan_MealPlanIdOrderByCreatedAtDesc(plan.getMealPlanId())
+                .ifPresent(existingList -> {
+                    List<MealPlanRecipe> scheduledEntries = plan.getPlannedRecipes().stream()
+                            .filter(e -> e.isScheduled())
+                            .toList();
+                    generateOrSyncFromMealPlan(plan, scheduledEntries, triggeredBy);
+                });
+    }
 }

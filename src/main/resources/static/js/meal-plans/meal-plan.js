@@ -23,6 +23,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const target = document.getElementById(btn.dataset.target);
             if (target) {
                 target.classList.remove("hide-cell");
+                if (window.jQuery && $.fn.select2) {
+                    $(target).find(".select2-enable").select2({ width: "100%" });
+                }
             }
         });
     });

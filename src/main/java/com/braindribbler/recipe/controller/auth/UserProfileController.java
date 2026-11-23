@@ -1,13 +1,17 @@
 package com.braindribbler.recipe.controller.auth;
 
+import com.braindribbler.recipe.domain.auth.ProfileVisibility;
 import com.braindribbler.recipe.domain.auth.User;
 import com.braindribbler.recipe.domain.auth.UserAuth;
 import com.braindribbler.recipe.dto.recipe.RecipeSaveBreakdown;
 import com.braindribbler.recipe.dto.recipe.RecipeStats;
 import com.braindribbler.recipe.dto.recipe.SavedRecipeSummary;
+import com.braindribbler.recipe.repository.auth.ProfileVisibilityRepository;
 import com.braindribbler.recipe.repository.auth.UserAuthRepository;
 import com.braindribbler.recipe.repository.auth.UserRepository;
 import com.braindribbler.recipe.repository.recipe.RecipeRepository;
+
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,18 +28,20 @@ import java.util.List;
 
 @Controller
 public class UserProfileController {
-
     private final UserAuthRepository userAuthRepository;
     private final UserRepository userRepository;
+    private final ProfileVisibilityRepository profileVisibilityRepository;
     private final PasswordEncoder passwordEncoder;
     private final RecipeRepository recipeRepository;
 
     public UserProfileController(UserAuthRepository userAuthRepository,
             UserRepository userRepository,
+            ProfileVisibilityRepository profileVisibilityRepository,
             PasswordEncoder passwordEncoder,
             RecipeRepository recipeRepository) {
         this.userAuthRepository = userAuthRepository;
         this.userRepository = userRepository;
+        this.profileVisibilityRepository = profileVisibilityRepository;
         this.passwordEncoder = passwordEncoder;
         this.recipeRepository = recipeRepository;
     }
@@ -84,6 +90,7 @@ public class UserProfileController {
         model.addAttribute("recipeStats", recipeStats);
         model.addAttribute("recipeBreakdown", recipeBreakdown);
         model.addAttribute("savedRecipes", savedRecipes);
+        model.addAttribute("profileVisibilities", profileVisibilityRepository.findAllByOrderByProfileVisibilityIdAsc());
 
         return "auth/profile";
     }
@@ -101,14 +108,19 @@ public class UserProfileController {
             @RequestParam("firstName") String firstName,
             @RequestParam("lastName") String lastName,
             @RequestParam("displayName") String displayName,
+            @RequestParam("profileVisibilityId") Integer profileVisibilityId,
             RedirectAttributes redirectAttributes) {
 
         UserAuth authObj = userAuthRepository.findByEmail(userDetails.getUsername()).orElseThrow();
         User user = authObj.getUser();
 
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setDisplayName(displayName);
+        ProfileVisibility visibility = profileVisibilityRepository.findById(profileVisibilityId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid profile visibility selection."));
+
+        user.setFirstName(firstName.trim());
+        user.setLastName(lastName.trim());
+        user.setDisplayName(displayName.trim());
+        user.setProfileVisibility(visibility);
         userRepository.save(user);
 
         redirectAttributes.addFlashAttribute("infoMessage", "Profile baseline details successfully updated.");

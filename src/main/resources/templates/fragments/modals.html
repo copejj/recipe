@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" lang="en">
+<body>
+    <!-- Generic Reusable Dialog Modal Wrapper -->
+    <dialog th:fragment="genericModal(modalId, title, bodyContent)"
+            th:id="${modalId}"
+            class="admin-modal">
+        <h3 th:text="${title}">Modal Title</h3>
+        <th:block th:replace="${bodyContent}"></th:block>
+    </dialog>
+</body>
+</html>

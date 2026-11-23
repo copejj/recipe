@@ -258,7 +258,13 @@
     background-color: #e0e7ff;
     border-color: #a5b4fc;
 }
-`
+
+/* Roomier form submit action button */
+.btn-action--submit {
+    padding: 8px 18px;
+    height: 44px;
+    font-size: 0.95rem;
+}
 
 @media (max-width: 576px) {
     .form-actions-delete {

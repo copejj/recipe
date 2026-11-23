@@ -123,11 +123,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-
-
 $(document).on("click", ".clickable-admin-row", function (event) {
-    // Ignore clicks on native links or buttons so they work normally
-    if ($(event.target).closest("a, button").length) return;
+    // Ignore clicks on native links, buttons, or form inputs so they work normally
+    if ($(event.target).closest("a, button, input, label, select").length) return;
+
 
     // Ignore click if the user is selecting text to copy
     if (window.getSelection && window.getSelection().toString().length > 0) return;
@@ -176,4 +175,26 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
     });
+});
+
+// 5. Global delegated handlers for <dialog class="admin-modal">
+$(document).on("click", "[data-open-modal]", function () {
+    const modalId = $(this).data("open-modal");
+    const dialog = document.getElementById(modalId);
+    if (dialog && typeof dialog.showModal === "function") {
+        dialog.showModal();
+        const firstInput = dialog.querySelector("input:not([type='hidden']), select, textarea");
+        if (firstInput) firstInput.focus();
+    }
+});
+
+$(document).on("click", "[data-close-modal]", function () {
+    const dialog = this.closest("dialog");
+    if (dialog) dialog.close();
+});
+
+$(document).on("click", "dialog.admin-modal", function (event) {
+    if (event.target === this) {
+        this.close();
+    }
 });
