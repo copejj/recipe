@@ -88,26 +88,28 @@ public class MealPlanController {
             return "redirect:/meal-plans?unauthorized";
         }
 
-        List<MealPlanRecipe> unscheduledPool = plan.getPlannedRecipes().stream()
-                .filter(e -> !e.isScheduled())
-                .toList();
+        Set<Integer> alreadySharedIds = plan.getShares().stream()
+            .filter(s -> s.getSharedUser() != null)
+            .map(s -> s.getSharedUser().getUserId())
+            .collect(java.util.stream.Collectors.toSet());
+
+        List<User> shareableUsers = userRepository.findShareableUsers(user.getUserId()).stream()
+            .filter(u -> !alreadySharedIds.contains(u.getUserId()))
+            .toList();
+
+        model.addAttribute("shareableUsers", shareableUsers);
+
 
         List<MealPlanRecipe> scheduledMeals = plan.getPlannedRecipes().stream()
-        .filter(e -> e.isScheduled())
-        .toList();
+            .filter(e -> e.isScheduled())
+            .toList();
 
-
-        ShoppingList activeShoppingList = shoppingListRepository
-                .findFirstByMealPlan_MealPlanIdOrderByCreatedAtDesc(plan.getMealPlanId())
-                .orElse(null);
 
         model.addAttribute("plan", plan);
         model.addAttribute("canEdit", mealPlanService.canUserEdit(plan, user));
         model.addAttribute("isOwner", plan.getUser().getUserId().equals(user.getUserId()));
-        model.addAttribute("unscheduledPool", unscheduledPool);
         model.addAttribute("scheduledMeals", scheduledMeals);
         model.addAttribute("availableRecipes", recipeService.getRecipesByUserId(user.getUserId()));
-        model.addAttribute("activeShoppingList", activeShoppingList);
         model.addAttribute("accessLevels", accessLevelRepository.findAll());
 
         Set<Recipe> savedCookbookRecipes = userRepository.findByIdWithSavedRecipes(user.getUserId())
@@ -130,6 +132,16 @@ public class MealPlanController {
                                   RedirectAttributes redirectAttributes) {
         if (currentUser == null) return "redirect:/login";
         MealPlan plan = mealPlanService.getByPublicId(publicId);
+
+        if (Boolean.TRUE.equals(plan.getIsRecurring()) && dayOfWeek == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Please select a day of the week.");
+            return "redirect:/meal-plans/" + publicId;
+        }
+
+        if (!Boolean.TRUE.equals(plan.getIsRecurring()) && scheduledDate == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Please select a date.");
+            return "redirect:/meal-plans/" + publicId;
+        }
 
         if (!mealPlanService.canUserEdit(plan, currentUser.getUserProfile())) {
             redirectAttributes.addFlashAttribute("errorMessage", "You do not have edit access to this plan.");
@@ -179,24 +191,48 @@ public class MealPlanController {
 
     @PostMapping("/{publicId}/share")
     public String shareMealPlan(@PathVariable UUID publicId,
-                                @RequestParam String email,
+                                @RequestParam Integer targetUserId,
                                 @RequestParam Integer accessLevelId,
                                 @AuthenticationPrincipal RecipeUserDetails currentUser,
                                 RedirectAttributes redirectAttributes) {
         if (currentUser == null) return "redirect:/login";
+        User owner = currentUser.getUserProfile();
         MealPlan plan = mealPlanService.getByPublicId(publicId);
 
-        if (!plan.getUser().getUserId().equals(currentUser.getUserProfile().getUserId())) {
+        if (!plan.getUser().getUserId().equals(owner.getUserId())) {
             redirectAttributes.addFlashAttribute("errorMessage", "Only the owner can share this meal plan.");
             return "redirect:/meal-plans/" + publicId;
         }
 
-        userRepository.findByUserAuthEmail(email.trim().toLowerCase()).ifPresentOrElse(targetUser -> {
+        if (targetUserId.equals(owner.getUserId())) {
+            redirectAttributes.addFlashAttribute("errorMessage", "You already own this meal plan.");
+            return "redirect:/meal-plans/" + publicId;
+        }
+
+        userRepository.findById(targetUserId).ifPresentOrElse(targetUser -> {
             AccessLevel level = accessLevelRepository.findById(accessLevelId).orElseThrow();
             mealPlanService.shareWithUser(plan, targetUser, level);
             redirectAttributes.addFlashAttribute("successMessage", "Shared meal plan with " + targetUser.getDisplayName() + ".");
-        }, () -> redirectAttributes.addFlashAttribute("errorMessage", "No user found with email: " + email));
+        }, () -> redirectAttributes.addFlashAttribute("errorMessage", "Selected user not found."));
 
+        return "redirect:/meal-plans/" + publicId;
+    }
+
+    @PostMapping("/{publicId}/shares/{shareId}/remove")
+    public String revokeShare(@PathVariable UUID publicId,
+                              @PathVariable Integer shareId,
+                              @AuthenticationPrincipal RecipeUserDetails currentUser,
+                              RedirectAttributes redirectAttributes) {
+        if (currentUser == null) return "redirect:/login";
+        MealPlan plan = mealPlanService.getByPublicId(publicId);
+
+        if (!plan.getUser().getUserId().equals(currentUser.getUserProfile().getUserId())) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Only the owner can manage sharing.");
+            return "redirect:/meal-plans/" + publicId;
+        }
+
+        mealPlanService.removeShare(plan, shareId);
+        redirectAttributes.addFlashAttribute("successMessage", "Removed collaborator access.");
         return "redirect:/meal-plans/" + publicId;
     }
 
@@ -213,17 +249,16 @@ public class MealPlanController {
             return "redirect:/meal-plans?unauthorized";
         }
 
-        List<MealPlanRecipe> targetEntries = (selectedEntryIds != null && !selectedEntryIds.isEmpty())
-        ? plan.getPlannedRecipes().stream()
-            .filter(e -> selectedEntryIds.contains(e.getMealPlanRecipeId()))
-            .toList()
-        : plan.getPlannedRecipes().stream()
-            .filter(e -> e.isScheduled())
-            .toList();
+        if (selectedEntryIds == null || selectedEntryIds.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Please select at least one meal to include in the shopping list.");
+            return "redirect:/meal-plans/" + publicId;
+        }
 
+        List<MealPlanRecipe> targetEntries = plan.getPlannedRecipes().stream()
+                .filter(e -> selectedEntryIds.contains(e.getMealPlanRecipeId()))
+                .toList();
 
         ShoppingList shoppingList = shoppingListService.generateOrSyncFromMealPlan(plan, targetEntries, user);
-        redirectAttributes.addFlashAttribute("successMessage", "Shopping list updated from selected recipes!");
         return "redirect:/shopping-lists/" + shoppingList.getPublicId();
     }
 }

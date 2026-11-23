@@ -3,10 +3,12 @@
 <body>
     <th:block th:fragment="schedule-panel">
         <div th:if="${scheduledMeals.isEmpty()}" class="alert alert--info">
-            No meals scheduled yet. Add a recipe with a date/day above or assign one from your Saved Recipe Pool!
+            No meals scheduled yet. Choose a recipe from your cookbook above and assign it to a
+            <span th:text="${plan.isRecurring} ? 'day' : 'date'">day</span>!
         </div>
 
         <form th:unless="${scheduledMeals.isEmpty()}"
+              id="scheduledMealsForm"
               th:action="@{/meal-plans/{id}/shopping-list/generate(id=${plan.publicId})}" method="post">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
@@ -21,7 +23,7 @@
                 <th:block th:fragment="scheduledMealHeaders">
                     <tr>
                         <th class="col-check-narrow" data-orderable="false">Shop</th>
-                        <th>Day / Date</th>
+                        <th th:text="${plan.isRecurring} ? 'Day' : 'Date'">Day</th>
                         <th>Meal</th>
                         <th>Recipe</th>
                         <th>Servings</th>
@@ -38,10 +40,10 @@
                             <input type="checkbox" name="selectedEntryIds" th:value="${item.mealPlanRecipeId}" checked />
                         </td>
 
-                        <td data-label="Day / Date"
+                        <td th:data-label="${plan.isRecurring} ? 'Day' : 'Date'"
                             th:data-order="${plan.isRecurring ? item.dayOfWeek : item.scheduledDate}">
                             <span th:if="${plan.isRecurring}"
-                                  th:text="${#strings.arraySplit('Mon,Tue,Wed,Thu,Fri,Sat,Sun', ',')[item.dayOfWeek - 1]}">Mon</span>
+                                  th:text="${#strings.arraySplit('Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday', ',')[item.dayOfWeek - 1]}">Monday</span>
                             <span th:unless="${plan.isRecurring}" th:text="${item.scheduledDate}">2026-11-23</span>
                         </td>
 
@@ -69,10 +71,6 @@
                     </tr>
                 </th:block>
             </div>
-
-            <button type="submit" class="btn btn--primary">
-                Create Shopping List from Checked Meals
-            </button>
         </form>
     </th:block>
 </body>

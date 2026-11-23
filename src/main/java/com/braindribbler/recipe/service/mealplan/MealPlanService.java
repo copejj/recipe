@@ -111,4 +111,10 @@ public class MealPlanService {
                         && s.getSharedUser().getUserId().equals(user.getUserId())
                         && "EDIT".equalsIgnoreCase(s.getAccessLevel().getAccessName()));
     }
+
+    @Transactional
+    public void removeShare(MealPlan plan, Integer shareId) {
+        plan.getShares().removeIf(s -> s.getMealPlanShareId().equals(shareId));
+        mealPlanRepository.save(plan);
+    }
 }

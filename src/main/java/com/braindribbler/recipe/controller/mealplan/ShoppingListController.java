@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -120,5 +121,53 @@ public class ShoppingListController {
         if (currentUser == null) return "redirect:/login";
         shoppingListService.deleteItem(itemId);
         return "redirect:/shopping-lists/" + publicId;
+    }
+
+    @PostMapping("/{publicId}/reset")
+    public String resetShoppingList(@PathVariable UUID publicId,
+                                    @AuthenticationPrincipal RecipeUserDetails currentUser,
+                                    RedirectAttributes redirectAttributes) {
+        if (currentUser == null) return "redirect:/login";
+        User user = currentUser.getUserProfile();
+        ShoppingList list = shoppingListService.getByPublicId(publicId);
+
+        boolean canAccess = list.getOwner().getUserId().equals(user.getUserId())
+                || (list.getMealPlan() != null && mealPlanService.canUserView(list.getMealPlan(), user));
+
+        if (!canAccess) {
+            return "redirect:/meal-plans?unauthorized";
+        }
+
+        shoppingListService.resetFromMealPlan(list, user);
+        redirectAttributes.addFlashAttribute("successMessage", "Shopping list reset from meal plan!");
+        return "redirect:/shopping-lists/" + publicId;
+    }
+
+    @GetMapping("/{publicId}/state")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getShoppingListState(@PathVariable UUID publicId,
+                                                                    @AuthenticationPrincipal RecipeUserDetails currentUser) {
+        if (currentUser == null) return ResponseEntity.status(401).build();
+        User user = currentUser.getUserProfile();
+        ShoppingList list = shoppingListService.getByPublicId(publicId);
+
+        boolean canAccess = list.getOwner().getUserId().equals(user.getUserId())
+                || (list.getMealPlan() != null && mealPlanService.canUserView(list.getMealPlan(), user));
+
+        if (!canAccess) {
+            return ResponseEntity.status(403).build();
+        }
+
+        List<Map<String, Object>> itemsState = list.getItems().stream()
+                .map(i -> Map.<String, Object>of(
+                        "id", i.getShoppingListItemId(),
+                        "checked", Boolean.TRUE.equals(i.getIsChecked())
+                ))
+                .toList();
+
+        return ResponseEntity.ok(Map.of(
+                "count", itemsState.size(),
+                "items", itemsState
+        ));
     }
 }

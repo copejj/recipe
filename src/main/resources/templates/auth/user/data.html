@@ -28,6 +28,17 @@
                     <input type="text" id="displayName" name="displayName" class="form-input" required
                         th:value="${user.displayName}" />
                 </div>
+                <div class="form-group">
+                    <label for="profileVisibilityId" class="form-label">Profile Visibility</label>
+                    <select id="profileVisibilityId" name="profileVisibilityId" class="form-input" required>
+                        <option th:each="vis : ${profileVisibilities}"
+                                th:value="${vis.profileVisibilityId}"
+                                th:selected="${user.profileVisibility != null && user.profileVisibility.profileVisibilityId == vis.profileVisibilityId}"
+                                th:text="${vis.visibilityName + ' — ' + vis.description}">
+                            ONSITE — Profile is visible only to registered users
+                        </option>
+                    </select>
+                </div>
                 <button type="submit" class="btn btn--primary">Save Changes</button>
             </form>
 

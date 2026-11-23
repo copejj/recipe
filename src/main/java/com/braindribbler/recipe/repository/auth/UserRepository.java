@@ -31,4 +31,18 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.savedRecipes WHERE u.userId = :userId")
     Optional<User> findByIdWithSavedRecipes(@Param("userId") Integer userId);
+
+    @Query(value = """
+        SELECT u.* FROM users u
+        WHERE u.disabled_at IS NULL
+        AND u.user_id <> :currentUserId
+        AND u.profile_visibility_id IN (1, 3)
+        AND NOT EXISTS (
+            SELECT 1 FROM user_blocks ub
+            WHERE (ub.blocking_user_id = :currentUserId AND ub.blocked_user_id = u.user_id)
+                OR (ub.blocking_user_id = u.user_id AND ub.blocked_user_id = :currentUserId)
+        )
+        ORDER BY LOWER(u.display_name) ASC
+    """, nativeQuery = true)
+    List<User> findShareableUsers(@Param("currentUserId") Integer currentUserId);
 }

@@ -43,6 +43,13 @@
         Cancel
     </a>
 
+    <!-- Primary Submit Action Button -->
+    <button th:fragment="submitBtn(label)" type="submit"
+        class="btn btn-action btn-action--primary btn-action--submit"
+        th:text="${label}">
+        Submit
+    </button>
+
     <!-- Unpublish / Retract Button -->
     <button th:fragment="unpublishBtn(targetFormId)" type="submit" th:form="${targetFormId}"
         class="btn-action btn-action--cancel">
