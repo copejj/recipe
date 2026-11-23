@@ -29,6 +29,7 @@
         </a>
 
         <button type="button"
+                th:if="${canEdit}"
                 data-open-modal="addExtraItemModal"
                 class="btn btn-action btn-action--primary">
             + Add Item
@@ -41,9 +42,10 @@
             Show All
         </button>
 
-        <form th:action="@{/shopping-lists/{id}/reset(id=${shoppingList.publicId})}"
-              method="post"
-              class="inline-form-reset">
+        <form th:if="${canEdit}"
+            th:action="@{/shopping-lists/{id}/reset(id=${shoppingList.publicId})}"
+            method="post"
+            class="inline-form-reset">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
             <button type="submit"
                     class="btn btn-action btn-action--reset"
@@ -98,8 +100,9 @@
                         </span>
                     </label>
 
-                    <form th:action="@{/shopping-lists/{lid}/items/{iid}/delete(lid=${shoppingList.publicId}, iid=${item.shoppingListItemId})}"
-                          method="post" class="inline-form-reset">
+                    <form th:if="${canEdit}"
+                        th:action="@{/shopping-lists/{lid}/items/{iid}/delete(lid=${shoppingList.publicId}, iid=${item.shoppingListItemId})}"
+                        method="post" class="inline-form-reset">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                         <button type="submit" class="btn btn-action btn-action--delete" title="Remove item">✕</button>
                     </form>
@@ -107,60 +110,62 @@
             </ul>
         </div>
 
-        <div th:replace="~{fragments/modals :: genericModal(
-            'addExtraItemModal',
-            'Add Extra Item to Pick Up',
-            ~{::addExtraItemForm}
-        )}">
-            <th:block th:fragment="addExtraItemForm">
-                <form th:action="@{/shopping-lists/{id}/items/add(id=${shoppingList.publicId})}" method="post">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <th:block th:if="${canEdit}">
+            <div th:replace="~{fragments/modals :: genericModal(
+                'addExtraItemModal',
+                'Add Extra Item to Pick Up',
+                ~{::addExtraItemForm}
+            )}">
+                <th:block th:fragment="addExtraItemForm">
+                    <form th:action="@{/shopping-lists/{id}/items/add(id=${shoppingList.publicId})}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-                    <div class="form-group">
-                        <label for="customItemName" class="form-label">Item Name</label>
-                        <input type="text" id="customItemName" name="customItemName" class="form-input" required
-                            placeholder="e.g., Paper Towels, Bananas..." />
-                    </div>
-
-                    <div class="inline-flex-form">
-                        <div class="form-group flex-field-sm">
-                            <label for="extraAmount" class="form-label">Qty</label>
-                            <input type="number" id="extraAmount" step="0.25" min="0" name="amount" class="form-input" placeholder="1" />
+                        <div class="form-group">
+                            <label for="customItemName" class="form-label">Item Name</label>
+                            <input type="text" id="customItemName" name="customItemName" class="form-input" required
+                                placeholder="e.g., Paper Towels, Bananas..." />
                         </div>
 
-                        <div class="form-group flex-field-med">
-                            <label for="extraMeasurementId" class="form-label">Unit (Optional)</label>
-                            <select id="extraMeasurementId" name="measurementId" class="form-input">
-                                <option value="">(None)</option>
-                                <option th:each="m : ${measurements}"
-                                        th:value="${m.measurementId}"
-                                        th:text="${m.unitName}"></option>
+                        <div class="inline-flex-form">
+                            <div class="form-group flex-field-sm">
+                                <label for="extraAmount" class="form-label">Qty</label>
+                                <input type="number" id="extraAmount" step="0.25" min="0" name="amount" class="form-input" placeholder="1" />
+                            </div>
+
+                            <div class="form-group flex-field-med">
+                                <label for="extraMeasurementId" class="form-label">Unit (Optional)</label>
+                                <select id="extraMeasurementId" name="measurementId" class="form-input">
+                                    <option value="">(None)</option>
+                                    <option th:each="m : ${measurements}"
+                                            th:value="${m.measurementId}"
+                                            th:text="${m.unitName}"></option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="extraCategoryId" class="form-label">Store Aisle</label>
+                            <select id="extraCategoryId" name="groceryCategoryId" class="form-input">
+                                <option th:each="cat : ${groceryCategories}"
+                                        th:value="${cat.groceryCategoryId}"
+                                        th:selected="${cat.categoryName.toLowerCase().contains('other')}"
+                                        th:text="${cat.categoryName}">Category</option>
                             </select>
                         </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label for="extraCategoryId" class="form-label">Store Aisle</label>
-                        <select id="extraCategoryId" name="groceryCategoryId" class="form-input">
-                            <option th:each="cat : ${groceryCategories}"
-                                    th:value="${cat.groceryCategoryId}"
-                                    th:selected="${cat.categoryName.toLowerCase().contains('other')}"
-                                    th:text="${cat.categoryName}">Category</option>
-                        </select>
-                    </div>
+                        <div class="form-group">
+                            <label for="extraNote" class="form-label">Note (Optional)</label>
+                            <input type="text" id="extraNote" name="note" class="form-input" placeholder="Brand, size..." />
+                        </div>
 
-                    <div class="form-group">
-                        <label for="extraNote" class="form-label">Note (Optional)</label>
-                        <input type="text" id="extraNote" name="note" class="form-input" placeholder="Brand, size..." />
-                    </div>
-
-                    <div class="modal-actions-footer">
-                        <button type="submit" class="btn btn--primary btn--submit">Add to List</button>
-                        <button type="button" data-close-modal class="btn btn--cancel">Cancel</button>
-                    </div>
-                </form>
-            </th:block>
-        </div>
+                        <div class="modal-actions-footer">
+                            <button type="submit" class="btn btn--primary btn--submit">Add to List</button>
+                            <button type="button" data-close-modal class="btn btn--cancel">Cancel</button>
+                        </div>
+                    </form>
+                </th:block>
+            </div>
+        </th:block>
     </main>
 
     <th:block layout:fragment="page_scripts">

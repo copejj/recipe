@@ -3,8 +3,11 @@
 <body>
     <th:block th:fragment="schedule-panel">
         <div th:if="${scheduledMeals.isEmpty()}" class="alert alert--info">
-            No meals scheduled yet. Choose a recipe from your cookbook above and assign it to a
-            <span th:text="${plan.isRecurring} ? 'day' : 'date'">day</span>!
+            No meals scheduled yet.
+            <span th:if="${canEdit}">
+                Choose a recipe from your cookbook above and assign it to a
+                <span th:text="${plan.isRecurring} ? 'day' : 'date'">day</span>!
+            </span>
         </div>
 
         <form th:unless="${scheduledMeals.isEmpty()}"

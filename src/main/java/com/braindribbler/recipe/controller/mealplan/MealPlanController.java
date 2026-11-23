@@ -7,7 +7,6 @@ import com.braindribbler.recipe.domain.mealplan.ShoppingList;
 import com.braindribbler.recipe.domain.recipe.AccessLevel;
 import com.braindribbler.recipe.domain.recipe.Recipe;
 import com.braindribbler.recipe.repository.auth.UserRepository;
-import com.braindribbler.recipe.repository.mealplan.ShoppingListRepository;
 import com.braindribbler.recipe.repository.recipe.AccessLevelRepository;
 import com.braindribbler.recipe.security.RecipeUserDetails;
 import com.braindribbler.recipe.service.mealplan.MealPlanService;
@@ -32,20 +31,17 @@ public class MealPlanController {
 
     private final MealPlanService mealPlanService;
     private final ShoppingListService shoppingListService;
-    private final ShoppingListRepository shoppingListRepository;
     private final RecipeService recipeService;
     private final UserRepository userRepository;
     private final AccessLevelRepository accessLevelRepository;
 
     public MealPlanController(MealPlanService mealPlanService,
                               ShoppingListService shoppingListService,
-                              ShoppingListRepository shoppingListRepository,
                               RecipeService recipeService,
                               UserRepository userRepository,
                               AccessLevelRepository accessLevelRepository) {
         this.mealPlanService = mealPlanService;
         this.shoppingListService = shoppingListService;
-        this.shoppingListRepository = shoppingListRepository;
         this.recipeService = recipeService;
         this.userRepository = userRepository;
         this.accessLevelRepository = accessLevelRepository;
@@ -150,8 +146,11 @@ public class MealPlanController {
 
         Recipe recipe = recipeService.getRecipeById(recipeId);
         mealPlanService.addRecipeToPlan(plan, recipe, dayOfWeek, scheduledDate, mealType, servingsOverride);
+        shoppingListService.syncIfExistsForMealPlan(plan, currentUser.getUserProfile());
+
         redirectAttributes.addFlashAttribute("successMessage", "Added \"" + recipe.getTitle() + "\" to meal plan.");
         return "redirect:/meal-plans/" + publicId;
+
     }
 
     @PostMapping("/{publicId}/entries/{entryId}/schedule")
@@ -183,7 +182,8 @@ public class MealPlanController {
         MealPlan plan = mealPlanService.getByPublicId(publicId);
 
         if (mealPlanService.canUserEdit(plan, currentUser.getUserProfile())) {
-            mealPlanService.removeEntry(entryId);
+            mealPlanService.removeEntry(plan, entryId);
+            shoppingListService.syncIfExistsForMealPlan(plan, currentUser.getUserProfile());
             redirectAttributes.addFlashAttribute("successMessage", "Removed recipe from meal plan.");
         }
         return "redirect:/meal-plans/" + publicId;

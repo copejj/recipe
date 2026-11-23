@@ -80,8 +80,9 @@ public class MealPlanService {
     }
 
     @Transactional
-    public void removeEntry(Integer mealPlanRecipeId) {
-        mealPlanRecipeRepository.deleteById(mealPlanRecipeId);
+    public void removeEntry(MealPlan plan, Integer mealPlanRecipeId) {
+        plan.getPlannedRecipes().removeIf(entry -> entry.getMealPlanRecipeId().equals(mealPlanRecipeId));
+        mealPlanRepository.save(plan);
     }
 
     @Transactional
@@ -107,10 +108,13 @@ public class MealPlanService {
         if (user == null) return false;
         if (plan.getUser().getUserId().equals(user.getUserId())) return true;
         return plan.getShares().stream()
-                .anyMatch(s -> s.getSharedUser() != null
-                        && s.getSharedUser().getUserId().equals(user.getUserId())
-                        && "EDIT".equalsIgnoreCase(s.getAccessLevel().getAccessName()));
+                .filter(s -> s.getSharedUser() != null && s.getSharedUser().getUserId().equals(user.getUserId()))
+                .anyMatch(s -> {
+                    String level = s.getAccessLevel() != null ? s.getAccessLevel().getAccessName() : "";
+                    return "EDIT".equalsIgnoreCase(level) || "EDITOR".equalsIgnoreCase(level);
+                });
     }
+
 
     @Transactional
     public void removeShare(MealPlan plan, Integer shareId) {

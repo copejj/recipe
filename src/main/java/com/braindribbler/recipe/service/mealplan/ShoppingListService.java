@@ -185,4 +185,15 @@ public class ShoppingListService {
         }
         shoppingListRepository.save(list);
     }
+
+    @Transactional
+    public void syncIfExistsForMealPlan(MealPlan plan, User triggeredBy) {
+        shoppingListRepository.findFirstByMealPlan_MealPlanIdOrderByCreatedAtDesc(plan.getMealPlanId())
+                .ifPresent(existingList -> {
+                    List<MealPlanRecipe> scheduledEntries = plan.getPlannedRecipes().stream()
+                            .filter(e -> e.isScheduled())
+                            .toList();
+                    generateOrSyncFromMealPlan(plan, scheduledEntries, triggeredBy);
+                });
+    }
 }
