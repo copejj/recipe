@@ -92,7 +92,7 @@
                 </div>
             </div>
         </div>
-        <div sec:authorize="hasAnyAuthority('can_manage_migrations', 'can_view_audit_logs')">
+        <div sec:authorize="hasAnyAuthority('can_manage_migrations', 'can_view_audit_logs', 'can_manage_messages')">
             <h2>Site Management</h2>
             <div class="status-grid">
                 <div class="status-item clickable-card" sec:authorize="hasAuthority('can_view_audit_logs')">
@@ -119,7 +119,7 @@
                         <a th:href="@{/admin/migrations}" class="status-link stretched-link">Migrations List →</a>
                     </div>
                 </div>
-                <div class="status-item clickable-card" sec:authorize="hasAuthority('can_moderate_recipe_metadata')">
+                <div class="status-item clickable-card" sec:authorize="hasAuthority('can_manage_messages')">
                     <span class="status-icon">📢</span>
                     <div class="status-info">
                         <span class="status-label">Broadcast &amp; User Banners</span>

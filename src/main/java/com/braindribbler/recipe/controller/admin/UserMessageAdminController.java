@@ -19,7 +19,7 @@ import java.util.Set;
 
 @Controller
 @RequestMapping("/admin/messages")
-@PreAuthorize("hasAuthority('can_moderate_recipe_metadata')")
+@PreAuthorize("hasAuthority('can_manage_messages')")
 public class UserMessageAdminController {
 
     private static final Set<String> ALLOWED_ALERT_TYPES = Set.of("info", "success", "warning", "danger");
