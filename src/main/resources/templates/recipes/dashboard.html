@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz"
+<html xmlns:th="http://thymeleaf.org"
+      xmlns:sec="http://thymeleaf.org/extras/spring-security"
+      xmlns:layout="http://ultraq.net.nz"
       layout:decorate="~{fragments/layout}"
       lang="en">
 
@@ -28,6 +29,7 @@
             </div>
         </div>
 
+        <!-- SECTION 1: YOUR COOKBOOK -->
         <h2>Your Cookbook</h2>
         <div class="status-grid">
             <div class="status-item clickable-card">
@@ -57,38 +59,80 @@
                 </div>
             </div>
 
+            <div th:if="${freshIngredientsCount > 0}" class="status-item clickable-card success-alert">
+                <span class="status-icon">🌱</span>
+                <div class="status-info">
+                    <span class="status-value">Ingredient Change?</span>
+                    <a th:href="@{/ingredients/my-fresh}"
+                        class="status-link stretched-link">Manage <span th:text="${freshIngredientsCount}" class="alert-text">0</span> New Ingredients →</a>
+                </div>
+            </div>
+        </div>
+
+        <hr class="dashboard-divider" />
+
+        <!-- SECTION 2: MEAL PLANS -->
+        <h2>Meal Plans</h2>
+        <div class="status-grid">
+            <!-- Left-most card: Create / Manage All Meal Plans -->
             <div class="status-item clickable-card">
                 <span class="status-icon">📅</span>
                 <div class="status-info">
                     <span class="status-value">Planning Your Week?</span>
                     <a th:href="@{/meal-plans}" 
-                        class="status-link stretched-link">View Meal Plans &amp; Shopping Lists →</a>
+                        class="status-link stretched-link">Create or Manage Plans →</a>
                 </div>
             </div>
 
-            <div th:if="${freshIngredientsCount > 0}" class="status-item clickable-card success-alert" >
-                <span class="status-icon">🌱</span>
+            <!-- Created & Shared Meal Plan Cards -->
+            <div th:each="plan : ${mealPlans}" class="status-item clickable-card">
+                <span class="status-icon" th:text="${plan.isRecurring} ? '🔁' : '🗓️'">🗓️</span>
                 <div class="status-info">
-                    <span class="status-value">
-                        Ingredient Change?
-                    </span>
-                    <a th:href="@{/ingredients/my-fresh}"
-                        class="status-link stretched-link"> Manage <span th:text="${freshIngredientsCount}" class="alert-text">0</span> New Ingredients →
-                    </a>
+                    <span class="status-value" th:text="${plan.planName}">Weekly Plan</span>
+                    <small class="plan-card-meta"
+                           th:text="${plan.user.userId == currentUserId}
+                               ? (${plan.plannedRecipes.size()} + ' recipes • Yours')
+                               : ('Shared by ' + ${plan.user.displayName} + ' • ' + ${plan.plannedRecipes.size()} + ' recipes')">
+                        0 recipes
+                    </small>
+                    <a th:href="@{/meal-plans/{id}(id=${plan.publicId})}" 
+                        class="status-link stretched-link">Open Meal Plan →</a>
                 </div>
             </div>
         </div>
+
+        <!-- SECTION 3: ACTIVE SHOPPING LISTS (Only shown if user has lists) -->
+        <th:block th:if="${shoppingLists != null && !shoppingLists.isEmpty()}">
+            <hr class="dashboard-divider" />
+            <h2>Shopping Lists</h2>
+            <div class="status-grid">
+                <div th:each="list : ${shoppingLists}" class="status-item clickable-card">
+                    <span class="status-icon">🛒</span>
+                    <div class="status-info">
+                        <span class="status-value" th:text="${list.listName}">Weekly Groceries</span>
+                        <small class="plan-card-meta"
+                               th:text="${list.mealPlan != null} ? ('From: ' + ${list.mealPlan.planName}) : 'Standalone List'">
+                            From: Weekly Plan
+                        </small>
+                        <a th:href="@{/shopping-lists/{id}(id=${list.publicId})}" 
+                            class="status-link stretched-link">Jump to Shopping List →</a>
+                    </div>
+                </div>
+            </div>
+        </th:block>
+
+        <!-- SECTION 4: ADMIN / MODERATOR QUEUE -->
         <div sec:authorize="hasAnyAuthority('can_moderate_recipe_metadata')">
             <hr class="dashboard-divider" />
-            <h2 style=>Pending Review Items</h2>
+            <h2>Pending Review Items</h2>
             <div class="status-grid">
-                <!-- Ingredient Queue Card - Highlights RED if items are waiting -->
                 <div class="status-item clickable-card" th:classappend="${pendingIngredientsCount > 0} ? 'danger-alert' : ''">
                     <span class="status-icon">🌿</span>
                     <div class="status-info">
                         <span class="status-value">Ingredients Pool</span>
                         <a th:href="@{/admin/metadata/ingredients/queue}" class="status-link stretched-link">
-                            Manage <span th:text="${pendingIngredientsCount}" th:classappend="${pendingIngredientsCount > 0} ? 'alert-text' : ''">0</span> Unverified Ingredients → </span></a>
+                            Manage <span th:text="${pendingIngredientsCount}" th:classappend="${pendingIngredientsCount > 0} ? 'alert-text' : ''">0</span> Unverified Ingredients →
+                        </a>
                     </div>
                 </div>
             </div>

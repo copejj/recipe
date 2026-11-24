@@ -83,18 +83,31 @@
                                th:data-item-id="${item.shoppingListItemId}" />
 
                         <span class="shopping-item-text"
-                              th:classappend="${item.isChecked} ? 'crossed-out-text' : ''">
+                            th:classappend="${item.isChecked} ? 'crossed-out-text' : ''">
                             <strong th:text="${item.displayName}">Chicken Broth</strong>
 
                             <span th:if="${item.amount != null && item.amount.compareTo(T(java.math.BigDecimal).ZERO) > 0}">
                                 —
-                                <span th:text="${T(com.braindribbler.recipe.util.RecipeUtility).convertDecimalToKitchenFraction(item.amount)}">2</span>
-                                <span th:if="${item.measurement != null}" th:text="${item.measurement.unitName}">Cups</span>
+                                <span class="scalable-amount"
+                                    th:data-base-amount="${item.amount}"
+                                    th:data-base-type-id="${item.measurement != null && item.measurement.baseType != null ? item.measurement.baseType.baseTypeId : ''}"
+                                    th:data-base-unit-equivalent="${item.measurement != null ? item.measurement.baseUnitEquivalent : ''}"
+                                    th:data-original-unit-id="${item.measurement != null ? item.measurement.measurementId : ''}"
+                                    th:data-is-promotable="${item.measurement != null ? item.measurement.isPromotable : false}"
+                                    th:data-ingredient-classification="${item.ingredient != null && item.ingredient.classification != null ? item.ingredient.classification.name() : ''}"
+                                    th:text="${T(com.braindribbler.recipe.util.RecipeUtility).convertDecimalToKitchenFraction(item.amount)}">2</span>
+
+                                <span th:if="${item.measurement != null}"
+                                    class="scalable-unit-name"
+                                    th:data-original-unit-name="${item.measurement.unitName}"
+                                    th:text="${item.measurement.unitName}">Cups</span>
+
+                                <span class="oz-package-preview"></span>
                             </span>
 
                             <span class="ingredient-note"
-                                  th:if="${item.note != null && !item.note.isBlank()}"
-                                  th:text="' - [' + ${item.note} + ']'"></span>
+                                th:if="${item.note != null && !item.note.isBlank()}"
+                                th:text="' - [' + ${item.note} + ']'"></span>
 
                             <span th:if="${item.isManualAddition}" class="badge-extra-item">Extra</span>
                         </span>
