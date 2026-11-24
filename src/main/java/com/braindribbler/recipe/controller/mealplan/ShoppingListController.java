@@ -11,14 +11,18 @@ import com.braindribbler.recipe.repository.recipe.MeasurementRepository;
 import com.braindribbler.recipe.security.RecipeUserDetails;
 import com.braindribbler.recipe.service.mealplan.MealPlanService;
 import com.braindribbler.recipe.service.mealplan.ShoppingListService;
+import com.braindribbler.recipe.service.mealplan.ShoppingListSseService;
 import com.braindribbler.recipe.service.recipe.IngredientService;
 import com.braindribbler.recipe.service.recipe.MetadataLookupService;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
@@ -31,30 +35,36 @@ import java.util.UUID;
 public class ShoppingListController {
 
     private final ShoppingListService shoppingListService;
+    private final ShoppingListSseService shoppingListSseService;
     private final MealPlanService mealPlanService;
     private final IngredientService ingredientService;
     private final MetadataLookupService metadataLookupService;
     private final IngredientRepository ingredientRepository;
     private final MeasurementRepository measurementRepository;
     private final GroceryCategoryRepository groceryCategoryRepository;
+    private final TransactionTemplate transactionTemplate;
 
     public ShoppingListController(ShoppingListService shoppingListService,
+                                  ShoppingListSseService shoppingListSseService,
                                   MealPlanService mealPlanService,
                                   IngredientService ingredientService,
                                   MetadataLookupService metadataLookupService,
                                   IngredientRepository ingredientRepository,
                                   MeasurementRepository measurementRepository,
-                                  GroceryCategoryRepository groceryCategoryRepository) {
+                                  GroceryCategoryRepository groceryCategoryRepository,
+                                  TransactionTemplate transactionTemplate) {
         this.shoppingListService = shoppingListService;
+        this.shoppingListSseService = shoppingListSseService;
         this.mealPlanService = mealPlanService;
         this.ingredientService = ingredientService;
         this.metadataLookupService = metadataLookupService;
         this.ingredientRepository = ingredientRepository;
         this.measurementRepository = measurementRepository;
         this.groceryCategoryRepository = groceryCategoryRepository;
+        this.transactionTemplate = transactionTemplate;
     }
 
-    @GetMapping()
+        @GetMapping()
     public String viewShoppingList(@PathVariable UUID publicId,
                                    Model model,
                                    @AuthenticationPrincipal RecipeUserDetails currentUser) {
@@ -78,6 +88,29 @@ public class ShoppingListController {
         model.addAttribute("allIngredients", ingredientService.getAllIngredientsSorted(user));
 
         return "shopping-lists/view";
+    }
+
+    @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public ResponseEntity<SseEmitter> streamShoppingList(@PathVariable UUID publicId,
+                                                         @AuthenticationPrincipal RecipeUserDetails currentUser) {
+        if (currentUser == null) return ResponseEntity.status(401).build();
+        User user = currentUser.getUserProfile();
+
+        transactionTemplate.setReadOnly(true);
+        Boolean canAccess = transactionTemplate.execute(status -> {
+            ShoppingList list = shoppingListService.getByPublicId(publicId);
+            return canUserAccessList(list, user);
+        });
+
+        if (!Boolean.TRUE.equals(canAccess)) {
+            return ResponseEntity.status(403).build();
+        }
+
+        SseEmitter emitter = shoppingListSseService.subscribe(publicId);
+        return ResponseEntity.ok()
+                .header("X-Accel-Buffering", "no")
+                .header("Cache-Control", "no-cache, no-transform")
+                .body(emitter);
     }
 
     @PostMapping("/items/add")
@@ -109,17 +142,28 @@ public class ShoppingListController {
         Measurement unit = (measurementId != null) ? measurementRepository.findById(measurementId).orElse(null) : null;
 
         shoppingListService.addExtraItem(list, ingredient, customItemName, category, amount, unit, note, user);
+        shoppingListSseService.broadcastStructureChanged(publicId);
+
         redirectAttributes.addFlashAttribute("successMessage", "Added item to shopping list.");
         return "redirect:/shopping-lists/" + publicId;
     }
 
-    @PostMapping("/items/{itemId}/toggle")
+        @PostMapping("/items/{itemId}/toggle")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> toggleItem(@PathVariable UUID publicId,
                                                           @PathVariable Integer itemId,
                                                           @AuthenticationPrincipal RecipeUserDetails currentUser) {
         if (currentUser == null) return ResponseEntity.status(401).build();
+        User user = currentUser.getUserProfile();
+        ShoppingList list = shoppingListService.getByPublicId(publicId);
+
+        if (!canUserAccessList(list, user)) {
+            return ResponseEntity.status(403).build();
+        }
+
         boolean isChecked = shoppingListService.toggleItemChecked(itemId);
+        shoppingListSseService.broadcastItemToggled(publicId, itemId, isChecked);
+
         return ResponseEntity.ok(Map.of("itemId", itemId, "isChecked", isChecked));
     }
 
@@ -137,6 +181,8 @@ public class ShoppingListController {
         }
 
         shoppingListService.deleteItem(itemId);
+        shoppingListSseService.broadcastStructureChanged(publicId);
+
         return "redirect:/shopping-lists/" + publicId;
     }
 
@@ -154,6 +200,8 @@ public class ShoppingListController {
         }
 
         shoppingListService.resetFromMealPlan(list, user);
+        shoppingListSseService.broadcastStructureChanged(publicId);
+
         redirectAttributes.addFlashAttribute("successMessage", "Shopping list reset from meal plan!");
         return "redirect:/shopping-lists/" + publicId;
     }
@@ -167,10 +215,7 @@ public class ShoppingListController {
         User user = currentUser.getUserProfile();
         ShoppingList list = shoppingListService.getByPublicId(publicId);
 
-        boolean canAccess = canUserEditList(list, user)
-                || (list.getMealPlan() != null && mealPlanService.canUserView(list.getMealPlan(), user));
-
-        if (!canAccess) {
+        if (!canUserAccessList(list, user)) {
             return ResponseEntity.status(403).build();
         }
 
@@ -185,6 +230,12 @@ public class ShoppingListController {
                 "count", itemsState.size(),
                 "items", itemsState
         ));
+    }
+
+    private boolean canUserAccessList(ShoppingList list, User user) {
+        if (user == null || list == null) return false;
+        if (canUserEditList(list, user)) return true;
+        return list.getMealPlan() != null && mealPlanService.canUserView(list.getMealPlan(), user);
     }
 
     private boolean canUserEditList(ShoppingList list, User user) {

@@ -211,7 +211,6 @@
 .action-tray {
     z-index: 100;
     background-color: var(--color-bg-card);
-    padding: .5rem 0;
     display: flex;
     gap: 12px;
     width: auto; /* Lets block element fill available space minus margins */
@@ -222,6 +221,7 @@
 }
 
 .action-tray .btn {
+    margin: .5rem 0;
     width: auto;
     text-align: center;
     text-decoration: none;
