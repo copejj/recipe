@@ -266,4 +266,9 @@ public class IngredientService {
         }
         return ingredientRepository.findVerifiedCollisionByCanonicalName(name);
     }
+
+    @Transactional(readOnly = true)
+    public List<UserMessage> getActiveMessagesForUser(Integer userId) {
+        return userMessageRepository.findAllActiveMessagesForUser(userId, OffsetDateTime.now());
+    }
 }

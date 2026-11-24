@@ -96,12 +96,8 @@ public class RecipeController {
         model.addAttribute("pendingIngredientsCount", pendingIngredients);
         model.addAttribute("totalRecipesCount", recipeService.getTotalRecipesCount());
 
-        // 2. Fetch message cleanly via service layer wrapper
-        ingredientService.getLatestActiveMessageForUser(userId)
-                .ifPresent(msg -> {
-                    model.addAttribute("dbMessageText", msg.getMessageText());
-                    model.addAttribute("dbMessageClass", "alert--" + msg.getAlertType());
-                });
+        // 2. Fetch all active messages for user (targeted + global)
+        model.addAttribute("activeMessages", ingredientService.getActiveMessagesForUser(userId));
 
         // 3. Dynamic Moderator Action Alerts
         List<String> dashboardAlerts = new ArrayList<>();

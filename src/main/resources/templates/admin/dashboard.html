@@ -71,7 +71,7 @@
                 </div>
             </div>
         </div>
-        <div sec:authorize="hasAnyAuthority('can_manage_roles', 'can_manage_users')">
+        <div sec:authorize="hasAnyAuthority('can_manage_roles', 'can_manage_users', 'can_manage_messages')">
             <h2>User Management</h2>
             <div class="status-grid">
                 <div class="status-item clickable-card" sec:authorize="hasAuthority('can_manage_users')">
@@ -88,6 +88,16 @@
                         <span class="status-label">Manage Site Permissions</span>
                         <span class="status-value"> User Roles </span>
                         <a th:href="@{/admin/roles}" class="status-link stretched-link">Roles List →</a>
+                    </div>
+                </div>
+                <div class="status-item clickable-card" sec:authorize="hasAuthority('can_manage_messages')">
+                    <span class="status-icon">📢</span>
+                    <div class="status-info">
+                        <span class="status-label">Broadcast &amp; User Banners</span>
+                        <span class="status-value">
+                            <span th:text="${activeMessagesCount}">0</span> Active Messages
+                        </span>
+                        <a th:href="@{/admin/messages}" class="status-link stretched-link">Manage Messages →</a>
                     </div>
                 </div>
             </div>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
+
+<head>
+    <title>System &amp; User Messages</title>
+</head>
+
+<body>
+    <div layout:fragment="page-title">System &amp; User Messages</div>
+    <p layout:fragment="page-subtitle">
+        Manage site-wide announcement banners and targeted dashboard notices for individual chefs.
+    </p>
+    <div layout:fragment="action-tray" class="action-tray sticky-stack-item">
+        <a th:href="@{/admin}" class="btn btn-secondary">← Admin Dashboard</a>
+        <a th:href="@{/admin/messages/add}" class="btn btn--primary add-primary-button">+ New Message</a>
+    </div>
+    <main layout:fragment="content">
+        <div th:if="${successMessage}" class="alert alert--success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert--danger" th:text="${errorMessage}"></div>
+
+        <div class="admin-table-wrapper">
+            <div th:replace="~{fragments/datatable :: genericTable(
+                tableId='userMessagesTable',
+                dataList=${messages},
+                headerTemplate=~{::messageHeaders},
+                rowTemplate=~{::messageRows}
+            )}">
+                <th:block th:fragment="messageHeaders">
+                    <tr>
+                        <th>Action</th>
+                        <th>Audience</th>
+                        <th>Alert Type</th>
+                        <th>Message</th>
+                        <th>Expires</th>
+                        <th>Status</th>
+                    </tr>
+                </th:block>
+
+                <th:block th:fragment="messageRows">
+                    <tr>
+                        <td data-label="Action">
+                            <div class="admin-btn-group">
+                                <a th:replace="~{fragments/actions :: editLink(targetUrl=@{/admin/messages/edit/{id}(id=${item.userMessageId})})}"></a>
+
+                                <form th:if="${item.expiresAt.isAfter(now)}"
+                                    th:action="@{/admin/messages/expire/{id}(id=${item.userMessageId})}"
+                                    method="POST"
+                                    class="btn-action-form">
+                                    <button type="submit"
+                                            class="btn btn-action btn-action--view"
+                                            data-confirm="Expire this banner immediately so users no longer see it?">
+                                        Expire Now
+                                    </button>
+                                </form>
+
+                                <form th:action="@{/admin/messages/delete/{id}(id=${item.userMessageId})}"
+                                    method="POST"
+                                    class="btn-action-form">
+                                    <button th:replace="~{fragments/actions :: deleteBtn}"></button>
+                                </form>
+                            </div>
+                        </td>
+                        <td data-label="Audience">
+                            <strong th:if="${item.user == null}">All Users (Global)</strong>
+                            <span th:if="${item.user != null}" th:text="${item.user.displayName}">Chef Name</span>
+                        </td>
+                        <td data-label="Alert Type">
+                            <span class="badge-permission" th:text="${#strings.toUpperCase(item.alertType)}">INFO</span>
+                        </td>
+                        <td data-label="Message" th:text="${item.messageText}">Announcement text</td>
+                        <td data-label="Expires">
+                            <time class="local-time" th:attr="datetime=${item.expiresAt}" th:text="${item.expiresAt}">
+                                Nov 25, 2026
+                            </time>
+                        </td>
+                        <td data-label="Status">
+                            <span th:if="${item.expiresAt.isAfter(now)}" class="badge-permission">ACTIVE</span>
+                            <span th:unless="${item.expiresAt.isAfter(now)}">Expired</span>
+                        </td>
+                    </tr>
+                </th:block>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

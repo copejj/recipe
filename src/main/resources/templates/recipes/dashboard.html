@@ -13,11 +13,27 @@
     <div layout:fragment="page-title"> Welcome <span th:text="${userDisplayName != null ? userDisplayName : 'Chef'}">Chef</span>!</div>
     <p layout:fragment="page-subtitle">My Kitchen Workspace</p>
     <main layout:fragment="content">
-        <div th:if="${dbMessageText != null}" class="alert"
-            th:classappend="${dbMessageClass != null ? dbMessageClass : 'alert--info'}">
-            <span>📢</span>
-            <strong th:text="${dbMessageText}">System broadcast alert announcement text goes here
-                dynamically...</strong>
+        <!-- Active System & Targeted Broadcast Messages -->
+        <div th:if="${activeMessages != null && !activeMessages.isEmpty()}"
+             id="dashboardBroadcastContainer"
+             th:data-user-id="${currentUserId}">
+            <div th:each="msg : ${activeMessages}"
+                 class="alert js-dismissible-message"
+                 th:classappend="'alert--' + ${msg.alertType}"
+                 th:data-message-id="${msg.userMessageId}"
+                 style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span th:text="${msg.user != null} ? '✉️' : '📢'">📢</span>
+                    <strong th:text="${msg.messageText}">System broadcast alert announcement text...</strong>
+                </div>
+                <button type="button"
+                        class="btn btn-action js-dismiss-message-btn"
+                        aria-label="Dismiss message"
+                        title="Dismiss message"
+                        style="background: transparent; border: none; color: inherit; font-weight: bold; font-size: 1.1rem; line-height: 1; padding: 4px 8px; cursor: pointer;">
+                    ✕
+                </button>
+            </div>
         </div>
 
         <!-- Operational System Flags (Admin Action Notices) -->
