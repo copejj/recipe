@@ -15,6 +15,7 @@ import com.braindribbler.recipe.repository.auth.UserAuthRepository;
 import com.braindribbler.recipe.security.exception.AuthenticationExceptions;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 @Component
 public class AuthenticationEventListener {
@@ -35,6 +36,11 @@ public class AuthenticationEventListener {
     @Transactional
     public void handleAuthenticationSuccess(AuthenticationSuccessEvent event) {
         String email = event.getAuthentication().getName();
+
+        // Populate Tomcat Manager's "Guessed User name" and "Guessed Locale" columns
+        HttpSession session = request.getSession(true);
+        session.setAttribute("userName", email);
+        session.setAttribute("Locale", request.getLocale());
 
         userAuthRepository.findByEmail(email).ifPresent(userAuth -> {
             OffsetDateTime now = OffsetDateTime.now();
