@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
+<head>
+    <title>Add / Edit Message</title>
+</head>
+
+<body>
+    <h1 layout:fragment="page-title"
+        th:text="${itemId == 0} ? 'Publish Dashboard Message' : 'Edit Dashboard Message'">
+        Dashboard Message
+    </h1>
+    <p layout:fragment="page-subtitle">
+        Broadcast an announcement to all chefs or send a targeted banner to a single user's dashboard.
+    </p>
+    <div layout:fragment="action-tray" class="action-tray sticky-stack-item">
+        <a th:href="@{/admin/messages}" class="btn btn-secondary">← Messages List</a>
+    </div>
+    <main layout:fragment="content">
+        <div th:if="${errorMessage}" class="alert alert--danger" th:text="${errorMessage}"></div>
+
+        <form th:action="@{/admin/messages/save}" method="POST" class="workspace-form-narrow">
+            <input type="hidden" name="itemId" th:value="${itemId}" />
+            <input type="hidden" id="tzOffsetMinutes" name="tzOffsetMinutes" value="" />
+
+            <div class="form-panel-main">
+                <div class="form-group">
+                    <label for="targetUserId" class="form-label">Audience</label>
+                    <select id="targetUserId" name="targetUserId" class="form-input select2-enable">
+                        <option value="" th:selected="${message.user == null}">🌐 Global Broadcast (All Users)</option>
+                        <option th:each="u : ${users}"
+                                th:value="${u.userId}"
+                                th:selected="${message.user != null && message.user.userId == u.userId}"
+                                th:with="fullName=${#strings.trim((u.firstName ?: '') + ' ' + (u.lastName ?: ''))}"
+                                th:text="${!fullName.isEmpty()} ? ${u.displayName + ' (' + fullName + ')'} : ${u.displayName}">
+                            Chef Name (First Last)
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="alertType" class="form-label">Banner Style</label>
+                    <select id="alertType" name="alertType" class="form-input">
+                        <option value="info" th:selected="${message.alertType == 'info'}">Info (Blue — General Updates)</option>
+                        <option value="success" th:selected="${message.alertType == 'success'}">Success (Green — New Features)</option>
+                        <option value="warning" th:selected="${message.alertType == 'warning'}">Warning (Amber — Upcoming Maintenance)</option>
+                        <option value="danger" th:selected="${message.alertType == 'danger'}">Danger (Red — Urgent Outage / Issue)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="expiresAtLocal" class="form-label">Expires At (Your Local Time)</label>
+                    <input type="datetime-local"
+                           id="expiresAtLocal"
+                           name="expiresAtLocal"
+                           class="form-input"
+                           th:value="${expiresAtLocal}"
+                           required />
+                </div>
+
+                <div class="form-group--last">
+                    <label for="messageText" class="form-label">Message Text</label>
+                    <textarea id="messageText"
+                              name="messageText"
+                              rows="3"
+                              class="form-input"
+                              required
+                              placeholder="e.g., Scheduled maintenance tonight at 11:00 PM MT. Please save your recipes beforehand."
+                              th:text="${message.messageText}"></textarea>
+                </div>
+
+                <div class="form-actions-left-row">
+                    <th:block th:replace="~{fragments/actions :: saveBtn(itemId=${itemId})}"></th:block>
+                    <th:block th:replace="~{fragments/actions :: cancelLink(targetUrl=@{/admin/messages})}"></th:block>
+                </div>
+            </div>
+
+            <div class="form-panel-docs-stacked">
+                <h3>How Dashboard Banners Work</h3>
+                <ul class="docs-list">
+                    <li><strong>Priority:</strong> The dashboard displays the single most recently created message that has not yet expired.</li>
+                    <li><strong>Global vs. Targeted:</strong> Leave Audience set to <em>Global Broadcast</em> to notify everyone, or pick a specific chef for an account notice.</li>
+                    <li><strong>Quick Shutoff:</strong> Use <strong>Expire Now</strong> on the list page to immediately take down a banner without deleting its history.</li>
+                </ul>
+            </div>
+        </form>
+    </main>
+    <th:block layout:fragment="page_scripts">
+            <script th:src="@{/js/admin/message-edit.js}"></script>
+    </th:block>
+</body>
+</html>

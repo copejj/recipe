@@ -1,7 +1,11 @@
 package com.braindribbler.recipe.controller.admin;
 
+import com.braindribbler.recipe.repository.auth.UserMessageRepository;
 import com.braindribbler.recipe.service.recipe.IngredientService;
 import com.braindribbler.recipe.service.recipe.RecipeCategoryService;
+
+import java.time.OffsetDateTime;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,10 +19,12 @@ public class AdminController {
 
     private final IngredientService ingredientService;
     private final RecipeCategoryService recipeCategoryService;
+    private final UserMessageRepository userMessageRepository;
 
-    public AdminController(IngredientService ingredientService, RecipeCategoryService recipeCategoryService) {
+    public AdminController(IngredientService ingredientService, RecipeCategoryService recipeCategoryService, UserMessageRepository userMessageRepository) {
         this.ingredientService = ingredientService;
         this.recipeCategoryService = recipeCategoryService;
+        this.userMessageRepository = userMessageRepository;
     }
 
     @GetMapping
@@ -27,11 +33,13 @@ public class AdminController {
         int verifiedItems = ingredientService.getAllIngredientsSorted(null).size();
         int groceryAisles = ingredientService.getAllGroceryCategories().size();
         int recipeCategoriesCount = recipeCategoryService.getAllCategories().size();
+        long activeMessageCount = userMessageRepository.countByExpiresAtAfter(OffsetDateTime.now());
 
         model.addAttribute("pendingCount", pendingItems);
         model.addAttribute("totalCount", verifiedItems);
         model.addAttribute("categoryCount", groceryAisles);
         model.addAttribute("recipeCategoriesCount", recipeCategoriesCount);
+        model.addAttribute("activeMessagesCount", activeMessageCount);
 
         return "admin/dashboard";
     }

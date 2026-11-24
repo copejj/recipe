@@ -119,6 +119,16 @@
                         <a th:href="@{/admin/migrations}" class="status-link stretched-link">Migrations List →</a>
                     </div>
                 </div>
+                <div class="status-item clickable-card" sec:authorize="hasAuthority('can_moderate_recipe_metadata')">
+                    <span class="status-icon">📢</span>
+                    <div class="status-info">
+                        <span class="status-label">Broadcast &amp; User Banners</span>
+                        <span class="status-value">
+                            <span th:text="${activeMessagesCount}">0</span> Active Messages
+                        </span>
+                        <a th:href="@{/admin/messages}" class="status-link stretched-link">Manage Messages →</a>
+                    </div>
+                </div>
             </div>
         </div>
     </main>

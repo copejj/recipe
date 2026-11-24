@@ -50,7 +50,59 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 5. Update smart back/breadcrumb links from same-origin referrer
     initSmartBackLinks();
+
+    // 6. Initialize dismissible dashboard broadcast messages
+    initDismissibleDashboardMessages();
 });
+
+function initDismissibleDashboardMessages() {
+    const container = document.getElementById("dashboardBroadcastContainer");
+    if (!container) return;
+
+    const userId = container.dataset.userId || "anon";
+    const storageKey = `dismissed_dashboard_messages_${userId}`;
+
+    let dismissedIds = [];
+    try {
+        const raw = localStorage.getItem(storageKey);
+        if (raw) dismissedIds = JSON.parse(raw);
+    } catch (e) {
+        dismissedIds = [];
+    }
+
+    const dismissedSet = new Set(dismissedIds.map(String));
+    const activeIdsOnPage = new Set();
+
+    container.querySelectorAll(".js-dismissible-message").forEach((banner) => {
+        const msgId = String(banner.dataset.messageId || "");
+        if (!msgId) return;
+        activeIdsOnPage.add(msgId);
+
+        if (dismissedSet.has(msgId)) {
+            banner.remove();
+            return;
+        }
+
+        const closeBtn = banner.querySelector(".js-dismiss-message-btn");
+        if (closeBtn) {
+            closeBtn.addEventListener("click", () => {
+                dismissedSet.add(msgId);
+                try {
+                    localStorage.setItem(storageKey, JSON.stringify(Array.from(dismissedSet)));
+                } catch (e) { /* Ignore storage quota errors */ }
+                banner.remove();
+            });
+        }
+    });
+
+    // Clean up old expired message IDs from localStorage so it never grows stale
+    const prunedIds = Array.from(dismissedSet).filter((id) => activeIdsOnPage.has(id));
+    if (prunedIds.length !== dismissedSet.size) {
+        try {
+            localStorage.setItem(storageKey, JSON.stringify(prunedIds));
+        } catch (e) { /* Ignore storage errors */ }
+    }
+}
 
 function formatDisplayTimestamps() {
     // Scan the DOM for all active date tracking vectors
