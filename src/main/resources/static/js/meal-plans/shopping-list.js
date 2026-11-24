@@ -12,15 +12,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let isSavingLocalChange = false;
     let showAllItems = localStorage.getItem(showAllPrefKey) === "true";
     let eventSource = null;
-    let hasConnectedOnce = false;
-
-    eventSource.onopen = () => {
-        if (hasConnectedOnce) {
-            // Reconnected after 5-min timeout or network blip—catch up any missed toggles
-            syncMissedStateOnce();
-        }
-        hasConnectedOnce = true;
-    };
 
     function getCookieValue(name) {
         const match = document.cookie.match(new RegExp("(^|;\\s*)" + name + "=([^;]*)"));
@@ -212,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    async function syncMissedStateOnce() {
+        async function syncMissedStateOnce() {
         if (isSavingLocalChange || !navigator.onLine) return;
         try {
             const res = await fetch(`/shopping-lists/${listPublicId}/state`, { credentials: "same-origin" });
@@ -254,7 +245,15 @@ document.addEventListener("DOMContentLoaded", () => {
             eventSource.close();
         }
 
+        let hasConnectedOnce = false;
         eventSource = new EventSource(`/shopping-lists/${listPublicId}/stream`);
+
+        eventSource.onopen = () => {
+            if (hasConnectedOnce) {
+                syncMissedStateOnce();
+            }
+            hasConnectedOnce = true;
+        };
 
         eventSource.addEventListener("item-toggled", (event) => {
             if (isSavingLocalChange) return;
@@ -319,6 +318,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("visibilitychange", () => {
         if (!document.hidden) {
             flushDirtyChanges();
+            syncMissedStateOnce();
             if (!eventSource || eventSource.readyState === EventSource.CLOSED) {
                 connectLiveStream();
             }
