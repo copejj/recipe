@@ -71,7 +71,7 @@
                 </div>
             </div>
         </div>
-        <div sec:authorize="hasAnyAuthority('can_manage_roles', 'can_manage_users')">
+        <div sec:authorize="hasAnyAuthority('can_manage_roles', 'can_manage_users', 'can_manage_messages')">
             <h2>User Management</h2>
             <div class="status-grid">
                 <div class="status-item clickable-card" sec:authorize="hasAuthority('can_manage_users')">
@@ -90,9 +90,19 @@
                         <a th:href="@{/admin/roles}" class="status-link stretched-link">Roles List →</a>
                     </div>
                 </div>
+                <div class="status-item clickable-card" sec:authorize="hasAuthority('can_manage_messages')">
+                    <span class="status-icon">📢</span>
+                    <div class="status-info">
+                        <span class="status-label">Broadcast &amp; User Banners</span>
+                        <span class="status-value">
+                            <span th:text="${activeMessagesCount}">0</span> Active Messages
+                        </span>
+                        <a th:href="@{/admin/messages}" class="status-link stretched-link">Manage Messages →</a>
+                    </div>
+                </div>
             </div>
         </div>
-        <div sec:authorize="hasAnyAuthority('can_manage_migrations', 'can_view_audit_logs', 'can_manage_messages')">
+        <div sec:authorize="hasAnyAuthority('can_manage_migrations', 'can_view_audit_logs')">
             <h2>Site Management</h2>
             <div class="status-grid">
                 <div class="status-item clickable-card" sec:authorize="hasAuthority('can_view_audit_logs')">
@@ -117,16 +127,6 @@
                         <span class="status-label">View Database Migrations</span>
                         <span class="status-value"> Database Migrations </span>
                         <a th:href="@{/admin/migrations}" class="status-link stretched-link">Migrations List →</a>
-                    </div>
-                </div>
-                <div class="status-item clickable-card" sec:authorize="hasAuthority('can_manage_messages')">
-                    <span class="status-icon">📢</span>
-                    <div class="status-info">
-                        <span class="status-label">Broadcast &amp; User Banners</span>
-                        <span class="status-value">
-                            <span th:text="${activeMessagesCount}">0</span> Active Messages
-                        </span>
-                        <a th:href="@{/admin/messages}" class="status-link stretched-link">Manage Messages →</a>
                     </div>
                 </div>
             </div>
