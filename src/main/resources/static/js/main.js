@@ -47,6 +47,9 @@ document.addEventListener("DOMContentLoaded", () => {
     updateStickyStack();
     window.addEventListener("resize", updateStickyStack);
     $(document).on("draw.dt", updateStickyStack);
+
+    // 5. Update smart back/breadcrumb links from same-origin referrer
+    initSmartBackLinks();
 });
 
 function formatDisplayTimestamps() {
@@ -198,3 +201,43 @@ $(document).on("click", "dialog.admin-modal", function (event) {
         this.close();
     }
 });
+
+function initSmartBackLinks() {
+    const backLinks = document.querySelectorAll(".js-smart-back");
+    if (!backLinks.length || !document.referrer) return;
+
+    try {
+        const refUrl = new URL(document.referrer);
+        // Only trust same-origin referrers, and ignore self-redirects (e.g., after POST/redirect)
+        if (refUrl.origin !== window.location.origin || refUrl.pathname === window.location.pathname) {
+            return;
+        }
+
+        const labelMap = [
+            { prefix: "/shopping-lists/", label: "← Back to Shopping List" },
+            { prefix: "/meal-plans/", label: "← Back to Meal Plan" },
+            { prefix: "/meal-plans", label: "← Back to Meal Plans" },
+            { prefix: "/recipes/my-list", label: "← Back to My Cookbook" },
+            { prefix: "/recipes/create", label: "← Back to Recipe Editor" },
+            { prefix: "/recipes/edit/", label: "← Back to Recipe Editor" },
+            { prefix: "/view/", label: "← Back to Recipe" },
+            { prefix: "/search", label: "← Back to Search" }
+        ];
+
+        const matched = labelMap.find(entry => refUrl.pathname.startsWith(entry.prefix));
+
+        backLinks.forEach(link => {
+            if (refUrl.pathname === "/" || refUrl.pathname === "/index") {
+                const homeUrl = new URL(refUrl.href);
+                homeUrl.searchParams.set("home", "1");
+                link.href = homeUrl.pathname + homeUrl.search;
+                link.textContent = "← Home";
+            } else if (matched) {
+                link.href = refUrl.pathname + refUrl.search;
+                link.textContent = matched.label;
+            }
+        });
+    } catch (e) {
+        // Keep default fallback href/label if referrer URL is malformed
+    }
+}

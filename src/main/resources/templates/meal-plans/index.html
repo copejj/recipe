@@ -14,6 +14,9 @@
 <body>
     <h1 layout:fragment="page-title">Meal Plans</h1>
     <p layout:fragment="page-subtitle">Organize your weekly menus, share plans, and generate combined shopping lists.</p>
+    <div layout:fragment="action-tray" class="action-tray">
+        <a th:href="@{/(home=1)}" class="btn btn-secondary js-smart-back">← Home</a>
+    </div>
 
     <main layout:fragment="content">
         <div th:if="${successMessage}" class="alert alert--success" th:text="${successMessage}"></div>

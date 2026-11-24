@@ -18,14 +18,14 @@
 
     <div layout:fragment="action-tray" class="action-tray">
         <a th:if="${shoppingList.mealPlan != null}"
-           th:href="@{/meal-plans/{id}(id=${shoppingList.mealPlan.publicId})}"
-           class="btn btn-secondary">
-            ← Back to Meal Plan
+            th:href="@{/meal-plans/{id}(id=${shoppingList.mealPlan.publicId})}"
+            class="btn btn-secondary js-smart-back">
+                ← Back to Meal Plan
         </a>
         <a th:unless="${shoppingList.mealPlan != null}"
-           th:href="@{/meal-plans}"
-           class="btn btn-secondary">
-            ← Meal Plans
+            th:href="@{/meal-plans}"
+            class="btn btn-secondary js-smart-back">
+                ← Meal Plans
         </a>
 
         <button type="button"

@@ -102,6 +102,7 @@ public class MealPlanController {
 
 
         model.addAttribute("plan", plan);
+        model.addAttribute("currentUserId", user.getUserId());
         model.addAttribute("canEdit", mealPlanService.canUserEdit(plan, user));
         model.addAttribute("isOwner", plan.getUser().getUserId().equals(user.getUserId()));
         model.addAttribute("scheduledMeals", scheduledMeals);
@@ -219,20 +220,36 @@ public class MealPlanController {
     }
 
     @PostMapping("/{publicId}/shares/{shareId}/remove")
-    public String revokeShare(@PathVariable UUID publicId,
+    public String removeShare(@PathVariable UUID publicId,
                               @PathVariable Integer shareId,
-                              @AuthenticationPrincipal RecipeUserDetails currentUser,
-                              RedirectAttributes redirectAttributes) {
-        if (currentUser == null) return "redirect:/login";
+                              RedirectAttributes redirectAttributes,
+                              @AuthenticationPrincipal RecipeUserDetails currentUser) {
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
+
+        User domainUser = currentUser.getUserProfile();
         MealPlan plan = mealPlanService.getByPublicId(publicId);
 
-        if (!plan.getUser().getUserId().equals(currentUser.getUserProfile().getUserId())) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Only the owner can manage sharing.");
+        boolean isOwner = plan.getUser().getUserId().equals(domainUser.getUserId());
+        boolean isSelfRemoval = plan.getShares().stream()
+                .anyMatch(s -> s.getMealPlanShareId().equals(shareId)
+                        && s.getSharedUser() != null
+                        && s.getSharedUser().getUserId().equals(domainUser.getUserId()));
+
+        if (!isOwner && !isSelfRemoval) {
+            redirectAttributes.addFlashAttribute("errorMessage", "You are not authorized to remove this share.");
             return "redirect:/meal-plans/" + publicId;
         }
 
         mealPlanService.removeShare(plan, shareId);
-        redirectAttributes.addFlashAttribute("successMessage", "Removed collaborator access.");
+
+        if (isSelfRemoval && !isOwner) {
+            redirectAttributes.addFlashAttribute("successMessage", "You have left \"" + plan.getPlanName() + "\".");
+            return "redirect:/meal-plans";
+        }
+
+        redirectAttributes.addFlashAttribute("successMessage", "Collaborator removed.");
         return "redirect:/meal-plans/" + publicId;
     }
 
