@@ -196,4 +196,8 @@ public class ShoppingListService {
                     generateOrSyncFromMealPlan(plan, scheduledEntries, triggeredBy);
                 });
     }
+
+    public List<ShoppingList> getAccessibleShoppingLists(Integer userId) {
+        return shoppingListRepository.findAllAccessibleByUserId(userId);
+    }
 }

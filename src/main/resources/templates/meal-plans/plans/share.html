@@ -45,11 +45,16 @@
                     <span class="badge-permission" th:text="${share.accessLevel.accessName}">VIEW</span>
                 </div>
 
-                <form th:if="${isOwner}"
+                <form th:if="${isOwner || (currentUserId != null && share.sharedUser.userId == currentUserId)}"
                       th:action="@{/meal-plans/{id}/shares/{sid}/remove(id=${plan.publicId}, sid=${share.mealPlanShareId})}"
                       method="post" class="inline-form-reset">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                    <button type="submit" class="btn btn-action btn-action--delete">Remove</button>
+                    <button type="submit"
+                            class="btn btn-action btn-action--delete"
+                            th:data-confirm="${isOwner} ? 'Remove ' + ${share.sharedUser.displayName} + ' from this meal plan?' : 'Leave this shared meal plan?'"
+                            th:text="${isOwner} ? 'Remove' : 'Leave Plan'">
+                        Remove
+                    </button>
                 </form>
             </div>
         </div>

@@ -29,6 +29,8 @@ import com.braindribbler.recipe.domain.recipe.Recipe;
 import com.braindribbler.recipe.domain.recipe.RecipeStepIngredient;
 import com.braindribbler.recipe.dto.recipe.RecipeForm;
 import com.braindribbler.recipe.security.RecipeUserDetails;
+import com.braindribbler.recipe.service.mealplan.MealPlanService;
+import com.braindribbler.recipe.service.mealplan.ShoppingListService;
 import com.braindribbler.recipe.service.recipe.IngredientService;
 import com.braindribbler.recipe.service.recipe.MetadataLookupService;
 import com.braindribbler.recipe.service.recipe.RecipeCategoryService;
@@ -40,21 +42,28 @@ import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class RecipeController {
-
+    // Update fields and constructor
     private final RecipeService recipeService;
     private final IngredientService ingredientService;
     private final RecipeCategoryService recipeCategoryService;
     private final MetadataLookupService metadataLookupService;
+    private final MealPlanService mealPlanService;
+    private final ShoppingListService shoppingListService;
 
     public RecipeController(RecipeService recipeService, 
                             IngredientService ingredientService, 
                             RecipeCategoryService recipeCategoryService, 
-                            MetadataLookupService metadataLookupService) {
+                            MetadataLookupService metadataLookupService,
+                            MealPlanService mealPlanService,
+                            ShoppingListService shoppingListService) {
         this.recipeService = recipeService;
         this.ingredientService = ingredientService;
         this.recipeCategoryService = recipeCategoryService;
         this.metadataLookupService = metadataLookupService;
+        this.mealPlanService = mealPlanService;
+        this.shoppingListService = shoppingListService;
     }
+
 
     @GetMapping("/")
     public String home(Model model, @AuthenticationPrincipal RecipeUserDetails currentUser) {
@@ -104,6 +113,11 @@ public class RecipeController {
                     + " unverified ingredients in the master pool requiring moderator review.");
         }
         model.addAttribute("dashboardAlerts", dashboardAlerts);
+
+        // 4. Accessible Meal Plans & Active Shopping Lists
+        model.addAttribute("currentUserId", userId);
+        model.addAttribute("mealPlans", mealPlanService.getAccessibleMealPlans(userId));
+        model.addAttribute("shoppingLists", shoppingListService.getAccessibleShoppingLists(userId));
 
         return "recipes/dashboard";
     }

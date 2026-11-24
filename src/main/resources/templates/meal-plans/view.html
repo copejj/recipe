@@ -18,7 +18,10 @@
        th:text="${plan.description != null && !plan.description.isBlank()} ? ${plan.description} : 'Schedule recipes from your cookbook and build your shopping list.'"></p>
 
     <div layout:fragment="action-tray" class="action-tray">
-        <a th:href="@{/meal-plans}" class="btn btn-secondary">← All Meal Plans</a>
+        <a th:href="@{/}"
+            class="btn btn-secondary">
+                ← Home
+        </a>
 
         <button type="submit"
                 form="scheduledMealsForm"

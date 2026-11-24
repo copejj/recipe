@@ -30,6 +30,34 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    function renderOzPackagePreviews() {
+        document.querySelectorAll('.shopping-item-text').forEach(row => {
+            const amtEl = row.querySelector('.scalable-amount');
+            const previewEl = row.querySelector('.oz-package-preview');
+            if (!amtEl || !previewEl) return;
+
+            const baseAmount = parseFloat(amtEl.dataset.baseAmount);
+            const baseTypeId = parseInt(amtEl.dataset.baseTypeId, 10);
+            const baseUnitEq = parseFloat(amtEl.dataset.baseUnitEquivalent);
+            const isPromotable = amtEl.dataset.isPromotable === 'true';
+
+            if (!isPromotable || isNaN(baseAmount) || isNaN(baseUnitEq) || baseAmount <= 0) {
+                previewEl.textContent = '';
+                return;
+            }
+
+            // Base type 1 = Volume (tsp -> fl oz: 1 fl oz = 6 tsp), Base type 2 = Weight (g -> oz: 1 oz = 28.3495 g)
+            const totalBaseUnits = baseAmount * baseUnitEq;
+            if (baseTypeId === 1) {
+                const flOz = totalBaseUnits / 6.0;
+                previewEl.textContent = ` (${Math.round(flOz * 10) / 10} fl oz)`;
+            } else if (baseTypeId === 2) {
+                const oz = totalBaseUnits / 28.3495;
+                previewEl.textContent = ` (${Math.round(oz * 10) / 10} oz)`;
+            }
+        });
+    }
+
     function updateShowAllButtonUI() {
         if (!showAllBtn) return;
         showAllBtn.setAttribute("aria-pressed", String(showAllItems));
@@ -189,6 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
         pollSharedUpdates();
     });
 
+    renderOzPackagePreviews();
     updateShowAllButtonUI();
     refreshListVisibility();
     saveLocalSnapshot();
