@@ -11,6 +11,56 @@ document.addEventListener("DOMContentLoaded", () => {
     let isSavingLocalChange = false;
     let showAllItems = localStorage.getItem(showAllPrefKey) === "true";
 
+    const dirtyKey = `shopping_list_dirty_${listPublicId}`;
+
+    function getDirtyMap() {
+        try {
+            return JSON.parse(localStorage.getItem(dirtyKey) || "{}");
+        } catch (e) {
+            return {};
+        }
+    }
+
+    function setItemDirty(itemId, checkedState, isDirty) {
+        const dirty = getDirtyMap();
+        if (isDirty) {
+            dirty[itemId] = checkedState;
+        } else {
+            delete dirty[itemId];
+        }
+        try {
+            localStorage.setItem(dirtyKey, JSON.stringify(dirty));
+        } catch (e) { /* Ignore storage errors */ }
+    }
+
+    function restoreOfflineChanges() {
+        const dirty = getDirtyMap();
+        const dirtyIds = Object.keys(dirty);
+        if (dirtyIds.length === 0) return;
+
+        dirtyIds.forEach((itemId) => {
+            const cb = document.querySelector(`.shopping-item-checkbox[data-item-id="${itemId}"]`);
+            if (cb) {
+                cb.checked = Boolean(dirty[itemId]);
+            }
+        });
+
+        if (statusBadge) {
+            statusBadge.textContent = navigator.onLine ? "Syncing offline changes..." : "Saved locally (offline)";
+        }
+    }
+
+    async function flushDirtyChanges() {
+        if (!navigator.onLine) return;
+        const dirty = getDirtyMap();
+        const dirtyIds = Object.keys(dirty);
+        if (dirtyIds.length === 0) return;
+
+        for (const itemId of dirtyIds) {
+            await syncToggleToServer(itemId, dirty[itemId]);
+        }
+    }
+
     function getCookieValue(name) {
         const match = document.cookie.match(new RegExp("(^|;\\s*)" + name + "=([^;]*)"));
         return match ? decodeURIComponent(match[2]) : null;
@@ -117,11 +167,17 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) { /* Ignore storage quota errors */ }
     }
 
-    async function syncToggleToServer(itemId) {
+    async function syncToggleToServer(itemId, desiredChecked) {
         const xsrfToken = getCookieValue("XSRF-TOKEN");
         const headers = {};
         if (xsrfToken) {
             headers["X-XSRF-TOKEN"] = xsrfToken;
+        }
+
+        if (!navigator.onLine) {
+            setItemDirty(itemId, desiredChecked, true);
+            if (statusBadge) statusBadge.textContent = "Saved locally (offline)";
+            return;
         }
 
         isSavingLocalChange = true;
@@ -133,10 +189,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 headers: headers,
                 credentials: "same-origin"
             });
-            if (statusBadge) {
-                statusBadge.textContent = response.ok ? "Synced" : "Saved locally (offline)";
+            if (response.ok) {
+                setItemDirty(itemId, desiredChecked, false);
+                if (statusBadge) statusBadge.textContent = "Synced";
+            } else {
+                setItemDirty(itemId, desiredChecked, true);
+                if (statusBadge) statusBadge.textContent = "Saved locally (offline)";
             }
         } catch (err) {
+            setItemDirty(itemId, desiredChecked, true);
             if (statusBadge) statusBadge.textContent = "Saved locally (offline)";
         } finally {
             isSavingLocalChange = false;
@@ -158,7 +219,11 @@ document.addEventListener("DOMContentLoaded", () => {
             let changed = false;
             let structureChanged = (data.count !== currentCheckboxes.length);
 
+            const dirty = getDirtyMap();
             data.items.forEach((remoteItem) => {
+                if (Object.prototype.hasOwnProperty.call(dirty, String(remoteItem.id))) {
+                    return; // Don't let stale server state overwrite pending offline changes
+                }
                 const cb = document.querySelector(`.shopping-item-checkbox[data-item-id="${remoteItem.id}"]`);
                 if (!cb) {
                     structureChanged = true;
@@ -197,6 +262,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    restoreOfflineChanges();
+
     document.querySelectorAll(".shopping-item-checkbox").forEach((cb) => {
         applyRowVisuals(cb);
         cb.addEventListener("change", () => {
@@ -221,4 +288,6 @@ document.addEventListener("DOMContentLoaded", () => {
     updateShowAllButtonUI();
     refreshListVisibility();
     saveLocalSnapshot();
+
+    flushDirtyChanges();
 });
