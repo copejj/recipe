@@ -1,0 +1,44 @@
+/* Broadcast & Targeted Dashboard Banners */
+.dashboard-alert-dismissible {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.dashboard-alert-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.dashboard-alert-text {
+    white-space: pre-line;
+}
+
+.dashboard-alert-close {
+    background: transparent;
+    border: none;
+    color: inherit;
+    font-weight: bold;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 4px 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.dashboard-alert-close:hover {
+    opacity: 0.75;
+}
+
+/* Operational System Flags (Moderator / Action Notices) */
+.dashboard-system-flag {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    background-color: var(--color-bg-body);
+    border-color: var(--color-border);
+}

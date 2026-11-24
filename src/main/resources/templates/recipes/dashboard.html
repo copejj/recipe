@@ -7,6 +7,9 @@
 
 <head>
     <title>Dashboard</title>
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" type="text/css" th:href="@{/css/recipes/dashboard.css}" />
+    </th:block>
 </head>
 
 <body>
@@ -18,19 +21,19 @@
              id="dashboardBroadcastContainer"
              th:data-user-id="${currentUserId}">
             <div th:each="msg : ${activeMessages}"
-                 class="alert js-dismissible-message"
+                 class="alert dashboard-alert-dismissible js-dismissible-message"
                  th:classappend="'alert--' + ${msg.alertType}"
-                 th:data-message-id="${msg.userMessageId}"
-                 style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px;">
-                <div style="display: flex; align-items: center; gap: 10px;">
+                 th:data-message-id="${msg.userMessageId}">
+                <div class="dashboard-alert-content">
                     <span th:text="${msg.user != null} ? '✉️' : '📢'">📢</span>
-                    <strong th:text="${msg.messageText}">System broadcast alert announcement text...</strong>
+                    <strong class="dashboard-alert-text" th:text="${msg.messageText}">
+                        System broadcast alert announcement text...
+                    </strong>
                 </div>
                 <button type="button"
-                        class="btn btn-action js-dismiss-message-btn"
+                        class="btn btn-action dashboard-alert-close js-dismiss-message-btn"
                         aria-label="Dismiss message"
-                        title="Dismiss message"
-                        style="background: transparent; border: none; color: inherit; font-weight: bold; font-size: 1.1rem; line-height: 1; padding: 4px 8px; cursor: pointer;">
+                        title="Dismiss message">
                     ✕
                 </button>
             </div>
@@ -38,8 +41,7 @@
 
         <!-- Operational System Flags (Admin Action Notices) -->
         <div th:if="${dashboardAlerts != null && !dashboardAlerts.isEmpty()}">
-            <div th:each="alert : ${dashboardAlerts}" class="alert alert--info"
-                style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; background-color: var(--color-bg-body); border-color: var(--color-border);">
+            <div th:each="alert : ${dashboardAlerts}" class="alert alert--info dashboard-system-flag">
                 <span>💡</span>
                 <span th:text="${alert}">System Alert Notice String</span>
             </div>
