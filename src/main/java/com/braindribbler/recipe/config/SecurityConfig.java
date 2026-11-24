@@ -20,148 +20,133 @@ import org.springframework.security.authentication.DefaultAuthenticationEventPub
 import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
-import javax.sql.DataSource; // Added target tracking node
+import javax.sql.DataSource;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
 
-        private final DataSource dataSource; // Added dependency hook
+    private final DataSource dataSource;
 
-        @Value("${app.security.remember-me.key}")
-        private String rememberMeKey;
+    @Value("${app.security.remember-me.key}")
+    private String rememberMeKey;
 
-        // Constructor update handles seamless injection from Spring's component container
-        public SecurityConfig(DataSource dataSource) {
-                this.dataSource = dataSource;
-        }
+    public SecurityConfig(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
-        @Bean
-        public AuthenticationEventPublisher authenticationEventPublisher(
-                        ApplicationEventPublisher applicationEventPublisher) {
+    @Bean
+    public AuthenticationEventPublisher authenticationEventPublisher(
+            ApplicationEventPublisher applicationEventPublisher) {
 
-                DefaultAuthenticationEventPublisher publisher = new DefaultAuthenticationEventPublisher(
-                                applicationEventPublisher);
+        DefaultAuthenticationEventPublisher publisher = new DefaultAuthenticationEventPublisher(
+                applicationEventPublisher);
 
-                java.util.Map<Class<? extends org.springframework.security.core.AuthenticationException>, Class<? extends org.springframework.security.authentication.event.AbstractAuthenticationFailureEvent>> mappings = new java.util.HashMap<>();
+        java.util.Map<Class<? extends org.springframework.security.core.AuthenticationException>, Class<? extends org.springframework.security.authentication.event.AbstractAuthenticationFailureEvent>> mappings = new java.util.HashMap<>();
 
-                mappings.put(AuthenticationExceptions.AccountInactiveException.class,
-                                org.springframework.security.authentication.event.AuthenticationFailureDisabledEvent.class);
+        mappings.put(AuthenticationExceptions.AccountInactiveException.class,
+                org.springframework.security.authentication.event.AuthenticationFailureDisabledEvent.class);
 
-                mappings.put(AuthenticationExceptions.AccountUnverifiedException.class,
-                                org.springframework.security.authentication.event.AuthenticationFailureDisabledEvent.class);
+        mappings.put(AuthenticationExceptions.AccountUnverifiedException.class,
+                org.springframework.security.authentication.event.AuthenticationFailureDisabledEvent.class);
 
-                mappings.put(AuthenticationExceptions.IpBruteForceLockedException.class,
-                                org.springframework.security.authentication.event.AuthenticationFailureLockedEvent.class);
+        mappings.put(AuthenticationExceptions.IpBruteForceLockedException.class,
+                org.springframework.security.authentication.event.AuthenticationFailureLockedEvent.class);
 
-                publisher.setAdditionalExceptionMappings(mappings);
+        publisher.setAdditionalExceptionMappings(mappings);
 
-                return publisher;
-        }
+        return publisher;
+    }
 
-        @Bean
-        public PersistentTokenRepository persistentTokenRepository() {
-                JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
-                tokenRepository.setDataSource(dataSource);
-                return tokenRepository;
-        }
+    @Bean
+    public PersistentTokenRepository persistentTokenRepository() {
+        JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
+        tokenRepository.setDataSource(dataSource);
+        return tokenRepository;
+    }
 
-        @Bean
-        public SecurityFilterChain securityFilterChain(
-                        HttpSecurity http,
-                        PasswordEncoder passwordEncoder,
-                        UserDetailsService userDetailsService) throws Exception {
+    @Bean
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            PasswordEncoder passwordEncoder,
+            UserDetailsService userDetailsService) throws Exception {
 
-                DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
-                authProvider.setPasswordEncoder(passwordEncoder);
-                authProvider.setHideUserNotFoundExceptions(false);
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder);
+        authProvider.setHideUserNotFoundExceptions(false);
 
-                org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler requestHandler = new org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler();
-                requestHandler.setCsrfRequestAttributeName(null);
+        org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler requestHandler = new org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler();
+        requestHandler.setCsrfRequestAttributeName(null);
 
-                http
-                        .csrf(csrf -> csrf
-                                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                                .csrfTokenRequestHandler(requestHandler))
+        http
+            .csrf(csrf -> csrf
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .csrfTokenRequestHandler(requestHandler))
 
-                        .addFilterAfter((jakarta.servlet.Filter) (request, response, chain) -> {
-                                org.springframework.security.web.csrf.CsrfToken csrfToken = (org.springframework.security.web.csrf.CsrfToken) request
-                                        .getAttribute(org.springframework.security.web.csrf.CsrfToken.class
-                                                .getName());
-                                if (csrfToken != null) {
-                                        csrfToken.getToken();
-                                }
-                                chain.doFilter(request, response);
-                        }, org.springframework.security.web.csrf.CsrfFilter.class)
-                                .authenticationProvider(authProvider)
-                                .authorizeHttpRequests(auth -> auth
-                                        .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.FORWARD)
-                                        .permitAll()
-                                        .requestMatchers("/error").permitAll()
-                                        .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
-                                        .requestMatchers("/", "/search", "/register", "/login", "/verify",
-                                                        "/password/forgot", "/password/reset").permitAll()
-                                        .requestMatchers("/search/**").permitAll()
-                                        .requestMatchers("/view/**").permitAll()
+            .addFilterAfter((jakarta.servlet.Filter) (request, response, chain) -> {
+                org.springframework.security.web.csrf.CsrfToken csrfToken = (org.springframework.security.web.csrf.CsrfToken) request
+                        .getAttribute(org.springframework.security.web.csrf.CsrfToken.class.getName());
+                if (csrfToken != null) {
+                    csrfToken.getToken();
+                }
+                chain.doFilter(request, response);
+            }, org.springframework.security.web.csrf.CsrfFilter.class)
+            .authenticationProvider(authProvider)
+            .authorizeHttpRequests(auth -> auth
+                .dispatcherTypeMatchers(
+                        jakarta.servlet.DispatcherType.FORWARD,
+                        jakarta.servlet.DispatcherType.ASYNC)
+                .permitAll()
+                .requestMatchers("/error").permitAll()
+                .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
+                .requestMatchers("/", "/search", "/register", "/login", "/verify",
+                        "/password/forgot", "/password/reset").permitAll()
+                .requestMatchers("/search/**").permitAll()
+                .requestMatchers("/view/**").permitAll()
+                .requestMatchers("/admin/ingredients/**", "/admin/categories/**")
+                .hasAuthority("can_moderate_recipe_metadata")
+                .requestMatchers("/admin/users/**").hasAuthority("can_manage_users")
+                .requestMatchers("/admin/roles/**").hasAuthority("can_manage_users")
+                .anyRequest().authenticated())
+            .formLogin(form -> form
+                .loginPage("/login")
+                .loginProcessingUrl("/login")
+                .defaultSuccessUrl("/", true)
+                .failureHandler((request, response, exception) -> {
+                    RememberMeServices rms = http.getSharedObject(RememberMeServices.class);
+                    if (rms != null) {
+                        rms.loginFail(request, response);
+                    }
 
-                                        .requestMatchers("/admin/ingredients/**", "/admin/categories/**")
-                                        .hasAuthority("can_moderate_recipe_metadata")
+                    if (exception instanceof AuthenticationExceptions.IpBruteForceLockedException) {
+                        response.sendRedirect("/login?iplocked");
+                    } else if (exception instanceof AuthenticationExceptions.AccountInactiveException) {
+                        response.sendRedirect("/login?inactive");
+                    } else if (exception instanceof AuthenticationExceptions.AccountUnverifiedException) {
+                        response.sendRedirect("/login?unverified");
+                    } else if (exception instanceof BadCredentialsException) {
+                        response.sendRedirect("/login?error");
+                    } else {
+                        response.sendRedirect("/login?systemError");
+                    }
+                })
+                .permitAll())
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login?logout")
+                .invalidateHttpSession(true)
+                .clearAuthentication(true)
+                .deleteCookies("RECIPE_JSESSIONID", "JSESSIONID", "XSRF-TOKEN", "remember-me")
+                .permitAll())
+            .rememberMe(remember -> remember
+                .tokenRepository(persistentTokenRepository())
+                .userDetailsService(userDetailsService)
+                .tokenValiditySeconds(86400 * 30)
+                .rememberMeParameter("remember-me")
+                .rememberMeCookieName("remember-me")
+                .key(rememberMeKey));
 
-                                        .requestMatchers("/admin/users/**").hasAuthority("can_manage_users")
-                                        .requestMatchers("/admin/roles/**").hasAuthority("can_manage_users")
-                                        .anyRequest().authenticated())
-                                .formLogin(form -> form
-                                        .loginPage("/login")
-                                        .loginProcessingUrl("/login")
-                                        .defaultSuccessUrl("/", true)
-                                        .failureHandler((request, response, exception) -> {
-                                                if (exception instanceof AuthenticationExceptions.IpBruteForceLockedException) {
-                                                        response.sendRedirect("/login?iplocked");
-                                                } else if (exception instanceof AuthenticationExceptions.AccountInactiveException) {
-                                                        response.sendRedirect("/login?inactive");
-                                                } else if (exception instanceof AuthenticationExceptions.AccountUnverifiedException) {
-                                                        response.sendRedirect("/login?unverified");
-                                                } else if (exception instanceof BadCredentialsException) {
-                                                        response.sendRedirect("/login?error");
-                                                } else {
-                                                        response.sendRedirect("/login?systemError");
-                                                }
-                                        })
-                                .failureHandler((request, response, exception) -> {
-                                                RememberMeServices rms = http.getSharedObject(RememberMeServices.class);
-                                                if (rms != null) {
-                                                        rms.loginFail(request, response);
-                                                }
-
-                                                if (exception instanceof AuthenticationExceptions.IpBruteForceLockedException) {
-                                                        response.sendRedirect("/login?iplocked");
-                                                } else if (exception instanceof AuthenticationExceptions.AccountInactiveException) {
-                                                        response.sendRedirect("/login?inactive");
-                                                } else if (exception instanceof AuthenticationExceptions.AccountUnverifiedException) {
-                                                        response.sendRedirect("/login?unverified");
-                                                } else if (exception instanceof BadCredentialsException) {
-                                                        response.sendRedirect("/login?error");
-                                                } else {
-                                                        response.sendRedirect("/login?systemError");
-                                                }
-                                        })
-                                        .permitAll())
-                                .logout(logout -> logout
-                                        .logoutUrl("/logout")
-                                        .logoutSuccessUrl("/login?logout")
-                                        .invalidateHttpSession(true)
-                                        .clearAuthentication(true)
-                                        .deleteCookies("RECIPE_JSESSIONID", "JSESSIONID", "XSRF-TOKEN", "remember-me") // Added cookie wipe tracking target
-                                        .permitAll())
-                                .rememberMe(remember -> remember
-                                        .tokenRepository(persistentTokenRepository())
-                                        .userDetailsService(userDetailsService)
-                                        .tokenValiditySeconds(86400 * 30) // Keeps them logged in for 30 Days
-                                        .rememberMeParameter("remember-me") // Corresponds directly with HTML checkbox element name property
-                                        .rememberMeCookieName("remember-me") // Modern Spring Security 6 method name
-                                        .key(rememberMeKey)); // Internal hashing seed signature value
-                return http.build();
-        }
-
+        return http.build();
+    }
 }

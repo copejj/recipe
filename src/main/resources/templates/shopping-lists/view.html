@@ -17,6 +17,8 @@
     <p layout:fragment="page-subtitle">Grouped by grocery aisle • Check items off as you shop</p>
 
     <div layout:fragment="action-tray" class="action-tray">
+        <span id="syncStatusBadge" class="sync-status-pill">Synced</span>
+
         <a th:if="${shoppingList.mealPlan != null}"
             th:href="@{/meal-plans/{id}(id=${shoppingList.mealPlan.publicId})}"
             class="btn btn-secondary js-smart-back">
@@ -37,7 +39,7 @@
 
         <button type="button"
                 id="toggleShowAllBtn"
-                class="btn btn-action btn-action--view"
+                class="btn btn-action btn-action--view btn-action--toggle"
                 aria-pressed="false">
             Show All
         </button>
@@ -50,11 +52,10 @@
             <button type="submit"
                     class="btn btn-action btn-action--reset"
                     data-confirm="Reset this shopping list? This will uncheck all items, remove extra additions, and reload ingredients from the meal plan.">
-                Reset Shopping List
+                Reset
             </button>
         </form>
 
-        <span id="syncStatusBadge" class="sync-status-pill">Synced</span>
     </div>
 
     <main layout:fragment="content" id="shoppingListApp" th:data-list-public-id="${shoppingList.publicId}">
