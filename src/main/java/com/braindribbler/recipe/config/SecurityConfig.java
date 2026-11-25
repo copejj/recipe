@@ -79,7 +79,26 @@ public class SecurityConfig {
         org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler requestHandler = new org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler();
         requestHandler.setCsrfRequestAttributeName(null);
 
+        org.springframework.security.web.util.matcher.RequestMatcher sseStreamMatcher =
+            request -> request.getRequestURI().startsWith("/shopping-lists/")
+                    && request.getRequestURI().endsWith("/stream");
+
+
         http
+            .requestCache(cache -> {
+                org.springframework.security.web.savedrequest.HttpSessionRequestCache requestCache =
+                        new org.springframework.security.web.savedrequest.HttpSessionRequestCache();
+                requestCache.setRequestMatcher(request -> !sseStreamMatcher.matches(request));
+                cache.requestCache(requestCache);
+            })
+            .exceptionHandling(ex -> ex
+                .defaultAuthenticationEntryPointFor(
+                    new org.springframework.security.web.authentication.HttpStatusEntryPoint(
+                        org.springframework.http.HttpStatus.UNAUTHORIZED
+                    ),
+                    sseStreamMatcher
+                )
+            )
             .csrf(csrf -> csrf
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .csrfTokenRequestHandler(requestHandler))
