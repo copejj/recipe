@@ -51,15 +51,6 @@
         <h2>Your Cookbook</h2>
         <div class="status-grid">
             <div class="status-item clickable-card">
-                <span class="status-icon">🔍</span>
-                <div class="status-info">
-                    <span class="status-value">Looking for Ideas?</span>
-                    <a th:href="@{/search}"
-                        class="status-link stretched-link">Search Public Recipes →</a>
-                </div>
-            </div>
-
-            <div class="status-item clickable-card">
                 <span class="status-icon">➕</span>
                 <div class="status-info">
                     <span class="status-value">Adding a New Idea?</span>
@@ -72,8 +63,17 @@
                 <span class="status-icon">🍳</span>
                 <div class="status-info">
                     <span class="status-value">Open Your Cookbook?</span>
-                    <a th:href="@{/recipes/my-list}" 
+                    <a th:href="@{/recipes/cookbook}" 
                         class="status-link stretched-link">View <span th:text="${myRecipesCount}">0</span> Recipes Saved →</a>
+                </div>
+            </div>
+
+            <div class="status-item clickable-card">
+                <span class="status-icon">🔍</span>
+                <div class="status-info">
+                    <span class="status-value">Looking for Ideas?</span>
+                    <a th:href="@{/search}"
+                        class="status-link stretched-link">Search Public Recipes →</a>
                 </div>
             </div>
 
@@ -86,9 +86,6 @@
                 </div>
             </div>
         </div>
-
-        <hr class="dashboard-divider" />
-
         <!-- SECTION 2: MEAL PLANS -->
         <h2>Meal Plans</h2>
         <div class="status-grid">
@@ -121,7 +118,6 @@
 
         <!-- SECTION 3: ACTIVE SHOPPING LISTS (Only shown if user has lists) -->
         <th:block th:if="${shoppingLists != null && !shoppingLists.isEmpty()}">
-            <hr class="dashboard-divider" />
             <h2>Shopping Lists</h2>
             <div class="status-grid">
                 <div th:each="list : ${shoppingLists}" class="status-item clickable-card">
@@ -138,23 +134,6 @@
                 </div>
             </div>
         </th:block>
-
-        <!-- SECTION 4: ADMIN / MODERATOR QUEUE -->
-        <div sec:authorize="hasAnyAuthority('can_moderate_recipe_metadata')">
-            <hr class="dashboard-divider" />
-            <h2>Pending Review Items</h2>
-            <div class="status-grid">
-                <div class="status-item clickable-card" th:classappend="${pendingIngredientsCount > 0} ? 'danger-alert' : ''">
-                    <span class="status-icon">🌿</span>
-                    <div class="status-info">
-                        <span class="status-value">Ingredients Pool</span>
-                        <a th:href="@{/admin/metadata/ingredients/queue}" class="status-link stretched-link">
-                            Manage <span th:text="${pendingIngredientsCount}" th:classappend="${pendingIngredientsCount > 0} ? 'alert-text' : ''">0</span> Unverified Ingredients →
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
     </main>
 </body>
 </html>

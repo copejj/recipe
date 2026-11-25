@@ -17,45 +17,36 @@
     <p layout:fragment="page-subtitle">Grouped by grocery aisle • Check items off as you shop</p>
 
     <div layout:fragment="action-tray" class="action-tray">
-        <span id="syncStatusBadge" class="sync-status-pill">Synced</span>
+        <div class="action-box">
+            <span id="syncStatusBadge" class="sync-status-pill">Synced</span>
 
-        <a th:if="${shoppingList.mealPlan != null}"
-            th:href="@{/meal-plans/{id}(id=${shoppingList.mealPlan.publicId})}"
-            class="btn btn-secondary js-smart-back">
-                ← Back to Meal Plan
-        </a>
-        <a th:unless="${shoppingList.mealPlan != null}"
-            th:href="@{/meal-plans}"
-            class="btn btn-secondary js-smart-back">
-                ← Meal Plans
-        </a>
-
-        <button type="button"
-                th:if="${canEdit}"
-                data-open-modal="addExtraItemModal"
-                class="btn btn-action btn-action--primary">
-            + Add Item
-        </button>
-
-        <button type="button"
-                id="toggleShowAllBtn"
-                class="btn btn-action btn-action--view btn-action--toggle"
-                aria-pressed="false">
-            Show All
-        </button>
-
-        <form th:if="${canEdit}"
-            th:action="@{/shopping-lists/{id}/reset(id=${shoppingList.publicId})}"
-            method="post"
-            class="inline-form-reset">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-            <button type="submit"
-                    class="btn btn-action btn-action--reset"
-                    data-confirm="Reset this shopping list? This will uncheck all items, remove extra additions, and reload ingredients from the meal plan.">
-                Reset
+            <a th:href="@{/}" class="btn btn-secondary">← Home</a>
+            <button type="button"
+                    th:if="${canEdit}"
+                    data-open-modal="addExtraItemModal"
+                    class="btn btn-action btn-action--primary">
+                + Add Item
             </button>
-        </form>
 
+            <button type="button"
+                    id="toggleShowAllBtn"
+                    class="btn btn-action btn-action--view btn-action--toggle"
+                    aria-pressed="false">
+                Show All
+            </button>
+
+            <form th:if="${canEdit}"
+                  th:action="@{/shopping-lists/{id}/reset(id=${shoppingList.publicId})}"
+                  method="post"
+                  class="inline-form-reset">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button type="submit"
+                        class="btn btn-action btn-action--reset"
+                        data-confirm="Reset this shopping list? This will uncheck all items, remove extra additions, and reload ingredients from the meal plan.">
+                    Reset
+                </button>
+            </form>
+        </div>
     </div>
 
     <main layout:fragment="content" id="shoppingListApp" th:data-list-public-id="${shoppingList.publicId}">
@@ -72,57 +63,7 @@
             <strong>All Done, now what?!</strong> Everything on your list is checked off. Tap <strong>Show All</strong> above to review or uncheck items.
         </div>
 
-        <div th:each="entry : ${itemsByAisle}" class="shopping-category-section">
-            <h4 class="recipe-panel-heading" th:text="${entry.key}">Produce</h4>
-
-            <ul class="recipe-ingredient-list standard-list-reset">
-                <li th:each="item : ${entry.value}" class="recipe-ingredient-row shopping-item-modifier shopping-row-flex">
-                    <label class="shopping-item-content">
-                        <input type="checkbox"
-                               class="shopping-item-checkbox"
-                               th:checked="${item.isChecked}"
-                               th:data-item-id="${item.shoppingListItemId}" />
-
-                        <span class="shopping-item-text"
-                            th:classappend="${item.isChecked} ? 'crossed-out-text' : ''">
-                            <strong th:text="${item.displayName}">Chicken Broth</strong>
-
-                            <span th:if="${item.amount != null && item.amount.compareTo(T(java.math.BigDecimal).ZERO) > 0}">
-                                —
-                                <span class="scalable-amount"
-                                    th:data-base-amount="${item.amount}"
-                                    th:data-base-type-id="${item.measurement != null && item.measurement.baseType != null ? item.measurement.baseType.baseTypeId : ''}"
-                                    th:data-base-unit-equivalent="${item.measurement != null ? item.measurement.baseUnitEquivalent : ''}"
-                                    th:data-original-unit-id="${item.measurement != null ? item.measurement.measurementId : ''}"
-                                    th:data-is-promotable="${item.measurement != null ? item.measurement.isPromotable : false}"
-                                    th:data-ingredient-classification="${item.ingredient != null && item.ingredient.classification != null ? item.ingredient.classification.name() : ''}"
-                                    th:text="${T(com.braindribbler.recipe.util.RecipeUtility).convertDecimalToKitchenFraction(item.amount)}">2</span>
-
-                                <span th:if="${item.measurement != null}"
-                                    class="scalable-unit-name"
-                                    th:data-original-unit-name="${item.measurement.unitName}"
-                                    th:text="${item.measurement.unitName}">Cups</span>
-
-                                <span class="oz-package-preview"></span>
-                            </span>
-
-                            <span class="ingredient-note"
-                                th:if="${item.note != null && !item.note.isBlank()}"
-                                th:text="' - [' + ${item.note} + ']'"></span>
-
-                            <span th:if="${item.isManualAddition}" class="badge-extra-item">Extra</span>
-                        </span>
-                    </label>
-
-                    <form th:if="${canEdit}"
-                        th:action="@{/shopping-lists/{lid}/items/{iid}/delete(lid=${shoppingList.publicId}, iid=${item.shoppingListItemId})}"
-                        method="post" class="inline-form-reset">
-                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                        <button type="submit" class="btn btn-action btn-action--delete" title="Remove item">✕</button>
-                    </form>
-                </li>
-            </ul>
-        </div>
+        <th:block th:replace="~{fragments/ingredient-checklist :: persistentShoppingChecklist(${itemsByAisle}, ${shoppingList}, ${canEdit})}"></th:block>
 
         <th:block th:if="${canEdit}">
             <div th:replace="~{fragments/modals :: genericModal(
@@ -137,7 +78,7 @@
                         <div class="form-group">
                             <label for="customItemName" class="form-label">Item Name</label>
                             <input type="text" id="customItemName" name="customItemName" class="form-input" required
-                                placeholder="e.g., Paper Towels, Bananas..." />
+                                   placeholder="e.g., Paper Towels, Bananas..." />
                         </div>
 
                         <div class="inline-flex-form">
@@ -183,6 +124,10 @@
     </main>
 
     <th:block layout:fragment="page_scripts">
+        <div id="measurement-pool-meta"
+             th:data-measurements="${globalMeasurementsPoolJson}"
+             hidden></div>
+        <script th:src="@{/js/recipes/ingredient-scaling-engine.js}"></script>
         <script th:src="@{/js/meal-plans/shopping-list.js}"></script>
     </th:block>
 </body>

@@ -269,7 +269,7 @@ function initSmartBackLinks() {
             { prefix: "/shopping-lists/", label: "← Back to Shopping List" },
             { prefix: "/meal-plans/", label: "← Back to Meal Plan" },
             { prefix: "/meal-plans", label: "← Back to Meal Plans" },
-            { prefix: "/recipes/my-list", label: "← Back to My Cookbook" },
+            { prefix: "/recipes/cookbook", label: "← Back to My Cookbook" },
             { prefix: "/recipes/create", label: "← Back to Recipe Editor" },
             { prefix: "/recipes/edit/", label: "← Back to Recipe Editor" },
             { prefix: "/view/", label: "← Back to Recipe" },
@@ -293,3 +293,18 @@ function initSmartBackLinks() {
         // Keep default fallback href/label if referrer URL is malformed
     }
 }
+
+// Global CSRF helper for fetch() POST/PUT/DELETE requests
+window.getCsrfToken = function () {
+    const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]*)/);
+    if (match && match[1]) {
+        return decodeURIComponent(match[1]);
+    }
+    const csrfInput = document.querySelector('input[name="_csrf"]');
+    return csrfInput ? csrfInput.value : null;
+};
+
+window.getCsrfHeaders = function (extraHeaders = {}) {
+    const token = window.getCsrfToken();
+    return token ? { ...extraHeaders, "X-XSRF-TOKEN": token } : { ...extraHeaders };
+};

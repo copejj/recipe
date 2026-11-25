@@ -133,7 +133,19 @@
 .ingredient-name { font-weight: 600; }
 .scalable-amount { font-weight: 700; }
 .scalable-unit-name { font-weight: 400; }
-.oz-package-preview { color: #6c757d; font-size: 0.9rem; font-weight: 500; }
+
+.oz-package-preview {
+    font-size: 0.85em;
+    color: var(--color-text-muted, #6c757d);
+    vertical-align: middle;
+    display: inline-block;
+    text-decoration: inherit;
+    line-height: 1;
+}
+
+.crossed-out-text .oz-package-preview {
+    text-decoration: line-through;
+}
 
 /* Uniform Note Presentation across all three loops */
 .ingredient-note {

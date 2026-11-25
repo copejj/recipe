@@ -158,7 +158,7 @@ public class RecipeController {
         return ResponseEntity.ok(jsonResponse);
     }
 
-    @GetMapping("/recipes/my-list")
+    @GetMapping("/recipes/cookbook")
     public String showMyRecipesList(Model model, @AuthenticationPrincipal RecipeUserDetails currentUser) {
         if (currentUser == null) {
             return "redirect:/login";
@@ -171,7 +171,7 @@ public class RecipeController {
         model.addAttribute("recipes", userRecipes);
         model.addAttribute("userDisplayName", domainUser.getDisplayName());
 
-        return "recipes/my-list";
+        return "recipes/cookbook";
     }
 
     @PreAuthorize("hasAuthority('can_hide_any_recipe')")
@@ -193,7 +193,7 @@ public class RecipeController {
             Recipe recipe = recipeService.getRecipeById(numericRecipeId);
 
             if (!recipe.getUser().getUserId().equals(currentUser.getUserProfile().getUserId())) {
-                return "redirect:/recipes/my-list?unauthorized";
+                return "redirect:/recipes/cookbook?unauthorized";
             }
 
             RecipeForm recipeForm = recipeService.prepareFormFromRecipe(recipe);
@@ -207,7 +207,7 @@ public class RecipeController {
 
             return "recipes/create";
         } catch (NumberFormatException e) {
-            return "redirect:/recipes/my-list?error=invalidRecipeId";
+            return "redirect:/recipes/cookbook?error=invalidRecipeId";
         }
     }
 
@@ -225,16 +225,16 @@ public class RecipeController {
 
             if (!recipe.getUser().getUserId().equals(currentUser.getUserProfile().getUserId())) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Unauthorized action.");
-                return "redirect:/recipes/my-list";
+                return "redirect:/recipes/cookbook";
             }
 
             recipeService.deleteRecipeById(numericRecipeId);
             redirectAttributes.addFlashAttribute("successMessage", "Recipe deleted successfully.");
-            return "redirect:/recipes/my-list";
+            return "redirect:/recipes/cookbook";
 
         } catch (NumberFormatException e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Invalid recipe ID reference.");
-            return "redirect:/recipes/my-list";
+            return "redirect:/recipes/cookbook";
         }
     }
 
@@ -379,7 +379,7 @@ public class RecipeController {
 
         // Redirect safely depending on where the user clicked the button
         if ("list".equalsIgnoreCase(redirectContext)) {
-            return "redirect:/recipes/my-list";
+            return "redirect:/recipes/cookbook";
         }
         return "redirect:/view/" + recipeId;
     }

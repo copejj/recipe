@@ -1,6 +1,6 @@
 /**
  * Recipe Profile Viewer View Mode Orchestrator
- * Manages tab toggling, metric conversion triggers, and data-driven unit promotion.
+ * Manages tab toggling, metric conversion triggers, and delegates unit math to RecipeScalingEngine.
  */
 $(document).ready(function () {
     // --- READ PAGE METADATA FROM DOM ---
@@ -8,12 +8,9 @@ $(document).ready(function () {
     const RECIPE_ID = metaEl ? Number(metaEl.dataset.recipeId) : 0;
     const RECIPE_IS_OWNER = metaEl ? metaEl.dataset.isOwner === "true" : false;
     const RECIPE_VISIBILITY_ID = metaEl ? Number(metaEl.dataset.visibilityId) : 1;
-    let MEASUREMENT_MATRIX = [];
-    try {
-        MEASUREMENT_MATRIX = metaEl && metaEl.dataset.measurements ? JSON.parse(metaEl.dataset.measurements) : [];
-    } catch (e) {
-        console.error("Failed to parse measurement matrix:", e);
-    }
+    const MEASUREMENT_MATRIX = window.RecipeScalingEngine
+        ? window.RecipeScalingEngine.getMeasurementMatrix()
+        : [];
 
     // --- LOCAL STORAGE STATE PERSISTENCE ---
     var storageKey = RECIPE_ID ? ("recipe_view_state_" + RECIPE_ID) : null;
@@ -76,7 +73,6 @@ $(document).ready(function () {
                         (activeTab !== "overview-panel") ||
                         hasCheckedItems;
 
-
         var $resetPanel = $("#reset-widget-panel");
 
         if (isModified) {
@@ -87,7 +83,6 @@ $(document).ready(function () {
             if (storageKey) {
                 localStorage.removeItem(storageKey);
             }
-            // Clear the global resume pointer if it points to this recipe
             try {
                 var activeData = JSON.parse(localStorage.getItem("active_cooking_recipe") || "{}");
                 if (activeData.recipeId === RECIPE_ID) {
@@ -102,7 +97,6 @@ $(document).ready(function () {
             }
         }
     }
-
 
     function restoreViewState() {
         var rawState = localStorage.getItem(storageKey);
@@ -136,14 +130,13 @@ $(document).ready(function () {
                 });
             }
 
-            // 4. Restore Active Tab (without fade delay on initial load)
+            // 4. Restore Active Tab
             if (state.activeTab && $("#" + state.activeTab).length) {
                 $(".tab-btn").removeClass("active").attr("aria-selected", "false").css({ "color": "var(--color-text-muted, #6c757d)", "border-bottom": "none", "margin-bottom": "0" });
                 $('.tab-btn[data-target="' + state.activeTab + '"]')
                     .addClass("active")
                     .attr("aria-selected", "true")
                     .css({ "color": "var(--color-primary, #0d6efd)", "border-bottom": "3px solid var(--color-primary, #0d6efd)", "margin-bottom": "-13px" });
-
 
                 $(".tab-panel").hide();
                 $("#" + state.activeTab).show();
@@ -153,8 +146,6 @@ $(document).ready(function () {
         }
         updateResetButtonVisibility();
     }
-
-    // Global tracking parameter for active display system lane
     var currentActiveSystem = "imperial";
 
     // --- PERSPECTIVE PANEL TABS TOGGLER ---
@@ -189,35 +180,14 @@ $(document).ready(function () {
         if (selectedSystem === currentActiveSystem) return;
         currentActiveSystem = selectedSystem;
 
-        // Reset toggle tab button layouts
         $(".system-toggle-btn").removeClass("active").css({ "background-color": "transparent", "color": "var(--color-text-muted)" });
         clickedBtn.addClass("active").css({ "background-color": "var(--color-primary)", "color": "white" });
 
-        // Force recalculation engine pass over layout elements
         runLiveScalingEngine();
         saveViewState();
     });
 
-    // --- FRACTION VISUAL FORMATTER TOOL ---
-    function formatToKitchenFraction(value) {
-        var firstPart = Math.floor(value);
-        var decimalPart = Math.round((value - firstPart) * 1000) / 1000;
-        var fraction = "";
-
-        if (decimalPart >= 0.08 && decimalPart <= 0.16) fraction = "1/8";
-        else if (decimalPart > 0.16 && decimalPart <= 0.29) fraction = "1/4";
-        else if (decimalPart > 0.29 && decimalPart <= 0.40) fraction = "1/3";
-        else if (decimalPart > 0.40 && decimalPart <= 0.58) fraction = "1/2";
-        else if (decimalPart > 0.58 && decimalPart <= 0.70) fraction = "2/3";
-        else if (decimalPart > 0.70 && decimalPart <= 0.82) fraction = "3/4";
-        else if (decimalPart > 0.82 && decimalPart <= 0.93) fraction = "7/8";
-        else if (decimalPart > 0.93) { firstPart++; decimalPart = 0; }
-
-        var output = (firstPart > 0 ? firstPart : "") + (fraction ? " " + fraction : "");
-        return output.trim() || "0";
-    }
-
-    // --- REUSABLE LIVE SCALING AND PROMOTION ENGINE ---
+    // --- DELEGATED LIVE SCALING AND PROMOTION ENGINE ---
     function runLiveScalingEngine() {
         var inputField = $("#servings-scaler");
         var customServings = parseFloat(inputField.val());
@@ -225,166 +195,13 @@ $(document).ready(function () {
 
         if (isNaN(customServings) || customServings <= 0 || isNaN(originalServings) || originalServings <= 0) return;
 
-        var scalingFactor = customServings / originalServings;
-        var poolMatrix = MEASUREMENT_MATRIX;
-        var targetMetricFlag = (currentActiveSystem === "metric");
-
-        $(".scalable-amount").each(function () {
-            var $amountLabel = $(this);
-            var $unitLabel = $amountLabel.siblings(".scalable-unit-name");
-            var $ozPreviewLabel = $amountLabel.siblings(".oz-package-preview");
-
-            // Pull clean metadata attributes directly from HTML data attributes
-            var baseAmount = parseFloat($amountLabel.data("base-amount"));
-            var baseTypeId = parseInt($amountLabel.data("base-type-id"));
-            var baseUnitEquivalent = parseFloat($amountLabel.data("base-unit-equivalent"));
-            var originalUnitId = parseInt($amountLabel.data("original-unit-id"));
-            var isPromotable = $amountLabel.data("is-promotable") === true;
-            var classification = ($amountLabel.data("ingredient-classification") || "DRY").toUpperCase().trim();
-
-            if (isNaN(baseAmount) || isNaN(baseTypeId) || isNaN(baseUnitEquivalent)) return;
-
-            var totalScaledValue = baseAmount * scalingFactor;
-            var absoluteBaseUnitsSum = totalScaledValue * baseUnitEquivalent;
-
-            // 1. Grab the existing text from the HTML element to use as the absolute fallback
-            var nativeDatabaseUnitText = $unitLabel.length ? ($unitLabel.attr("data-original-unit-name") || $unitLabel.text().trim() || "Units") : "Units";
-
-            // 2. Direct ID match to find the initial configuration inside the matrix array
-            var originalUnitMeta = poolMatrix.find(function (m) { return m.measurementId === originalUnitId; });
-
-            var finalTargetUnitText = originalUnitMeta ? originalUnitMeta.unitName : nativeDatabaseUnitText;
-            var finalDisplayQuantity = totalScaledValue;
-
-            // Only process promotions for volumetric liquids (1) and masses (2)
-            if (baseTypeId === 1 || baseTypeId === 2) {
-
-                // In Metric mode, DRY volume items switch to Weight (baseTypeId = 2 -> Grams/Kilograms)
-                var effectiveTargetBaseTypeId = (targetMetricFlag && baseTypeId === 1 && classification === "DRY")
-                    ? 2
-                    : baseTypeId;
-
-                var candidates = poolMatrix.filter(function (m) {
-                    return m.baseTypeId === effectiveTargetBaseTypeId && m.isMetric === targetMetricFlag;
-                });
-
-                // Only restrict DRY volume units in IMPERIAL mode (tsp, tbsp, cup, pinch)
-                if (effectiveTargetBaseTypeId === 1 && !targetMetricFlag && classification === "DRY") {
-                    candidates = candidates.filter(function (m) {
-                        var nameLower = m.unitName.toLowerCase();
-                        return nameLower.includes("teaspoon") ||
-                            nameLower.includes("tablespoon") ||
-                            nameLower.includes("cup") ||
-                            nameLower.includes("pinch");
-                    });
-                }
-
-                // Sort largest unit rank descending (Gallon -> Quart -> Pint -> Cup -> Tbsp -> Tsp, or L -> ml, kg -> g)
-                candidates.sort(function (a, b) { return b.scalingRank - a.scalingRank; });
-
-                var originalIsMetric = originalUnitMeta ? Boolean(originalUnitMeta.isMetric) : false;
-                var isCrossSystemConversion = (originalIsMetric !== targetMetricFlag);
-
-                // Only run promotion/conversion logic if the unit is promotable OR switching systems (Imperial <-> Metric)
-                if (isPromotable || isCrossSystemConversion) {
-
-                    // Set the system's lowest-rank unit ONLY as a starting baseline for conversion
-                    var baseUnitFallback = candidates.find(function (m) { return m.scalingRank === 1; }) || candidates[candidates.length - 1];
-                    if (baseUnitFallback) {
-                        finalTargetUnitText = baseUnitFallback.unitName;
-                        finalDisplayQuantity = absoluteBaseUnitsSum / parseFloat(baseUnitFallback.baseUnitEquivalent);
-                    }
-
-                    var unitPromoted = false;
-
-                    for (var i = 0; i < candidates.length; i++) {
-                        var candidate = candidates[i];
-                        var equivValue = parseFloat(candidate.baseUnitEquivalent);
-                        var quantityInCandidateUnit = absoluteBaseUnitsSum / equivValue;
-
-                        var dynamicFloorThreshold = parseFloat(candidate.minPromotionFloor) || 0.85;
-                        var satisfiesThreshold = false;
-
-                        if (dynamicFloorThreshold < 1.0 && dynamicFloorThreshold > 0.0 && dynamicFloorThreshold !== 0.85) {
-                            satisfiesThreshold = (quantityInCandidateUnit >= dynamicFloorThreshold);
-                        } else {
-                            satisfiesThreshold = (absoluteBaseUnitsSum >= (equivValue * dynamicFloorThreshold));
-                        }
-
-                        if (satisfiesThreshold) {
-                            if (candidate.isPromotable || candidate.measurementId === originalUnitId) {
-                                finalTargetUnitText = candidate.unitName;
-                                finalDisplayQuantity = quantityInCandidateUnit;
-                                unitPromoted = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    // If it was promotable in the same system, but didn't hit a promotion floor, keep the original unit
-                    if (!unitPromoted && !isCrossSystemConversion && originalUnitMeta) {
-                        finalTargetUnitText = originalUnitMeta.unitName;
-                        finalDisplayQuantity = totalScaledValue;
-                    }
-                }
-            }
-
-            // Output clean, naturally cased values directly from your database records
-            if (targetMetricFlag && (baseTypeId === 1 || baseTypeId === 2)) {
-                var unitLower = finalTargetUnitText.toLowerCase();
-                var isLargeMetricUnit = (unitLower === "kilogram" || unitLower === "liter");
-                var precisionFactor = isLargeMetricUnit ? 100 : (finalDisplayQuantity >= 10 ? 1 : 10);
-                var roundedMetric = Math.round(finalDisplayQuantity * precisionFactor) / precisionFactor;
-                $amountLabel.text(roundedMetric);
-            }
-            else {
-                $amountLabel.text(formatToKitchenFraction(finalDisplayQuantity));
-            }
-
-
-
-            if ($unitLabel.length) {
-                // --- DATABASE-DRIVEN PLURALIZATION ENGINE ---
-                if ($unitLabel.length) {
-                    var displayQuantityNumeric = finalDisplayQuantity;
-                    var finalUnitTextOutput = finalTargetUnitText;
-
-                    // Look up the matching unit in the matrix pool using the text signature or ID
-                    var matchedMatrixUnit = poolMatrix.find(function (m) {
-                        return m.unitName === finalTargetUnitText || m.pluralName === finalTargetUnitText;
-                    });
-
-                    if (matchedMatrixUnit) {
-                        // Dynamically toggle names based on the numeric value
-                        if (displayQuantityNumeric === 1) {
-                            finalUnitTextOutput = matchedMatrixUnit.unitName; // e.g., "Pint"
-                        } else {
-                            // Fall back to standard unitName if pluralName happens to be blank/null
-                            finalUnitTextOutput = matchedMatrixUnit.pluralName || matchedMatrixUnit.unitName; // e.g., "Pints"
-                        }
-                    }
-
-                    // Hide the word "Whole" completely from layouts (e.g., "84 Whole Green Beans" -> "84 Green Beans")
-                    if (finalUnitTextOutput.toLowerCase() === "whole") {
-                        $unitLabel.text("");
-                    } else {
-                        $unitLabel.text(finalUnitTextOutput + " ");
-                    }
-                }
-            }
-
-            // Ounce Packaging Preview Display Engine
-            if ($ozPreviewLabel.length) {
-                if ((baseTypeId === 1 || baseTypeId === 2) && !targetMetricFlag) {
-                    var divFactor = (baseTypeId === 1 && classification === "DRY") || baseTypeId === 2 ? 28.349523 : 29.573530;
-                    var suffix = (baseTypeId === 1 && classification !== "DRY") ? " FL OZ" : " OZ";
-                    var cleanOz = Math.round((absoluteBaseUnitsSum / divFactor) * 10) / 10;
-                    $ozPreviewLabel.text(" (" + cleanOz + suffix + ")");
-                } else {
-                    $ozPreviewLabel.text("");
-                }
-            }
-        });
+        if (window.RecipeScalingEngine) {
+            window.RecipeScalingEngine.updateAll({
+                scalingFactor: customServings / originalServings,
+                system: currentActiveSystem,
+                matrix: MEASUREMENT_MATRIX
+            });
+        }
     }
 
     // --- INTERACTIVE ELEMENT ACTIONS ---
@@ -399,41 +216,25 @@ $(document).ready(function () {
     });
 
     // --- SHARE RECIPE & ADDRESS-BAR TRACKING ---
-    // 1. Silently append /share to the browser bar for non-owners on non-private recipes
     if (!RECIPE_IS_OWNER && RECIPE_VISIBILITY_ID !== 2) {
         if (!window.location.pathname.endsWith("/share")) {
             window.history.replaceState(null, "", window.location.pathname + "/share");
         }
     }
 
-    // Helper to read Spring Security's XSRF-TOKEN cookie
-    function getCookieValue(name) {
-        var match = document.cookie.match(new RegExp("(^|;\\s*)" + name + "=([^;]*)"));
-        return match ? decodeURIComponent(match[2]) : null;
-    }
-
-    // 2. Wire up the Share Recipe button
     $("#shareRecipeBtn").on("click", async function () {
         var $shareBtn = $(this);
         var shareUrl = $shareBtn.data("share-url");
         var recipeTitle = $shareBtn.data("recipe-title") || "Check out this recipe";
 
-        // Record the share click on the backend if viewer is not the recipe author
         if (!RECIPE_IS_OWNER) {
-            var xsrfToken = getCookieValue("XSRF-TOKEN");
-            var headers = {};
-            if (xsrfToken) {
-                headers["X-XSRF-TOKEN"] = xsrfToken;
-            }
-
             fetch(shareUrl, {
                 method: "POST",
-                headers: headers,
+                headers: window.getCsrfHeaders(),
                 credentials: "same-origin"
             }).catch(function () { /* Ignore background tracking errors */ });
         }
 
-        // Use native mobile share sheet on phones/tablets when supported
         if (navigator.share && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
             try {
                 await navigator.share({
@@ -442,11 +243,10 @@ $(document).ready(function () {
                 });
                 return;
             } catch (err) {
-                // User cancelled or share failed; fall back to clipboard copy
+                // Fall back to clipboard copy
             }
         }
 
-        // Copy to clipboard on desktop
         try {
             await navigator.clipboard.writeText(shareUrl);
             var originalText = $shareBtn.text();
@@ -464,18 +264,15 @@ $(document).ready(function () {
     $("#reset-view-btn").on("click", function (e) {
         e.preventDefault();
 
-        // 1. Clear saved state from localStorage
         if (storageKey) {
             localStorage.removeItem(storageKey);
         }
         localStorage.removeItem("active_cooking_recipe");
 
-        // 2. Reset Servings back to original recipe default
         var $servingsInput = $("#servings-scaler");
         var originalServings = $servingsInput.data("original-servings");
         $servingsInput.val(originalServings);
 
-        // 3. Reset System toggle back to Imperial
         currentActiveSystem = "imperial";
         $(".system-toggle-btn").removeClass("active").css({
             "background-color": "transparent",
@@ -486,14 +283,12 @@ $(document).ready(function () {
             "color": "white"
         });
 
-        // 4. Re-check all shopping list checkboxes and restore visual styling
         $(".shopping-item-checkbox").each(function () {
             var $cb = $(this);
             $cb.prop("checked", false);
             applyCheckboxVisuals($cb);
         });
 
-        // 5. Return to the Overview tab (optional — remove this block if you prefer staying on the current tab)
         $(".tab-btn").removeClass("active").attr("aria-selected", "false").css({
             "color": "var(--color-text-muted, #6c757d)",
             "border-bottom": "none",
@@ -508,12 +303,10 @@ $(document).ready(function () {
         $(".tab-panel").hide();
         $("#overview-panel").show();
 
-        // 6. Recalculate all ingredient amounts
         runLiveScalingEngine();
         updateResetButtonVisibility();
     });
 
-    // Fire calculations instantly upon initial thread presentation
     restoreViewState();
     runLiveScalingEngine();
 });
