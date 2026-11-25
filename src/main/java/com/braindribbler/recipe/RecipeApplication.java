@@ -6,10 +6,10 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
-// CRITICAL: Force a global scan over all sub-packages so Spring finds every
-// bean dynamically
+@EnableScheduling 
 @ComponentScan(basePackages = "com.braindribbler.recipe")
 @PropertySource(value = "classpath:secrets.properties", ignoreResourceNotFound = true)
 public class RecipeApplication extends SpringBootServletInitializer {
