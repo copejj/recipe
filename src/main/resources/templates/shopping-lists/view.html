@@ -15,7 +15,6 @@
 <body>
     <h1 layout:fragment="page-title" th:text="${shoppingList.listName}">Shopping List</h1>
     <p layout:fragment="page-subtitle">Grouped by grocery aisle • Check items off as you shop</p>
-
     <div layout:fragment="action-tray" class="action-tray">
         <div class="action-box">
             <span id="syncStatusBadge" class="sync-status-pill">Synced</span>
@@ -47,6 +46,14 @@
                 </button>
             </form>
         </div>
+
+        <div id="remoteQuestionBanner" class="alert alert--info remote-question-banner hide-cell" role="status">
+            <span id="remoteQuestionText"></span>
+            <div class="remote-question-actions">
+                <button type="button" id="jumpToQuestionBtn" class="btn btn-action btn-action--primary">Jump to Item</button>
+                <button type="button" id="dismissQuestionBannerBtn" class="btn btn-action btn-action--cancel">Dismiss</button>
+            </div>
+        </div>
     </div>
 
     <main layout:fragment="content" id="shoppingListApp" th:data-list-public-id="${shoppingList.publicId}">
@@ -61,6 +68,14 @@
              th:if="${itemsByAisle != null && !itemsByAisle.isEmpty()}"
              class="alert alert--success hide-cell">
             <strong>All Done, now what?!</strong> Everything on your list is checked off. Tap <strong>Show All</strong> above to review or uncheck items.
+        </div>
+
+        <div id="remoteQuestionBanner" class="alert alert--info remote-question-banner hide-cell" role="status">
+            <span id="remoteQuestionText"></span>
+            <div class="remote-question-actions">
+                <button type="button" id="jumpToQuestionBtn" class="btn btn-action btn-action--primary">Jump to Item</button>
+                <button type="button" id="dismissQuestionBannerBtn" class="btn btn-action btn-action--cancel">Dismiss</button>
+            </div>
         </div>
 
         <th:block th:replace="~{fragments/ingredient-checklist :: persistentShoppingChecklist(${itemsByAisle}, ${shoppingList}, ${canEdit})}"></th:block>

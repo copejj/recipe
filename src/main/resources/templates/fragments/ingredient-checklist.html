@@ -2,7 +2,9 @@
 <html xmlns:th="http://thymeleaf.org">
 <body>
 
-<!-- 1. SHARED QUANTITY, PLURAL UNIT & OZ PACKAGE PREVIEW FRAGMENT -->
+<!-- =========================================================================
+     1. SHARED QUANTITY, PLURAL UNIT & OZ PACKAGE PREVIEW FRAGMENT
+     ========================================================================= -->
 <th:block th:fragment="itemQuantityBlock(amount, measurement, ingredient, showDash)">
     <span th:if="${amount != null && amount.compareTo(T(java.math.BigDecimal).ZERO) > 0}"
           class="ingredient-quantity-group">
@@ -25,13 +27,22 @@
     </span>
 </th:block>
 
-<!-- 2. PERSISTENT SHOPPING LIST CHECKLIST (shopping-lists/view.html) -->
+
+<!-- =========================================================================
+     2. PERSISTENT SHOPPING LIST CHECKLIST (shopping-lists/view.html)
+     ========================================================================= -->
 <th:block th:fragment="persistentShoppingChecklist(itemsByAisle, shoppingList, canEdit)">
     <div th:each="entry : ${itemsByAisle}" class="shopping-category-section">
         <h4 class="recipe-panel-heading" th:text="${entry.key}">Produce</h4>
 
         <ul class="recipe-ingredient-list standard-list-reset">
-            <li th:each="item : ${entry.value}" class="recipe-ingredient-row shopping-item-modifier shopping-row-flex">
+            <li th:each="item : ${entry.value}"
+                th:data-item-id="${item.shoppingListItemId}"
+                th:data-hidden="${item.isHidden}"
+                th:data-manual="${item.isManualAddition}"
+                th:classappend="${(item.isQuestioned ? ' is-questioned-row' : '') + (item.isHidden ? ' is-hidden-item hide-cell' : '')}"
+                class="recipe-ingredient-row shopping-item-modifier shopping-row-flex">
+
                 <label class="shopping-item-content">
                     <input type="checkbox"
                            class="shopping-item-checkbox"
@@ -48,21 +59,59 @@
                               th:text="' - [' + ${item.note} + ']'"></span>
 
                         <span th:if="${item.isManualAddition}" class="badge-extra-item">Extra</span>
+                        <span th:if="${item.isHidden}" class="badge-skipped-item">Skipped</span>
                     </span>
                 </label>
 
-                <form th:if="${canEdit}"
-                      th:action="@{/shopping-lists/{lid}/items/{iid}/delete(lid=${shoppingList.publicId}, iid=${item.shoppingListItemId})}"
-                      method="post" class="inline-form-reset">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                    <button type="submit" class="btn btn-action btn-action--delete" title="Remove item">✕</button>
-                </form>
+                <div class="shopping-row-controls">
+                    <!-- Question Mark Button + Speech Bubble -->
+                    <div class="question-control-wrap">
+                        <span class="chat-bubble chat-bubble--question"
+                              th:classappend="${!item.isQuestioned} ? ' hide-cell' : ''">
+                            Do we have this already?
+                        </span>
+                        <button type="button"
+                                class="btn-question-circle js-toggle-question-btn"
+                                th:classappend="${item.isQuestioned} ? ' is-active' : ''"
+                                th:aria-pressed="${item.isQuestioned}"
+                                th:data-item-id="${item.shoppingListItemId}"
+                                title="Ask: Do we have this already?">?</button>
+                    </div>
+
+                    <!-- Restore Button (Shown when item is soft-hidden and Show All is active) -->
+                    <button type="button"
+                            th:if="${canEdit}"
+                            th:data-item-id="${item.shoppingListItemId}"
+                            th:classappend="${!item.isHidden} ? ' hide-cell' : ''"
+                            class="btn btn-action btn-action--secondary js-restore-item-btn"
+                            title="Restore item to list">
+                        Restore
+                    </button>
+
+                    <!-- Two-Step Delete (Manual items) or Soft-Hide (Meal Plan items) -->
+                    <form th:if="${canEdit}"
+                          th:action="@{/shopping-lists/{lid}/items/{iid}/delete(lid=${shoppingList.publicId}, iid=${item.shoppingListItemId})}"
+                          method="post"
+                          th:classappend="${item.isHidden} ? ' hide-cell' : ''"
+                          class="inline-form-reset delete-confirm-wrap js-item-remove-form">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <span class="chat-bubble chat-bubble--danger js-confirm-bubble hide-cell">Sure?</span>
+                        <button type="submit"
+                                th:data-item-id="${item.shoppingListItemId}"
+                                th:data-manual="${item.isManualAddition}"
+                                class="btn btn-action btn-action--delete js-confirm-remove-btn"
+                                title="Remove or hide item">✕</button>
+                    </form>
+                </div>
             </li>
         </ul>
     </div>
 </th:block>
 
-<!-- 3. RECIPE ITEM LIST CHECKLIST (recipes/views/list.html) -->
+
+<!-- =========================================================================
+     3. RECIPE ITEM LIST CHECKLIST (recipes/views/list.html)
+     ========================================================================= -->
 <th:block th:fragment="recipeItemChecklist(aggregatedIngredients)">
     <div th:each="entry : ${aggregatedIngredients}" class="shopping-category-section">
         <h4 class="recipe-panel-heading" th:text="${entry.key}">Produce</h4>

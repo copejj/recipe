@@ -78,4 +78,27 @@ public class ShoppingListSseService {
             }
         });
     }
+
+    public void broadcastItemToggled(UUID publicId, Integer itemId, boolean isChecked, boolean isQuestioned) {
+        sendEvent(publicId, "item-toggled", Map.of(
+                "id", itemId,
+                "checked", isChecked,
+                "questioned", isQuestioned
+        ));
+    }
+
+    public void broadcastItemQuestioned(UUID publicId, Integer itemId, boolean isQuestioned, String itemName) {
+        sendEvent(publicId, "item-questioned", Map.of(
+                "id", itemId,
+                "questioned", isQuestioned,
+                "name", itemName != null ? itemName : "Item"
+        ));
+    }
+
+    public void broadcastItemHidden(UUID publicId, Integer itemId, boolean isHidden) {
+        sendEvent(publicId, "item-hidden", Map.of(
+                "id", itemId,
+                "hidden", isHidden
+        ));
+    }
 }
