@@ -171,9 +171,11 @@ public class MealPlanController {
         }
 
         mealPlanService.scheduleEntry(entryId, dayOfWeek, scheduledDate, mealType, servingsOverride);
+        shoppingListService.syncIfExistsForMealPlan(plan, currentUser.getUserProfile());
         redirectAttributes.addFlashAttribute("successMessage", "Schedule updated.");
         return "redirect:/meal-plans/" + publicId;
     }
+
     @PostMapping("/{publicId}/entries/{entryId}/remove")
     public String removeEntry(@PathVariable UUID publicId,
                               @PathVariable Integer entryId,
