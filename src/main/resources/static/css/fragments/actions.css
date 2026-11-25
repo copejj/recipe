@@ -201,6 +201,10 @@
     box-sizing: border-box;
 }
 
+.action-box {
+    padding: .5rem 0;
+}
+
 .action-tray,
 .sticky-stack-item {
     top: 0;
@@ -208,24 +212,24 @@
     background-color: var(--color-surface, #ffffff);
 }
 
-.action-tray {
+.action-tray,
+.action-box {
     z-index: 100;
     background-color: var(--color-bg-card);
     display: flex;
     gap: 12px;
-    width: auto; /* Lets block element fill available space minus margins */
+    width: 100%;
     justify-content: flex-start;
     align-items: center;
     flex-wrap: wrap;
     box-sizing: border-box;
 }
 
-.action-tray .btn {
-    margin: .5rem 0;
+.action-tray .btn,
+.action-box .btn {
     width: auto;
     text-align: center;
     text-decoration: none;
-    padding: 10px 16px;
     border-radius: 6px;
     font-weight: 600;
     font-size: 0.9rem;
@@ -238,7 +242,8 @@
     box-sizing: border-box;
 }
 
-.action-tray .btn-secondary {
+.action-tray .btn-secondary, 
+.action-box .btn-secondary {
     background-color: var(--color-bg-body);
     color: var(--color-text-dark);
     border: 1px solid var(--color-border);
@@ -265,10 +270,11 @@
     font-size: 0.95rem;
 }
 @media (max-width: 48rem) and (orientation: portrait) {
+    .action-box,
     .action-tray {
         display: flex;
         flex-wrap: wrap;
-        justify-content: center;
+        justify-content: left;
         width: 100%;
     }
 } 

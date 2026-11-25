@@ -14,6 +14,10 @@
 <body>
     <h1 layout:fragment="page-title">My Profile</h1>
     <p layout:fragment="page-subtitle">Manage your account details, security settings, and recipe activity.</p>
+    
+    <div layout:fragment="action-tray" class="action-tray">
+        <a th:href="@{/}" class="btn btn-secondary">← Home</a>
+    </div>
 
     <main layout:fragment="content">
         <!-- Dynamic Success/Error Alerts -->

@@ -269,7 +269,7 @@ function initSmartBackLinks() {
             { prefix: "/shopping-lists/", label: "← Back to Shopping List" },
             { prefix: "/meal-plans/", label: "← Back to Meal Plan" },
             { prefix: "/meal-plans", label: "← Back to Meal Plans" },
-            { prefix: "/recipes/my-list", label: "← Back to My Cookbook" },
+            { prefix: "/recipes/cookbook", label: "← Back to My Cookbook" },
             { prefix: "/recipes/create", label: "← Back to Recipe Editor" },
             { prefix: "/recipes/edit/", label: "← Back to Recipe Editor" },
             { prefix: "/view/", label: "← Back to Recipe" },
