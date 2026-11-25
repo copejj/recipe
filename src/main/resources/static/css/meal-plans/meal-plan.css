@@ -324,6 +324,10 @@ tr.is-editing-row {
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
 }
 
+.push-right {
+    margin-left: auto;
+}
+
 .chat-bubble {
     position: absolute;
     right: calc(100% + 8px);
@@ -382,6 +386,23 @@ tr.is-editing-row {
 .is-questioned-row {
     background-color: rgba(37, 99, 235, 0.06);
     border-left: 3px solid #2563eb;
+}
+
+.push-right {
+    margin-left: auto;
+}
+
+.plan-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.card-overlay-action {
+    position: relative;
+    z-index: 2;
 }
 
 @keyframes questionRowPulse {
