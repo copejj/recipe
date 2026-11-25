@@ -51,6 +51,11 @@ public class ShoppingListService {
                 .map(i -> i.getIngredient().getIngredientId())
                 .collect(Collectors.toSet());
 
+        Set<Integer> hiddenIngredientIds = list.getItems().stream()
+                .filter(i -> Boolean.TRUE.equals(i.getIsHidden()) && i.getIngredient() != null)
+                .map(i -> i.getIngredient().getIngredientId())
+                .collect(Collectors.toSet());
+
         // Keep manual store additions; replace recipe-aggregated rows
         list.getItems().removeIf(item -> !Boolean.TRUE.equals(item.getIsManualAddition()));
 
@@ -61,7 +66,7 @@ public class ShoppingListService {
         int order = 1;
         for (List<RecipeStepIngredient> aisleItems : aggregated.values()) {
             for (RecipeStepIngredient agg : aisleItems) {
-                list.getItems().add(toPersistentItem(list, agg, triggeredBy, checkedIngredientIds, order++));
+                list.getItems().add(toPersistentItem(list, agg, triggeredBy, checkedIngredientIds, hiddenIngredientIds, order++));
             }
         }
         return shoppingListRepository.save(list);
@@ -88,12 +93,37 @@ public class ShoppingListService {
     }
 
     @Transactional
-    public boolean toggleItemChecked(Integer itemId) {
+    public ShoppingListItem toggleItemChecked(Integer itemId) {
         ShoppingListItem item = shoppingListItemRepository.findById(itemId)
                 .orElseThrow(() -> new EntityNotFoundException("Shopping list item not found"));
-        item.setIsChecked(!Boolean.TRUE.equals(item.getIsChecked()));
+        boolean nextChecked = !Boolean.TRUE.equals(item.getIsChecked());
+        item.setIsChecked(nextChecked);
+        if (nextChecked) {
+            item.setIsQuestioned(false);
+        }
+        return shoppingListItemRepository.save(item);
+    }
+
+    @Transactional
+    public boolean toggleItemQuestioned(Integer itemId) {
+        ShoppingListItem item = shoppingListItemRepository.findById(itemId)
+                .orElseThrow(() -> new EntityNotFoundException("Shopping list item not found"));
+        item.setIsQuestioned(!Boolean.TRUE.equals(item.getIsQuestioned()));
         shoppingListItemRepository.save(item);
-        return item.getIsChecked();
+        return item.getIsQuestioned();
+    }
+
+    @Transactional
+    public boolean toggleItemHidden(Integer itemId) {
+        ShoppingListItem item = shoppingListItemRepository.findById(itemId)
+                .orElseThrow(() -> new EntityNotFoundException("Shopping list item not found"));
+        boolean nextHidden = !Boolean.TRUE.equals(item.getIsHidden());
+        item.setIsHidden(nextHidden);
+        if (nextHidden) {
+            item.setIsQuestioned(false);
+        }
+        shoppingListItemRepository.save(item);
+        return nextHidden;
     }
 
     @Transactional
@@ -101,7 +131,7 @@ public class ShoppingListService {
         shoppingListItemRepository.deleteById(itemId);
     }
 
-    public Map<String, List<ShoppingListItem>> groupItemsByAisle(ShoppingList list) {
+        public Map<String, List<ShoppingListItem>> groupItemsByAisle(ShoppingList list) {
         return list.getItems().stream()
                 .collect(Collectors.groupingBy(item -> item.getGroceryCategory()))
                 .entrySet().stream()
@@ -128,7 +158,8 @@ public class ShoppingListService {
     }
 
     private ShoppingListItem toPersistentItem(ShoppingList list, RecipeStepIngredient agg,
-                                              User user, Set<Integer> checkedIds, int sortOrder) {
+                                              User user, Set<Integer> checkedIds,
+                                              Set<Integer> hiddenIds, int sortOrder) {
         ShoppingListItem item = new ShoppingListItem();
         item.setShoppingList(list);
         item.setIngredient(agg.getIngredient());
@@ -139,8 +170,14 @@ public class ShoppingListService {
         item.setIsManualAddition(false);
         item.setAddedBy(user);
         item.setSortOrder(sortOrder);
-        if (agg.getIngredient() != null && checkedIds.contains(agg.getIngredient().getIngredientId())) {
-            item.setIsChecked(true);
+        if (agg.getIngredient() != null) {
+            Integer ingId = agg.getIngredient().getIngredientId();
+            if (checkedIds.contains(ingId)) {
+                item.setIsChecked(true);
+            }
+            if (hiddenIds.contains(ingId)) {
+                item.setIsHidden(true);
+            }
         }
         return item;
     }
@@ -158,14 +195,18 @@ public class ShoppingListService {
     @Transactional
     public void resetFromMealPlan(ShoppingList list, User triggeredBy) {
         if (list.getMealPlan() == null) {
-            // Standalone list: just uncheck everything and remove manual additions
+            // Standalone list: uncheck/unhide everything and remove manual additions
             list.getItems().removeIf(item -> Boolean.TRUE.equals(item.getIsManualAddition()));
-            list.getItems().forEach(item -> item.setIsChecked(false));
+            list.getItems().forEach(item -> {
+                item.setIsChecked(false);
+                item.setIsHidden(false);
+                item.setIsQuestioned(false);
+            });
             shoppingListRepository.save(list);
             return;
         }
 
-        // Wipe all items (clears checkmarks and old extra items) and rebuild fresh from scheduled meals
+        // Wipe all items (clears checkmarks, hidden flags, and old extra items) and rebuild fresh
         list.getItems().clear();
         shoppingListRepository.saveAndFlush(list);
 
@@ -180,7 +221,7 @@ public class ShoppingListService {
         int order = 1;
         for (List<RecipeStepIngredient> aisleItems : aggregated.values()) {
             for (RecipeStepIngredient agg : aisleItems) {
-                list.getItems().add(toPersistentItem(list, agg, triggeredBy, Collections.emptySet(), order++));
+                list.getItems().add(toPersistentItem(list, agg, triggeredBy, Collections.emptySet(), Collections.emptySet(), order++));
             }
         }
         shoppingListRepository.save(list);

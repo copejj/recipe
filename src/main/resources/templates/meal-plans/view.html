@@ -32,7 +32,7 @@
     </div>
 
 
-    <main layout:fragment="content">
+    <main layout:fragment="content" id="mealPlanApp" th:data-plan-public-id="${plan.publicId}">
         <div th:if="${successMessage}" class="alert alert--success" th:text="${successMessage}"></div>
         <div th:if="${errorMessage}" class="alert alert--danger" th:text="${errorMessage}"></div>
 

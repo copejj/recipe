@@ -308,5 +308,15 @@ $(document).ready(function () {
     });
 
     restoreViewState();
+
+    // Apply ?servings= override from Meal Plan links (takes precedence over saved localStorage state)
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryServings = parseFloat(urlParams.get("servings"));
+    if (!isNaN(queryServings) && queryServings > 0) {
+        $("#servings-scaler").val(queryServings);
+        saveViewState();
+        updateResetButtonVisibility();
+    }
+
     runLiveScalingEngine();
 });

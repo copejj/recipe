@@ -2,6 +2,7 @@ package com.braindribbler.recipe.controller.mealplan;
 
 import com.braindribbler.recipe.domain.auth.User;
 import com.braindribbler.recipe.domain.mealplan.ShoppingList;
+import com.braindribbler.recipe.domain.mealplan.ShoppingListItem;
 import com.braindribbler.recipe.domain.recipe.GroceryCategory;
 import com.braindribbler.recipe.domain.recipe.Ingredient;
 import com.braindribbler.recipe.domain.recipe.Measurement;
@@ -148,25 +149,6 @@ public class ShoppingListController {
         return "redirect:/shopping-lists/" + publicId;
     }
 
-        @PostMapping("/items/{itemId}/toggle")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> toggleItem(@PathVariable UUID publicId,
-                                                          @PathVariable Integer itemId,
-                                                          @AuthenticationPrincipal RecipeUserDetails currentUser) {
-        if (currentUser == null) return ResponseEntity.status(401).build();
-        User user = currentUser.getUserProfile();
-        ShoppingList list = shoppingListService.getByPublicId(publicId);
-
-        if (!canUserAccessList(list, user)) {
-            return ResponseEntity.status(403).build();
-        }
-
-        boolean isChecked = shoppingListService.toggleItemChecked(itemId);
-        shoppingListSseService.broadcastItemToggled(publicId, itemId, isChecked);
-
-        return ResponseEntity.ok(Map.of("itemId", itemId, "isChecked", isChecked));
-    }
-
     @PostMapping("/items/{itemId}/delete")
     public String deleteItem(@PathVariable UUID publicId,
                              @PathVariable Integer itemId,
@@ -222,9 +204,12 @@ public class ShoppingListController {
         List<Map<String, Object>> itemsState = list.getItems().stream()
                 .map(i -> Map.<String, Object>of(
                         "id", i.getShoppingListItemId(),
-                        "checked", Boolean.TRUE.equals(i.getIsChecked())
+                        "checked", Boolean.TRUE.equals(i.getIsChecked()),
+                        "questioned", Boolean.TRUE.equals(i.getIsQuestioned()),
+                        "hidden", Boolean.TRUE.equals(i.getIsHidden())
                 ))
                 .toList();
+
 
         return ResponseEntity.ok(Map.of(
                 "count", itemsState.size(),
@@ -242,5 +227,74 @@ public class ShoppingListController {
         if (user == null || list == null) return false;
         if (list.getOwner().getUserId().equals(user.getUserId())) return true;
         return list.getMealPlan() != null && mealPlanService.canUserEdit(list.getMealPlan(), user);
+    }
+
+    @PostMapping("/items/{itemId}/toggle")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> toggleItem(@PathVariable UUID publicId,
+                                                          @PathVariable Integer itemId,
+                                                          @AuthenticationPrincipal RecipeUserDetails currentUser) {
+        if (currentUser == null) return ResponseEntity.status(401).build();
+        User user = currentUser.getUserProfile();
+        ShoppingList list = shoppingListService.getByPublicId(publicId);
+
+        if (!canUserAccessList(list, user)) {
+            return ResponseEntity.status(403).build();
+        }
+
+        ShoppingListItem updated = shoppingListService.toggleItemChecked(itemId);
+        boolean isChecked = Boolean.TRUE.equals(updated.getIsChecked());
+        boolean isQuestioned = Boolean.TRUE.equals(updated.getIsQuestioned());
+        shoppingListSseService.broadcastItemToggled(publicId, itemId, isChecked, isQuestioned);
+
+        return ResponseEntity.ok(Map.of(
+                "itemId", itemId,
+                "isChecked", isChecked,
+                "isQuestioned", isQuestioned
+        ));
+    }
+
+    @PostMapping("/items/{itemId}/question")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> toggleItemQuestion(@PathVariable UUID publicId,
+                                                                  @PathVariable Integer itemId,
+                                                                  @AuthenticationPrincipal RecipeUserDetails currentUser) {
+        if (currentUser == null) return ResponseEntity.status(401).build();
+        User user = currentUser.getUserProfile();
+        ShoppingList list = shoppingListService.getByPublicId(publicId);
+
+        if (!canUserAccessList(list, user)) {
+            return ResponseEntity.status(403).build();
+        }
+
+        ShoppingListItem item = list.getItems().stream()
+                .filter(i -> i.getShoppingListItemId().equals(itemId))
+                .findFirst()
+                .orElse(null);
+        String itemName = (item != null) ? item.getDisplayName() : "Item";
+
+        boolean isQuestioned = shoppingListService.toggleItemQuestioned(itemId);
+        shoppingListSseService.broadcastItemQuestioned(publicId, itemId, isQuestioned, itemName);
+
+        return ResponseEntity.ok(Map.of("itemId", itemId, "isQuestioned", isQuestioned));
+    }
+
+    @PostMapping("/items/{itemId}/hide")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> toggleItemHidden(@PathVariable UUID publicId,
+                                                                @PathVariable Integer itemId,
+                                                                @AuthenticationPrincipal RecipeUserDetails currentUser) {
+        if (currentUser == null) return ResponseEntity.status(401).build();
+        User user = currentUser.getUserProfile();
+        ShoppingList list = shoppingListService.getByPublicId(publicId);
+
+        if (!canUserEditList(list, user)) {
+            return ResponseEntity.status(403).build();
+        }
+
+        boolean isHidden = shoppingListService.toggleItemHidden(itemId);
+        shoppingListSseService.broadcastItemHidden(publicId, itemId, isHidden);
+
+        return ResponseEntity.ok(Map.of("itemId", itemId, "isHidden", isHidden));
     }
 }

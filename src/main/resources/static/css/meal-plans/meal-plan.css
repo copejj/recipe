@@ -252,7 +252,182 @@
     }
 }
 
+/* ==========================================================================
+   INLINE MEAL SCHEDULE EDITING
+   ========================================================================== */
+.inline-action-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.inline-table-input {
+    height: 36px;
+    padding: 4px 10px;
+    font-size: 0.9rem;
+    width: auto;
+    min-width: 120px;
+}
+
+.inline-table-input--sm {
+    width: 78px;
+    min-width: 78px;
+}
+
+tr.is-editing-row {
+    background-color: rgba(13, 110, 253, 0.04);
+    cursor: default;
+}
+
+/* ==========================================================================
+   SHOPPING LIST: QUESTION MARK (?), CHAT BUBBLES & SOFT-HIDE STATES
+   ========================================================================== */
+.shopping-row-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.question-control-wrap,
+.delete-confirm-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-question-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    background-color: #9ca3af;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.btn-question-circle:hover {
+    background-color: #6b7280;
+}
+
+.btn-question-circle.is-active {
+    background-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+}
+
+.chat-bubble {
+    position: absolute;
+    right: calc(100% + 8px);
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 20;
+    width: max-content;
+    max-width: min(240px, 50vw);
+    white-space: normal;
+    text-align: center;
+    padding: 5px 10px;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.25;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.14);
+    pointer-events: none;
+}
+
+.chat-bubble::after {
+    content: "";
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 5px 0 5px 6px;
+    border-style: solid;
+}
+
+.chat-bubble--question {
+    background-color: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #93c5fd;
+}
+
+.chat-bubble--question::after {
+    border-color: transparent transparent transparent #93c5fd;
+}
+
+.chat-bubble--danger {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
+
+.chat-bubble--danger::after {
+    border-color: transparent transparent transparent #fca5a5;
+}
+
+.btn-action--delete.is-confirming {
+    background-color: #b91c1c;
+    color: #ffffff;
+    transform: scale(1.06);
+}
+
+.is-questioned-row {
+    background-color: rgba(37, 99, 235, 0.06);
+    border-left: 3px solid #2563eb;
+}
+
+@keyframes questionRowPulse {
+    0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.45); }
+    70% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+}
+
+.is-question-pulse {
+    animation: questionRowPulse 1.2s ease-out 2;
+}
+
+.is-hidden-item {
+    opacity: 0.55;
+}
+
+.badge-skipped-item {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    background-color: #e5e7eb;
+    color: #4b5563;
+}
+
+.remote-question-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.remote-question-actions {
+    display: inline-flex;
+    gap: 8px;
+}
+
 @media (max-width: 48rem) {
+    .chat-bubble--question {
+        white-space: normal;
+        max-width: 145px;
+        font-size: 0.72rem;
+    }
+
     table#scheduledMealsTable {
         display: block;
         width: 100%;
@@ -302,5 +477,12 @@
 
     table#scheduledMealsTable tbody td.actions-cell::before {
         display: none;
+    }
+
+    .inline-table-input,
+    .inline-table-input--sm {
+        width: 100%;
+        min-width: 0;
+        margin-top: 4px;
     }
 }

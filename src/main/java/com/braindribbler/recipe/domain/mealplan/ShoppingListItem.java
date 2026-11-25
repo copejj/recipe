@@ -54,6 +54,12 @@ public class ShoppingListItem {
     @Column(name = "sort_order", nullable = false)
     private Integer sortOrder = 1;
 
+    @Column(name = "is_hidden", nullable = false)
+    private Boolean isHidden = false;
+
+    @Column(name = "is_questioned", nullable = false)
+    private Boolean isQuestioned = false;
+
     public ShoppingListItem() {}
 
     @Transient
@@ -97,4 +103,11 @@ public class ShoppingListItem {
 
     public Integer getSortOrder() { return sortOrder; }
     public void setSortOrder(Integer sortOrder) { this.sortOrder = sortOrder; }
+
+    public Boolean getIsHidden() { return isHidden; }
+    public void setIsHidden(Boolean isHidden) { this.isHidden = isHidden; }
+
+    public Boolean getIsQuestioned() { return isQuestioned; }
+    public void setIsQuestioned(Boolean isQuestioned) { this.isQuestioned = isQuestioned; }
+
 }
