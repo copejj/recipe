@@ -280,4 +280,23 @@ public class MealPlanController {
         ShoppingList shoppingList = shoppingListService.generateOrSyncFromMealPlan(plan, targetEntries, user);
         return "redirect:/shopping-lists/" + shoppingList.getPublicId();
     }
+
+    @PostMapping("/{publicId}/delete")
+    public String deleteMealPlan(@PathVariable UUID publicId,
+                                 @AuthenticationPrincipal RecipeUserDetails currentUser,
+                                 RedirectAttributes redirectAttributes) {
+        if (currentUser == null) return "redirect:/login";
+        User user = currentUser.getUserProfile();
+        MealPlan plan = mealPlanService.getByPublicId(publicId);
+
+        if (!plan.getUser().getUserId().equals(user.getUserId())) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Only the owner can delete this meal plan.");
+            return "redirect:/meal-plans/" + publicId;
+        }
+
+        String planName = plan.getPlanName();
+        mealPlanService.deleteMealPlan(plan);
+        redirectAttributes.addFlashAttribute("successMessage", "Deleted meal plan \"" + planName + "\".");
+        return "redirect:/meal-plans";
+    }
 }

@@ -19,13 +19,16 @@ public class MealPlanService {
     private final MealPlanRepository mealPlanRepository;
     private final MealPlanRecipeRepository mealPlanRecipeRepository;
     private final MealPlanShareRepository mealPlanShareRepository;
+    private final ShoppingListRepository shoppingListRepository;
 
     public MealPlanService(MealPlanRepository mealPlanRepository,
                            MealPlanRecipeRepository mealPlanRecipeRepository,
-                           MealPlanShareRepository mealPlanShareRepository) {
+                           MealPlanShareRepository mealPlanShareRepository,
+                           ShoppingListRepository shoppingListRepository) {
         this.mealPlanRepository = mealPlanRepository;
         this.mealPlanRecipeRepository = mealPlanRecipeRepository;
         this.mealPlanShareRepository = mealPlanShareRepository;
+        this.shoppingListRepository = shoppingListRepository;
     }
 
     public List<MealPlan> getAccessibleMealPlans(Integer userId) {
@@ -115,10 +118,16 @@ public class MealPlanService {
                 });
     }
 
-
     @Transactional
     public void removeShare(MealPlan plan, Integer shareId) {
         plan.getShares().removeIf(s -> s.getMealPlanShareId().equals(shareId));
         mealPlanRepository.save(plan);
+    }
+
+    @Transactional
+    public void deleteMealPlan(MealPlan plan) {
+        shoppingListRepository.findFirstByMealPlan_MealPlanIdOrderByCreatedAtDesc(plan.getMealPlanId())
+                .ifPresent(shoppingListRepository::delete);
+        mealPlanRepository.delete(plan);
     }
 }
