@@ -137,15 +137,15 @@
             <div th:insert="~{recipes/views/list :: list-view}"></div>
         </div>
     </main>
-
     <th:block layout:fragment="page_scripts">
         <div id="recipe-page-meta"
-             th:data-recipe-id="${recipe.recipeId}"
-             th:data-is-owner="${canEdit}"
-             th:data-visibility-id="${recipe.recipeVisibility.recipeVisibilityId}"
-             th:data-measurements="${globalMeasurementsPoolJson}"
-             hidden></div>
+            th:data-recipe-id="${recipe.recipeId}"
+            th:data-is-owner="${canEdit}"
+            th:data-visibility-id="${recipe.recipeVisibility.recipeVisibilityId}"
+            th:data-measurements="${globalMeasurementsPoolJson}"
+            hidden></div>
+        <script th:src="@{/js/recipes/ingredient-scaling-engine.js}"></script>
         <script th:src="@{/js/recipes/view.js}"></script>
-    </th:block> 
+    </th:block>
 </body>
 </html>

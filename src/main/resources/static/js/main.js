@@ -293,3 +293,18 @@ function initSmartBackLinks() {
         // Keep default fallback href/label if referrer URL is malformed
     }
 }
+
+// Global CSRF helper for fetch() POST/PUT/DELETE requests
+window.getCsrfToken = function () {
+    const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]*)/);
+    if (match && match[1]) {
+        return decodeURIComponent(match[1]);
+    }
+    const csrfInput = document.querySelector('input[name="_csrf"]');
+    return csrfInput ? csrfInput.value : null;
+};
+
+window.getCsrfHeaders = function (extraHeaders = {}) {
+    const token = window.getCsrfToken();
+    return token ? { ...extraHeaders, "X-XSRF-TOKEN": token } : { ...extraHeaders };
+};

@@ -1,4 +1,3 @@
-<!-- templates/recipes/views/prep.html -->
 <div th:fragment="prep-panel" class="recipe-view-panel">
 
     <!-- Iterates chronologically showing step descriptions with step-scoped sub-ingredients -->
@@ -11,24 +10,12 @@
             <h5 class="step-ingredients-subheading">Ingredients for this step:</h5>
             <ul class="recipe-ingredient-list">
                 <li th:each="item : ${step.stepIngredients}" class="recipe-ingredient-row">
-                    <span class="scalable-amount" 
-                          th:data-base-amount="${item.amount}"
-                          th:data-base-type-id="${item.measurement.baseType.baseTypeId}"
-                          th:data-base-unit-equivalent="${item.measurement.baseUnitEquivalent}"
-                          th:data-original-unit-id="${item.measurement.measurementId}"
-                          th:data-is-promotable="${item.measurement.isPromotable}"
-                          th:data-ingredient-classification="${item.ingredient.classification.name()}"
-                          th:text="${T(com.braindribbler.recipe.util.RecipeUtility).convertDecimalToKitchenFraction(item.amount)}">1</span>
-
-                    <span class="scalable-unit-name" 
-                          th:data-original-unit-name="${item.measurement.unitName}" 
-                          th:text="${item.measurement.unitName}">Cups</span>
+                    <th:block th:replace="~{fragments/ingredient-checklist :: itemQuantityBlock(${item.amount}, ${item.measurement}, ${item.ingredient}, false)}"></th:block>
                     <strong class="ingredient-name" th:text="${item.ingredient.ingredientName}">Flour</strong>
-                    <span class="oz-package-preview"></span>
 
                     <span class="ingredient-note" 
-                        th:if="${item.ingredientNote != null && !#strings.isEmpty(item.ingredientNote)}" 
-                        th:text="' - [' + ${item.ingredientNote} + ']'">Some Note</span>
+                          th:if="${item.ingredientNote != null && !#strings.isEmpty(item.ingredientNote)}" 
+                          th:text="' - [' + ${item.ingredientNote} + ']'">Some Note</span>
                 </li>
             </ul>
         </div>

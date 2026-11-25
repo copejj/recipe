@@ -13,11 +13,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let showAllItems = localStorage.getItem(showAllPrefKey) === "true";
     let eventSource = null;
 
-    function getCookieValue(name) {
-        const match = document.cookie.match(new RegExp("(^|;\\s*)" + name + "=([^;]*)"));
-        return match ? decodeURIComponent(match[2]) : null;
-    }
-
     function getDirtyMap() {
         try {
             return JSON.parse(localStorage.getItem(dirtyKey) || "{}");
@@ -67,34 +62,6 @@ document.addEventListener("DOMContentLoaded", () => {
             textSpan.classList.remove("crossed-out-text");
             row.classList.remove("pantry-owned-item");
         }
-    }
-
-    function renderOzPackagePreviews() {
-        document.querySelectorAll('.shopping-item-text').forEach(row => {
-            const amtEl = row.querySelector('.scalable-amount');
-            const previewEl = row.querySelector('.oz-package-preview');
-            if (!amtEl || !previewEl) return;
-
-            const baseAmount = parseFloat(amtEl.dataset.baseAmount);
-            const baseTypeId = parseInt(amtEl.dataset.baseTypeId, 10);
-            const baseUnitEq = parseFloat(amtEl.dataset.baseUnitEquivalent);
-            const isPromotable = amtEl.dataset.isPromotable === 'true';
-
-            if (!isPromotable || isNaN(baseAmount) || isNaN(baseUnitEq) || baseAmount <= 0) {
-                previewEl.textContent = '';
-                return;
-            }
-
-            // Base type 1 = Volume (tsp -> fl oz: 1 fl oz = 6 tsp), Base type 2 = Weight (g -> oz: 1 oz = 28.3495 g)
-            const totalBaseUnits = baseAmount * baseUnitEq;
-            if (baseTypeId === 1) {
-                const flOz = totalBaseUnits / 6.0;
-                previewEl.textContent = ` (${Math.round(flOz * 10) / 10} fl oz)`;
-            } else if (baseTypeId === 2) {
-                const oz = totalBaseUnits / 28.3495;
-                previewEl.textContent = ` (${Math.round(oz * 10) / 10} oz)`;
-            }
-        });
     }
 
     function updateShowAllButtonUI() {
@@ -155,13 +122,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }));
         } catch (e) { /* Ignore storage quota errors */ }
     }
-    async function syncToggleToServer(itemId, desiredChecked) {
-        const xsrfToken = getCookieValue("XSRF-TOKEN");
-        const headers = {};
-        if (xsrfToken) {
-            headers["X-XSRF-TOKEN"] = xsrfToken;
-        }
 
+    async function syncToggleToServer(itemId, desiredChecked) {
         if (!navigator.onLine) {
             setItemDirty(itemId, desiredChecked, true);
             if (statusBadge) statusBadge.textContent = "Saved locally (offline)";
@@ -174,7 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const response = await fetch(`/shopping-lists/${listPublicId}/items/${itemId}/toggle`, {
                 method: "POST",
-                headers: headers,
+                headers: window.getCsrfHeaders(),
                 credentials: "same-origin"
             });
             if (response.ok) {
@@ -203,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-        async function syncMissedStateOnce() {
+    async function syncMissedStateOnce() {
         if (isSavingLocalChange || !navigator.onLine) return;
         try {
             const res = await fetch(`/shopping-lists/${listPublicId}/state`, { credentials: "same-origin" });
@@ -339,7 +301,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    renderOzPackagePreviews();
+    if (window.RecipeScalingEngine) {
+        window.RecipeScalingEngine.updateAll({ scalingFactor: 1, system: "imperial" });
+    }
     updateShowAllButtonUI();
     refreshListVisibility();
     saveLocalSnapshot();
