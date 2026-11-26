@@ -11,9 +11,11 @@
     <!-- Dynamically builds the tab name based on "$CONTENT_TITLE - $LAYOUT_TITLE" -->
     <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">Brain Dribbler Recipes</title>
 
-    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/apple-touch-icon.png}">
-    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/favicon-32x32.png}">
-    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/favicon-16x16.png}">
+    <link rel="manifest" th:href="@{/site.webmanifest}">
+    <meta name="theme-color" content="#949494">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/images/icons/apple-touch-icon.png}">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/images/icons/favicon-32x32.png}">
+    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/images/icons/favicon-16x16.png}">
     <link rel="stylesheet" th:href="@{/css/style.css}" />
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>

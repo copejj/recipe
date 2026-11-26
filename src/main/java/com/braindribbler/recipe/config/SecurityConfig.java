@@ -119,6 +119,8 @@ public class SecurityConfig {
                 .permitAll()
                 .requestMatchers("/error").permitAll()
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
+                .requestMatchers("/site.webmanifest", "/favicon.ico", "/apple-touch-icon.png",
+                        "/favicon-32x32.png", "/favicon-16x16.png").permitAll()
                 .requestMatchers("/", "/search", "/register", "/login", "/verify",
                         "/password/forgot", "/password/reset").permitAll()
                 .requestMatchers("/search/**").permitAll()
