@@ -120,7 +120,9 @@ public class SecurityConfig {
                 .requestMatchers("/error").permitAll()
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
                 .requestMatchers("/site.webmanifest", "/favicon.ico", "/apple-touch-icon.png",
-                        "/favicon-32x32.png", "/favicon-16x16.png").permitAll()
+                        "/favicon-32x32.png", "/favicon-16x16.png",
+                        "/android-chrome-192x192.png", "/android-chrome-512x512.png",
+                        "/android-chrome-maskable-512x512.png").permitAll()
                 .requestMatchers("/", "/search", "/register", "/login", "/verify",
                         "/password/forgot", "/password/reset").permitAll()
                 .requestMatchers("/search/**").permitAll()
