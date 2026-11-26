@@ -37,6 +37,23 @@
     
     <!-- Allows child templates to automatically append page-specific scripts or styles here -->
     <th:block layout:fragment="page_styles"></th:block>
+
+    <!-- Default Social / SMS Link Preview (Overridden by recipe pages if they define meta_tags) -->
+    <th:block layout:fragment="meta_tags">
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Brain Dribbler Recipes" />
+        <meta property="og:title" content="Brain Dribbler Recipes" />
+        <meta property="og:description" content="Your personal culinary companion for organizing, scaling, and discovering meals." />
+        <meta property="og:url" th:content="${apiHost} + '/'" />
+        <meta property="og:image" th:content="${apiHost} + '/images/hero-watercolor-og.jpg'" />
+        <meta property="og:image:type" content="image/jpeg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="720" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Brain Dribbler Recipes" />
+        <meta name="twitter:description" content="Your personal culinary companion for organizing, scaling, and discovering meals." />
+        <meta name="twitter:image" th:content="${apiHost} + '/images/hero-watercolor-og.jpg'" />
+    </th:block>
 </head>
 
 <body>
