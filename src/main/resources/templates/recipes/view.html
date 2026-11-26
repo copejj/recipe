@@ -6,14 +6,23 @@
 
 <head>
     <title th:text="${recipe.title}">Tasty Recipe Title</title>
-    <th:block layout:fragment="page_styles">
+
+    <!-- Overrides the default watercolor preview in fragments/layout.html -->
+    <th:block layout:fragment="meta_tags">
+        <meta property="og:site_name" content="Brain Dribbler Recipes" />
+        <meta property="og:type" content="article" />
         <meta property="og:title" th:content="${recipe.title}" />
         <meta property="og:description" th:content="${recipe.description}" />
         <meta property="og:image" th:content="${apiHost} + '/images/ShoppingListFoods.png'" />
         <meta property="og:url" th:content="${apiHost} + '/view/' + ${recipe.recipeId}" />
-        <meta property="og:type" content="article" />
-        <link rel="canonical" th:href="${apiHost} + '/view/' + ${recipe.recipeId}" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" th:content="${recipe.title}" />
+        <meta name="twitter:description" th:content="${recipe.description}" />
+        <meta name="twitter:image" th:content="${apiHost} + '/images/ShoppingListFoods.png'" />
+    </th:block>
 
+    <th:block layout:fragment="page_styles">
+        <link rel="canonical" th:href="${apiHost} + '/view/' + ${recipe.recipeId}" />
         <link rel="stylesheet" th:href="@{/css/recipes/view.css}" />
     </th:block>
 </head>

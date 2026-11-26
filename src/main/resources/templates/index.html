@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz"
+<html xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
       layout:decorate="~{fragments/layout}"
       lang="en">
 
@@ -11,21 +11,26 @@
 <body>
     <div layout:fragment="page-title"> Welcome to <span class="brand-nobreak">Brain Dribbler Recipes</span> </div>
     <p layout:fragment="page-subtitle"> Your personal culinary companion for organizing, scaling, and discovering meals. </p>
+
     <main layout:fragment="content">
         <div>
-            <h1 class="page-title"></h1>
-
-            <p th:text="${message}" class="page-subtitle">Your personal culinary companion for organizing, scaling, and discovering meals.</p>
+            <p th:if="${message}" th:text="${message}" class="page-subtitle"></p>
 
             <!-- Text Flow Wrap Area -->
             <div class="hero-flow-container">
                 
-                <!-- Floated Image Asset (Original Horizontal Orientation) -->
-                <div class="hero-flow-image-wrapper">
-                    <img th:src="@{/images/recipe_brain_small.png}" 
-                         alt="Watercolor fresh food ingredients illustration" 
-                         class="hero-illustration" />
-                </div>
+                <!-- Floated Watercolor Painting -->
+                <figure class="hero-flow-image-wrapper">
+                    <picture>
+                        <source th:srcset="@{/images/hero-watercolor.webp}" type="image/webp" />
+                        <img th:src="@{/images/hero-watercolor.jpg}" 
+                             alt="Watercolor painting of fresh fish, berries, greens, avocado, and vegetables" 
+                             class="hero-illustration"
+                             width="1600"
+                             height="945"
+                             fetchpriority="high" />
+                    </picture>
+                </figure>
                 
                 <!-- Introduction Narrative Paragraphs -->
                 <p class="intro-paragraph">
@@ -37,7 +42,7 @@
                 </p>
                 <p class="intro-paragraph">
                     If you <a th:href="@{/register}" class="register-link">register</a> for a free account, you can begin 
-                    drafting your own custom recipe collections.  You retain complete control over your portfolio: choose 
+                    drafting your own custom recipe collections. You retain complete control over your portfolio: choose 
                     to contribute your creations directly to the public recipe pool for the community to share,
                     or save your recipes as a private, secure online resource accessible only to you.
                 </p>
@@ -50,7 +55,7 @@
             </div>
 
             <!-- Centralized Database Route Actions -->
-            <div class="hero-search-section" style="clear: both; padding-top: 20px;">
+            <div class="hero-search-section">
                 <p class="search-prompt">Looking for a specific dish or you're not sure but have a list of some items?
                     <a th:href="@{/search}" class="search-link">
                         Try our recipe search!
@@ -59,6 +64,5 @@
             </div>
         </div>
     </main>
-
 </body>
 </html>
