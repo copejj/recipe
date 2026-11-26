@@ -32,13 +32,6 @@ $(document).ready(function () {
 
         try {
             localStorage.setItem(storageKey, JSON.stringify(state));
-            var resumeData = {
-                recipeId: RECIPE_ID,
-                url: window.location.pathname.replace(/\/share\/?$/, ""),
-                title: document.title,
-                updatedAt: Date.now()
-            };
-            localStorage.setItem("active_cooking_recipe", JSON.stringify(resumeData));
         } catch (e) {
             // Ignore storage quota or private browsing errors
         }
@@ -82,14 +75,6 @@ $(document).ready(function () {
         } else {
             if (storageKey) {
                 localStorage.removeItem(storageKey);
-            }
-            try {
-                var activeData = JSON.parse(localStorage.getItem("active_cooking_recipe") || "{}");
-                if (activeData.recipeId === RECIPE_ID) {
-                    localStorage.removeItem("active_cooking_recipe");
-                }
-            } catch (e) {
-                localStorage.removeItem("active_cooking_recipe");
             }
 
             if ($resetPanel.is(":visible")) {
@@ -263,11 +248,6 @@ $(document).ready(function () {
     // --- RESET VIEW STATE HANDLER ---
     $("#reset-view-btn").on("click", function (e) {
         e.preventDefault();
-
-        if (storageKey) {
-            localStorage.removeItem(storageKey);
-        }
-        localStorage.removeItem("active_cooking_recipe");
 
         var $servingsInput = $("#servings-scaler");
         var originalServings = $servingsInput.data("original-servings");

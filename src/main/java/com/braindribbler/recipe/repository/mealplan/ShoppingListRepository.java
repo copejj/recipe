@@ -16,10 +16,12 @@ public interface ShoppingListRepository extends JpaRepository<ShoppingList, Inte
     @Query("""
         SELECT DISTINCT sl FROM ShoppingList sl
         LEFT JOIN sl.mealPlan mp
-        LEFT JOIN mp.shares s
+        LEFT JOIN mp.shares mps
+        LEFT JOIN sl.shares sls
         WHERE sl.owner.userId = :userId
            OR mp.user.userId = :userId
-           OR s.sharedUser.userId = :userId
+           OR mps.sharedUser.userId = :userId
+           OR sls.sharedUser.userId = :userId
         ORDER BY sl.createdAt DESC
     """)
     List<ShoppingList> findAllAccessibleByUserId(@Param("userId") Integer userId);

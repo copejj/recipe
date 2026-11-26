@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
+
+<head>
+    <title>Shopping Lists</title>
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" th:href="@{/css/meal-plans/meal-plan.css}" />
+    </th:block>
+</head>
+
+<body>
+    <h1 layout:fragment="page-title">Shopping Lists</h1>
+    <p layout:fragment="page-subtitle">Create standalone grocery or errand lists, or manage lists generated from your meal plans.</p>
+    <div layout:fragment="action-tray" class="action-tray">
+        <a th:href="@{/}" class="btn btn-secondary">← Home</a>
+    </div>
+
+    <main layout:fragment="content">
+        <div th:if="${successMessage}" class="alert alert--success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert--danger" th:text="${errorMessage}"></div>
+
+        <div class="meal-plan-card-wide">
+            <h3 class="profile-section-title">Create a New Shopping List</h3>
+            <form th:action="@{/shopping-lists/create}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                <div class="form-group">
+                    <label for="listName" class="form-label">List Name</label>
+                    <input type="text" id="listName" name="listName" class="form-input" required
+                           placeholder="e.g., Costco Run, Weekend BBQ, or Hardware Store" />
+                </div>
+
+                <div class="inline-flex-form">
+                    <button th:replace="~{fragments/actions :: submitBtn('Create Shopping List')}"></button>
+                </div>
+            </form>
+        </div>
+    </main>
+</body>
+</html>

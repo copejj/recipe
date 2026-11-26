@@ -5,6 +5,7 @@ import com.braindribbler.recipe.domain.mealplan.*;
 import com.braindribbler.recipe.domain.recipe.*;
 import com.braindribbler.recipe.repository.mealplan.ShoppingListItemRepository;
 import com.braindribbler.recipe.repository.mealplan.ShoppingListRepository;
+import com.braindribbler.recipe.repository.mealplan.ShoppingListShareRepository;
 import com.braindribbler.recipe.service.recipe.IngredientService;
 import com.braindribbler.recipe.service.recipe.MetadataLookupService;
 import com.braindribbler.recipe.util.RecipeUtility;
@@ -18,20 +19,25 @@ import java.util.stream.Collectors;
 
 @Service
 public class ShoppingListService {
-
     private final ShoppingListRepository shoppingListRepository;
     private final ShoppingListItemRepository shoppingListItemRepository;
+    private final ShoppingListShareRepository shoppingListShareRepository;
+    private final ShoppingListSseService shoppingListSseService;
     private final MetadataLookupService metadataLookupService;
     private final IngredientService ingredientService;
     private final MealPlanRecipeScaler recipeScaler;
 
     public ShoppingListService(ShoppingListRepository shoppingListRepository,
                                ShoppingListItemRepository shoppingListItemRepository,
+                               ShoppingListShareRepository shoppingListShareRepository,
+                               ShoppingListSseService shoppingListSseService,
                                MetadataLookupService metadataLookupService,
                                IngredientService ingredientService,
                                MealPlanRecipeScaler recipeScaler) {
         this.shoppingListRepository = shoppingListRepository;
         this.shoppingListItemRepository = shoppingListItemRepository;
+        this.shoppingListShareRepository = shoppingListShareRepository;
+        this.shoppingListSseService = shoppingListSseService;
         this.metadataLookupService = metadataLookupService;
         this.ingredientService = ingredientService;
         this.recipeScaler = recipeScaler;
@@ -195,8 +201,7 @@ public class ShoppingListService {
     @Transactional
     public void resetFromMealPlan(ShoppingList list, User triggeredBy) {
         if (list.getMealPlan() == null) {
-            // Standalone list: uncheck/unhide everything and remove manual additions
-            list.getItems().removeIf(item -> Boolean.TRUE.equals(item.getIsManualAddition()));
+            // Standalone list: keep all items, just reset checkmarks, skipped flags, and questions
             list.getItems().forEach(item -> {
                 item.setIsChecked(false);
                 item.setIsHidden(false);
@@ -206,7 +211,7 @@ public class ShoppingListService {
             return;
         }
 
-        // Wipe all items (clears checkmarks, hidden flags, and old extra items) and rebuild fresh
+        // Meal-plan-linked list: wipe items and reload fresh from the meal plan
         list.getItems().clear();
         shoppingListRepository.saveAndFlush(list);
 
@@ -240,5 +245,68 @@ public class ShoppingListService {
 
     public List<ShoppingList> getAccessibleShoppingLists(Integer userId) {
         return shoppingListRepository.findAllAccessibleByUserId(userId);
+    }
+
+    @Transactional
+    public ShoppingList createStandaloneList(User owner, String listName) {
+        ShoppingList list = new ShoppingList();
+        list.setOwner(owner);
+        list.setMealPlan(null);
+        list.setListName(listName.trim());
+        return shoppingListRepository.save(list);
+    }
+
+    @Transactional
+    public void deleteShoppingList(ShoppingList list) {
+        shoppingListSseService.broadcastListDeleted(list.getPublicId(), list.getListName());
+        shoppingListRepository.delete(list);
+    }
+
+    @Transactional
+    public void deleteIfExistsForMealPlan(MealPlan plan) {
+        shoppingListRepository.findFirstByMealPlan_MealPlanIdOrderByCreatedAtDesc(plan.getMealPlanId())
+                .ifPresent(this::deleteShoppingList);
+    }
+
+    @Transactional
+    public ShoppingListItem addExtraItem(ShoppingList list, Integer ingredientId, String customName,
+                                         GroceryCategory category, BigDecimal amount, Measurement unit,
+                                         String note, User addedBy) {
+        Ingredient ingredient = (ingredientId != null)
+                ? ingredientService.getIngredientById(ingredientId)
+                : null;
+
+        ShoppingListItem item = new ShoppingListItem();
+        item.setShoppingList(list);
+        item.setIngredient(ingredient);
+        item.setCustomItemName(ingredient == null ? customName.trim() : null);
+        item.setGroceryCategory(resolveCategory(ingredient, category));
+        item.setAmount(amount);
+        item.setMeasurement(unit);
+        item.setNote(note != null && !note.isBlank() ? note.trim() : null);
+        item.setIsManualAddition(true);
+        item.setAddedBy(addedBy);
+        item.setSortOrder(list.getItems().size() + 1);
+
+        list.getItems().add(item);
+        return shoppingListItemRepository.save(item);
+    }
+
+    @Transactional
+    public void shareWithUser(ShoppingList list, User targetUser, AccessLevel accessLevel) {
+        ShoppingListShare share = shoppingListShareRepository
+                .findByShoppingList_ShoppingListIdAndSharedUser_UserId(list.getShoppingListId(), targetUser.getUserId())
+                .orElseGet(ShoppingListShare::new);
+
+        share.setShoppingList(list);
+        share.setSharedUser(targetUser);
+        share.setAccessLevel(accessLevel);
+        shoppingListShareRepository.save(share);
+    }
+
+    @Transactional
+    public void removeShare(ShoppingList list, Integer shareId) {
+        list.getShares().removeIf(s -> s.getShoppingListShareId().equals(shareId));
+        shoppingListRepository.save(list);
     }
 }

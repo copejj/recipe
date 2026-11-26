@@ -40,49 +40,13 @@
                 </div>
 
                 <div class="inline-flex-form">
+                    <button th:replace="~{fragments/actions :: submitBtn('Create Meal Plan')}"></button>
                     <label class="checkbox-label-row">
                         <input type="checkbox" name="isRecurring" value="true" />
-                        <span>Recurring Weekly Plan (Monday–Sunday)</span>
+                        <span>Weekly Plan (Monday–Sunday)</span>
                     </label>
-
-                    <button th:replace="~{fragments/actions :: submitBtn('Create Meal Plan')}"></button>
                 </div>
             </form>
-        </div>
-
-        <h2>Your Meal Plans</h2>
-        <div th:if="${mealPlans == null || mealPlans.isEmpty()}" class="alert alert--info">
-            You don't have any meal plans yet. Create one above to start planning!
-        </div>
-
-        <div class="status-grid" th:if="${mealPlans != null && !mealPlans.isEmpty()}">
-            <div th:each="plan : ${mealPlans}" class="status-item clickable-card">
-                <span class="status-icon" th:text="${plan.isRecurring} ? '🔁' : '📅'">📅</span>
-                <div class="status-info">
-                    <span class="status-value" th:text="${plan.planName}">Weekly Plan</span>
-                    <small class="plan-card-meta"
-                           th:text="'By ' + ${plan.user.displayName} + ' • ' + ${plan.plannedRecipes.size()} + ' recipes'">
-                        By Chef • 0 recipes
-                    </small>
-                    <div class="plan-card-footer">
-                        <a th:href="@{/meal-plans/{id}(id=${plan.publicId})}" class="status-link stretched-link">
-                            Open Planner →
-                        </a>
-
-                        <form th:if="${currentUser != null and plan.user.userId.equals(currentUser.userId)}"
-                              th:action="@{/meal-plans/{id}/delete(id=${plan.publicId})}"
-                              method="post"
-                              class="inline-form-reset card-overlay-action">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                            <button type="submit"
-                                    class="btn btn-action btn-action--delete"
-                                    th:data-confirm="'Delete meal plan &quot;' + ${plan.planName} + '&quot;? This will permanently remove the plan and its shopping list.'">
-                                Delete
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
         </div>
     </main>
 </body>

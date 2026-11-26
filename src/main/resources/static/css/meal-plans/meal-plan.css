@@ -178,13 +178,6 @@
     color: var(--color-badge-blue-text);
 }
 
-.sync-status-pill {
-    margin-left: auto;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--color-text-muted);
-}
-
 /* ==========================================================================
    RESPONSIVE MOBILE CARDS & PORTRAIT STACKING
    ========================================================================== */
@@ -204,30 +197,7 @@
     display: none !important;
 }
 
-/* Desktop & Landscape: sits neatly on the far right of the action tray */
-.sync-status-pill {
-    order: 99;
-    margin-left: auto;
-    margin-right: 1rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--color-text-muted);
-    pointer-events: none;
-    user-select: none;
-}
-
 @media (max-width: 48rem) and (orientation: portrait) {
-    .sync-status-pill {
-        order: 0;
-        flex: 0 0 100%;
-        width: 100%;
-        font-size: 0.78rem;
-        line-height: 1;
-        text-align: center;
-        background-color: var(--color-bg-body, #f8f9fa);
-        box-sizing: border-box;
-        margin: 0;
-    }
 
     .pool-item-row {
         flex-direction: column;
@@ -361,6 +331,12 @@ tr.is-editing-row {
     background-color: #dbeafe;
     color: #1e40af;
     border: 1px solid #93c5fd;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.chat-bubble--question:hover {
+    background-color: #bfdbfe;
 }
 
 .chat-bubble--question::after {
@@ -371,10 +347,23 @@ tr.is-editing-row {
     background-color: #fee2e2;
     color: #991b1b;
     border: 1px solid #fca5a5;
+    pointer-events: auto;
+    cursor: pointer;
 }
 
-.chat-bubble--danger::after {
-    border-color: transparent transparent transparent #fca5a5;
+.chat-bubble--danger:hover {
+    background-color: #fecaca;
+}
+
+.chat-bubble--muted {
+    background-color: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    pointer-events: none;
+}
+
+.chat-bubble--muted::after {
+    border-color: transparent transparent transparent #d1d5db;
 }
 
 .btn-action--delete.is-confirming {
@@ -403,6 +392,41 @@ tr.is-editing-row {
 .card-overlay-action {
     position: relative;
     z-index: 2;
+}
+
+.shopping-item-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    margin: 0;
+}
+
+.is-hidden-item .shopping-item-label {
+    cursor: default;
+}
+
+.btn-restore-circle {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: none;
+    background-color: #16a34a;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.btn-restore-circle:hover {
+    background-color: #15803d;
+    transform: scale(1.08);
 }
 
 @keyframes questionRowPulse {
@@ -442,13 +466,79 @@ tr.is-editing-row {
     gap: 8px;
 }
 
-@media (max-width: 48rem) {
-    .chat-bubble--question {
-        white-space: normal;
-        max-width: 145px;
-        font-size: 0.72rem;
-    }
+/* ==========================================================================
+   COMPACT STICKY ACTION TRAY & LIST FOOTER BAR
+   ========================================================================== */
+.action-box--compact {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    width: 100%;
+}
 
+.sync-status-pill {
+    order: 99;
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background-color: #ecfdf5;
+    color: #065f46;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+}
+
+.sync-status-pill::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #16a34a;
+}
+
+.sync-status-pill[data-state="offline"] {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.sync-status-pill[data-state="offline"]::before {
+    background-color: #d97706;
+}
+
+.sync-status-pill[data-state="saving"] {
+    background-color: #eff6ff;
+    color: #1e40af;
+}
+
+.sync-status-pill[data-state="saving"]::before {
+    background-color: #2563eb;
+}
+
+.list-footer-actions {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 28px;
+    padding-top: 16px;
+    border-top: 1px solid var(--color-border, #e5e7eb);
+}
+
+@media (max-width: 30rem) {
+    .action-box--compact .btn {
+        padding: 6px 10px;
+        font-size: 0.84rem;
+    }
+}
+
+@media (max-width: 48rem) {
     table#scheduledMealsTable {
         display: block;
         width: 100%;
