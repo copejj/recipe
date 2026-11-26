@@ -241,4 +241,42 @@ public class ShoppingListService {
     public List<ShoppingList> getAccessibleShoppingLists(Integer userId) {
         return shoppingListRepository.findAllAccessibleByUserId(userId);
     }
+
+    @Transactional
+    public ShoppingList createStandaloneList(User owner, String listName) {
+        ShoppingList list = new ShoppingList();
+        list.setOwner(owner);
+        list.setMealPlan(null);
+        list.setListName(listName.trim());
+        return shoppingListRepository.save(list);
+    }
+
+    @Transactional
+    public void deleteShoppingList(ShoppingList list) {
+        shoppingListRepository.delete(list);
+    }
+
+    @Transactional
+    public ShoppingListItem addExtraItem(ShoppingList list, Integer ingredientId, String customName,
+                                         GroceryCategory category, BigDecimal amount, Measurement unit,
+                                         String note, User addedBy) {
+        Ingredient ingredient = (ingredientId != null)
+                ? ingredientService.getIngredientById(ingredientId)
+                : null;
+
+        ShoppingListItem item = new ShoppingListItem();
+        item.setShoppingList(list);
+        item.setIngredient(ingredient);
+        item.setCustomItemName(ingredient == null ? customName.trim() : null);
+        item.setGroceryCategory(resolveCategory(ingredient, category));
+        item.setAmount(amount);
+        item.setMeasurement(unit);
+        item.setNote(note != null && !note.isBlank() ? note.trim() : null);
+        item.setIsManualAddition(true);
+        item.setAddedBy(addedBy);
+        item.setSortOrder(list.getItems().size() + 1);
+
+        list.getItems().add(item);
+        return shoppingListItemRepository.save(item);
+    }
 }

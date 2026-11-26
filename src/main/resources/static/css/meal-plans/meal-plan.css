@@ -361,6 +361,12 @@ tr.is-editing-row {
     background-color: #dbeafe;
     color: #1e40af;
     border: 1px solid #93c5fd;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.chat-bubble--question:hover {
+    background-color: #bfdbfe;
 }
 
 .chat-bubble--question::after {
@@ -371,10 +377,23 @@ tr.is-editing-row {
     background-color: #fee2e2;
     color: #991b1b;
     border: 1px solid #fca5a5;
+    pointer-events: auto;
+    cursor: pointer;
 }
 
-.chat-bubble--danger::after {
-    border-color: transparent transparent transparent #fca5a5;
+.chat-bubble--danger:hover {
+    background-color: #fecaca;
+}
+
+.chat-bubble--muted {
+    background-color: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    pointer-events: none;
+}
+
+.chat-bubble--muted::after {
+    border-color: transparent transparent transparent #d1d5db;
 }
 
 .btn-action--delete.is-confirming {
@@ -403,6 +422,41 @@ tr.is-editing-row {
 .card-overlay-action {
     position: relative;
     z-index: 2;
+}
+
+.shopping-item-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    margin: 0;
+}
+
+.is-hidden-item .shopping-item-label {
+    cursor: default;
+}
+
+.btn-restore-circle {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: none;
+    background-color: #16a34a;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.btn-restore-circle:hover {
+    background-color: #15803d;
+    transform: scale(1.08);
 }
 
 @keyframes questionRowPulse {

@@ -16,36 +16,34 @@
     <h1 layout:fragment="page-title" th:text="${shoppingList.listName}">Shopping List</h1>
     <p layout:fragment="page-subtitle">Grouped by grocery aisle • Check items off as you shop</p>
     <div layout:fragment="action-tray" class="action-tray">
-        <div class="action-box">
-            <span id="syncStatusBadge" class="sync-status-pill">Synced</span>
+        <span id="syncStatusBadge" class="sync-status-pill">Synced</span>
 
-            <a th:href="@{/}" class="btn btn-secondary">← Home</a>
-            <button type="button"
-                    th:if="${canEdit}"
-                    data-open-modal="addExtraItemModal"
-                    class="btn btn-action btn-action--primary">
-                + Add Item
+        <a th:href="@{/}" class="btn btn-secondary">← Home</a>
+        <button type="button"
+                th:if="${canEdit}"
+                data-open-modal="addExtraItemModal"
+                class="btn btn-action btn-action--primary">
+            + Add Item
+        </button>
+
+        <button type="button"
+                id="toggleShowAllBtn"
+                class="btn btn-action btn-action--view btn-action--toggle"
+                aria-pressed="false">
+            Show All
+        </button>
+
+        <form th:if="${canEdit}"
+                th:action="@{/shopping-lists/{id}/reset(id=${shoppingList.publicId})}"
+                method="post"
+                class="inline-form-reset">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <button type="submit"
+                    class="btn btn-action btn-action--reset"
+                    data-confirm="Reset this shopping list? This will uncheck all items, remove extra additions, and reload ingredients from the meal plan.">
+                Reset
             </button>
-
-            <button type="button"
-                    id="toggleShowAllBtn"
-                    class="btn btn-action btn-action--view btn-action--toggle"
-                    aria-pressed="false">
-                Show All
-            </button>
-
-            <form th:if="${canEdit}"
-                  th:action="@{/shopping-lists/{id}/reset(id=${shoppingList.publicId})}"
-                  method="post"
-                  class="inline-form-reset">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                <button type="submit"
-                        class="btn btn-action btn-action--reset"
-                        data-confirm="Reset this shopping list? This will uncheck all items, remove extra additions, and reload ingredients from the meal plan.">
-                    Reset
-                </button>
-            </form>
-        </div>
+        </form>
 
         <div id="remoteQuestionBanner" class="alert alert--info remote-question-banner hide-cell" role="status">
             <span id="remoteQuestionText"></span>
@@ -87,13 +85,24 @@
                 ~{::addExtraItemForm}
             )}">
                 <th:block th:fragment="addExtraItemForm">
-                    <form th:action="@{/shopping-lists/{id}/items/add(id=${shoppingList.publicId})}" method="post">
+                    <form th:action="@{/shopping-lists/{id}/items/add(id=${shoppingList.publicId})}" method="post" id="addExtraItemForm">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
                         <div class="form-group">
-                            <label for="customItemName" class="form-label">Item Name</label>
-                            <input type="text" id="customItemName" name="customItemName" class="form-input" required
-                                   placeholder="e.g., Paper Towels, Bananas..." />
+                            <label for="extraIngredientId" class="form-label">Master Ingredient (Optional)</label>
+                            <select id="extraIngredientId" name="ingredientId" class="form-input">
+                                <option value="">-- Custom / Non-Recipe Item --</option>
+                                <option th:each="ing : ${allIngredients}"
+                                        th:value="${ing.ingredientId}"
+                                        th:data-category-id="${ing.groceryCategory != null ? ing.groceryCategory.groceryCategoryId : ''}"
+                                        th:text="${ing.ingredientName}">Flour</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" id="customItemNameGroup">
+                            <label for="customItemName" class="form-label">Or Custom Item Name</label>
+                            <input type="text" id="customItemName" name="customItemName" class="form-input"
+                                   placeholder="e.g., Paper Towels, Foil, Trash Bags..." />
                         </div>
 
                         <div class="inline-flex-form">

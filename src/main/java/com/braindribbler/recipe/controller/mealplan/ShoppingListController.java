@@ -4,10 +4,8 @@ import com.braindribbler.recipe.domain.auth.User;
 import com.braindribbler.recipe.domain.mealplan.ShoppingList;
 import com.braindribbler.recipe.domain.mealplan.ShoppingListItem;
 import com.braindribbler.recipe.domain.recipe.GroceryCategory;
-import com.braindribbler.recipe.domain.recipe.Ingredient;
 import com.braindribbler.recipe.domain.recipe.Measurement;
 import com.braindribbler.recipe.repository.recipe.GroceryCategoryRepository;
-import com.braindribbler.recipe.repository.recipe.IngredientRepository;
 import com.braindribbler.recipe.repository.recipe.MeasurementRepository;
 import com.braindribbler.recipe.security.RecipeUserDetails;
 import com.braindribbler.recipe.service.mealplan.MealPlanService;
@@ -32,7 +30,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Controller
-@RequestMapping("/shopping-lists/{publicId}")
+@RequestMapping("/shopping-lists")
 public class ShoppingListController {
 
     private final ShoppingListService shoppingListService;
@@ -40,7 +38,6 @@ public class ShoppingListController {
     private final MealPlanService mealPlanService;
     private final IngredientService ingredientService;
     private final MetadataLookupService metadataLookupService;
-    private final IngredientRepository ingredientRepository;
     private final MeasurementRepository measurementRepository;
     private final GroceryCategoryRepository groceryCategoryRepository;
     private final TransactionTemplate transactionTemplate;
@@ -50,7 +47,6 @@ public class ShoppingListController {
                                   MealPlanService mealPlanService,
                                   IngredientService ingredientService,
                                   MetadataLookupService metadataLookupService,
-                                  IngredientRepository ingredientRepository,
                                   MeasurementRepository measurementRepository,
                                   GroceryCategoryRepository groceryCategoryRepository,
                                   TransactionTemplate transactionTemplate) {
@@ -59,13 +55,34 @@ public class ShoppingListController {
         this.mealPlanService = mealPlanService;
         this.ingredientService = ingredientService;
         this.metadataLookupService = metadataLookupService;
-        this.ingredientRepository = ingredientRepository;
         this.measurementRepository = measurementRepository;
         this.groceryCategoryRepository = groceryCategoryRepository;
         this.transactionTemplate = transactionTemplate;
     }
 
-        @GetMapping()
+    @GetMapping
+    public String listShoppingLists(Model model, @AuthenticationPrincipal RecipeUserDetails currentUser) {
+        if (currentUser == null) return "redirect:/login";
+        User user = currentUser.getUserProfile();
+        model.addAttribute("shoppingLists", shoppingListService.getAccessibleShoppingLists(user.getUserId()));
+        model.addAttribute("currentUser", user);
+        return "shopping-lists/index";
+    }
+
+    @PostMapping("/create")
+    public String createShoppingList(@RequestParam String listName,
+                                     @AuthenticationPrincipal RecipeUserDetails currentUser,
+                                     RedirectAttributes redirectAttributes) {
+        if (currentUser == null) return "redirect:/login";
+        if (listName == null || listName.isBlank()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Please enter a name for your shopping list.");
+            return "redirect:/shopping-lists";
+        }
+        ShoppingList created = shoppingListService.createStandaloneList(currentUser.getUserProfile(), listName);
+        return "redirect:/shopping-lists/" + created.getPublicId();
+    }
+
+    @GetMapping("/{publicId}")
     public String viewShoppingList(@PathVariable UUID publicId,
                                    Model model,
                                    @AuthenticationPrincipal RecipeUserDetails currentUser) {
@@ -74,9 +91,10 @@ public class ShoppingListController {
         ShoppingList shoppingList = shoppingListService.getByPublicId(publicId);
 
         boolean canEdit = canUserEditList(shoppingList, user);
+        boolean isOwner = shoppingList.getOwner().getUserId().equals(user.getUserId());
         boolean isShared = shoppingList.getMealPlan() != null
-            && shoppingList.getMealPlan().getShares() != null
-            && !shoppingList.getMealPlan().getShares().isEmpty();
+                && shoppingList.getMealPlan().getShares() != null
+                && !shoppingList.getMealPlan().getShares().isEmpty();
 
         boolean canAccess = canEdit || (shoppingList.getMealPlan() != null
                 && mealPlanService.canUserView(shoppingList.getMealPlan(), user));
@@ -87,6 +105,7 @@ public class ShoppingListController {
 
         model.addAttribute("shoppingList", shoppingList);
         model.addAttribute("canEdit", canEdit);
+        model.addAttribute("isOwner", isOwner);
         model.addAttribute("isShared", isShared);
         model.addAttribute("itemsByAisle", shoppingListService.groupItemsByAisle(shoppingList));
         model.addAttribute("groceryCategories", ingredientService.getAllGroceryCategoriesSortedByOrder());
@@ -96,7 +115,26 @@ public class ShoppingListController {
         return "shopping-lists/view";
     }
 
-    @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @PostMapping("/{publicId}/delete")
+    public String deleteShoppingList(@PathVariable UUID publicId,
+                                     @AuthenticationPrincipal RecipeUserDetails currentUser,
+                                     RedirectAttributes redirectAttributes) {
+        if (currentUser == null) return "redirect:/login";
+        User user = currentUser.getUserProfile();
+        ShoppingList list = shoppingListService.getByPublicId(publicId);
+
+        if (!list.getOwner().getUserId().equals(user.getUserId())) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Only the owner can delete this shopping list.");
+            return "redirect:/shopping-lists/" + publicId;
+        }
+
+        String name = list.getListName();
+        shoppingListService.deleteShoppingList(list);
+        redirectAttributes.addFlashAttribute("successMessage", "Deleted shopping list \"" + name + "\".");
+        return "redirect:/";
+    }
+
+    @GetMapping(value = "/{publicId}/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<SseEmitter> streamShoppingList(@PathVariable UUID publicId,
                                                          @AuthenticationPrincipal RecipeUserDetails currentUser) {
         if (currentUser == null) return ResponseEntity.status(401).build();
@@ -118,8 +156,7 @@ public class ShoppingListController {
                 .header("Cache-Control", "no-cache, no-transform")
                 .body(emitter);
     }
-
-    @PostMapping("/items/add")
+    @PostMapping("/{publicId}/items/add")
     public String addExtraStoreItem(@PathVariable UUID publicId,
                                     @RequestParam(required = false) Integer ingredientId,
                                     @RequestParam(required = false) String customItemName,
@@ -143,18 +180,17 @@ public class ShoppingListController {
             return "redirect:/shopping-lists/" + publicId;
         }
 
-        Ingredient ingredient = (ingredientId != null) ? ingredientRepository.findById(ingredientId).orElse(null) : null;
         GroceryCategory category = (groceryCategoryId != null) ? groceryCategoryRepository.findById(groceryCategoryId).orElse(null) : null;
         Measurement unit = (measurementId != null) ? measurementRepository.findById(measurementId).orElse(null) : null;
 
-        shoppingListService.addExtraItem(list, ingredient, customItemName, category, amount, unit, note, user);
+        shoppingListService.addExtraItem(list, ingredientId, customItemName, category, amount, unit, note, user);
         shoppingListSseService.broadcastStructureChanged(publicId);
 
         redirectAttributes.addFlashAttribute("successMessage", "Added item to shopping list.");
         return "redirect:/shopping-lists/" + publicId;
     }
 
-    @PostMapping("/items/{itemId}/delete")
+    @PostMapping("/{publicId}/items/{itemId}/delete")
     public String deleteItem(@PathVariable UUID publicId,
                              @PathVariable Integer itemId,
                              @AuthenticationPrincipal RecipeUserDetails currentUser,
@@ -173,7 +209,7 @@ public class ShoppingListController {
         return "redirect:/shopping-lists/" + publicId;
     }
 
-    @PostMapping("/reset")
+    @PostMapping("/{publicId}/reset")
     public String resetShoppingList(@PathVariable UUID publicId,
                                     @AuthenticationPrincipal RecipeUserDetails currentUser,
                                     RedirectAttributes redirectAttributes) {
@@ -193,7 +229,7 @@ public class ShoppingListController {
         return "redirect:/shopping-lists/" + publicId;
     }
 
-    @GetMapping("/state")
+    @GetMapping("/{publicId}/state")
     @ResponseBody
     @Transactional(readOnly = true)
     public ResponseEntity<Map<String, Object>> getShoppingListState(@PathVariable UUID publicId,
@@ -215,7 +251,6 @@ public class ShoppingListController {
                 ))
                 .toList();
 
-
         return ResponseEntity.ok(Map.of(
                 "count", itemsState.size(),
                 "items", itemsState
@@ -234,7 +269,7 @@ public class ShoppingListController {
         return list.getMealPlan() != null && mealPlanService.canUserEdit(list.getMealPlan(), user);
     }
 
-    @PostMapping("/items/{itemId}/toggle")
+    @PostMapping("/{publicId}/items/{itemId}/toggle")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> toggleItem(@PathVariable UUID publicId,
                                                           @PathVariable Integer itemId,
@@ -259,7 +294,7 @@ public class ShoppingListController {
         ));
     }
 
-    @PostMapping("/items/{itemId}/question")
+    @PostMapping("/{publicId}/items/{itemId}/question")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> toggleItemQuestion(@PathVariable UUID publicId,
                                                                   @PathVariable Integer itemId,
@@ -284,7 +319,7 @@ public class ShoppingListController {
         return ResponseEntity.ok(Map.of("itemId", itemId, "isQuestioned", isQuestioned));
     }
 
-    @PostMapping("/items/{itemId}/hide")
+    @PostMapping("/{publicId}/items/{itemId}/hide")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> toggleItemHidden(@PathVariable UUID publicId,
                                                                 @PathVariable Integer itemId,

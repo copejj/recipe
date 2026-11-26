@@ -168,6 +168,7 @@ public class IngredientService {
         return ingredientRepository.findById(id)
                 .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Ingredient not found with ID: " + id));
     }
+
     @Transactional
     public void deleteIngredientById(Integer ingredientId) {
         if (!ingredientRepository.existsById(ingredientId)) {

@@ -12,12 +12,46 @@ document.addEventListener("DOMContentLoaded", () => {
     const questionBannerText = document.getElementById("remoteQuestionText");
     const jumpToQuestionBtn = document.getElementById("jumpToQuestionBtn");
     const dismissQuestionBannerBtn = document.getElementById("dismissQuestionBannerBtn");
+    const extraIngSelect = document.getElementById("extraIngredientId");
+    const customNameGroup = document.getElementById("customItemNameGroup");
+    const customNameInput = document.getElementById("customItemName");
+    const extraCategorySelect = document.getElementById("extraCategoryId");
 
     let isSavingLocalChange = false;
     let showAllItems = localStorage.getItem(showAllPrefKey) === "true";
     let eventSource = null;
     let pendingQuestionItemId = null;
     let confirmResetTimer = null;
+
+    function syncExtraItemModalFields() {
+        if (!extraIngSelect) return;
+        const selectedOption = extraIngSelect.options[extraIngSelect.selectedIndex];
+        const hasMasterIngredient = Boolean(extraIngSelect.value);
+
+        if (customNameGroup) {
+            customNameGroup.classList.toggle("hide-cell", hasMasterIngredient);
+        }
+        if (customNameInput) {
+            customNameInput.required = !hasMasterIngredient;
+            if (hasMasterIngredient) customNameInput.value = "";
+        }
+        if (hasMasterIngredient && selectedOption && selectedOption.dataset.categoryId && extraCategorySelect) {
+            extraCategorySelect.value = selectedOption.dataset.categoryId;
+        }
+    }
+
+    if (extraIngSelect) {
+        if (window.jQuery && $.fn.select2) {
+            $(extraIngSelect).select2({
+                width: "100%",
+                dropdownParent: $("#addExtraItemModal")
+            });
+            $(extraIngSelect).on("change", syncExtraItemModalFields);
+        } else {
+            extraIngSelect.addEventListener("change", syncExtraItemModalFields);
+        }
+        syncExtraItemModalFields();
+    }
 
     function getDirtyMap() {
         try {
@@ -48,12 +82,35 @@ document.addEventListener("DOMContentLoaded", () => {
             const cb = document.querySelector(`.shopping-item-checkbox[data-item-id="${itemId}"]`);
             if (cb) {
                 cb.checked = Boolean(dirty[itemId]);
+                applyRowVisuals(cb);
             }
         });
 
         if (statusBadge) {
             statusBadge.textContent = navigator.onLine ? "Syncing offline changes..." : "Saved locally (offline)";
         }
+    }
+
+    function applyHiddenVisuals(row, isHidden) {
+        if (!row) return;
+        row.dataset.hidden = String(Boolean(isHidden));
+        row.classList.toggle("is-hidden-item", Boolean(isHidden));
+        setNotFoundBubble(row, false);
+
+        const textSpan = row.querySelector(".shopping-item-text");
+        let badge = row.querySelector(".badge-skipped-item");
+        if (isHidden) {
+            if (!badge && textSpan) {
+                badge = document.createElement("span");
+                badge.className = "badge-skipped-item";
+                badge.textContent = "Skipped";
+                textSpan.appendChild(badge);
+            }
+        } else if (badge) {
+            badge.remove();
+        }
+
+        syncRowControlsVisibility(row);
     }
 
     function applyRowVisuals(checkbox) {
@@ -68,6 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
             textSpan.classList.remove("crossed-out-text");
             row.classList.remove("pantry-owned-item");
         }
+        syncRowControlsVisibility(row);
     }
 
     function applyQuestionVisuals(row, isQuestioned, shouldPulse = false) {
@@ -90,28 +148,31 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    function applyHiddenVisuals(row, isHidden) {
+    function applyQuestionVisuals(row, isQuestioned, shouldPulse = false, showNotFound = false) {
         if (!row) return;
-        row.dataset.hidden = String(Boolean(isHidden));
-        row.classList.toggle("is-hidden-item", Boolean(isHidden));
+        const btn = row.querySelector(".js-toggle-question-btn");
+        const bubble = row.querySelector(".chat-bubble--question");
 
-        const textSpan = row.querySelector(".shopping-item-text");
-        let badge = row.querySelector(".badge-skipped-item");
-        if (isHidden) {
-            if (!badge && textSpan) {
-                badge = document.createElement("span");
-                badge.className = "badge-skipped-item";
-                badge.textContent = "Skipped";
-                textSpan.appendChild(badge);
-            }
-        } else if (badge) {
-            badge.remove();
+        row.classList.toggle("is-questioned-row", Boolean(isQuestioned));
+        if (btn) {
+            btn.classList.toggle("is-active", Boolean(isQuestioned));
+            btn.setAttribute("aria-pressed", String(Boolean(isQuestioned)));
+        }
+        if (bubble) {
+            bubble.classList.toggle("hide-cell", !isQuestioned);
         }
 
-        const restoreBtn = row.querySelector(".js-restore-item-btn");
-        const removeForm = row.querySelector(".js-item-remove-form");
-        if (restoreBtn) restoreBtn.classList.toggle("hide-cell", !isHidden);
-        if (removeForm) removeForm.classList.toggle("hide-cell", Boolean(isHidden));
+        if (isQuestioned) {
+            setNotFoundBubble(row, false);
+        } else if (showNotFound) {
+            setNotFoundBubble(row, true);
+        }
+
+        if (isQuestioned && shouldPulse) {
+            row.classList.remove("is-question-pulse");
+            void row.offsetWidth;
+            row.classList.add("is-question-pulse");
+        }
     }
 
     function updateShowAllButtonUI() {
@@ -120,6 +181,7 @@ document.addEventListener("DOMContentLoaded", () => {
         showAllBtn.classList.toggle("is-active", showAllItems);
         showAllBtn.textContent = showAllItems ? "Hide Checked" : "Show All";
     }
+
     function refreshListVisibility() {
         const allDoneBanner = document.getElementById("allItemsDoneMessage");
         let totalVisibleSections = 0;
@@ -196,6 +258,32 @@ document.addEventListener("DOMContentLoaded", () => {
         applyQuestionVisuals(row, true, true);
     }
 
+    function syncRowControlsVisibility(row) {
+        if (!row) return;
+        const cb = row.querySelector(".shopping-item-checkbox");
+        const isChecked = cb ? cb.checked : false;
+        const isHidden = row.dataset.hidden === "true";
+
+        const questionWrap = row.querySelector(".question-control-wrap");
+        const removeForm = row.querySelector(".js-item-remove-form");
+        const restoreBtn = row.querySelector(".js-restore-item-btn");
+
+        if (cb) {
+            cb.classList.toggle("hide-cell", isHidden);
+            cb.disabled = isHidden;
+        }
+        if (restoreBtn) {
+            restoreBtn.classList.toggle("hide-cell", !isHidden);
+        }
+        if (questionWrap) {
+            questionWrap.classList.toggle("hide-cell", isChecked || isHidden);
+        }
+        if (removeForm) {
+            removeForm.classList.toggle("hide-cell", isChecked || isHidden);
+        }
+    }
+
+
     async function syncToggleToServer(itemId, desiredChecked) {
         if (!navigator.onLine) {
             setItemDirty(itemId, desiredChecked, true);
@@ -230,12 +318,21 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    function setNotFoundBubble(row, show) {
+        if (!row) return;
+        const notFoundBubble = row.querySelector(".js-not-found-bubble");
+        if (notFoundBubble) {
+            notFoundBubble.classList.toggle("hide-cell", !show);
+        }
+    }
+
     async function syncQuestionToServer(itemId) {
         const row = document.querySelector(`.recipe-ingredient-row[data-item-id="${itemId}"]`);
         const btn = row ? row.querySelector(".js-toggle-question-btn") : null;
-        const nextState = btn ? !btn.classList.contains("is-active") : true;
 
-        applyQuestionVisuals(row, nextState, false);
+        const nextState = btn ? !btn.classList.contains("is-active") : true;
+        applyQuestionVisuals(row, nextState, false, !nextState);
+
         isSavingLocalChange = true;
         if (statusBadge) statusBadge.textContent = "Saving...";
 
@@ -286,6 +383,7 @@ document.addEventListener("DOMContentLoaded", () => {
             isSavingLocalChange = false;
         }
     }
+
     async function flushDirtyChanges() {
         if (!navigator.onLine) return;
         const dirty = getDirtyMap();
@@ -386,8 +484,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const row = document.querySelector(`.recipe-ingredient-row[data-item-id="${payload.id}"]`);
             if (!row) return;
 
+            const wasQuestioned = row.classList.contains("is-questioned-row");
             const isQuestioned = Boolean(payload.questioned);
-            applyQuestionVisuals(row, isQuestioned, isQuestioned);
+            applyQuestionVisuals(row, isQuestioned, isQuestioned, wasQuestioned && !isQuestioned);
 
             if (isQuestioned && questionBanner && questionBannerText) {
                 pendingQuestionItemId = payload.id;
@@ -427,6 +526,53 @@ document.addEventListener("DOMContentLoaded", () => {
             event.preventDefault();
             clearAllDeleteConfirmations();
             syncQuestionToServer(questionBtn.dataset.itemId);
+            return;
+        }
+
+            const questionTrigger = event.target.closest(".js-toggle-question-btn, .chat-bubble--question");
+        if (questionTrigger) {
+            event.preventDefault();
+            clearAllDeleteConfirmations();
+            const wrap = questionTrigger.closest(".question-control-wrap");
+            const itemId = questionTrigger.dataset.itemId || wrap?.querySelector(".js-toggle-question-btn")?.dataset.itemId;
+            if (itemId) {
+                syncQuestionToServer(itemId);
+            }
+            return;
+        }
+
+        const removeTrigger = event.target.closest(".js-confirm-remove-btn, .js-confirm-bubble");
+        if (removeTrigger) {
+            const wrap = removeTrigger.closest(".delete-confirm-wrap");
+            const confirmBtn = wrap ? wrap.querySelector(".js-confirm-remove-btn") : null;
+            if (!confirmBtn) return;
+
+            setNotFoundBubble(removeTrigger.closest(".recipe-ingredient-row"), false);
+
+            const isAlreadyConfirming = confirmBtn.classList.contains("is-confirming");
+            if (!isAlreadyConfirming) {
+                event.preventDefault();
+                clearAllDeleteConfirmations(confirmBtn);
+                confirmBtn.classList.add("is-confirming");
+                const bubble = wrap.querySelector(".js-confirm-bubble");
+                if (bubble) bubble.classList.remove("hide-cell");
+
+                clearTimeout(confirmResetTimer);
+                confirmResetTimer = setTimeout(() => clearAllDeleteConfirmations(), 3500);
+                return;
+            }
+
+            // Confirmed (via either clicking "Sure?" bubble or second tap on ✕)
+            clearAllDeleteConfirmations();
+            const isManual = confirmBtn.dataset.manual === "true";
+            if (!isManual) {
+                event.preventDefault();
+                syncHiddenToServer(confirmBtn.dataset.itemId);
+            } else if (removeTrigger.classList.contains("js-confirm-bubble")) {
+                // Manually submit the form when clicking the <span> bubble for an Extra item
+                event.preventDefault();
+                wrap.requestSubmit();
+            }
             return;
         }
 
@@ -498,9 +644,11 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".shopping-item-checkbox").forEach((cb) => {
         applyRowVisuals(cb);
         cb.addEventListener("change", () => {
+            const row = cb.closest(".recipe-ingredient-row");
+            setNotFoundBubble(row, false);
             applyRowVisuals(cb);
             if (cb.checked) {
-                applyQuestionVisuals(cb.closest(".recipe-ingredient-row"), false, false);
+                applyQuestionVisuals(row, false, false, false);
             }
             refreshListVisibility();
             saveLocalSnapshot();

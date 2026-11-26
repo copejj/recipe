@@ -53,16 +53,34 @@
             <div class="status-item clickable-card">
                 <span class="status-icon">➕</span>
                 <div class="status-info">
-                    <span class="status-value">Adding a New Idea?</span>
+                    <span class="status-value">Add a Recipe?</span>
                     <a th:href="@{/recipes/create}"
                         class="status-link stretched-link">Create New Recipe →</a>
                 </div>
             </div>
 
             <div class="status-item clickable-card">
+                <span class="status-icon">➕</span>
+                <div class="status-info">
+                    <span class="status-value">Add a Meal Plan?</span>
+                    <a th:href="@{/meal-plans}" 
+                        class="status-link stretched-link">Create Meal Plans →</a>
+                </div>
+            </div>
+
+            <div class="status-item clickable-card">
+                <span class="status-icon">➕</span>
+                <div class="status-info">
+                    <span class="status-value">Add a Shopping List?</span>
+                    <a th:href="@{/shopping-lists}" 
+                        class="status-link stretched-link">Create Shopping Lists →</a>
+                </div>
+            </div>
+
+            <div class="status-item clickable-card">
                 <span class="status-icon">🍳</span>
                 <div class="status-info">
-                    <span class="status-value">Open Your Cookbook?</span>
+                    <span class="status-value">Open Saved Cookbook?</span>
                     <a th:href="@{/recipes/cookbook}" 
                         class="status-link stretched-link">View <span th:text="${myRecipesCount}">0</span> Recipes Saved →</a>
                 </div>
@@ -71,7 +89,7 @@
             <div class="status-item clickable-card">
                 <span class="status-icon">🔍</span>
                 <div class="status-info">
-                    <span class="status-value">Looking for Ideas?</span>
+                    <span class="status-value">Review Public Recipes?</span>
                     <a th:href="@{/search}"
                         class="status-link stretched-link">Search Public Recipes →</a>
                 </div>
@@ -87,34 +105,26 @@
             </div>
         </div>
         <!-- SECTION 2: MEAL PLANS -->
-        <h2>Meal Plans</h2>
-        <div class="status-grid">
-            <!-- Left-most card: Create / Manage All Meal Plans -->
-            <div class="status-item clickable-card">
-                <span class="status-icon">📅</span>
-                <div class="status-info">
-                    <span class="status-value">Planning Your Week?</span>
-                    <a th:href="@{/meal-plans}" 
-                        class="status-link stretched-link">Create or Manage Plans →</a>
+        <th:block th:if="${mealPlans != null && !mealPlans.isEmpty()}">
+            <h2>Meal Plans</h2>
+            <div class="status-grid">
+                <!-- Created & Shared Meal Plan Cards -->
+                <div th:each="plan : ${mealPlans}" class="status-item clickable-card">
+                    <span class="status-icon" th:text="${plan.isRecurring} ? '🔁' : '🗓️'">🗓️</span>
+                    <div class="status-info">
+                        <span class="status-value" th:text="${plan.planName}">Weekly Plan</span>
+                        <small class="plan-card-meta"
+                            th:text="${plan.user.userId == currentUserId}
+                                ? (${plan.plannedRecipes.size()} + ' recipes • Yours')
+                                : ('Shared by ' + ${plan.user.displayName} + ' • ' + ${plan.plannedRecipes.size()} + ' recipes')">
+                            0 recipes
+                        </small>
+                        <a th:href="@{/meal-plans/{id}(id=${plan.publicId})}" 
+                            class="status-link stretched-link">Open Meal Plan →</a>
+                    </div>
                 </div>
             </div>
-
-            <!-- Created & Shared Meal Plan Cards -->
-            <div th:each="plan : ${mealPlans}" class="status-item clickable-card">
-                <span class="status-icon" th:text="${plan.isRecurring} ? '🔁' : '🗓️'">🗓️</span>
-                <div class="status-info">
-                    <span class="status-value" th:text="${plan.planName}">Weekly Plan</span>
-                    <small class="plan-card-meta"
-                           th:text="${plan.user.userId == currentUserId}
-                               ? (${plan.plannedRecipes.size()} + ' recipes • Yours')
-                               : ('Shared by ' + ${plan.user.displayName} + ' • ' + ${plan.plannedRecipes.size()} + ' recipes')">
-                        0 recipes
-                    </small>
-                    <a th:href="@{/meal-plans/{id}(id=${plan.publicId})}" 
-                        class="status-link stretched-link">Open Meal Plan →</a>
-                </div>
-            </div>
-        </div>
+        </th:block>
 
         <!-- SECTION 3: ACTIVE SHOPPING LISTS (Only shown if user has lists) -->
         <th:block th:if="${shoppingLists != null && !shoppingLists.isEmpty()}">
