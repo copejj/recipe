@@ -1087,15 +1087,29 @@ textarea {
     border-top: 1px solid var(--color-border, #e7e5e4); /* Fixed variable name */
 }
 
+/* Mobile / Portrait Mode: Full horizontal width, uncropped */
 .hero-flow-image-wrapper {
+    display: block;
+    float: none;
+    width: 100%;
+    max-width: 100%;
     margin: 0 0 1.25rem 0;
-    padding: 0.6rem;
+    padding: 0.5rem;
+    box-sizing: border-box;
     background-color: #ffffff;
     border: 1px solid #e4e0d5;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
+.hero-illustration {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
+/* Landscape / Tablet & Desktop (768px+): Float left so text wraps around it */
 @media (min-width: 768px) {
     .hero-flow-image-wrapper {
         float: left;
@@ -1105,12 +1119,6 @@ textarea {
     }
 }
 
-.hero-illustration {
-    display: block;
-    width: 100%;
-    height: auto;
-    border-radius: 4px;
-}
 
 .hero-search-section {
     clear: both;
