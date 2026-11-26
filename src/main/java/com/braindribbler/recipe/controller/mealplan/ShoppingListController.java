@@ -74,6 +74,10 @@ public class ShoppingListController {
         ShoppingList shoppingList = shoppingListService.getByPublicId(publicId);
 
         boolean canEdit = canUserEditList(shoppingList, user);
+        boolean isShared = shoppingList.getMealPlan() != null
+            && shoppingList.getMealPlan().getShares() != null
+            && !shoppingList.getMealPlan().getShares().isEmpty();
+
         boolean canAccess = canEdit || (shoppingList.getMealPlan() != null
                 && mealPlanService.canUserView(shoppingList.getMealPlan(), user));
 
@@ -83,6 +87,7 @@ public class ShoppingListController {
 
         model.addAttribute("shoppingList", shoppingList);
         model.addAttribute("canEdit", canEdit);
+        model.addAttribute("isShared", isShared);
         model.addAttribute("itemsByAisle", shoppingListService.groupItemsByAisle(shoppingList));
         model.addAttribute("groceryCategories", ingredientService.getAllGroceryCategoriesSortedByOrder());
         model.addAttribute("measurements", metadataLookupService.getAllMeasurements());

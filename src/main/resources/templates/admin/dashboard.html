@@ -20,9 +20,8 @@
                 <div class="status-item clickable-card">
                     <span class="status-icon">🍽️</span>
                     <div class="status-info">
-                        <span class="status-label">Recipe Categories</span>
                         <span class="status-value">
-                            <span th:text="${recipeCategoriesCount}">0</span> Course Types
+                            <span th:text="${recipeCategoriesCount}">0</span> Recipe Categories
                         </span>
                         <a th:href="@{/admin/metadata/recipes/categories}" 
                             class="status-link stretched-link">Manage Recipe Categories →</a>
@@ -33,9 +32,8 @@
                 <div class="status-item clickable-card">
                     <span class="status-icon">📊</span>
                     <div class="status-info">
-                        <span class="status-label">Public Ingredients</span>
                         <span class="status-value">
-                            <span th:text="${totalCount}">0</span> Active Ingredients
+                            <span th:text="${totalCount}">0</span> Ingredients
                         </span>
                         <a th:href="@{/admin/metadata/ingredients}" 
                             class="status-link stretched-link">Manage Ingredients List →</a>
@@ -46,12 +44,11 @@
                 <div class="status-item clickable-card">
                     <span class="status-icon">🛒</span>
                     <div class="status-info">
-                        <span class="status-label">Grocery Categories</span>
                         <span class="status-value">
-                            <span th:text="${categoryCount}">0</span> Active Aisles
+                            <span th:text="${categoryCount}">0</span> Grocery Categories
                         </span>
                         <a th:href="@{/admin/metadata/grocery/categories}" 
-                            class="status-link stretched-link">Manage Store Aisles →</a>
+                            class="status-link stretched-link">Manage Grocery Categories →</a>
                     </div>
                 </div>
 
@@ -59,9 +56,8 @@
                 <div class="status-item clickable-card" th:classappend="${pendingCount > 0} ? 'needs-attention' : ''">
                     <span class="status-icon">🌿</span>
                     <div class="status-info">
-                        <span class="status-label">Ingredient Verification</span>
                         <span class="status-value">
-                            <span th:text="${pendingCount}">0</span> Items Waiting
+                            <span th:text="${pendingCount}">0</span> New Ingredients
                         </span>
                         <!-- Added 'stretched-link' to the anchor tag -->
                         <a th:href="@{/admin/metadata/ingredients/queue}"

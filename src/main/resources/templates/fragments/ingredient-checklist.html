@@ -31,7 +31,7 @@
 <!-- =========================================================================
      2. PERSISTENT SHOPPING LIST CHECKLIST (shopping-lists/view.html)
      ========================================================================= -->
-<th:block th:fragment="persistentShoppingChecklist(itemsByAisle, shoppingList, canEdit)">
+<th:block th:fragment="persistentShoppingChecklist(itemsByAisle, shoppingList, canEdit, isShared)">
     <div th:each="entry : ${itemsByAisle}" class="shopping-category-section">
         <h4 class="recipe-panel-heading" th:text="${entry.key}">Produce</h4>
 
@@ -64,8 +64,8 @@
                 </label>
 
                 <div class="shopping-row-controls">
-                    <!-- Question Mark Button + Speech Bubble -->
-                    <div class="question-control-wrap">
+                    <!-- Question Mark Button + Speech Bubble (Only shown when list is shared) -->
+                    <div th:if="${isShared}" class="question-control-wrap">
                         <span class="chat-bubble chat-bubble--question"
                               th:classappend="${!item.isQuestioned} ? ' hide-cell' : ''">
                             Do we have this already?

@@ -201,8 +201,8 @@
     box-sizing: border-box;
 }
 
-.action-box {
-    padding: .5rem 0;
+.action-tray:not(:empty) {
+    padding: 0.5rem;
 }
 
 .action-tray,
@@ -212,8 +212,7 @@
     background-color: var(--color-surface, #ffffff);
 }
 
-.action-tray,
-.action-box {
+.action-tray {
     z-index: 100;
     background-color: var(--color-bg-card);
     display: flex;
@@ -225,8 +224,7 @@
     box-sizing: border-box;
 }
 
-.action-tray .btn,
-.action-box .btn {
+.action-tray .btn {
     width: auto;
     text-align: center;
     text-decoration: none;
@@ -242,8 +240,7 @@
     box-sizing: border-box;
 }
 
-.action-tray .btn-secondary, 
-.action-box .btn-secondary {
+.action-tray .btn-secondary {
     background-color: var(--color-bg-body);
     color: var(--color-text-dark);
     border: 1px solid var(--color-border);

@@ -78,7 +78,7 @@
             </div>
         </div>
 
-        <th:block th:replace="~{fragments/ingredient-checklist :: persistentShoppingChecklist(${itemsByAisle}, ${shoppingList}, ${canEdit})}"></th:block>
+        <th:block th:replace="~{fragments/ingredient-checklist :: persistentShoppingChecklist(${itemsByAisle}, ${shoppingList}, ${canEdit}, ${isShared})}"></th:block>
 
         <th:block th:if="${canEdit}">
             <div th:replace="~{fragments/modals :: genericModal(
