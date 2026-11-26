@@ -101,4 +101,10 @@ public class ShoppingListSseService {
                 "hidden", isHidden
         ));
     }
+
+    public void broadcastListDeleted(UUID publicId, String listName) {
+        sendEvent(publicId, "list-deleted", Map.of(
+                "name", listName != null ? listName : "Shopping List"
+        ));
+    }
 }

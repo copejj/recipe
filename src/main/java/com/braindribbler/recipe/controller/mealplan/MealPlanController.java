@@ -295,8 +295,16 @@ public class MealPlanController {
         }
 
         String planName = plan.getPlanName();
+        shoppingListService.deleteIfExistsForMealPlan(plan);
         mealPlanService.deleteMealPlan(plan);
         redirectAttributes.addFlashAttribute("successMessage", "Deleted meal plan \"" + planName + "\".");
         return "redirect:/meal-plans";
     }
+
+    @ExceptionHandler(jakarta.persistence.EntityNotFoundException.class)
+    public String handleMealPlanNotFound(RedirectAttributes redirectAttributes) {
+        redirectAttributes.addFlashAttribute("errorMessage", "That meal plan could not be found or was deleted.");
+        return "redirect:/";
+    }
+
 }

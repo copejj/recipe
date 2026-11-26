@@ -37,6 +37,9 @@ public class ShoppingList {
     @OrderBy("sortOrder ASC")
     private List<ShoppingListItem> items = new ArrayList<>();
 
+    @OneToMany(mappedBy = "shoppingList", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ShoppingListShare> shares = new ArrayList<>();
+
     public ShoppingList() {}
 
     // Getters and Setters
@@ -60,4 +63,7 @@ public class ShoppingList {
 
     public List<ShoppingListItem> getItems() { return items; }
     public void setItems(List<ShoppingListItem> items) { this.items = items; }
+
+    public List<ShoppingListShare> getShares() { return shares; }
+    public void setShares(List<ShoppingListShare> shares) { this.shares = shares; }
 }

@@ -3,8 +3,11 @@ package com.braindribbler.recipe.controller.mealplan;
 import com.braindribbler.recipe.domain.auth.User;
 import com.braindribbler.recipe.domain.mealplan.ShoppingList;
 import com.braindribbler.recipe.domain.mealplan.ShoppingListItem;
+import com.braindribbler.recipe.domain.recipe.AccessLevel;
 import com.braindribbler.recipe.domain.recipe.GroceryCategory;
 import com.braindribbler.recipe.domain.recipe.Measurement;
+import com.braindribbler.recipe.repository.auth.UserRepository;
+import com.braindribbler.recipe.repository.recipe.AccessLevelRepository;
 import com.braindribbler.recipe.repository.recipe.GroceryCategoryRepository;
 import com.braindribbler.recipe.repository.recipe.MeasurementRepository;
 import com.braindribbler.recipe.security.RecipeUserDetails;
@@ -27,6 +30,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Controller
@@ -41,6 +45,8 @@ public class ShoppingListController {
     private final MeasurementRepository measurementRepository;
     private final GroceryCategoryRepository groceryCategoryRepository;
     private final TransactionTemplate transactionTemplate;
+    private final UserRepository userRepository;
+    private final AccessLevelRepository accessLevelRepository;
 
     public ShoppingListController(ShoppingListService shoppingListService,
                                   ShoppingListSseService shoppingListSseService,
@@ -49,7 +55,9 @@ public class ShoppingListController {
                                   MetadataLookupService metadataLookupService,
                                   MeasurementRepository measurementRepository,
                                   GroceryCategoryRepository groceryCategoryRepository,
-                                  TransactionTemplate transactionTemplate) {
+                                  TransactionTemplate transactionTemplate,
+                                  UserRepository userRepository,
+                                  AccessLevelRepository accessLevelRepository) {
         this.shoppingListService = shoppingListService;
         this.shoppingListSseService = shoppingListSseService;
         this.mealPlanService = mealPlanService;
@@ -58,6 +66,8 @@ public class ShoppingListController {
         this.measurementRepository = measurementRepository;
         this.groceryCategoryRepository = groceryCategoryRepository;
         this.transactionTemplate = transactionTemplate;
+        this.userRepository = userRepository;
+        this.accessLevelRepository = accessLevelRepository;
     }
 
     @GetMapping
@@ -92,12 +102,29 @@ public class ShoppingListController {
 
         boolean canEdit = canUserEditList(shoppingList, user);
         boolean isOwner = shoppingList.getOwner().getUserId().equals(user.getUserId());
-        boolean isShared = shoppingList.getMealPlan() != null
-                && shoppingList.getMealPlan().getShares() != null
-                && !shoppingList.getMealPlan().getShares().isEmpty();
 
         boolean canAccess = canEdit || (shoppingList.getMealPlan() != null
                 && mealPlanService.canUserView(shoppingList.getMealPlan(), user));
+
+        boolean hasDirectShares = shoppingList.getShares() != null && !shoppingList.getShares().isEmpty();
+        boolean hasPlanShares = shoppingList.getMealPlan() != null
+                && shoppingList.getMealPlan().getShares() != null
+                && !shoppingList.getMealPlan().getShares().isEmpty();
+        boolean isShared = hasDirectShares || hasPlanShares;
+
+        Set<Integer> alreadySharedIds = shoppingList.getShares().stream()
+                .filter(s -> s.getSharedUser() != null)
+                .map(s -> s.getSharedUser().getUserId())
+                .collect(java.util.stream.Collectors.toSet());
+
+        List<User> shareableUsers = userRepository.findShareableUsers(user.getUserId()).stream()
+                .filter(u -> !alreadySharedIds.contains(u.getUserId()))
+                .toList();
+
+        model.addAttribute("currentUserId", user.getUserId());
+        model.addAttribute("shareableUsers", shareableUsers);
+        model.addAttribute("accessLevels", accessLevelRepository.findAll());
+
 
         if (!canAccess) {
             return "redirect:/meal-plans?unauthorized";
@@ -129,6 +156,7 @@ public class ShoppingListController {
         }
 
         String name = list.getListName();
+        shoppingListSseService.broadcastListDeleted(publicId, name);
         shoppingListService.deleteShoppingList(list);
         redirectAttributes.addFlashAttribute("successMessage", "Deleted shopping list \"" + name + "\".");
         return "redirect:/";
@@ -225,7 +253,7 @@ public class ShoppingListController {
         shoppingListService.resetFromMealPlan(list, user);
         shoppingListSseService.broadcastStructureChanged(publicId);
 
-        redirectAttributes.addFlashAttribute("successMessage", "Shopping list reset from meal plan!");
+        redirectAttributes.addFlashAttribute("successMessage", "Shopping list reset!");
         return "redirect:/shopping-lists/" + publicId;
     }
 
@@ -255,18 +283,6 @@ public class ShoppingListController {
                 "count", itemsState.size(),
                 "items", itemsState
         ));
-    }
-
-    private boolean canUserAccessList(ShoppingList list, User user) {
-        if (user == null || list == null) return false;
-        if (canUserEditList(list, user)) return true;
-        return list.getMealPlan() != null && mealPlanService.canUserView(list.getMealPlan(), user);
-    }
-
-    private boolean canUserEditList(ShoppingList list, User user) {
-        if (user == null || list == null) return false;
-        if (list.getOwner().getUserId().equals(user.getUserId())) return true;
-        return list.getMealPlan() != null && mealPlanService.canUserEdit(list.getMealPlan(), user);
     }
 
     @PostMapping("/{publicId}/items/{itemId}/toggle")
@@ -336,5 +352,99 @@ public class ShoppingListController {
         shoppingListSseService.broadcastItemHidden(publicId, itemId, isHidden);
 
         return ResponseEntity.ok(Map.of("itemId", itemId, "isHidden", isHidden));
+    }
+
+    private boolean canUserAccessList(ShoppingList list, User user) {
+        if (user == null || list == null) return false;
+        if (canUserEditList(list, user)) return true;
+        boolean directView = list.getShares().stream()
+                .anyMatch(s -> s.getSharedUser() != null && s.getSharedUser().getUserId().equals(user.getUserId()));
+        if (directView) return true;
+        return list.getMealPlan() != null && mealPlanService.canUserView(list.getMealPlan(), user);
+    }
+
+    private boolean canUserEditList(ShoppingList list, User user) {
+        if (user == null || list == null) return false;
+        if (list.getOwner().getUserId().equals(user.getUserId())) return true;
+        boolean directEdit = list.getShares().stream()
+                .filter(s -> s.getSharedUser() != null && s.getSharedUser().getUserId().equals(user.getUserId()))
+                .anyMatch(s -> {
+                    String level = s.getAccessLevel() != null ? s.getAccessLevel().getAccessName() : "";
+                    return "EDIT".equalsIgnoreCase(level) || "EDITOR".equalsIgnoreCase(level);
+                });
+        if (directEdit) return true;
+        return list.getMealPlan() != null && mealPlanService.canUserEdit(list.getMealPlan(), user);
+    }
+
+    @PostMapping("/{publicId}/share")
+    public String shareShoppingList(@PathVariable UUID publicId,
+                                    @RequestParam Integer targetUserId,
+                                    @RequestParam Integer accessLevelId,
+                                    @AuthenticationPrincipal RecipeUserDetails currentUser,
+                                    RedirectAttributes redirectAttributes) {
+        if (currentUser == null) return "redirect:/login";
+        User owner = currentUser.getUserProfile();
+        ShoppingList list = shoppingListService.getByPublicId(publicId);
+
+        if (!list.getOwner().getUserId().equals(owner.getUserId())) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Only the owner can share this shopping list.");
+            return "redirect:/shopping-lists/" + publicId;
+        }
+
+        if (targetUserId.equals(owner.getUserId())) {
+            redirectAttributes.addFlashAttribute("errorMessage", "You already own this shopping list.");
+            return "redirect:/shopping-lists/" + publicId;
+        }
+
+        userRepository.findById(targetUserId).ifPresentOrElse(targetUser -> {
+            AccessLevel level = accessLevelRepository.findById(accessLevelId).orElseThrow();
+            shoppingListService.shareWithUser(list, targetUser, level);
+            redirectAttributes.addFlashAttribute("successMessage", "Shared shopping list with " + targetUser.getDisplayName() + ".");
+        }, () -> redirectAttributes.addFlashAttribute("errorMessage", "Selected user not found."));
+
+        return "redirect:/shopping-lists/" + publicId;
+    }
+
+    @PostMapping("/{publicId}/shares/{shareId}/remove")
+    public String removeShare(@PathVariable UUID publicId,
+                              @PathVariable Integer shareId,
+                              @AuthenticationPrincipal RecipeUserDetails currentUser,
+                              RedirectAttributes redirectAttributes) {
+        if (currentUser == null) return "redirect:/login";
+        User domainUser = currentUser.getUserProfile();
+        ShoppingList list = shoppingListService.getByPublicId(publicId);
+
+        boolean isOwner = list.getOwner().getUserId().equals(domainUser.getUserId());
+        boolean isSelfRemoval = list.getShares().stream()
+                .anyMatch(s -> s.getShoppingListShareId().equals(shareId)
+                        && s.getSharedUser() != null
+                        && s.getSharedUser().getUserId().equals(domainUser.getUserId()));
+
+        if (!isOwner && !isSelfRemoval) {
+            redirectAttributes.addFlashAttribute("errorMessage", "You are not authorized to remove this share.");
+            return "redirect:/shopping-lists/" + publicId;
+        }
+
+        shoppingListService.removeShare(list, shareId);
+
+        if (isSelfRemoval && !isOwner) {
+            redirectAttributes.addFlashAttribute("successMessage", "You have left \"" + list.getListName() + "\".");
+            return "redirect:/";
+        }
+
+        redirectAttributes.addFlashAttribute("successMessage", "Collaborator removed.");
+        return "redirect:/shopping-lists/" + publicId;
+    }
+
+    @ExceptionHandler(jakarta.persistence.EntityNotFoundException.class)
+    public Object handleShoppingListNotFound(jakarta.servlet.http.HttpServletRequest request,
+                                             RedirectAttributes redirectAttributes) {
+        String path = request.getRequestURI();
+        if (path.endsWith("/state") || path.endsWith("/stream")
+                || path.endsWith("/toggle") || path.endsWith("/question") || path.endsWith("/hide")) {
+            return ResponseEntity.notFound().build();
+        }
+        redirectAttributes.addFlashAttribute("errorMessage", "That shopping list could not be found or was deleted.");
+        return "redirect:/";
     }
 }

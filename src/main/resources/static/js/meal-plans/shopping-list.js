@@ -12,16 +12,47 @@ document.addEventListener("DOMContentLoaded", () => {
     const questionBannerText = document.getElementById("remoteQuestionText");
     const jumpToQuestionBtn = document.getElementById("jumpToQuestionBtn");
     const dismissQuestionBannerBtn = document.getElementById("dismissQuestionBannerBtn");
-    const extraIngSelect = document.getElementById("extraIngredientId");
-    const customNameGroup = document.getElementById("customItemNameGroup");
-    const customNameInput = document.getElementById("customItemName");
-    const extraCategorySelect = document.getElementById("extraCategoryId");
 
     let isSavingLocalChange = false;
     let showAllItems = localStorage.getItem(showAllPrefKey) === "true";
     let eventSource = null;
     let pendingQuestionItemId = null;
     let confirmResetTimer = null;
+
+    // --- 1. ADD ITEM & SHARE MODALS (SELECT2) ---
+    const extraIngSelect = document.getElementById("extraIngredientId");
+    const customNameGroup = document.getElementById("customItemNameGroup");
+    const customNameInput = document.getElementById("customItemName");
+    const extraCategorySelect = document.getElementById("extraCategoryId");
+
+    function handleListDeleted(listName = "This shopping list") {
+        if (eventSource) {
+            eventSource.close();
+        }
+        try {
+            localStorage.removeItem(storageKey);
+            localStorage.removeItem(dirtyKey);
+        } catch (e) { /* Ignore storage errors */ }
+
+        setSyncStatus("offline", "Deleted");
+
+        if (questionBanner && questionBannerText) {
+            questionBannerText.textContent = `🗑️ "${listName}" was deleted by the owner. Returning to dashboard...`;
+            if (jumpToQuestionBtn) jumpToQuestionBtn.classList.add("hide-cell");
+            if (dismissQuestionBannerBtn) dismissQuestionBannerBtn.classList.add("hide-cell");
+            questionBanner.classList.remove("hide-cell");
+        }
+
+        setTimeout(() => {
+            window.location.href = "/";
+        }, 2500);
+    }
+
+    function setSyncStatus(state, label) {
+        if (!statusBadge) return;
+        statusBadge.dataset.state = state;
+        statusBadge.textContent = label;
+    }
 
     function syncExtraItemModalFields() {
         if (!extraIngSelect) return;
@@ -53,6 +84,15 @@ document.addEventListener("DOMContentLoaded", () => {
         syncExtraItemModalFields();
     }
 
+    const shareUserSelect = document.getElementById("shareTargetUserId");
+    if (shareUserSelect && window.jQuery && $.fn.select2) {
+        $(shareUserSelect).select2({
+            width: "100%",
+            dropdownParent: $("#shareListModal")
+        });
+    }
+
+    // --- 2. OFFLINE & VISUAL STATE HELPERS ---
     function getDirtyMap() {
         try {
             return JSON.parse(localStorage.getItem(dirtyKey) || "{}");
@@ -73,22 +113,51 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) { /* Ignore storage errors */ }
     }
 
-    function restoreOfflineChanges() {
-        const dirty = getDirtyMap();
-        const dirtyIds = Object.keys(dirty);
-        if (dirtyIds.length === 0) return;
-
-        dirtyIds.forEach((itemId) => {
-            const cb = document.querySelector(`.shopping-item-checkbox[data-item-id="${itemId}"]`);
-            if (cb) {
-                cb.checked = Boolean(dirty[itemId]);
-                applyRowVisuals(cb);
-            }
-        });
-
-        if (statusBadge) {
-            statusBadge.textContent = navigator.onLine ? "Syncing offline changes..." : "Saved locally (offline)";
+    function setNotFoundBubble(row, show) {
+        if (!row) return;
+        const notFoundBubble = row.querySelector(".js-not-found-bubble");
+        if (notFoundBubble) {
+            notFoundBubble.classList.toggle("hide-cell", !show);
         }
+    }
+
+    function syncRowControlsVisibility(row) {
+        if (!row) return;
+        const cb = row.querySelector(".shopping-item-checkbox");
+        const isChecked = cb ? cb.checked : false;
+        const isHidden = row.dataset.hidden === "true";
+
+        const questionWrap = row.querySelector(".question-control-wrap");
+        const removeForm = row.querySelector(".js-item-remove-form");
+        const restoreBtn = row.querySelector(".js-restore-item-btn");
+
+        if (cb) {
+            cb.classList.toggle("hide-cell", isHidden);
+            cb.disabled = isHidden;
+        }
+        if (restoreBtn) {
+            restoreBtn.classList.toggle("hide-cell", !isHidden);
+        }
+        if (questionWrap) {
+            questionWrap.classList.toggle("hide-cell", isChecked || isHidden);
+        }
+        if (removeForm) {
+            removeForm.classList.toggle("hide-cell", isChecked || isHidden);
+        }
+    }
+    function applyRowVisuals(checkbox) {
+        const row = checkbox.closest(".recipe-ingredient-row");
+        const textSpan = row ? row.querySelector(".shopping-item-text") : null;
+        if (!row || !textSpan) return;
+
+        if (checkbox.checked) {
+            textSpan.classList.add("crossed-out-text");
+            row.classList.add("pantry-owned-item");
+        } else {
+            textSpan.classList.remove("crossed-out-text");
+            row.classList.remove("pantry-owned-item");
+        }
+        syncRowControlsVisibility(row);
     }
 
     function applyHiddenVisuals(row, isHidden) {
@@ -111,41 +180,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         syncRowControlsVisibility(row);
-    }
-
-    function applyRowVisuals(checkbox) {
-        const row = checkbox.closest(".recipe-ingredient-row");
-        const textSpan = row ? row.querySelector(".shopping-item-text") : null;
-        if (!row || !textSpan) return;
-
-        if (checkbox.checked) {
-            textSpan.classList.add("crossed-out-text");
-            row.classList.add("pantry-owned-item");
-        } else {
-            textSpan.classList.remove("crossed-out-text");
-            row.classList.remove("pantry-owned-item");
-        }
-        syncRowControlsVisibility(row);
-    }
-
-    function applyQuestionVisuals(row, isQuestioned, shouldPulse = false) {
-        if (!row) return;
-        const btn = row.querySelector(".js-toggle-question-btn");
-        const bubble = row.querySelector(".chat-bubble--question");
-
-        row.classList.toggle("is-questioned-row", Boolean(isQuestioned));
-        if (btn) {
-            btn.classList.toggle("is-active", Boolean(isQuestioned));
-            btn.setAttribute("aria-pressed", String(Boolean(isQuestioned)));
-        }
-        if (bubble) {
-            bubble.classList.toggle("hide-cell", !isQuestioned);
-        }
-        if (isQuestioned && shouldPulse) {
-            row.classList.remove("is-question-pulse");
-            void row.offsetWidth;
-            row.classList.add("is-question-pulse");
-        }
     }
 
     function applyQuestionVisuals(row, isQuestioned, shouldPulse = false, showNotFound = false) {
@@ -175,11 +209,32 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    function restoreOfflineChanges() {
+        const dirty = getDirtyMap();
+        const dirtyIds = Object.keys(dirty);
+        if (dirtyIds.length === 0) return;
+
+        dirtyIds.forEach((itemId) => {
+            const cb = document.querySelector(`.shopping-item-checkbox[data-item-id="${itemId}"]`);
+            if (cb) {
+                cb.checked = Boolean(dirty[itemId]);
+                applyRowVisuals(cb);
+            }
+        });
+
+        if (navigator.onLine) {
+            setSyncStatus("saving", "Syncing...");
+        } else {
+            setSyncStatus("offline", "Offline");
+        }
+
+    }
+
     function updateShowAllButtonUI() {
         if (!showAllBtn) return;
         showAllBtn.setAttribute("aria-pressed", String(showAllItems));
         showAllBtn.classList.toggle("is-active", showAllItems);
-        showAllBtn.textContent = showAllItems ? "Hide Checked" : "Show All";
+        showAllBtn.textContent = showAllItems ? "Unchecked" : "Show All";
     }
 
     function refreshListVisibility() {
@@ -227,11 +282,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             localStorage.setItem(storageKey, JSON.stringify(checkedMap));
-            localStorage.setItem("active_cooking_recipe", JSON.stringify({
-                url: window.location.pathname,
-                title: document.title,
-                updatedAt: Date.now()
-            }));
         } catch (e) { /* Ignore storage quota errors */ }
     }
 
@@ -258,41 +308,16 @@ document.addEventListener("DOMContentLoaded", () => {
         applyQuestionVisuals(row, true, true);
     }
 
-    function syncRowControlsVisibility(row) {
-        if (!row) return;
-        const cb = row.querySelector(".shopping-item-checkbox");
-        const isChecked = cb ? cb.checked : false;
-        const isHidden = row.dataset.hidden === "true";
-
-        const questionWrap = row.querySelector(".question-control-wrap");
-        const removeForm = row.querySelector(".js-item-remove-form");
-        const restoreBtn = row.querySelector(".js-restore-item-btn");
-
-        if (cb) {
-            cb.classList.toggle("hide-cell", isHidden);
-            cb.disabled = isHidden;
-        }
-        if (restoreBtn) {
-            restoreBtn.classList.toggle("hide-cell", !isHidden);
-        }
-        if (questionWrap) {
-            questionWrap.classList.toggle("hide-cell", isChecked || isHidden);
-        }
-        if (removeForm) {
-            removeForm.classList.toggle("hide-cell", isChecked || isHidden);
-        }
-    }
-
-
+    // --- 3. SERVER SYNC & SSE STREAM ---
     async function syncToggleToServer(itemId, desiredChecked) {
         if (!navigator.onLine) {
             setItemDirty(itemId, desiredChecked, true);
-            if (statusBadge) statusBadge.textContent = "Saved locally (offline)";
+            if (statusBadge) setSyncStatus("offline", "Offline");
             return;
         }
 
         isSavingLocalChange = true;
-        if (statusBadge) statusBadge.textContent = "Saving...";
+        if (statusBadge) setSyncStatus("saving", "Saving...");
 
         try {
             const response = await fetch(`/shopping-lists/${listPublicId}/items/${itemId}/toggle`, {
@@ -305,36 +330,31 @@ document.addEventListener("DOMContentLoaded", () => {
                 setItemDirty(itemId, desiredChecked, false);
                 const row = document.querySelector(`.recipe-ingredient-row[data-item-id="${itemId}"]`);
                 applyQuestionVisuals(row, Boolean(data.isQuestioned), false);
-                if (statusBadge) statusBadge.textContent = "Synced";
+                if (statusBadge) setSyncStatus("synced", "Synced");
             } else {
                 setItemDirty(itemId, desiredChecked, true);
-                if (statusBadge) statusBadge.textContent = "Saved locally (offline)";
+                if (statusBadge) setSyncStatus("offline", "Offline");
             }
         } catch (err) {
             setItemDirty(itemId, desiredChecked, true);
-            if (statusBadge) statusBadge.textContent = "Saved locally (offline)";
+            if (statusBadge) setSyncStatus("offline", "Offline");
         } finally {
             isSavingLocalChange = false;
-        }
-    }
-
-    function setNotFoundBubble(row, show) {
-        if (!row) return;
-        const notFoundBubble = row.querySelector(".js-not-found-bubble");
-        if (notFoundBubble) {
-            notFoundBubble.classList.toggle("hide-cell", !show);
         }
     }
 
     async function syncQuestionToServer(itemId) {
         const row = document.querySelector(`.recipe-ingredient-row[data-item-id="${itemId}"]`);
         const btn = row ? row.querySelector(".js-toggle-question-btn") : null;
-
         const nextState = btn ? !btn.classList.contains("is-active") : true;
+
         applyQuestionVisuals(row, nextState, false, !nextState);
+        if (!nextState && String(pendingQuestionItemId) === String(itemId) && questionBanner) {
+            questionBanner.classList.add("hide-cell");
+        }
 
         isSavingLocalChange = true;
-        if (statusBadge) statusBadge.textContent = "Saving...";
+        if (statusBadge) setSyncStatus("saving", "Saving...");
 
         try {
             const res = await fetch(`/shopping-lists/${listPublicId}/items/${itemId}/question`, {
@@ -345,10 +365,10 @@ document.addEventListener("DOMContentLoaded", () => {
             if (res.ok) {
                 const data = await res.json();
                 applyQuestionVisuals(row, Boolean(data.isQuestioned), false);
-                if (statusBadge) statusBadge.textContent = "Synced";
+                if (statusBadge) setSyncStatus("synced", "Synced");
             }
         } catch (e) {
-            if (statusBadge) statusBadge.textContent = "Offline";
+            if (statusBadge) setSyncStatus("offline", "Offline"); 
         } finally {
             isSavingLocalChange = false;
         }
@@ -363,7 +383,7 @@ document.addEventListener("DOMContentLoaded", () => {
         refreshListVisibility();
 
         isSavingLocalChange = true;
-        if (statusBadge) statusBadge.textContent = "Saving...";
+        if (statusBadge) setSyncStatus("saving", "Saving...");
 
         try {
             const res = await fetch(`/shopping-lists/${listPublicId}/items/${itemId}/hide`, {
@@ -375,15 +395,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 const data = await res.json();
                 applyHiddenVisuals(row, Boolean(data.isHidden));
                 refreshListVisibility();
-                if (statusBadge) statusBadge.textContent = "Synced";
+                if (statusBadge) setSyncStatus("synced", "Synced");
             }
         } catch (e) {
-            if (statusBadge) statusBadge.textContent = "Offline";
+            if (statusBadge) setSyncStatus("offline", "Offline");
         } finally {
             isSavingLocalChange = false;
         }
     }
-
     async function flushDirtyChanges() {
         if (!navigator.onLine) return;
         const dirty = getDirtyMap();
@@ -399,7 +418,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (isSavingLocalChange || !navigator.onLine) return;
         try {
             const res = await fetch(`/shopping-lists/${listPublicId}/state`, { credentials: "same-origin" });
+            if (res.status === 404 || res.status === 410) {
+                handleListDeleted("This shopping list");
+                return;
+            }
             if (!res.ok) return;
+
             const data = await res.json();
             const dirty = getDirtyMap();
             const currentCheckboxes = document.querySelectorAll(".shopping-item-checkbox");
@@ -437,7 +461,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (changed) {
                 saveLocalSnapshot();
                 refreshListVisibility();
-                if (statusBadge) statusBadge.textContent = "Updated • Synced";
+                if (statusBadge) setSyncStatus("synced", "Synced");
             }
         } catch (e) { /* Ignore transient errors */ }
     }
@@ -454,6 +478,11 @@ document.addEventListener("DOMContentLoaded", () => {
             if (hasConnectedOnce) syncMissedStateOnce();
             hasConnectedOnce = true;
         };
+
+        eventSource.addEventListener("list-deleted", (event) => {
+            const payload = JSON.parse(event.data);
+            handleListDeleted(payload.name || "This shopping list");
+        });
 
         eventSource.addEventListener("item-toggled", (event) => {
             if (isSavingLocalChange) return;
@@ -475,7 +504,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             saveLocalSnapshot();
             refreshListVisibility();
-            if (statusBadge) statusBadge.textContent = "Updated • Synced";
+            if (statusBadge) setSyncStatus("synced", "Synced");
         });
 
         eventSource.addEventListener("item-questioned", (event) => {
@@ -495,7 +524,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } else if (!isQuestioned && String(pendingQuestionItemId) === String(payload.id) && questionBanner) {
                 questionBanner.classList.add("hide-cell");
             }
-            if (statusBadge) statusBadge.textContent = "Updated • Synced";
+            if (statusBadge) setSyncStatus("synced", "Synced");
         });
 
         eventSource.addEventListener("item-hidden", (event) => {
@@ -506,7 +535,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             applyHiddenVisuals(row, Boolean(payload.hidden));
             refreshListVisibility();
-            if (statusBadge) statusBadge.textContent = "Updated • Synced";
+            if (statusBadge) setSyncStatus("synced", "Synced");
         });
 
         eventSource.addEventListener("structure-changed", () => {
@@ -515,21 +544,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         eventSource.onerror = () => {
             if (!navigator.onLine && statusBadge) {
-                statusBadge.textContent = "Saved locally (offline)";
+                setSyncStatus("offline", "Offline");
             }
         };
     }
-
+    // --- 4. DELEGATED UI EVENT LISTENERS ---
     document.addEventListener("click", (event) => {
-        const questionBtn = event.target.closest(".js-toggle-question-btn");
-        if (questionBtn) {
-            event.preventDefault();
-            clearAllDeleteConfirmations();
-            syncQuestionToServer(questionBtn.dataset.itemId);
-            return;
-        }
-
-            const questionTrigger = event.target.closest(".js-toggle-question-btn, .chat-bubble--question");
+        const questionTrigger = event.target.closest(".js-toggle-question-btn, .chat-bubble--question");
         if (questionTrigger) {
             event.preventDefault();
             clearAllDeleteConfirmations();
@@ -538,6 +559,14 @@ document.addEventListener("DOMContentLoaded", () => {
             if (itemId) {
                 syncQuestionToServer(itemId);
             }
+            return;
+        }
+
+        const restoreBtn = event.target.closest(".js-restore-item-btn");
+        if (restoreBtn) {
+            event.preventDefault();
+            clearAllDeleteConfirmations();
+            syncHiddenToServer(restoreBtn.dataset.itemId);
             return;
         }
 
@@ -562,48 +591,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // Confirmed (via either clicking "Sure?" bubble or second tap on ✕)
             clearAllDeleteConfirmations();
             const isManual = confirmBtn.dataset.manual === "true";
             if (!isManual) {
                 event.preventDefault();
                 syncHiddenToServer(confirmBtn.dataset.itemId);
             } else if (removeTrigger.classList.contains("js-confirm-bubble")) {
-                // Manually submit the form when clicking the <span> bubble for an Extra item
                 event.preventDefault();
                 wrap.requestSubmit();
-            }
-            return;
-        }
-
-        const restoreBtn = event.target.closest(".js-restore-item-btn");
-        if (restoreBtn) {
-            event.preventDefault();
-            clearAllDeleteConfirmations();
-            syncHiddenToServer(restoreBtn.dataset.itemId);
-            return;
-        }
-
-        const confirmBtn = event.target.closest(".js-confirm-remove-btn");
-        if (confirmBtn) {
-            const isAlreadyConfirming = confirmBtn.classList.contains("is-confirming");
-            if (!isAlreadyConfirming) {
-                event.preventDefault();
-                clearAllDeleteConfirmations(confirmBtn);
-                confirmBtn.classList.add("is-confirming");
-                const bubble = confirmBtn.closest(".delete-confirm-wrap")?.querySelector(".js-confirm-bubble");
-                if (bubble) bubble.classList.remove("hide-cell");
-
-                clearTimeout(confirmResetTimer);
-                confirmResetTimer = setTimeout(() => clearAllDeleteConfirmations(), 3500);
-                return;
-            }
-
-            clearAllDeleteConfirmations();
-            const isManual = confirmBtn.dataset.manual === "true";
-            if (!isManual) {
-                event.preventDefault();
-                syncHiddenToServer(confirmBtn.dataset.itemId);
             }
             return;
         }
@@ -639,7 +634,12 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // --- 5. INITIALIZATION ---
     restoreOfflineChanges();
+    if (!navigator.onLine) {
+        setSyncStatus("offline", "Offline");
+    }
+
 
     document.querySelectorAll(".shopping-item-checkbox").forEach((cb) => {
         applyRowVisuals(cb);
@@ -669,7 +669,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     window.addEventListener("online", () => {
-        if (statusBadge) statusBadge.textContent = "Online • Synced";
+        if (statusBadge) setSyncStatus("synced", "Synced");
         flushDirtyChanges();
         if (!eventSource || eventSource.readyState === EventSource.CLOSED) {
             connectLiveStream();
@@ -687,4 +687,12 @@ document.addEventListener("DOMContentLoaded", () => {
     refreshListVisibility();
     saveLocalSnapshot();
     flushDirtyChanges();
+
+    const initialQuestionedRow = document.querySelector(".recipe-ingredient-row.is-questioned-row");
+    if (initialQuestionedRow && questionBanner && questionBannerText) {
+        const itemName = initialQuestionedRow.querySelector(".ingredient-name")?.textContent?.trim() || "Item";
+        pendingQuestionItemId = initialQuestionedRow.dataset.itemId;
+        questionBannerText.textContent = `❓ ${itemName}: "Do we have this already?"`;
+        questionBanner.classList.remove("hide-cell");
+    }
 });
