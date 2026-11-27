@@ -102,9 +102,7 @@ public class ShoppingListController {
 
         boolean canEdit = canUserEditList(shoppingList, user);
         boolean isOwner = shoppingList.getOwner().getUserId().equals(user.getUserId());
-
-        boolean canAccess = canEdit || (shoppingList.getMealPlan() != null
-                && mealPlanService.canUserView(shoppingList.getMealPlan(), user));
+        boolean canAccess = canUserAccessList(shoppingList, user);
 
         boolean hasDirectShares = shoppingList.getShares() != null && !shoppingList.getShares().isEmpty();
         boolean hasPlanShares = shoppingList.getMealPlan() != null

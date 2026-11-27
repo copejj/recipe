@@ -145,6 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
             removeForm.classList.toggle("hide-cell", isChecked || isHidden);
         }
     }
+
     function applyRowVisuals(checkbox) {
         const row = checkbox.closest(".recipe-ingredient-row");
         const textSpan = row ? row.querySelector(".shopping-item-text") : null;
@@ -209,6 +210,41 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    function syncQuestionBannerState(resolvedItemId = null) {
+        if (!questionBanner) return;
+
+        if (resolvedItemId && String(pendingQuestionItemId) === String(resolvedItemId)) {
+            pendingQuestionItemId = null;
+        }
+
+        if (pendingQuestionItemId) {
+            const currentRow = document.querySelector(`.recipe-ingredient-row[data-item-id="${pendingQuestionItemId}"]`);
+            const currentCb = currentRow ? currentRow.querySelector(".shopping-item-checkbox") : null;
+            const stillActive = currentRow
+                && currentRow.classList.contains("is-questioned-row")
+                && !(currentCb && currentCb.checked)
+                && currentRow.dataset.hidden !== "true";
+
+            if (stillActive) return;
+            pendingQuestionItemId = null;
+        }
+
+        const nextQuestionedRow = Array.from(document.querySelectorAll(".recipe-ingredient-row.is-questioned-row"))
+            .find((r) => {
+                const cb = r.querySelector(".shopping-item-checkbox");
+                return !(cb && cb.checked) && r.dataset.hidden !== "true";
+            });
+
+        if (nextQuestionedRow && questionBannerText) {
+            const itemName = nextQuestionedRow.querySelector(".ingredient-name")?.textContent?.trim() || "Item";
+            pendingQuestionItemId = nextQuestionedRow.dataset.itemId;
+            questionBannerText.textContent = `❓ ${itemName}: "Do we have this already?"`;
+            questionBanner.classList.remove("hide-cell");
+        } else {
+            pendingQuestionItemId = null;
+            questionBanner.classList.add("hide-cell");
+        }
+    }
     function restoreOfflineChanges() {
         const dirty = getDirtyMap();
         const dirtyIds = Object.keys(dirty);
@@ -227,7 +263,6 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             setSyncStatus("offline", "Offline");
         }
-
     }
 
     function updateShowAllButtonUI() {
@@ -307,7 +342,6 @@ document.addEventListener("DOMContentLoaded", () => {
         row.scrollIntoView({ behavior: "smooth", block: "center" });
         applyQuestionVisuals(row, true, true);
     }
-
     // --- 3. SERVER SYNC & SSE STREAM ---
     async function syncToggleToServer(itemId, desiredChecked) {
         if (!navigator.onLine) {
@@ -330,6 +364,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 setItemDirty(itemId, desiredChecked, false);
                 const row = document.querySelector(`.recipe-ingredient-row[data-item-id="${itemId}"]`);
                 applyQuestionVisuals(row, Boolean(data.isQuestioned), false);
+                if (!data.isQuestioned) {
+                    syncQuestionBannerState(itemId);
+                }
                 if (statusBadge) setSyncStatus("synced", "Synced");
             } else {
                 setItemDirty(itemId, desiredChecked, true);
@@ -349,9 +386,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const nextState = btn ? !btn.classList.contains("is-active") : true;
 
         applyQuestionVisuals(row, nextState, false, !nextState);
-        if (!nextState && String(pendingQuestionItemId) === String(itemId) && questionBanner) {
-            questionBanner.classList.add("hide-cell");
+        if (nextState) {
+            pendingQuestionItemId = itemId;
         }
+        syncQuestionBannerState(!nextState ? itemId : null);
 
         isSavingLocalChange = true;
         if (statusBadge) setSyncStatus("saving", "Saving...");
@@ -364,11 +402,16 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             if (res.ok) {
                 const data = await res.json();
-                applyQuestionVisuals(row, Boolean(data.isQuestioned), false);
+                const confirmedState = Boolean(data.isQuestioned);
+                applyQuestionVisuals(row, confirmedState, false);
+                if (confirmedState) {
+                    pendingQuestionItemId = itemId;
+                }
+                syncQuestionBannerState(!confirmedState ? itemId : null);
                 if (statusBadge) setSyncStatus("synced", "Synced");
             }
         } catch (e) {
-            if (statusBadge) setSyncStatus("offline", "Offline"); 
+            if (statusBadge) setSyncStatus("offline", "Offline");
         } finally {
             isSavingLocalChange = false;
         }
@@ -379,7 +422,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const nextHidden = row ? row.dataset.hidden !== "true" : true;
 
         applyHiddenVisuals(row, nextHidden);
-        if (nextHidden) applyQuestionVisuals(row, false, false);
+        if (nextHidden) {
+            applyQuestionVisuals(row, false, false);
+            syncQuestionBannerState(itemId);
+        }
         refreshListVisibility();
 
         isSavingLocalChange = true;
@@ -393,7 +439,12 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             if (res.ok) {
                 const data = await res.json();
-                applyHiddenVisuals(row, Boolean(data.isHidden));
+                const confirmedHidden = Boolean(data.isHidden);
+                applyHiddenVisuals(row, confirmedHidden);
+                if (confirmedHidden) {
+                    applyQuestionVisuals(row, false, false);
+                    syncQuestionBannerState(itemId);
+                }
                 refreshListVisibility();
                 if (statusBadge) setSyncStatus("synced", "Synced");
             }
@@ -403,6 +454,7 @@ document.addEventListener("DOMContentLoaded", () => {
             isSavingLocalChange = false;
         }
     }
+
     async function flushDirtyChanges() {
         if (!navigator.onLine) return;
         const dirty = getDirtyMap();
@@ -461,11 +513,11 @@ document.addEventListener("DOMContentLoaded", () => {
             if (changed) {
                 saveLocalSnapshot();
                 refreshListVisibility();
+                syncQuestionBannerState();
                 if (statusBadge) setSyncStatus("synced", "Synced");
             }
         } catch (e) { /* Ignore transient errors */ }
     }
-
     function connectLiveStream() {
         if (eventSource) {
             eventSource.close();
@@ -501,6 +553,12 @@ document.addEventListener("DOMContentLoaded", () => {
             applyRowVisuals(cb);
             if (typeof remoteItem.questioned === "boolean") {
                 applyQuestionVisuals(row, remoteItem.questioned, false);
+                if (!remoteItem.questioned) {
+                    syncQuestionBannerState(remoteItem.id);
+                }
+            } else if (cb.checked) {
+                applyQuestionVisuals(row, false, false);
+                syncQuestionBannerState(remoteItem.id);
             }
             saveLocalSnapshot();
             refreshListVisibility();
@@ -521,8 +579,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 pendingQuestionItemId = payload.id;
                 questionBannerText.textContent = `❓ ${payload.name}: "Do we have this already?"`;
                 questionBanner.classList.remove("hide-cell");
-            } else if (!isQuestioned && String(pendingQuestionItemId) === String(payload.id) && questionBanner) {
-                questionBanner.classList.add("hide-cell");
+            } else if (!isQuestioned) {
+                syncQuestionBannerState(payload.id);
             }
             if (statusBadge) setSyncStatus("synced", "Synced");
         });
@@ -533,7 +591,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const row = document.querySelector(`.recipe-ingredient-row[data-item-id="${payload.id}"]`);
             if (!row) return;
 
-            applyHiddenVisuals(row, Boolean(payload.hidden));
+            const isHidden = Boolean(payload.hidden);
+            applyHiddenVisuals(row, isHidden);
+            if (isHidden) {
+                applyQuestionVisuals(row, false, false);
+                syncQuestionBannerState(payload.id);
+            }
             refreshListVisibility();
             if (statusBadge) setSyncStatus("synced", "Synced");
         });
@@ -592,14 +655,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             clearAllDeleteConfirmations();
-            const isManual = confirmBtn.dataset.manual === "true";
-            if (!isManual) {
-                event.preventDefault();
-                syncHiddenToServer(confirmBtn.dataset.itemId);
-            } else if (removeTrigger.classList.contains("js-confirm-bubble")) {
-                event.preventDefault();
-                wrap.requestSubmit();
-            }
+            event.preventDefault();
+            syncHiddenToServer(confirmBtn.dataset.itemId);
             return;
         }
 
@@ -640,7 +697,6 @@ document.addEventListener("DOMContentLoaded", () => {
         setSyncStatus("offline", "Offline");
     }
 
-
     document.querySelectorAll(".shopping-item-checkbox").forEach((cb) => {
         applyRowVisuals(cb);
         cb.addEventListener("change", () => {
@@ -649,6 +705,7 @@ document.addEventListener("DOMContentLoaded", () => {
             applyRowVisuals(cb);
             if (cb.checked) {
                 applyQuestionVisuals(row, false, false, false);
+                syncQuestionBannerState(cb.dataset.itemId);
             }
             refreshListVisibility();
             saveLocalSnapshot();
@@ -687,12 +744,5 @@ document.addEventListener("DOMContentLoaded", () => {
     refreshListVisibility();
     saveLocalSnapshot();
     flushDirtyChanges();
-
-    const initialQuestionedRow = document.querySelector(".recipe-ingredient-row.is-questioned-row");
-    if (initialQuestionedRow && questionBanner && questionBannerText) {
-        const itemName = initialQuestionedRow.querySelector(".ingredient-name")?.textContent?.trim() || "Item";
-        pendingQuestionItemId = initialQuestionedRow.dataset.itemId;
-        questionBannerText.textContent = `❓ ${itemName}: "Do we have this already?"`;
-        questionBanner.classList.remove("hide-cell");
-    }
+    syncQuestionBannerState();
 });
