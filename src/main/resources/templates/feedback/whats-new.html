@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
+
+<head>
+    <title>What's New</title>
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" th:href="@{/css/feedback.css}" />
+    </th:block>
+</head>
+
+<body>
+    <div layout:fragment="page-title">What's New in the Kitchen</div>
+    <p layout:fragment="page-subtitle">Recent features, improvements, and bug fixes for Brain Dribbler Recipes.</p>
+
+    <div layout:fragment="action-tray" class="action-tray sticky-stack-item">
+        <a th:href="@{/}" class="btn btn-secondary">← Home</a>
+        <a th:href="@{/feedback(from='/whats-new')}" class="btn btn-action btn-action--primary">
+            Suggest a Feature
+        </a>
+    </div>
+
+    <main layout:fragment="content" id="whatsNewFeed" th:data-latest-changelog-id="${latestChangelogId}">
+        <div th:if="${entries == null || entries.isEmpty()}" class="alert alert--info">
+            No release notes have been posted yet. Check back soon!
+        </div>
+
+        <div class="changelog-timeline" th:if="${entries != null && !entries.isEmpty()}">
+            <article th:each="entry : ${entries}" class="changelog-card">
+                <div class="changelog-card-header">
+                    <div class="changelog-badges">
+                        <span class="changelog-badge"
+                              th:classappend="'changelog-badge--' + ${#strings.toLowerCase(entry.category)}"
+                              th:text="${entry.category == 'NEW' ? 'New Feature' : (entry.category == 'IMPROVED' ? 'Improvement' : 'Bug Fix')}">
+                            New Feature
+                        </span>
+                        <span th:if="${entry.versionTag != null && !entry.versionTag.isBlank()}"
+                              class="changelog-version"
+                              th:text="${entry.versionTag}">v1.2.0</span>
+                    </div>
+                    <time class="changelog-date"
+                          th:datetime="${entry.publishedDate}"
+                          th:text="${#temporals.format(entry.publishedDate, 'MM/dd/yyyy')}">
+                        11/28/2026
+                    </time>
+                </div>
+
+                <h3 class="changelog-title" th:text="${entry.title}">Feature Title</h3>
+                <p class="changelog-summary" th:text="${entry.summary}">Summary description...</p>
+            </article>
+        </div>
+    </main>
+</body>
+</html>

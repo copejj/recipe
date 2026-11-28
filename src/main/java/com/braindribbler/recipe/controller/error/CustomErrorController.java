@@ -1,31 +1,39 @@
 package com.braindribbler.recipe.controller.error;
 
+import com.braindribbler.recipe.domain.auth.User;
+import com.braindribbler.recipe.domain.feedback.ErrorLog;
+import com.braindribbler.recipe.security.RecipeUserDetails;
+import com.braindribbler.recipe.service.feedback.FeedbackAndChangelogService;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.boot.webmvc.error.ErrorController;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import jakarta.servlet.RequestDispatcher;
-import jakarta.servlet.http.HttpServletRequest;
-
 @Controller
 public class CustomErrorController implements ErrorController {
 
-    @RequestMapping("/error")
-    public String handleError(HttpServletRequest request, Model model) {
-        // Extract the physical HTTP status code (e.g., 404, 500, 403) from the server
-        // servlet context
-        Object status = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
+    private final FeedbackAndChangelogService feedbackService;
 
+    public CustomErrorController(FeedbackAndChangelogService feedbackService) {
+        this.feedbackService = feedbackService;
+    }
+
+    @RequestMapping("/error")
+    public String handleError(HttpServletRequest request, Authentication authentication, Model model) {
+        Object status = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
+        Throwable throwable = (Throwable) request.getAttribute(RequestDispatcher.ERROR_EXCEPTION);
+        String failedUri = FeedbackAndChangelogService.extractOriginalUri(request);
+
+        int statusCode = 500;
         String errorTitle = "Unexpected Error";
         String errorMessage = "An error occurred while processing your request. Please try again later.";
-        String errorCode = "500";
 
         if (status != null) {
-            int statusCode = Integer.parseInt(status.toString());
-            errorCode = String.valueOf(statusCode);
-
+            statusCode = Integer.parseInt(status.toString());
             if (statusCode == HttpStatus.NOT_FOUND.value()) {
                 errorTitle = "Page Not Found";
                 errorMessage = "The recipe, page, or portal you are looking for doesn't exist or has been moved.";
@@ -38,11 +46,20 @@ public class CustomErrorController implements ErrorController {
             }
         }
 
-        // Bind data parameters cleanly back to your Thymeleaf template layout
+        User user = null;
+        if (authentication != null && authentication.getPrincipal() instanceof RecipeUserDetails details) {
+            user = details.getUserProfile();
+        }
+
+        ErrorLog logged = feedbackService.recordErrorEvent(
+                statusCode, failedUri, request.getMethod(), throwable, user, request.getHeader("User-Agent"));
+
+        model.addAttribute("errorCode", String.valueOf(statusCode));
         model.addAttribute("errorTitle", errorTitle);
         model.addAttribute("errorMessage", errorMessage);
-        model.addAttribute("errorCode", errorCode);
+        model.addAttribute("failedUri", failedUri);
+        model.addAttribute("errorRef", logged != null ? logged.getReferenceCode() : null);
 
-        return "error"; // Points directly to templates/error.html
+        return "error";
     }
 }

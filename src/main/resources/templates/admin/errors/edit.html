@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
+<head>
+    <title th:text="'Error ' + ${errorLog.referenceCode}">Error Details</title>
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" type="text/css" th:href="@{/css/admin/users-edit.css}" />
+        <link rel="stylesheet" type="text/css" th:href="@{/css/feedback.css}" />
+    </th:block>
+</head>
+
+<body>
+    <div layout:fragment="page-title" th:text="'Error Log: ' + ${errorLog.referenceCode}">Error Log</div>
+    <p layout:fragment="page-subtitle"
+       th:text="'HTTP ' + ${errorLog.statusCode} + ' captured on ' + ${#temporals.format(errorLog.createdAt, 'MM/dd/yyyy')}">
+        Error details
+    </p>
+
+    <div layout:fragment="action-tray" class="action-tray sticky-stack-item">
+        <a th:href="@{/admin/errors}" class="btn btn-secondary">← Error Logs</a>
+    </div>
+
+    <main layout:fragment="content">
+        <div class="workspace-form">
+            <div class="form-panel-main">
+                <h3 class="panel-section-title">Exception Summary</h3>
+
+                <div class="form-field-group">
+                    <label class="form-label">Exception Class</label>
+                    <div class="feedback-detail-box" th:text="${errorLog.exceptionClass} ?: 'None (HTTP Status Response)'">
+                        Exception
+                    </div>
+                </div>
+
+                <div class="form-field-group">
+                    <label class="form-label">Exception Message</label>
+                    <div class="feedback-detail-box" th:text="${errorLog.exceptionMessage} ?: 'No message recorded.'">
+                        Message
+                    </div>
+                </div>
+
+                <form th:action="@{/admin/errors/delete/{id}(id=${errorLog.errorLogId})}" method="post" class="feedback-detail-delete-form">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit"
+                            class="btn btn-action btn-action--delete"
+                            data-confirm="Delete this error log entry?">
+                        Delete Error Log
+                    </button>
+                </form>
+            </div>
+
+            <div class="form-panel-docs">
+                <h3>Request Metadata</h3>
+                <table class="user-stats-table">
+                    <tbody>
+                        <tr>
+                            <th>Reference ID</th>
+                            <td><strong th:text="${errorLog.referenceCode}">ERR-000000</strong></td>
+                        </tr>
+                        <tr>
+                            <th>HTTP Status</th>
+                            <td th:text="${errorLog.statusCode}">500</td>
+                        </tr>
+                        <tr>
+                            <th>Method</th>
+                            <td th:text="${errorLog.httpMethod} ?: 'GET'">GET</td>
+                        </tr>
+                        <tr>
+                            <th>Request URI</th>
+                            <td class="text-break"><code th:text="${errorLog.requestUri} ?: '/'">/</code></td>
+                        </tr>
+                        <tr>
+                            <th>User</th>
+                            <td th:text="${errorLog.user != null ? errorLog.user.displayName : 'Guest'}">Guest</td>
+                        </tr>
+                        <tr>
+                            <th>Occurred On</th>
+                            <td th:text="${#temporals.format(errorLog.createdAt, 'MM/dd/yyyy')}">11/27/2026</td>
+                        </tr>
+                        <tr th:if="${errorLog.userAgent != null}">
+                            <th>User Agent</th>
+                            <td class="text-break" th:text="${errorLog.userAgent}">Browser</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:if="${errorLog.stackTrace != null}" class="form-panel-stats">
+                <h3>Stack Trace</h3>
+                <pre class="debug-stacktrace" th:text="${errorLog.stackTrace}"></pre>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

@@ -17,6 +17,7 @@
     <link rel="icon" type="image/png" sizes="32x32" th:href="@{/favicon-32x32.png}">
     <link rel="icon" type="image/png" sizes="16x16" th:href="@{/favicon-16x16.png}">
     <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <link rel="stylesheet" type="text/css" th:href="@{/css/feedback.css}" />
 
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
@@ -55,7 +56,6 @@
         <meta name="twitter:image" th:content="${apiHost} + '/images/hero-watercolor-og.jpg'" />
     </th:block>
 </head>
-
 <body>
     <div class="full-page-content">
         
@@ -100,10 +100,7 @@
                 <!-- Standardized Dynamic Page Header Banner -->
                 <div class="admin-header-flex" th:classappend="${isHeaderless} ? 'hide-cell' : ''">
                     <div class="header-text-group">
-                        <!-- The layout engine replaces this entire h1 block with your custom child div -->
                         <h1 class="page-title" layout:fragment="page-title"></h1>
-                        
-                        <!-- The layout engine replaces this p element with your child page subtitle -->
                         <p class="page-subtitle" layout:fragment="page-subtitle"></p>
                     </div>
                     
@@ -116,9 +113,12 @@
                     <div layout:fragment="action-tray" class="action-tray"></div>
                 </div>
 
-
                 <!-- Header Grid / Toolbar Slot -->
                 <th:block layout:fragment="header-grid"></th:block>
+
+                <!-- Global Feedback Submission Alerts -->
+                <div th:if="${feedbackSuccessMessage}" class="alert alert--success" th:text="${feedbackSuccessMessage}"></div>
+                <div th:if="${feedbackErrorMessage}" class="alert alert--danger" th:text="${feedbackErrorMessage}"></div>
 
                 <!-- Primary Content Fragment Hook (Where the unique body card markup mounts) -->
                 <main layout:fragment="content"></main>
@@ -130,7 +130,7 @@
         </div>
 
         <!-- Unified Sticky Footer Layout floor -->
-        <footer class="recipe-footer">
+        <footer class="recipe-footer" id="globalFooter" th:data-latest-changelog-id="${latestChangelogId}">
             <div class="footer-container">
                 <p>&copy; <span th:text="${#temporals.year(#temporals.createNow())}">2026</span>
                     Brain Dribbler Recipes. All rights reserved.
@@ -141,6 +141,7 @@
             </p>
         </footer>
     </div>
+
     <th:block layout:fragment="page_scripts"></th:block>
 </body>
 </html>

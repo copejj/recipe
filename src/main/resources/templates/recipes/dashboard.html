@@ -144,6 +144,29 @@
                 </div>
             </div>
         </th:block>
+
+        <!-- SECTION 4: KITCHEN UPDATES & FEEDBACK -->
+        <h2>Kitchen Updates &amp; Feedback</h2>
+        <div class="status-grid">
+            <div class="status-item clickable-card js-whats-new-card">
+                <span class="status-icon">✨</span>
+                <div class="status-info">
+                    <span class="status-value">What's New?</span>
+                    <small class="plan-card-meta">Recent features &amp; fixes</small>
+                    <a th:href="@{/whats-new}"
+                       class="status-link stretched-link">View Release Notes →</a>
+                </div>
+            </div>
+
+            <div class="status-item clickable-card">
+                <span class="status-icon">💡</span>
+                <div class="status-info">
+                    <span class="status-value">Suggestion Box</span>
+                    <small class="plan-card-meta">Share an idea or report a bug</small>
+                    <a th:href="@{/feedback}" class="status-link stretched-link">Send Feedback →</a>
+                </div>
+            </div>
+        </div>
     </main>
 </body>
 </html>
