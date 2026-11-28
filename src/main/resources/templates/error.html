@@ -1,57 +1,76 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz"
+<html xmlns:th="http://thymeleaf.org"
+      xmlns:sec="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
       layout:decorate="~{fragments/layout}"
       lang="en">
 
 <head>
     <title>Whoops</title>
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" th:href="@{/css/feedback.css}" />
+    </th:block>
 </head>
 <body>
     <div layout:fragment="page-title">Something Went Wrong</div>
     <p layout:fragment="page-subtitle">Our recipe engine encountered an unexpected kitchen error.</p>
-    <main layout:fragment="content" class="page-card page-card--error" 
+    <main layout:fragment="content" class="page-card page-card--error"
           th:classappend="${showTechnicalDetails} ? 'other-layout' : 'auth-layout'">
 
-        <!-- Real Dynamic Details are rendered inside the body card container via safe ternary check wrappers -->
-        <div style="background: #fdfbfc; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; border: 1px solid #e7e5e4;">
-            <div class="error-code" style="font-size: 3.5rem; font-weight: 800; color: #d97706; line-height: 1;"
-                 th:text="${status} ? ${status} : 'Error'">500</div>
-                 
-            <h2 style="margin: 1rem 0 0.5rem 0; font-size: 1.5rem; color: #292524;" 
-                th:text="${error} ? ${error} : 'Unexpected Exception'">Unexpected Error</h2>
-                
-            <p style="margin: 0; color: #78716c;" 
-               th:text="${message} ? ${message} : 'An error occurred while processing your request.'">
-               An error occurred while processing your request.
+        <div class="error-summary-box">
+            <div class="error-code" th:text="${errorCode} ?: '500'">500</div>
+            <h2 class="error-heading" th:text="${errorTitle} ?: 'Unexpected Error'">Unexpected Error</h2>
+            <p class="error-description" th:text="${errorMessage} ?: 'An error occurred while processing your request.'">
+                An error occurred while processing your request.
             </p>
+            <div th:if="${errorRef != null}" class="error-ref-badge">
+                Reference ID: <strong th:text="${errorRef}">ERR-000000</strong>
+            </div>
         </div>
 
-        <!-- Dynamic Action Navigation Buttons -->
-        <div class="error-actions" style="margin: 1.5rem 0;">
-            <a th:href="@{/}" class="btn btn--primary btn--error-home" style="width: auto; padding: 10px 24px;">Return to Kitchen Home</a>
+        <div class="error-actions">
+            <a th:href="@{/}" class="btn btn--primary btn--error-home">Return to Kitchen Home</a>
         </div>
 
-        <!-- Admin/Developer Debug Dashboard Fragment mapped to native alerts -->
-        <div th:if="${showTechnicalDetails}" class="admin-debug-panel alert alert--danger" style="text-align: left; margin-top: 2rem;">
+        <!-- Inline Error Report Box (Authenticated Users Only) -->
+        <section sec:authorize="isAuthenticated()" class="error-report-card" aria-labelledby="errorReportHeading">
+            <h3 id="errorReportHeading" class="error-report-title">Help Us Fix This</h3>
+            <p class="error-report-subtitle">
+                Tell us what you were doing when this happened. Your diagnostic reference is already attached.
+            </p>
 
-            <h4 class="debug-header" style="margin-top: 0; border-bottom: 1px solid var(--color-danger-text); padding-bottom: 0.5rem;">
+            <form th:action="@{/feedback/submit}" method="post" class="error-report-form">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <input type="hidden" name="feedbackType" value="ERROR_REPORT" />
+                <input type="hidden" name="errorRef" th:value="${errorRef}" />
+                <input type="hidden" name="pageUrl" th:value="${failedUri}" />
+                <input type="hidden" name="subject" th:value="'HTTP ' + (${errorCode} ?: 'Error') + ' on ' + (${failedUri} ?: 'unknown page')" />
+
+                <div class="form-group">
+                    <label for="errorReportDesc" class="form-label">What were you trying to do?</label>
+                    <textarea id="errorReportDesc" name="description" rows="3" maxlength="4000" required
+                              class="form-input"
+                              placeholder="e.g., I clicked 'Generate Shopping List' from my weekly meal plan..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn--primary">Send Error Report</button>
+            </form>
+        </section>
+
+        <!-- Admin/Developer Debug Dashboard -->
+        <div th:if="${showTechnicalDetails}" class="admin-debug-panel alert alert--danger">
+            <h4 class="debug-header">
                 <span>🔒 Admin Debug Dashboard</span>
-                <span class="badge-debug-status" style="font-size: 0.8rem; background: var(--color-danger-text); color: #fff; padding: 2px 6px; border-radius: 3px;">can_view_errors active</span>
+                <span class="badge-debug-status">can_view_errors active</span>
             </h4>
 
-            <!-- NATIVE ACCORDION CONTEXT TOGGLE -->
-            <details class="debug-accordion" style="cursor: pointer; margin-top: 1rem;">
-                <summary class="debug-summary" style="font-weight: bold; padding: 0.5rem 0; outline: none; user-select: none;">
+            <details class="debug-accordion">
+                <summary class="debug-summary">
                     ▶ Click to toggle Terminal Console Stack Trace Dump
                 </summary>
-
-                <!-- THE SCROLLABLE FRAME -->
-                <pre class="debug-stacktrace" th:text="${trace} ? ${trace} : ${stackTrace}"
-                     style="display: block; max-height: 250px; overflow: auto; background-color: #292524; color: #f5f5f4; padding: 1rem; border-radius: 6px; font-size: 0.85rem; line-height: 1.4rem; white-space: pre; font-family: monospace; text-align: left;"></pre>
+                <pre class="debug-stacktrace" th:text="${trace} ?: ${stackTrace}"></pre>
             </details>
         </div>
     </main>
 </body>
 </html>
-

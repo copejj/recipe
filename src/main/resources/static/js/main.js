@@ -18,6 +18,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 5. Initialize dismissible dashboard broadcast messages
     initDismissibleDashboardMessages();
+
+    // 6. Initialize feedback modal context & What's New unread indicator
+    initFeedbackAndChangelog();
 });
 
 function initDismissibleDashboardMessages() {
@@ -244,6 +247,86 @@ function initSmartBackLinks() {
         });
     } catch (e) {
         // Keep default fallback href/label if referrer URL is malformed
+    }
+}
+
+function initFeedbackAndChangelog() {
+    // 1. Populate current page URL whenever the global feedback modal opens
+    document.addEventListener("click", (event) => {
+        const trigger = event.target.closest("[data-open-modal='globalFeedbackModal']");
+        if (!trigger) return;
+
+        const pageUrlInput = document.getElementById("feedbackPageUrl");
+        if (pageUrlInput) {
+            pageUrlInput.value = window.location.pathname + window.location.search;
+        }
+        const typeSelect = document.getElementById("feedbackTypeSelect");
+        if (typeSelect && trigger.dataset.feedbackDefault) {
+            typeSelect.value = trigger.dataset.feedbackDefault;
+        }
+    });
+
+    // 2. Unread "What's New" indicator via localStorage
+    const seenKey = "bd_last_seen_changelog_id";
+    const feedEl = document.getElementById("whatsNewFeed");
+    const footerEl = document.getElementById("globalFooter");
+    const latestId = parseInt(
+        (feedEl?.dataset.latestChangelogId || footerEl?.dataset.latestChangelogId || "0"),
+        10
+    );
+
+    if (feedEl && latestId > 0) {
+        try {
+            localStorage.setItem(seenKey, String(latestId));
+        } catch (e) { /* Ignore storage errors */ }
+    } else if (latestId > 0) {
+        let lastSeen = 0;
+        try {
+            lastSeen = parseInt(localStorage.getItem(seenKey) || "0", 10);
+        } catch (e) { /* Ignore storage errors */ }
+
+        if (latestId > lastSeen) {
+            document.querySelectorAll(".js-whats-new-card, a[href$='/whats-new']").forEach((el) => {
+                el.classList.add("has-unread-update");
+            });
+        }
+    }
+
+    // 3. Admin "What's New" inline edit button loader
+    document.addEventListener("click", (event) => {
+        const editBtn = event.target.closest(".js-edit-changelog-btn");
+        if (!editBtn) return;
+
+        const form = document.getElementById("changelogEditorForm");
+        if (!form) return;
+
+        document.getElementById("editChangelogId").value = editBtn.dataset.id || "";
+        document.getElementById("changelogTitle").value = editBtn.dataset.title || "";
+        document.getElementById("changelogSummary").value = editBtn.dataset.summary || "";
+        document.getElementById("changelogCategory").value = editBtn.dataset.category || "NEW";
+        document.getElementById("changelogVersion").value = editBtn.dataset.version || "";
+        document.getElementById("changelogDate").value = editBtn.dataset.date || "";
+        document.getElementById("changelogPublished").checked = editBtn.dataset.published === "true";
+
+        const heading = document.getElementById("changelogFormHeading");
+        if (heading) heading.textContent = "Edit Update #" + editBtn.dataset.id;
+
+        const resetBtn = document.getElementById("resetChangelogFormBtn");
+        if (resetBtn) resetBtn.classList.remove("hide-cell");
+
+        form.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    const resetBtn = document.getElementById("resetChangelogFormBtn");
+    if (resetBtn) {
+        resetBtn.addEventListener("click", () => {
+            const form = document.getElementById("changelogEditorForm");
+            if (form) form.reset();
+            document.getElementById("editChangelogId").value = "";
+            const heading = document.getElementById("changelogFormHeading");
+            if (heading) heading.textContent = "Post a New Update";
+            resetBtn.classList.add("hide-cell");
+        });
     }
 }
 

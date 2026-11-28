@@ -1,0 +1,347 @@
+/* Error Page Layout & Report Card */
+.error-summary-box {
+    background: #fdfbfc;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #e7e5e4;
+}
+
+.error-code {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: #d97706;
+    line-height: 1;
+}
+
+.error-heading {
+    margin: 1rem 0 0.5rem 0;
+    font-size: 1.5rem;
+    color: #292524;
+}
+
+.error-description {
+    margin: 0;
+    color: #78716c;
+}
+
+.error-ref-badge {
+    display: inline-block;
+    margin-top: 0.85rem;
+    padding: 4px 10px;
+    background: #fef3c7;
+    border: 1px solid #fde68a;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    color: #92400e;
+}
+
+.error-actions {
+    margin: 1.25rem 0;
+}
+
+.btn--error-home {
+    width: auto;
+    padding: 10px 24px;
+}
+
+.error-report-card {
+    margin-top: 1.5rem;
+    padding: 1.25rem 1.5rem;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    text-align: left;
+}
+
+.error-report-title {
+    margin: 0 0 0.35rem 0;
+    font-size: 1.1rem;
+    color: #0f172a;
+}
+
+.error-report-subtitle {
+    margin: 0 0 1rem 0;
+    font-size: 0.9rem;
+    color: #475569;
+}
+
+.admin-debug-panel {
+    text-align: left;
+    margin-top: 2rem;
+}
+
+.debug-header {
+    margin-top: 0;
+    border-bottom: 1px solid var(--color-danger-text);
+    padding-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.badge-debug-status {
+    font-size: 0.8rem;
+    background: var(--color-danger-text);
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+.debug-accordion {
+    cursor: pointer;
+    margin-top: 1rem;
+}
+
+.debug-summary {
+    font-weight: bold;
+    padding: 0.5rem 0;
+    outline: none;
+    user-select: none;
+}
+
+.debug-stacktrace {
+    display: block;
+    max-height: 250px;
+    overflow: auto;
+    background-color: #292524;
+    color: #f5f5f4;
+    padding: 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    line-height: 1.4rem;
+    white-space: pre;
+    font-family: monospace;
+    text-align: left;
+}
+
+/* Dashboard Card Unread Indicator */
+.js-whats-new-card.has-unread-update {
+    position: relative;
+    border-color: #f59e0b;
+    background-color: #fffbeb;
+}
+
+.js-whats-new-card.has-unread-update::after {
+    content: "NEW";
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    background: #ef4444;
+    color: #ffffff;
+    padding: 2px 7px;
+    border-radius: 999px;
+}
+
+/* What's New Timeline */
+.changelog-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.changelog-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+}
+
+.changelog-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.65rem;
+}
+
+.changelog-badges {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.changelog-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 999px;
+}
+
+.changelog-badge--new {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.changelog-badge--improved {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.changelog-badge--fixed {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.changelog-version {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.changelog-date {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.changelog-title {
+    margin: 0 0 0.4rem 0;
+    font-size: 1.15rem;
+    color: #0f172a;
+}
+
+.changelog-summary {
+    margin: 0;
+    color: #334155;
+    line-height: 1.55;
+    white-space: pre-line;
+}
+
+/* Admin Triage & Changelog Editor */
+.changelog-editor-card {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.changelog-editor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.checkbox-inline-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.feedback-type-pill,
+.feedback-status-pill {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+.feedback-type-pill--bug,
+.feedback-type-pill--error_report {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.feedback-type-pill--suggestion {
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+.feedback-status-pill--open {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.feedback-status-pill--in_progress {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.feedback-status-pill--resolved {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.feedback-status-pill--dismissed {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.feedback-desc-text {
+    margin: 0.35rem 0;
+    white-space: pre-line;
+}
+
+.feedback-meta-line {
+    display: block;
+    color: #64748b;
+    font-size: 0.8rem;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.feedback-triage-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 0.4rem;
+}
+
+.feedback-delete-form {
+    margin: 0;
+}
+
+.card-trigger-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+    text-align: left;
+}
+
+/* Feedback Detail Workspace Additions */
+.feedback-detail-box {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 1rem;
+    color: #0f172a;
+    line-height: 1.55;
+    white-space: pre-line;
+}
+
+.feedback-detail-delete-form {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.feedback-linked-error-box {
+    margin-top: 1rem;
+    padding: 0.85rem;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.feedback-linked-error-box h4 {
+    margin: 0 0 0.4rem 0;
+    font-size: 0.9rem;
+    color: #991b1b;
+}

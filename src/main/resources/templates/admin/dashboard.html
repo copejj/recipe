@@ -98,11 +98,11 @@
                 </div>
             </div>
         </div>
-        <div sec:authorize="hasAnyAuthority('can_manage_migrations', 'can_view_audit_logs')">
+                <div sec:authorize="hasAnyAuthority('can_manage_migrations', 'can_view_audit_logs', 'can_view_errors', 'can_manage_messages')">
             <h2>Site Management</h2>
             <div class="status-grid">
                 <div class="status-item clickable-card" sec:authorize="hasAuthority('can_view_audit_logs')">
-                    <span class="status-icon">🕒️</span>
+                    <span class="status-icon">🕒</span>
                     <div class="status-info">
                         <span class="status-label">View Login History</span>
                         <span class="status-value"> Login History </span>
@@ -110,7 +110,7 @@
                     </div>
                 </div>
                 <div class="status-item clickable-card" sec:authorize="hasAuthority('can_view_audit_logs')">
-                    <span class="status-icon">⛔️</span>
+                    <span class="status-icon">⛔</span>
                     <div class="status-info">
                         <span class="status-label">Manage Blacklist Registry</span>
                         <span class="status-value"> Blacklist Registry </span>
@@ -118,11 +118,43 @@
                     </div>
                 </div>
                 <div class="status-item clickable-card" sec:authorize="hasAuthority('can_manage_migrations')">
-                    <span class="status-icon">🗄️️</span>
+                    <span class="status-icon">🗄️</span>
                     <div class="status-info">
                         <span class="status-label">View Database Migrations</span>
                         <span class="status-value"> Database Migrations </span>
                         <a th:href="@{/admin/migrations}" class="status-link stretched-link">Migrations List →</a>
+                    </div>
+                </div>
+                <div class="status-item clickable-card"
+                     sec:authorize="hasAuthority('can_view_errors')"
+                     th:classappend="${openFeedbackCount != null && openFeedbackCount > 0} ? 'needs-attention' : ''">
+                    <span class="status-icon">🐛</span>
+                    <div class="status-info">
+                        <span class="status-label">Suggestions &amp; Bug Reports</span>
+                        <span class="status-value">
+                            <span th:text="${openFeedbackCount != null ? openFeedbackCount : 0}">0</span> Open Reports
+                        </span>
+                        <a th:href="@{/admin/feedback}"
+                           class="status-link stretched-link"
+                           th:classappend="${openFeedbackCount != null && openFeedbackCount > 0} ? 'alert-link' : ''">
+                            Review Feedback →
+                        </a>
+                    </div>
+                </div>
+                <div class="status-item clickable-card" sec:authorize="hasAuthority('can_manage_messages')">
+                    <span class="status-icon">✨</span>
+                    <div class="status-info">
+                        <span class="status-label">Release Notes &amp; Updates</span>
+                        <span class="status-value"> What's New </span>
+                        <a th:href="@{/admin/whats-new}" class="status-link stretched-link">Manage What's New →</a>
+                    </div>
+                </div>
+                <div class="status-item clickable-card" sec:authorize="hasAuthority('can_view_errors')">
+                    <span class="status-icon">🚨</span>
+                    <div class="status-info">
+                        <span class="status-label">Captured Exceptions &amp; 404s</span>
+                        <span class="status-value"> System Error Logs </span>
+                        <a th:href="@{/admin/errors}" class="status-link stretched-link">View Error Logs →</a>
                     </div>
                 </div>
             </div>

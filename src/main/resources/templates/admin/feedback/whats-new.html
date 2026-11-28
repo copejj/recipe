@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
+<head>
+    <title>Manage What's New</title>
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" th:href="@{/css/recipes/view.css}" />
+        <link rel="stylesheet" th:href="@{/css/feedback.css}" />
+    </th:block>
+</head>
+
+<body>
+    <div layout:fragment="page-title">Manage What's New</div>
+    <p layout:fragment="page-subtitle">Publish release notes, new features, and fixes for your users.</p>
+
+    <div layout:fragment="action-tray" class="action-tray sticky-stack-item">
+        <a th:href="@{/admin}" class="btn btn-secondary">← Admin Dashboard</a>
+    </div>
+
+    <main layout:fragment="content">
+        <div th:if="${successMessage}" class="alert alert--success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert--danger" th:text="${errorMessage}"></div>
+
+        <!-- New / Edit Entry Form -->
+        <section class="changelog-editor-card">
+            <h3 id="changelogFormHeading">Post a New Update</h3>
+            <form th:action="@{/admin/whats-new/save}" method="post" id="changelogEditorForm">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <input type="hidden" name="changelogId" id="editChangelogId" value="" />
+
+                <div class="changelog-editor-grid">
+                    <div class="form-group">
+                        <label for="changelogTitle" class="form-label">Headline</label>
+                        <input type="text" id="changelogTitle" name="title" maxlength="200" required
+                               class="form-input" placeholder="e.g., Shared Shopping Lists & Real-Time Sync" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="changelogCategory" class="form-label">Category</label>
+                        <select id="changelogCategory" name="category" class="form-input">
+                            <option value="NEW">New Feature</option>
+                            <option value="IMPROVED">Improvement</option>
+                            <option value="FIXED">Bug Fix</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="changelogVersion" class="form-label">Version Tag (Optional)</label>
+                        <input type="text" id="changelogVersion" name="versionTag" maxlength="40"
+                               class="form-input" placeholder="e.g., v1.2.0" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="changelogDate" class="form-label">Release Date</label>
+                        <input type="date" id="changelogDate" name="publishedDate"
+                               th:value="${todayDate}" class="form-input" required />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="changelogSummary" class="form-label">Description</label>
+                    <textarea id="changelogSummary" name="summary" rows="3" maxlength="4000" required
+                              class="form-input"
+                              placeholder="Describe what changed and how users can try it..."></textarea>
+                </div>
+
+                <div class="form-group checkbox-inline-group">
+                    <input type="checkbox" id="changelogPublished" name="isPublished" value="true" checked />
+                    <label for="changelogPublished">Published (visible to all users)</label>
+                </div>
+
+                <div class="form-actions-group">
+                    <button type="submit" class="btn btn--primary">Save Entry</button>
+                    <button type="button" id="resetChangelogFormBtn" class="btn btn--cancel hide-cell">Cancel Edit</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Existing Entries Table -->
+        <div class="admin-table-wrapper">
+            <div th:replace="~{fragments/datatable :: genericTableWithOrder(
+                tableId='changelogAdminTable',
+                dataList=${entries},
+                headerTemplate=~{::clHeaders},
+                rowTemplate=~{::clRow},
+                defaultOrder='[[2, &quot;desc&quot;]]'
+            )}">
+                <th:block th:fragment="clHeaders">
+                    <tr>
+                        <th>Category</th>
+                        <th>Headline</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </th:block>
+
+                <th:block th:fragment="clRow">
+                    <tr>
+                        <td data-label="Category" th:text="${item.category}">NEW</td>
+                        <td data-label="Headline">
+                            <strong th:text="${item.title}">Title</strong>
+                            <span th:if="${item.versionTag != null}" class="changelog-version" th:text="${item.versionTag}">v1.0</span>
+                            <p class="feedback-desc-text" th:text="${item.summary}">Summary</p>
+                        </td>
+                        <td data-label="Date" th:data-order="${item.publishedDate}">
+                            <span th:text="${#temporals.format(item.publishedDate, 'MM/dd/yyyy')}">11/28/2026</span>
+                        </td>
+                        <td data-label="Status">
+                            <span th:if="${item.isPublished}" class="status-text--verified">Published</span>
+                            <span th:unless="${item.isPublished}" class="status-text--pending">Draft</span>
+                        </td>
+                        <td data-label="Actions" class="inline-action-group">
+                            <button type="button"
+                                    class="btn btn-action btn-action--secondary js-edit-changelog-btn"
+                                    th:data-id="${item.changelogId}"
+                                    th:data-title="${item.title}"
+                                    th:data-summary="${item.summary}"
+                                    th:data-category="${item.category}"
+                                    th:data-version="${item.versionTag}"
+                                    th:data-date="${item.publishedDate}"
+                                    th:data-published="${item.isPublished}">
+                                Edit
+                            </button>
+
+                            <form th:action="@{/admin/whats-new/{id}/delete(id=${item.changelogId})}" method="post" class="inline-form-reset">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                <button type="submit"
+                                        class="btn btn-action btn-action--delete"
+                                        data-confirm="Delete this changelog entry?">
+                                    Delete
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </th:block>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

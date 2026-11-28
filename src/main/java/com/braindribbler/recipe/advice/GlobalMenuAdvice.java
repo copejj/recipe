@@ -1,7 +1,7 @@
 package com.braindribbler.recipe.advice;
 
 import com.braindribbler.recipe.domain.auth.MenuItem;
-
+import com.braindribbler.recipe.service.feedback.FeedbackAndChangelogService;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,6 +16,17 @@ import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalMenuAdvice {
+
+    private final FeedbackAndChangelogService feedbackService;
+
+    public GlobalMenuAdvice(FeedbackAndChangelogService feedbackService) {
+        this.feedbackService = feedbackService;
+    }
+
+    @ModelAttribute("latestChangelogId")
+    public Integer addLatestChangelogId() {
+        return feedbackService.getLatestPublishedChangelogId();
+    }
 
     @ModelAttribute("globalMenuItems")
     public List<MenuItem> addGlobalMenuToModel() {
@@ -40,13 +51,14 @@ public class GlobalMenuAdvice {
                     .map(a -> a.getAuthority())
                     .collect(Collectors.toSet());
 
-            // Build completely separate child options for technical System Administration
             boolean hasAdmin = !Collections.disjoint(authorities, Set.of(
                 "can_moderate_recipe_metadata",
                 "can_manage_users",
                 "can_manage_roles",
                 "can_view_audit_logs",
-                "can_manage_migrations"
+                "can_manage_migrations",
+                "can_view_errors",
+                "can_manage_messages"
             ));
 
             if (hasAdmin) {

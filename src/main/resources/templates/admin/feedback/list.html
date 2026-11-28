@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{fragments/layout}"
+      lang="en">
+<head>
+    <title>Feedback &amp; Error Reports</title>
+    <th:block layout:fragment="page_styles">
+        <link rel="stylesheet" th:href="@{/css/recipes/view.css}" />
+        <link rel="stylesheet" th:href="@{/css/feedback.css}" />
+    </th:block>
+</head>
+
+<body>
+    <div layout:fragment="page-title">Feedback &amp; Error Reports</div>
+    <p layout:fragment="page-subtitle" th:text="'Review user suggestions, bug reports, and linked error logs (' + ${openCount} + ' open)'">
+        Review user feedback
+    </p>
+
+    <div layout:fragment="action-tray" class="action-tray sticky-stack-item">
+        <a th:href="@{/admin}" class="btn btn-secondary">← Admin Dashboard</a>
+    </div>
+
+    <main layout:fragment="content">
+        <div th:if="${successMessage}" class="alert alert--success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert--danger" th:text="${errorMessage}"></div>
+
+        <div class="admin-table-wrapper">
+            <div th:replace="~{fragments/datatable :: genericTableWithOrder(
+                tableId='feedbackTable',
+                dataList=${feedbackList},
+                headerTemplate=~{::feedbackHeaders},
+                rowTemplate=~{::feedbackRow},
+                defaultOrder='[[5, &quot;desc&quot;]]'
+            )}">
+                <th:block th:fragment="feedbackHeaders">
+                    <tr>
+                        <th>Action</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Title</th>
+                        <th>Submitted By</th>
+                        <th>Submitted On</th>
+                    </tr>
+                </th:block>
+
+                <th:block th:fragment="feedbackRow">
+                    <tr>
+                        <td data-label="Action">
+                            <a th:replace="~{fragments/actions :: editLink(targetUrl=@{/admin/feedback/edit/{id}(id=${item.feedbackId})})}"></a>
+                        </td>
+                        <td data-label="Type">
+                            <span class="feedback-type-pill"
+                                  th:classappend="'feedback-type-pill--' + ${#strings.toLowerCase(item.feedbackType)}"
+                                  th:text="${item.feedbackType}">SUGGESTION</span>
+                        </td>
+                        <td data-label="Status">
+                            <span class="feedback-status-pill"
+                                  th:classappend="'feedback-status-pill--' + ${#strings.toLowerCase(item.status)}"
+                                  th:text="${item.status}">OPEN</span>
+                        </td>
+                        <td data-label="Title"
+                            th:text="${item.subject != null && !item.subject.isBlank()} ? ${item.subject} : ${#strings.abbreviate(item.description, 80)}">
+                            Report Title
+                        </td>
+                        <td data-label="Submitted By"
+                            th:text="${item.submittedBy != null ? item.submittedBy.displayName : 'Guest'}">
+                            Chef
+                        </td>
+                        <td data-label="Submitted On" th:data-order="${item.createdAt.toInstant().toEpochMilli()}">
+                            <span th:text="${#temporals.format(item.createdAt, 'MM/dd/yyyy')}">11/27/2026</span>
+                        </td>
+                    </tr>
+                </th:block>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
