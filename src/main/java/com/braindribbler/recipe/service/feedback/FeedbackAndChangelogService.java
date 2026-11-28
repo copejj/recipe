@@ -238,6 +238,19 @@ public class FeedbackAndChangelogService {
         return errorLogRepository.findTop200ByOrderByCreatedAtDesc();
     }
 
+    @Transactional(readOnly = true)
+    public ErrorLog getErrorLogById(Integer errorLogId) {
+        if (errorLogId == null) {
+            throw new EntityNotFoundException("Error log ID is required");
+        }
+        ErrorLog log = errorLogRepository.findById(errorLogId)
+                .orElseThrow(() -> new EntityNotFoundException("Error log not found"));
+        if (log.getUser() != null) {
+            log.getUser().getDisplayName();
+        }
+        return log;
+    }
+
     @Transactional
     public void deleteErrorLog(Integer errorLogId) {
         if (errorLogId != null) {

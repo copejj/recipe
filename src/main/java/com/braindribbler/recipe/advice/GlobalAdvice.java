@@ -20,6 +20,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.HashMap;
@@ -213,5 +214,12 @@ public class GlobalAdvice {
         }
 
         return "error";
+    }
+
+    @ExceptionHandler(AsyncRequestNotUsableException.class)
+    public void handleClientDisconnect(AsyncRequestNotUsableException ex,
+                                       HttpServletRequest request) {
+        logger.debug("Client disconnected from async/SSE stream ({}): {}",
+                request.getRequestURI(), ex.getMessage());
     }
 }
